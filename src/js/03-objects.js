@@ -52,10 +52,10 @@ function renderObjs() {
         : "");
     r.innerHTML = `<div class="ohdr"><span class="dot" id="odot-${i}" aria-hidden="true"></span><input id="on-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="ow-${i}">${t("ow")}</label><input id="ow-${i}" inputmode="decimal"></div>
-        <div class="f"><label for="od-${i}">${t("od")}</label><input id="od-${i}" inputmode="decimal"></div>
-        <div class="f"><label for="oz-${i}">${t("oz")}</label><input id="oz-${i}" inputmode="decimal"></div>
-        <div class="f"><label for="oq-${i}">${t("oq")}</label><input id="oq-${i}" inputmode="decimal"></div>
+        <div class="f"><label for="ow-${i}">${t("ow")}</label><input id="ow-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="od-${i}">${t("od")}</label><input id="od-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="oz-${i}">${t("oz")}</label><input id="oz-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="oq-${i}">${t("oq")}</label><input id="oq-${i}" type="number" step="any" inputmode="decimal"></div>
         <div class="f c2"><label for="om-${i}">${t("om")}</label><select id="om-${i}">${mopts}</select></div>
         <div class="f"><label for="of-${i}">${t("of")}</label><select id="of-${i}">${Object.entries(
           FEEDS,
@@ -63,7 +63,7 @@ function renderObjs() {
           .map(([k, v]) => `<option value="${k}">${v}</option>`)
           .join("")}</select></div>
         <div class="f"><label for="oi-${i}">${t("oi")}</label><select id="oi-${i}" style="font-family:var(--mono)">${INPUTS.map((x) => `<option>${x}</option>`).join("")}</select></div>
-        <div class="f" id="ovw-${i}"><label for="ov-${i}">${t("ov")}</label><input id="ov-${i}" inputmode="decimal"></div>
+        <div class="f" id="ovw-${i}"><label for="ov-${i}">${t("ov")}</label><input id="ov-${i}" type="number" step="any" inputmode="decimal"></div>
       </div>
       <div class="ores" id="ores-${i}" aria-live="polite"></div>`;
     L.append(r);
