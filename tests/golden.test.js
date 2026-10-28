@@ -16,7 +16,7 @@ function openPage(savedState) {
       window.scrollTo = () => {};
       window.localStorage.setItem("camcalc-lang", "ru");
       if (savedState)
-        window.localStorage.setItem("camcalc3", JSON.stringify(savedState));
+        window.localStorage.setItem("camcalc4", JSON.stringify(savedState));
     },
   }).window;
 }
@@ -50,47 +50,50 @@ function results(window) {
 }
 
 // Состояние встроенного примера, от него строятся остальные конфигурации.
-const example = JSON.parse(openPage().eval("JSON.stringify(snap())"));
+const example = JSON.parse(openPage().eval("JSON.stringify(snapshot())"));
 const [sideType, topType] = example.types;
 const withType = (type, changes) => ({
   ...type,
-  v: { ...type.v, ...changes.v },
-  objs: changes.objs || type.objs,
+  inputs: { ...type.inputs, ...changes.inputs },
+  objects: changes.objects || type.objects,
 });
 
 const configs = {
   "Пример, вид сбоку": example,
 
-  "Пример, вид сверху": { ...example, act: topType.id },
+  "Пример, вид сверху": { ...example, activeTypeId: topType.id },
 
   "Своя камера и свой детектор": {
     ...example,
-    cams: [
+    customCameras: [
       {
         id: "mtest",
         name: "Тест-камера 8 Мп",
         Nw: 3840,
         Nh: 2160,
-        sw: 7.68,
-        fmin: 6,
-        fmax: 6,
+        sensorWidth: 7.68,
+        focalMin: 6,
+        focalMax: 6,
         price: 300,
       },
     ],
-    dets: [
+    customDetectors: [
       {
         id: "dtest",
         name: "Детектор деталей",
         fps: 900,
-        inp: 640,
-        ref: "l40s",
-        gf: 0,
+        inputSize: 640,
+        refGpu: "l40s",
+        gflops: 0,
       },
     ],
     types: [
       withType(sideType, {
-        v: { cam: "mtest" },
-        objs: [sideType.objs[0], { ...sideType.objs[1], model: "dtest" }],
+        inputs: { camera: "mtest" },
+        objects: [
+          sideType.objects[0],
+          { ...sideType.objects[1], model: "dtest" },
+        ],
       }),
       topType,
     ],
@@ -98,22 +101,32 @@ const configs = {
 
   "Ручной объектив, H.264, запись видео": {
     ...example,
-    gl: { ...example.gl, kr: "0.5", resv: "30", days: "30" },
+    system: {
+      ...example.system,
+      efficiency: "0.5",
+      reserve: "30",
+      archiveDays: "30",
+    },
     types: [
       withType(sideType, {
-        v: {
-          mode: "f",
-          fmm: "8",
-          orient: "port",
-          res: "5",
-          sens: "7",
-          pp: "2.0",
+        inputs: {
+          lensMode: "focal",
+          focalLength: "8",
+          orientation: "portrait",
+          resolution: "5",
+          sensor: "7",
+          pixelPitch: "2.0",
           codec: "0.07",
           scene: "1.5",
         },
-        objs: [
-          { ...sideType.objs[0], model: "y11m", feed: "full", inp: 1280 },
-          sideType.objs[1],
+        objects: [
+          {
+            ...sideType.objects[0],
+            model: "y11m",
+            feed: "full",
+            inputSize: 1280,
+          },
+          sideType.objects[1],
         ],
       }),
       topType,
@@ -122,40 +135,43 @@ const configs = {
 
   "Свои GPU, угол обзора вручную": {
     ...example,
-    act: topType.id,
-    gl: { ...example.gl, gpu: "cgpu", gcnt: "2" },
-    custom: [
+    activeTypeId: topType.id,
+    system: { ...example.system, gpu: "cgpu", gpuCount: "2" },
+    customGpus: [
       {
         id: "cgpu",
         name: "Своя карта",
         arch: "Ada",
-        tf: 150,
+        tflops: 150,
         nvdec: 2,
-        mem: 24,
-        tdp: 300,
+        memoryGB: 24,
+        tdpW: 300,
         price: 2500,
       },
       {
         id: "cjet",
         name: "Свой Jetson",
         arch: "Ampere",
-        tf: 20,
-        mem: 16,
-        tdp: 40,
+        tflops: 20,
+        memoryGB: 16,
+        tdpW: 40,
         price: 900,
-        jet: true,
-        st: { h265: 10, h264: 5.3 },
+        jetson: true,
+        decodeStreams: { h265: 10, h264: 5.3 },
       },
     ],
-    price: { l40s: "7000" },
-    on: { 5090: false, cjet: true },
-    types: [sideType, withType(topType, { v: { mode: "a", hfov: "70" } })],
+    gpuPrices: { l40s: "7000" },
+    gpuEnabled: { 5090: false, cjet: true },
+    types: [
+      sideType,
+      withType(topType, { inputs: { lensMode: "angle", hfov: "70" } }),
+    ],
   },
 
   // высота камеры ниже высоты объекта: расчёт типа невозможен
   "Ошибка ввода": {
     ...example,
-    types: [withType(sideType, { v: { H: "0.5" } }), topType],
+    types: [withType(sideType, { inputs: { cameraHeight: "0.5" } }), topType],
   },
 };
 

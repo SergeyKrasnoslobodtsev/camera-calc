@@ -1,152 +1,174 @@
 // ---------- состояние
-const PRESETS = [
+const OBJECT_PRESETS = [
   [50, 30, 170, 32, "y26s", "roi", 640],
   [9, 18, 4, 20, "y26s", "tiles", 640],
   [8, 8, 2, 20, "y26s", "roi", 640],
   [25, 6, 6, 20, "y26s", "roi", 640],
   [1.3, 1.3, 0.7, 10, "y26s", "tiles", 640],
-].map((p, i) => [STR.presetNames[i], ...p, `presetNames.${i}`]);
+].map((preset, i) => [STR.presetNames[i], ...preset, `presetNames.${i}`]);
 // встроенное название на текущем языке по ключу словаря, например "presetNames.0";
 // ключ есть, пока пользователь не изменил название
 const builtinName = (key) => {
-  const v = String(key)
+  const value = String(key)
     .split(".")
-    .reduce((v, k) => v?.[k], STR);
-  return typeof v === "string" ? v : undefined;
+    .reduce((node, part) => node?.[part], STR);
+  return typeof value === "string" ? value : undefined;
 };
-const mkObj = ([name, w, d, z, req, model, feed, inp, nameKey]) => ({
+const makeObject = ([
   name,
-  nameKey,
-  w,
-  d,
-  z,
-  req,
+  width,
+  length,
+  height,
+  requiredPx,
   model,
   feed,
-  inp,
-  ov: 20,
+  inputSize,
+  nameKey,
+]) => ({
+  name,
+  nameKey,
+  width,
+  length,
+  height,
+  requiredPx,
+  model,
+  feed,
+  inputSize,
+  overlap: 20,
   fps: 300,
   ref: "5090",
 });
-const FIELDS = [
-  "cam",
-  "H",
-  "h",
-  "L0",
-  "Dz",
-  "Wz",
-  "mg",
-  "res",
-  "sens",
-  "sw",
-  "pp",
-  "orient",
-  "fmm",
+const INPUT_IDS = [
+  "camera",
+  "cameraHeight",
+  "planeHeight",
+  "zoneStart",
+  "zoneDepth",
+  "zoneWidth",
+  "margin",
+  "resolution",
+  "sensor",
+  "sensorWidth",
+  "pixelPitch",
+  "orientation",
+  "focalLength",
   "hfov",
   "fps",
-  "afps",
+  "analyticsFps",
   "codec",
   "scene",
-  "k",
-  "v",
-  "blur",
+  "lensFactor",
+  "speed",
+  "blurPx",
 ];
-const DEF_V = {
-  cam: "",
-  H: "4",
-  h: "0.9",
-  L0: "1.5",
-  Dz: "3",
-  Wz: "3",
-  mg: "10",
-  res: "1",
-  sens: "3",
-  sw: "5.4",
-  pp: "2.0",
-  orient: "auto",
-  fmm: "6",
+const DEFAULT_INPUTS = {
+  camera: "",
+  cameraHeight: "4",
+  planeHeight: "0.9",
+  zoneStart: "1.5",
+  zoneDepth: "3",
+  zoneWidth: "3",
+  margin: "10",
+  resolution: "1",
+  sensor: "3",
+  sensorWidth: "5.4",
+  pixelPitch: "2.0",
+  orientation: "auto",
+  focalLength: "6",
   hfov: "50",
   fps: "12",
-  afps: "5",
+  analyticsFps: "5",
   codec: "0.04",
   scene: "1",
-  k: "0.6",
-  v: "1",
-  blur: "2",
-  mode: "auto",
-  pos: "side",
+  lensFactor: "0.6",
+  speed: "1",
+  blurPx: "2",
+  lensMode: "auto",
+  placement: "side",
 };
-const mkType = (name, count, over, objs, nameKey) => ({
+const makeType = (name, count, overrides, objects, nameKey) => ({
   id: uid(),
   name,
   nameKey,
   count: String(count),
-  v: { ...DEF_V, ...over },
-  objs: objs.map(mkObj),
+  inputs: { ...DEFAULT_INPUTS, ...overrides },
+  objects: objects.map(makeObject),
 });
-const defTypes = () => [
-  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]], "typeNames.0"),
-  mkType(
+const exampleTypes = () => [
+  makeType(
+    STR.typeNames[0],
+    10,
+    {},
+    [OBJECT_PRESETS[0], OBJECT_PRESETS[1]],
+    "typeNames.0",
+  ),
+  makeType(
     STR.typeNames[1],
     10,
     {
-      pos: "top",
-      H: "2.6",
-      h: "1.1",
-      Dz: "0.8",
-      Wz: "1.4",
-      afps: "2",
+      placement: "top",
+      cameraHeight: "2.6",
+      planeHeight: "1.1",
+      zoneDepth: "0.8",
+      zoneWidth: "1.4",
+      analyticsFps: "2",
       fps: "10",
     },
-    [PRESETS[2]],
+    [OBJECT_PRESETS[2]],
     "typeNames.1",
   ),
 ];
-let TYPES = defTypes(),
-  ACT = TYPES[0].id;
-const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
+let cameraTypes = exampleTypes(),
+  activeTypeId = cameraTypes[0].id;
+const activeType = () =>
+  cameraTypes.find((type) => type.id === activeTypeId) || cameraTypes[0];
 
 // ---------- форма ↔ тип
-RES.forEach((r, i) => $("res").add(new Option(r[0], i)));
-SENS.forEach((s, i) =>
-  $("sens").add(
+RESOLUTIONS.forEach(([label], i) =>
+  byId("resolution").add(new Option(label, i)),
+);
+SENSORS.forEach(([label, width], i) =>
+  byId("sensor").add(
     new Option(
-      typeof s[1] === "number"
-        ? t("sensMm", s[0], fmt(s[1], 1))
-        : s[1] === "pp"
+      typeof width === "number"
+        ? t("sensMm", label, formatNumber(width, 1))
+        : width === "pp"
           ? t("sensPp")
           : t("sensOwn"),
       i,
     ),
   ),
 );
-function writeForm(T) {
-  $("tName").value = T.name;
-  $("tCount").value = T.count;
-  FIELDS.forEach((id) => {
-    $(id).value = T.v[id] ?? DEF_V[id];
+function writeForm(type) {
+  byId("tName").value = type.name;
+  byId("tCount").value = type.count;
+  INPUT_IDS.forEach((id) => {
+    byId(id).value = type.inputs[id] ?? DEFAULT_INPUTS[id];
   });
-  const md =
-    document.querySelector(`input[name="mode"][value="${T.v.mode}"]`) ||
-    $("mAuto");
-  md.checked = true;
-  const ps =
-    document.querySelector(`input[name="pos"][value="${T.v.pos}"]`) ||
-    $("pSide");
-  ps.checked = true;
-  renderObjs();
+  const lensModeRadio =
+    document.querySelector(
+      `input[name="lensMode"][value="${type.inputs.lensMode}"]`,
+    ) || byId("mAuto");
+  lensModeRadio.checked = true;
+  const placementRadio =
+    document.querySelector(
+      `input[name="placement"][value="${type.inputs.placement}"]`,
+    ) || byId("pSide");
+  placementRadio.checked = true;
+  renderObjects();
 }
 function readForm() {
-  const T = act();
-  if (T.name !== $("tName").value) delete T.nameKey;
-  T.name = $("tName").value;
-  T.count = $("tCount").value;
-  FIELDS.forEach((id) => {
-    T.v[id] = $(id).value;
+  const type = activeType();
+  if (type.name !== byId("tName").value) delete type.nameKey;
+  type.name = byId("tName").value;
+  type.count = byId("tCount").value;
+  INPUT_IDS.forEach((id) => {
+    type.inputs[id] = byId(id).value;
   });
-  T.v.mode =
-    (document.querySelector('input[name="mode"]:checked') || {}).value ||
+  type.inputs.lensMode =
+    (document.querySelector('input[name="lensMode"]:checked') || {}).value ||
     "auto";
-  T.v.pos =
-    (document.querySelector('input[name="pos"]:checked') || {}).value || "side";
+  type.inputs.placement =
+    (document.querySelector('input[name="placement"]:checked') || {}).value ||
+    "side";
 }

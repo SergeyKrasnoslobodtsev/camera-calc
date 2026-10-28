@@ -1,418 +1,530 @@
 // ---------- расчёт одного типа камер (без DOM)
-function computeType(T) {
-  const v = T.v,
-    m = v.mode,
-    pos = v.pos,
-    count = Math.max(0, Math.round(P(T.count)) || 0);
-  const cam = camById(v.cam);
-  let [rl, Nw, Nh] = RES[+v.res] || RES[1];
-  const sv = (SENS[+v.sens] || SENS[3])[1];
+// Обозначения из формул (src/formulas.html):
+//   H — высота камеры, h — высота плоскости объектов, Hc = H − h — высота камеры над плоскостью, м;
+//   x — расстояние по полу от точки под камерой, x1 и x2 — края зоны, м;
+//   s — ширина матрицы, мм; f — фокусное расстояние, мм; Nw × Nh — разрешение кадра, px;
+//   fpx — фокусное расстояние в пикселях; φ (phi) — угол луча к плоскости; D — расстояние до точки, м;
+//   δ (delta) — угол луча к оптической оси; z — глубина по оптической оси, м; k — поправка объектива.
+function computeType(type) {
+  const inputs = type.inputs,
+    mode = inputs.lensMode,
+    placement = inputs.placement,
+    count = Math.max(0, Math.round(parseNum(type.count)) || 0);
+  const camera = cameraById(inputs.camera);
+  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1];
+  const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   let s =
-    typeof sv === "number" ? sv : sv === "pp" ? (P(v.pp) * Nw) / 1000 : P(v.sw);
-  if (cam) {
-    rl = cam.name;
-    Nw = cam.Nw;
-    Nh = cam.Nh;
-    s = cam.sw;
+    typeof sensorPreset === "number"
+      ? sensorPreset
+      : sensorPreset === "pp"
+        ? (parseNum(inputs.pixelPitch) * Nw) / 1000
+        : parseNum(inputs.sensorWidth);
+  if (camera) {
+    cameraLabel = camera.name;
+    Nw = camera.Nw;
+    Nh = camera.Nh;
+    s = camera.sensorWidth;
   }
-  const H = P(v.H),
-    h = P(v.h),
-    L0 = P(v.L0),
-    Dz = P(v.Dz),
-    Wz = P(v.Wz),
-    mg = (P(v.mg) || 0) / 100,
-    k = P(v.k),
-    vel = P(v.v),
-    bl = P(v.blur);
-  const fps = P(v.fps),
-    bpp = +v.codec,
-    sc = +v.scene,
-    afps0 = P(v.afps),
-    afps = Math.min(afps0, fps),
+  const H = parseNum(inputs.cameraHeight),
+    h = parseNum(inputs.planeHeight),
+    zoneStart = parseNum(inputs.zoneStart),
+    zoneDepth = parseNum(inputs.zoneDepth),
+    zoneWidth = parseNum(inputs.zoneWidth),
+    margin = (parseNum(inputs.margin) || 0) / 100,
+    k = parseNum(inputs.lensFactor),
+    speed = parseNum(inputs.speed),
+    blurPx = parseNum(inputs.blurPx);
+  const fps = parseNum(inputs.fps),
+    bpp = +inputs.codec,
+    sceneFactor = +inputs.scene,
+    analyticsFpsSet = parseNum(inputs.analyticsFps),
+    analyticsFps = Math.min(analyticsFpsSet, fps),
     codec = bpp < 0.055 ? "h265" : "h264";
   const Hc = H - h;
-  const base = { T, count, rl, Nw, Nh, s, fps, afps, afps0, codec, bpp, sc };
+  const common = {
+    type,
+    count,
+    cameraLabel,
+    Nw,
+    Nh,
+    s,
+    fps,
+    analyticsFps,
+    analyticsFpsSet,
+    codec,
+    bpp,
+    sceneFactor,
+  };
   if (
-    ![H, h, Dz, Wz, s, k].every(isFinite) ||
-    (pos === "side" && !isFinite(L0)) ||
+    ![H, h, zoneDepth, zoneWidth, s, k].every(isFinite) ||
+    (placement === "side" && !isFinite(zoneStart)) ||
     Hc <= 0 ||
-    Dz <= 0 ||
-    Wz <= 0 ||
+    zoneDepth <= 0 ||
+    zoneWidth <= 0 ||
     !(s > 0)
   )
-    return { ...base, err: true };
-  const x1 = pos === "top" ? -Dz / 2 : L0,
-    x2 = x1 + Dz;
+    return { ...common, err: true };
+  const x1 = placement === "top" ? -zoneDepth / 2 : zoneStart,
+    x2 = x1 + zoneDepth;
   const phi1 = Math.atan2(Hc, x1),
     phi2 = Math.atan2(Hc, x2);
-  const span = phi1 - phi2,
+  const zoneAngle = phi1 - phi2,
     tilt = (phi1 + phi2) / 2;
-  const zOf = (x) => x * Math.cos(tilt) + Hc * Math.sin(tilt);
-  const zMin = Math.min(zOf(x1), zOf(x2));
-  const fitFor = (rot) => {
-    const Nu = rot ? Nh : Nw,
-      Nv = rot ? Nw : Nh,
-      su = rot ? (s * Nh) / Nw : s,
-      a = Nu / Nv;
-    let hf,
+  const depthAt = (x) => x * Math.cos(tilt) + Hc * Math.sin(tilt);
+  const minDepth = Math.min(depthAt(x1), depthAt(x2));
+  // кадр в альбомной (rotated = false) или портретной ориентации
+  const fitOrientation = (rotated) => {
+    const frameWidthPx = rotated ? Nh : Nw,
+      frameHeightPx = rotated ? Nw : Nh,
+      sensorWidth = rotated ? (s * Nh) / Nw : s,
+      aspect = frameWidthPx / frameHeightPx;
+    let hfov,
       f,
-      fWant = null;
-    if (m === "auto") {
-      const hReq = 2 * Math.atan((Wz * (1 + mg)) / 2 / zMin),
-        vReq = span * (1 + mg);
-      hf = Math.max(hReq, 2 * Math.atan(a * Math.tan(vReq / 2)));
-      f = su / (2 * Math.tan(hf / 2));
-      fWant = f;
-      if (cam && cam.fmin > 0) {
-        const fc = Math.min(cam.fmax, Math.max(cam.fmin, f));
-        if (Math.abs(fc - f) > 1e-6) {
-          f = fc;
-          hf = 2 * Math.atan(su / (2 * f));
+      fNeeded = null;
+    if (mode === "auto") {
+      const hfovNeeded =
+          2 * Math.atan((zoneWidth * (1 + margin)) / 2 / minDepth),
+        vfovNeeded = zoneAngle * (1 + margin);
+      hfov = Math.max(
+        hfovNeeded,
+        2 * Math.atan(aspect * Math.tan(vfovNeeded / 2)),
+      );
+      f = sensorWidth / (2 * Math.tan(hfov / 2));
+      fNeeded = f;
+      if (camera && camera.focalMin > 0) {
+        const fClamped = Math.min(
+          camera.focalMax,
+          Math.max(camera.focalMin, f),
+        );
+        if (Math.abs(fClamped - f) > 1e-6) {
+          f = fClamped;
+          hfov = 2 * Math.atan(sensorWidth / (2 * f));
         }
       }
-    } else if (m === "f") {
-      f = P(v.fmm);
-      hf = 2 * Math.atan(su / (2 * f));
+    } else if (mode === "focal") {
+      f = parseNum(inputs.focalLength);
+      hfov = 2 * Math.atan(sensorWidth / (2 * f));
     } else {
-      hf = P(v.hfov) * R;
-      f = su / (2 * Math.tan(hf / 2));
+      hfov = parseNum(inputs.hfov) * DEG;
+      f = sensorWidth / (2 * Math.tan(hfov / 2));
     }
-    const vf = 2 * Math.atan(Math.tan(hf / 2) / a),
-      fpx = Nu / (2 * Math.tan(hf / 2));
+    const vfov = 2 * Math.atan(Math.tan(hfov / 2) / aspect),
+      fpx = frameWidthPx / (2 * Math.tan(hfov / 2));
     return {
-      rot,
-      Nu,
-      Nv,
-      hf,
+      rotated,
+      frameWidthPx,
+      frameHeightPx,
+      hfov,
       f,
-      fWant,
-      vf,
+      fNeeded,
+      vfov,
       fpx,
-      fits: 2 * zMin * Math.tan(hf / 2) >= Wz && vf >= span,
+      fits: 2 * minDepth * Math.tan(hfov / 2) >= zoneWidth && vfov >= zoneAngle,
     };
   };
-  let O;
-  if (v.orient === "land") O = fitFor(false);
-  else if (v.orient === "port") O = fitFor(true);
+  let fit;
+  if (inputs.orientation === "landscape") fit = fitOrientation(false);
+  else if (inputs.orientation === "portrait") fit = fitOrientation(true);
   else {
-    const A = fitFor(false),
-      B = fitFor(true);
-    O =
-      m === "auto" ? (B.fpx > A.fpx * 1.02 ? B : A) : A.fits || !B.fits ? A : B;
+    const landscape = fitOrientation(false),
+      portrait = fitOrientation(true);
+    fit =
+      mode === "auto"
+        ? portrait.fpx > landscape.fpx * 1.02
+          ? portrait
+          : landscape
+        : landscape.fits || !portrait.fits
+          ? landscape
+          : portrait;
   }
-  const { rot, hf, f, fWant, vf, fpx, Nu, Nv } = O;
-  if (!isFinite(fpx) || fpx <= 0) return { ...base, err: true };
-  const W = (z) => 2 * z * Math.tan(hf / 2);
-  const at = (x) => {
+  const { rotated, hfov, f, fNeeded, vfov, fpx, frameWidthPx, frameHeightPx } =
+    fit;
+  if (!isFinite(fpx) || fpx <= 0) return { ...common, err: true };
+  const frameWidthAt = (z) => 2 * z * Math.tan(hfov / 2);
+  // плотность пикселей (px/м) поперёк и вглубь в точке x
+  const densityAt = (x) => {
     const phi = Math.atan2(Hc, x),
       D = Math.hypot(Hc, x),
-      d = phi - tilt,
-      z = D * Math.cos(d);
+      delta = phi - tilt,
+      z = D * Math.cos(delta);
     return {
       x,
       D,
       z,
       phi,
       across: fpx / z,
-      depth: (fpx * Math.sin(phi)) / (D * Math.cos(d) ** 2),
+      depth: (fpx * Math.sin(phi)) / (D * Math.cos(delta) ** 2),
     };
   };
-  const P1 = at(x1),
-    P2 = at(x2),
-    S = [];
-  for (let i = 0; i <= 40; i++) S.push(at(x1 + ((x2 - x1) * i) / 40));
-  const minA = Math.min(...S.map((p) => p.across)),
-    minD = Math.min(...S.map((p) => p.depth)),
-    maxR = Math.max(...S.map((p) => Math.max(p.across, p.depth)));
+  const edge1 = densityAt(x1),
+    edge2 = densityAt(x2),
+    samples = [];
+  for (let i = 0; i <= 40; i++)
+    samples.push(densityAt(x1 + ((x2 - x1) * i) / 40));
+  const minAcross = Math.min(...samples.map((sample) => sample.across)),
+    minDepthDensity = Math.min(...samples.map((sample) => sample.depth)),
+    maxDensity = Math.max(
+      ...samples.map((sample) => Math.max(sample.across, sample.depth)),
+    );
   // точная проекция коробки Ш×Д×В, стоящей на плоскости по центру кадра
-  const ct = Math.cos(tilt),
-    st = Math.sin(tilt);
-  const proj = (X, Y, Z) => {
-    const dz = Z - Hc,
-      zc = X * ct - dz * st;
-    if (zc <= 1e-6) return null;
-    return [(fpx * Y) / zc, (fpx * (X * st + dz * ct)) / zc];
+  const cosTilt = Math.cos(tilt),
+    sinTilt = Math.sin(tilt);
+  // точка (x — вдоль пола, y — поперёк, height — над плоскостью) → координаты в кадре, px
+  const project = (x, y, height) => {
+    const dh = height - Hc,
+      z = x * cosTilt - dh * sinTilt;
+    if (z <= 1e-6) return null;
+    return [(fpx * y) / z, (fpx * (x * sinTilt + dh * cosTilt)) / z];
   };
-  const boxPx = (x0, w, d, zh) => {
-    const zt = Math.min(zh, Hc * 0.98);
-    let u0 = 1e9,
-      u1 = -1e9,
-      v0 = 1e9,
-      v1 = -1e9;
-    for (const X of [x0, x0 + d])
-      for (const Y of [-w / 2, w / 2])
-        for (const Z of [0, zt]) {
-          const q = proj(X, Y, Z);
-          if (!q) return null;
-          u0 = Math.min(u0, q[0]);
-          u1 = Math.max(u1, q[0]);
-          v0 = Math.min(v0, q[1]);
-          v1 = Math.max(v1, q[1]);
+  const boxSizePx = (x0, width, length, height) => {
+    const topHeight = Math.min(height, Hc * 0.98);
+    let uMin = 1e9,
+      uMax = -1e9,
+      vMin = 1e9,
+      vMax = -1e9;
+    for (const x of [x0, x0 + length])
+      for (const y of [-width / 2, width / 2])
+        for (const pointHeight of [0, topHeight]) {
+          const point = project(x, y, pointHeight);
+          if (!point) return null;
+          uMin = Math.min(uMin, point[0]);
+          uMax = Math.max(uMax, point[0]);
+          vMin = Math.min(vMin, point[1]);
+          vMax = Math.max(vMax, point[1]);
         }
-    return { bw: (u1 - u0) * k, bh: (v1 - v0) * k };
+    return { widthPx: (uMax - uMin) * k, heightPx: (vMax - vMin) * k };
   };
-  let ru0 = 1e9,
-    ru1 = -1e9,
-    rv0 = 1e9,
-    rv1 = -1e9;
-  for (const X of [x1, x2])
-    for (const Y of [-Wz / 2, Wz / 2]) {
-      const q = proj(X, Y, 0);
-      if (q) {
-        ru0 = Math.min(ru0, q[0]);
-        ru1 = Math.max(ru1, q[0]);
-        rv0 = Math.min(rv0, q[1]);
-        rv1 = Math.max(rv1, q[1]);
+  // область зоны в кадре (ROI)
+  let roiUMin = 1e9,
+    roiUMax = -1e9,
+    roiVMin = 1e9,
+    roiVMax = -1e9;
+  for (const x of [x1, x2])
+    for (const y of [-zoneWidth / 2, zoneWidth / 2]) {
+      const point = project(x, y, 0);
+      if (point) {
+        roiUMin = Math.min(roiUMin, point[0]);
+        roiUMax = Math.max(roiUMax, point[0]);
+        roiVMin = Math.min(roiVMin, point[1]);
+        roiVMax = Math.max(roiVMax, point[1]);
       }
     }
-  const roiW = Math.min(Nu, ru1 - ru0),
-    roiH = Math.min(Nv, rv1 - rv0);
-  const feedInfo = (feed, inp, ovp) => {
-    const ov = Math.min(0.9, Math.max(0, (ovp || 0) / 100));
-    let msc = 1,
+  const roiW = Math.min(frameWidthPx, roiUMax - roiUMin),
+    roiH = Math.min(frameHeightPx, roiVMax - roiVMin);
+  // подача кадра в модель: весь кадр, вырез ROI или тайлы
+  const describeFeed = (feed, inputSize, overlapPct) => {
+    const overlap = Math.min(0.9, Math.max(0, (overlapPct || 0) / 100));
+    let modelScale = 1,
       tiles = 1,
-      nx = 1,
-      ny = 1;
-    if (feed === "full") msc = Math.min(1, inp / Math.max(Nu, Nv));
-    else if (feed === "roi") msc = Math.min(1, inp / Math.max(roiW, roiH));
+      tilesX = 1,
+      tilesY = 1;
+    if (feed === "full")
+      modelScale = Math.min(
+        1,
+        inputSize / Math.max(frameWidthPx, frameHeightPx),
+      );
+    else if (feed === "roi")
+      modelScale = Math.min(1, inputSize / Math.max(roiW, roiH));
     else {
-      const step = inp * (1 - ov);
-      nx = roiW > inp ? Math.ceil((roiW - inp) / step) + 1 : 1;
-      ny = roiH > inp ? Math.ceil((roiH - inp) / step) + 1 : 1;
-      tiles = nx * ny;
+      const step = inputSize * (1 - overlap);
+      tilesX = roiW > inputSize ? Math.ceil((roiW - inputSize) / step) + 1 : 1;
+      tilesY = roiH > inputSize ? Math.ceil((roiH - inputSize) / step) + 1 : 1;
+      tiles = tilesX * tilesY;
     }
     return {
       feed,
-      inp,
-      msc,
+      inputSize,
+      modelScale,
       tiles,
-      nx,
-      ny,
-      txt:
+      tilesX,
+      tilesY,
+      text:
         feed === "tiles"
-          ? t("feedTiles", tiles, nx, ny, inp)
+          ? t("feedTiles", tiles, tilesX, tilesY, inputSize)
           : feed === "roi"
-            ? t("feedRoi", Math.round(roiW), Math.round(roiH), inp)
-            : t("feedFull", Nu, Nv, inp),
+            ? t("feedRoi", Math.round(roiW), Math.round(roiH), inputSize)
+            : t("feedFull", frameWidthPx, frameHeightPx, inputSize),
     };
   };
-  const objs = T.objs.map((o) => {
-    const w = P(o.w) / 100,
-      d = P(o.d) / 100,
-      zh = P(o.z) / 100,
-      req = P(o.req),
-      inp = P(o.inp) || 640;
-    const fi = feedInfo(o.feed, inp, P(o.ov));
+  const objs = type.objects.map((obj) => {
+    const width = parseNum(obj.width) / 100,
+      length = parseNum(obj.length) / 100,
+      height = parseNum(obj.height) / 100,
+      requiredPx = parseNum(obj.requiredPx),
+      inputSize = parseNum(obj.inputSize) || 640;
+    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.overlap));
     if (
-      ![w, d, zh].every((x) => isFinite(x) && x >= 0) ||
-      Math.max(w, d, zh) <= 0 ||
-      !(req > 0)
+      ![width, length, height].every((size) => isFinite(size) && size >= 0) ||
+      Math.max(width, length, height) <= 0 ||
+      !(requiredPx > 0)
     )
-      return { ...o, bad: true, fi };
-    const span0 = Math.max(0, x2 - x1 - d);
-    let best = null;
+      return { ...obj, bad: true, feedInfo };
+    // ищем положение объекта в зоне, где его рамка меньше всего
+    const travel = Math.max(0, x2 - x1 - length);
+    let worst = null;
     for (let i = 0; i <= 40; i++) {
-      const x0 = x1 + (span0 * i) / 40,
-        b = boxPx(x0, w, d, zh);
-      if (!b) continue;
-      const mm = Math.min(b.bw, b.bh);
-      if (!best || mm < best.m) best = { ...b, m: mm, x0 };
+      const x0 = x1 + (travel * i) / 40,
+        box = boxSizePx(x0, width, length, height);
+      if (!box) continue;
+      const minSidePx = Math.min(box.widthPx, box.heightPx);
+      if (!worst || minSidePx < worst.minSidePx)
+        worst = { ...box, minSidePx, x0 };
     }
-    if (!best) return { ...o, bad: true, fi };
-    const mm = best.m * fi.msc,
-      stt = mm >= req ? "ok" : mm >= 0.75 * req ? "warn" : "bad";
+    if (!worst) return { ...obj, bad: true, feedInfo };
+    const modelPx = worst.minSidePx * feedInfo.modelScale,
+      status =
+        modelPx >= requiredPx
+          ? "ok"
+          : modelPx >= 0.75 * requiredPx
+            ? "warn"
+            : "bad";
     return {
-      ...o,
-      ...best,
-      reqN: req,
-      fi,
-      mm,
-      st: stt,
-      NwMin: (Nw * req) / best.m,
-      sensorOk: best.m >= req,
+      ...obj,
+      ...worst,
+      requiredPx,
+      feedInfo,
+      modelPx,
+      status,
+      minSensorWidthPx: (Nw * requiredPx) / worst.minSidePx,
+      sensorOk: worst.minSidePx >= requiredPx,
     };
   });
   // вердикт
   const notes = [];
-  const clamped = fWant != null && Math.abs(fWant - f) > 0.05;
-  if (m !== "auto" || clamped) {
-    if (W(zMin) < Wz) notes.push(t("nZoneW", fmt(W(zMin), 2), fmt(Wz, 2)));
-    if (vf < span) notes.push(t("nZoneD", fmt(span / R, 1), fmt(vf / R, 1)));
+  const clamped = fNeeded != null && Math.abs(fNeeded - f) > 0.05;
+  if (mode !== "auto" || clamped) {
+    if (frameWidthAt(minDepth) < zoneWidth)
+      notes.push(
+        t(
+          "nZoneW",
+          formatNumber(frameWidthAt(minDepth), 2),
+          formatNumber(zoneWidth, 2),
+        ),
+      );
+    if (vfov < zoneAngle)
+      notes.push(
+        t(
+          "nZoneD",
+          formatNumber(zoneAngle / DEG, 1),
+          formatNumber(vfov / DEG, 1),
+        ),
+      );
   }
   if (clamped)
-    notes.unshift(t(fWant > f ? "nFMax" : "nFMin", fmt(fWant, 1), fmt(f, 1)));
+    notes.unshift(
+      t(
+        fNeeded > f ? "nFMax" : "nFMin",
+        formatNumber(fNeeded, 1),
+        formatNumber(f, 1),
+      ),
+    );
   else if (
-    m !== "auto" &&
-    cam &&
-    cam.fmin > 0 &&
-    (f < cam.fmin * 0.98 || f > cam.fmax * 1.02)
+    mode !== "auto" &&
+    camera &&
+    camera.focalMin > 0 &&
+    (f < camera.focalMin * 0.98 || f > camera.focalMax * 1.02)
   )
     notes.push(
       t(
         "nFOut",
-        fmt(f, 1),
-        cam.fmin === cam.fmax
-          ? fmt(cam.fmin, 1)
-          : fmt(cam.fmin, 1) + "–" + fmt(cam.fmax, 1),
+        formatNumber(f, 1),
+        camera.focalMin === camera.focalMax
+          ? formatNumber(camera.focalMin, 1)
+          : formatNumber(camera.focalMin, 1) +
+              "–" +
+              formatNumber(camera.focalMax, 1),
       ),
     );
-  if (hf / R > 100) notes.push(t("nWide", fmt(hf / R, 0)));
-  if (tilt / R > 75 && x1 < 0) notes.push(t("nTop"));
-  const thLow = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
-  if (thLow / R < 15) notes.push(t("nLowRay", fmt(thLow / R, 0)));
-  if (afps0 > fps) notes.push(t("nAfps", fmt(afps0, 0), fmt(fps, 0)));
-  const pxs = (o) => `${fmt(o.bw, 1)} × ${fmt(o.bh, 1)}\u00a0px`,
-    pxm = (o) =>
-      `${fmt(o.bw * o.fi.msc, 1)} × ${fmt(o.bh * o.fi.msc, 1)}\u00a0px`;
-  const valid = objs.filter((o) => !o.bad),
-    fails = valid.filter((o) => o.st === "bad"),
-    edge = valid.filter((o) => o.st === "warn");
-  let cls, pill, head;
+  if (hfov / DEG > 100) notes.push(t("nWide", formatNumber(hfov / DEG, 0)));
+  if (tilt / DEG > 75 && x1 < 0) notes.push(t("nTop"));
+  const lowestRayAngle = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
+  if (lowestRayAngle / DEG < 15)
+    notes.push(t("nLowRay", formatNumber(lowestRayAngle / DEG, 0)));
+  if (analyticsFpsSet > fps)
+    notes.push(
+      t("nAfps", formatNumber(analyticsFpsSet, 0), formatNumber(fps, 0)),
+    );
+  // размер объекта на матрице и на входе модели
+  const sensorPxText = (obj) =>
+      `${formatNumber(obj.widthPx, 1)} × ${formatNumber(obj.heightPx, 1)} px`,
+    modelPxText = (obj) =>
+      `${formatNumber(obj.widthPx * obj.feedInfo.modelScale, 1)} × ${formatNumber(obj.heightPx * obj.feedInfo.modelScale, 1)} px`;
+  const valid = objs.filter((obj) => !obj.bad),
+    failing = valid.filter((obj) => obj.status === "bad"),
+    marginal = valid.filter((obj) => obj.status === "warn");
+  let status, pill, headline;
   if (!valid.length) {
-    cls = "warn";
+    status = "warn";
     pill = t("pNoObj");
-    head = t("hNoObj");
-  } else if (fails.length) {
-    cls = "bad";
+    headline = t("hNoObj");
+  } else if (failing.length) {
+    status = "bad";
     pill = t("pBad");
-    head = t(
+    headline = t(
       "hBad",
-      fails
-        .map((o) =>
-          t("hItem", o.name || t("objDefault"), pxm(o), fmt(o.reqN, 0)),
+      failing
+        .map((obj) =>
+          t(
+            "hItem",
+            obj.name || t("objDefault"),
+            modelPxText(obj),
+            formatNumber(obj.requiredPx, 0),
+          ),
         )
         .join("; "),
     );
-    fails
-      .filter((o) => o.sensorOk)
-      .forEach((o) => {
-        const need = Math.ceil((o.fi.inp * o.reqN) / o.mm / 32) * 32;
+    failing
+      .filter((obj) => obj.sensorOk)
+      .forEach((obj) => {
+        const neededInput =
+          Math.ceil(
+            (obj.feedInfo.inputSize * obj.requiredPx) / obj.modelPx / 32,
+          ) * 32;
         notes.push(
           t(
             "nScale",
-            o.name,
-            pxs(o),
-            o.fi.inp,
+            obj.name,
+            sensorPxText(obj),
+            obj.feedInfo.inputSize,
             t(
-              o.feed === "full"
+              obj.feed === "full"
                 ? "advFull"
-                : o.feed === "roi"
+                : obj.feed === "roi"
                   ? "advRoi"
                   : "advTiles",
             ),
-            fmt(need, 0),
+            formatNumber(neededInput, 0),
           ),
         );
       });
-    const short = fails.filter((o) => !o.sensorOk);
-    if (short.length) {
-      const worst = short.reduce((a, b) => (a.NwMin > b.NwMin ? a : b)),
-        rec = RES.find((r) => r[1] >= worst.NwMin);
+    const lowResolution = failing.filter((obj) => !obj.sensorOk);
+    if (lowResolution.length) {
+      const worstObj = lowResolution.reduce((a, b) =>
+          a.minSensorWidthPx > b.minSensorWidthPx ? a : b,
+        ),
+        recommended = RESOLUTIONS.find(
+          (res) => res[1] >= worstObj.minSensorWidthPx,
+        );
       notes.unshift(
-        rec
-          ? t("nRes", worst.name, fmt(worst.NwMin, 0), rec[0])
-          : t("nResNone", worst.name, fmt(worst.NwMin, 0)),
+        recommended
+          ? t(
+              "nRes",
+              worstObj.name,
+              formatNumber(worstObj.minSensorWidthPx, 0),
+              recommended[0],
+            )
+          : t(
+              "nResNone",
+              worstObj.name,
+              formatNumber(worstObj.minSensorWidthPx, 0),
+            ),
       );
     }
-  } else if (edge.length) {
-    cls = "warn";
+  } else if (marginal.length) {
+    status = "warn";
     pill = t("pWarn");
-    head = t(
+    headline = t(
       "hWarn",
-      edge
-        .map((o) =>
-          t("hItem", o.name || t("objDefault"), pxm(o), fmt(o.reqN, 0)),
+      marginal
+        .map((obj) =>
+          t(
+            "hItem",
+            obj.name || t("objDefault"),
+            modelPxText(obj),
+            formatNumber(obj.requiredPx, 0),
+          ),
         )
         .join("; "),
     );
   } else {
-    const sm = valid.reduce((a, b) => (a.mm < b.mm ? a : b));
-    cls = "ok";
+    const smallest = valid.reduce((a, b) => (a.modelPx < b.modelPx ? a : b));
+    status = "ok";
     pill = t("pOk");
-    head = t("hOk", sm.name, pxm(sm));
+    headline = t("hOk", smallest.name, modelPxText(smallest));
   }
-  if (notes.length && cls === "ok") {
-    cls = "warn";
+  if (notes.length && status === "ok") {
+    status = "warn";
     pill = t("pCheck");
   }
   // группы запусков: одна модель с одинаковой подачей обслуживает свои объекты одним проходом
   const groups = [];
   objs
-    .filter((o) => o.fi)
-    .forEach((o) => {
+    .filter((obj) => obj.feedInfo)
+    .forEach((obj) => {
       const key = [
-        o.model,
-        o.feed,
-        o.fi.inp,
-        o.feed === "tiles" ? o.ov : "",
-        o.model === "custom" ? o.fps + "@" + o.ref : "",
+        obj.model,
+        obj.feed,
+        obj.feedInfo.inputSize,
+        obj.feed === "tiles" ? obj.overlap : "",
+        obj.model === "custom" ? obj.fps + "@" + obj.ref : "",
       ].join("|");
-      let g = groups.find((x) => x.key === key);
-      if (!g) {
-        g = {
+      let group = groups.find((existing) => existing.key === key);
+      if (!group) {
+        group = {
           key,
-          model: o.model,
-          feed: o.feed,
-          fi: o.fi,
-          fps: o.fps,
-          ref: o.ref,
+          model: obj.model,
+          feed: obj.feed,
+          feedInfo: obj.feedInfo,
+          fps: obj.fps,
+          ref: obj.ref,
           names: [],
-          type: T.name,
-          load: count * afps * o.fi.tiles,
+          type: type.name,
+          load: count * analyticsFps * obj.feedInfo.tiles,
         };
-        groups.push(g);
+        groups.push(group);
       }
-      g.names.push(o.name || t("objDefault"));
+      group.names.push(obj.name || t("objDefault"));
     });
-  const X = (vel * maxR) / bl;
-  const mb = (Nw * Nh * fps * bpp * sc) / 1e6;
+  // выдержка не длиннее 1 / shutterDenominator с, чтобы смаз не превысил blurPx
+  const shutterDenominator = (speed * maxDensity) / blurPx;
+  const bitrateMbps = (Nw * Nh * fps * bpp * sceneFactor) / 1e6;
   return {
-    ...base,
+    ...common,
     err: false,
     clamped,
-    fWant,
-    cam,
-    pos,
-    m,
+    fNeeded,
+    camera,
+    placement,
+    mode,
     H,
     h,
     Hc,
-    L0,
-    Dz,
-    Wz,
+    zoneStart,
+    zoneDepth,
+    zoneWidth,
     x1,
     x2,
     tilt,
-    span,
-    hf,
-    vf,
+    zoneAngle,
+    hfov,
+    vfov,
     f,
-    rot,
-    Nu,
-    Nv,
+    rotated,
+    frameWidthPx,
+    frameHeightPx,
     fpx,
-    W,
-    zOf,
-    P1,
-    P2,
-    minA,
-    minD,
-    maxR,
+    frameWidthAt,
+    depthAt,
+    edge1,
+    edge2,
+    minAcross,
+    minDepthDensity,
+    maxDensity,
     objs,
     valid,
     notes,
-    cls,
+    status,
     pill,
-    head,
-    pxs,
-    pxm,
+    headline,
+    sensorPxText,
+    modelPxText,
     groups,
-    X,
-    vel,
-    bl,
-    mb,
+    shutterDenominator,
+    speed,
+    blurPx,
+    bitrateMbps,
     k,
-    decUnits: (count * Nu * Nv * fps) / (1920 * 1080 * 30),
-    frameGB: (Nu * Nv * 1.5) / 1e9,
+    decUnits: (count * frameWidthPx * frameHeightPx * fps) / (1920 * 1080 * 30),
+    frameGB: (frameWidthPx * frameHeightPx * 1.5) / 1e9,
   };
 }

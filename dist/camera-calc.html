@@ -288,7 +288,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   </div>
   <div class="dsel">
     <div class="f"><label for="gpu" data-t="gpu"></label><select id="gpu"></select></div>
-    <div class="f"><label for="gcnt" data-t="gcnt"></label><select id="gcnt"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+    <div class="f"><label for="gpuCount" data-t="gcnt"></label><select id="gpuCount"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
   </div>
   <div class="dsum" id="dsum"></div>
   <div class="donutbox">
@@ -330,16 +330,16 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     <details class="sec" open>
       <summary><span data-t="secGeo"></span> <span class="sumv" id="sumGeo"></span></summary>
       <div class="fs">
-        <div class="f"><label for="H" data-t="H"></label><input id="H" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="h" data-t="h"></label><input id="h" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="L0box"><label for="L0" data-t="L0"></label><input id="L0" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="mg" data-t="mg"></label><input id="mg" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="Dz" data-t="Dz"></label><input id="Dz" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="Wz" data-t="Wz"></label><input id="Wz" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="cameraHeight" data-t="H"></label><input id="cameraHeight" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="planeHeight" data-t="h"></label><input id="planeHeight" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="L0box"><label for="zoneStart" data-t="L0"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="margin" data-t="mg"></label><input id="margin" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneDepth" data-t="Dz"></label><input id="zoneDepth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneWidth" data-t="Wz"></label><input id="zoneWidth" type="number" step="any" inputmode="decimal"></div>
         <div class="f full"><span data-tip="pos" data-t="pos"></span>
           <div class="seg" role="radiogroup" data-ta="pos">
-            <label><input type="radio" name="pos" id="pSide" value="side"><span data-t="pSide"></span></label>
-            <label><input type="radio" name="pos" id="pTop" value="top"><span data-t="pTop"></span></label>
+            <label><input type="radio" name="placement" id="pSide" value="side"><span data-t="pSide"></span></label>
+            <label><input type="radio" name="placement" id="pTop" value="top"><span data-t="pTop"></span></label>
           </div>
         </div>
       </div>
@@ -347,20 +347,20 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     <details class="sec" open>
       <summary><span data-t="secCam"></span> <span class="sumv" id="sumCam"></span></summary>
       <div class="fs">
-        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="cam" data-t="cam"></label><a class="inlink" href="#tpl-cams" data-t="addCamLink"></a></div><select id="cam"></select></div>
-        <div class="f full"><label for="res" data-t="res"></label><select id="res"></select></div>
-        <div class="f"><label for="sens" data-t="sens"></label><select id="sens"></select></div>
-        <div class="f"><label for="sw" data-t="sw"></label><input id="sw" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full" id="ppBox" hidden><label for="pp" data-t="pp"></label><input id="pp" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full"><label for="orient" data-t="orient"></label><select id="orient"><option value="auto" data-t="auto"></option><option value="land" data-t="orLand"></option><option value="port" data-t="orPort"></option></select></div>
+        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cam"></label><a class="inlink" href="#tpl-cams" data-t="addCamLink"></a></div><select id="camera"></select></div>
+        <div class="f full"><label for="resolution" data-t="res"></label><select id="resolution"></select></div>
+        <div class="f"><label for="sensor" data-t="sens"></label><select id="sensor"></select></div>
+        <div class="f"><label for="sensorWidth" data-t="sw"></label><input id="sensorWidth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full" id="ppBox" hidden><label for="pixelPitch" data-t="pp"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full"><label for="orientation" data-t="orient"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orLand"></option><option value="portrait" data-t="orPort"></option></select></div>
         <div class="f full"><span data-tip="mode" data-t="mode"></span>
           <div class="seg three" role="radiogroup" data-ta="modeAria">
-            <label><input type="radio" name="mode" id="mAuto" value="auto"><span data-t="mAuto"></span></label>
-            <label><input type="radio" name="mode" id="mF" value="f"><span data-t="mF"></span></label>
-            <label><input type="radio" name="mode" id="mA" value="a"><span data-t="mA"></span></label>
+            <label><input type="radio" name="lensMode" id="mAuto" value="auto"><span data-t="mAuto"></span></label>
+            <label><input type="radio" name="lensMode" id="mF" value="focal"><span data-t="mF"></span></label>
+            <label><input type="radio" name="lensMode" id="mA" value="angle"><span data-t="mA"></span></label>
           </div>
         </div>
-        <div class="f" id="fBox" hidden><label for="fmm" data-t="fmm"></label><input id="fmm" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="fBox" hidden><label for="focalLength" data-t="fmm"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
         <div class="f" id="aBox" hidden><label for="hfov">HFOV, °</label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
@@ -368,12 +368,12 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <summary><span data-t="secStr"></span> <span class="sumv" id="sumStr"></span></summary>
       <div class="fs">
         <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="afps" data-t="afps"></label><input id="afps" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="analyticsFps" data-t="afps"></label><input id="analyticsFps" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
         <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="scLow"></option><option value="1" data-t="scMid"></option><option value="1.5" data-t="scHigh"></option></select></div>
-        <div class="f"><label for="k" data-t="k"></label><input id="k" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="v" data-t="v"></label><input id="v" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="blur" data-t="blur"></label><input id="blur" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="lensFactor" data-t="k"></label><input id="lensFactor" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="speed" data-t="v"></label><input id="speed" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="blurPx" data-t="blur"></label><input id="blurPx" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <div class="colfoot"><button type="button" class="sm" id="dupBtn" data-t="dupBtn"></button><button type="button" class="sm danger" id="delBtn" data-t="delBtn"></button></div>
@@ -396,7 +396,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <div class="bottom">
   <section class="panel net" aria-labelledby="netTitle">
     <div class="rowhead"><h2 id="netTitle" data-t="netTitle"></h2>
-      <div class="f"><label for="days" data-t="days"></label><input id="days" type="number" step="1" inputmode="numeric" value="0"></div></div>
+      <div class="f"><label for="archiveDays" data-t="days"></label><input id="archiveDays" type="number" step="1" inputmode="numeric" value="0"></div></div>
     <div class="tbl"><table id="netTbl"></table></div>
   </section>
   <section class="panel assum" aria-labelledby="assTitle">
@@ -465,8 +465,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="tbl" style="padding:4px 8px 8px"><table id="catTbl"></table></div>
       <div class="mine" id="mine"></div>
       <div class="params">
-        <div class="f"><label for="kr" data-t="kr"></label><input id="kr" type="number" step="any" inputmode="decimal" value="0.6"></div>
-        <div class="f"><label for="resv" data-t="resv"></label><input id="resv" type="number" step="any" inputmode="decimal" value="20"></div>
+        <div class="f"><label for="efficiency" data-t="kr"></label><input id="efficiency" type="number" step="any" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="reserve" data-t="resv"></label><input id="reserve" type="number" step="any" inputmode="decimal" value="20"></div>
       </div>
     </section>
     <section class="panel newc" aria-labelledby="newTitle">
@@ -557,29 +557,30 @@ const RU = {
   gpuCustomMark: " (свой)",
   donutAria: "Загрузка инференса",
   donutCap: "инференс",
-  donutAriaVal: (u, lim) => `Загрузка инференса ${u}, порог ${lim}`,
+  donutAriaVal: (load, threshold) =>
+    `Загрузка инференса ${load}, порог ${threshold}`,
   bottInf: "инференс",
   bottDec: "декодирование",
   bottMem: "видеопамять",
   optimum: "оптимум по цене",
   manual: "выбрано вручную",
   insufficient: "недостаточно",
-  headroom: (p) => `запас ${p}`,
-  bottleneck: (b) => `узкое место: ${b}`,
-  otherRuns: (n) => `Другие запуски: ${n}`,
+  headroom: (percent) => `запас ${percent}`,
+  bottleneck: (resource) => `узкое место: ${resource}`,
+  otherRuns: (count) => `Другие запуски: ${count}`,
   free: "Свободно",
-  freeSub: (p) => `Порог ${p} отмечен риской на кольце`,
+  freeSub: (threshold) => `Порог ${threshold} отмечен риской на кольце`,
   noLoad: "Добавьте камеры и объекты с моделями.",
   gDec: "Декодер",
   gMem: "Видеопамять",
-  gDecSub: (a, b) => `${a} из ${b} потоков`,
-  gMemSub: (a, b) => `${a} из ${b} ГБ`,
+  gDecSub: (used, capacity) => `${used} из ${capacity} потоков`,
+  gMemSub: (used, capacity) => `${used} из ${capacity} ГБ`,
   noCand: "Ни один GPU не отмечен для подбора. Отметьте GPU в «Шаблонах».",
   noFit:
     "Нагрузку не выдерживает ни один GPU даже в количестве 4. Уменьшите частоту для аналитики, используйте вырез зоны вместо тайлов, выберите модель легче или распределите камеры по нескольким серверам.",
   // результат
   resTitle: "Результат",
-  resTitleOf: (n) => `Результат · ${n}`,
+  resTitleOf: (name) => `Результат · ${name}`,
   untitled: "Без названия",
   sideFig: "Вид сбоку",
   lgFov: "Поле зрения",
@@ -602,8 +603,9 @@ const RU = {
   kFrame: "Ширина кадра",
   kFrameSub: "у ближнего и дальнего края",
   objBad: "Укажите габариты и порог в пикселях.",
-  objSeen: (px, req) => `на входе модели ${px}, порог ${req}`,
-  objSensor: (px, feed) => `на матрице ${px} · ${feed}`,
+  objSeen: (modelPx, requiredPx) =>
+    `на входе модели ${modelPx}, порог ${requiredPx}`,
+  objSensor: (sensorPx, feed) => `на матрице ${sensorPx} · ${feed}`,
   densHead: "Плотность, px/м",
   across: "Поперёк",
   depth: "Вглубь",
@@ -617,30 +619,33 @@ const RU = {
   camera: "Камера",
   st: { ok: "достаточно", warn: "на грани", bad: "недостаточно" },
   tabErr: "Ошибка в исходных данных",
-  tabObjs: (s) => `Объекты: ${s}`,
+  tabObjs: (status) => `Объекты: ${status}`,
   addType: "+ Тип камеры",
-  newType: (n) => `Камера ${n}`,
+  newType: (number) => `Камера ${number}`,
   // вердикт типа
-  feedTiles: (n, nx, ny, inp) => `тайлов: ${n} (${nx} × ${ny}) по ${inp} px`,
-  feedRoi: (w, h, inp) => `вырез ${w} × ${h} → ${inp} px`,
-  feedFull: (w, h, inp) => `кадр ${w} × ${h} → ${inp} px`,
-  nZoneW: (a, b) =>
-    `Зона не помещается по ширине: у ближнего края ширина кадра ${a} м, ширина зоны ${b} м.`,
-  nZoneD: (a, b) =>
-    `Зона не помещается по глубине: требуется ${a}° по вертикали, доступно ${b}°.`,
-  nFMax: (a, b) =>
-    `Для зоны требуется фокусное расстояние ≈ ${a} мм, максимум объектива — ${b} мм. Расчёт выполнен для ${b} мм: кадр шире зоны, пикселей на объекте меньше.`,
-  nFMin: (a, b) =>
-    `Для зоны требуется фокусное расстояние ≈ ${a} мм, минимум объектива — ${b} мм. Расчёт выполнен для ${b} мм: зона не помещается в кадр целиком. Поднимите камеру, уменьшите зону или выберите объектив с большим углом обзора.`,
-  nFOut: (f, r) =>
-    `Фокусное расстояние ${f} мм вне диапазона объектива камеры (${r} мм).`,
-  nWide: (a) =>
-    `HFOV ${a}°: такие объективы заметно сжимают края кадра (бочкообразная дисторсия), расчёт этого не учитывает. Уменьшите коэффициент качества или поднимите камеру.`,
+  feedTiles: (count, columns, rows, inputSize) =>
+    `тайлов: ${count} (${columns} × ${rows}) по ${inputSize} px`,
+  feedRoi: (width, height, inputSize) =>
+    `вырез ${width} × ${height} → ${inputSize} px`,
+  feedFull: (width, height, inputSize) =>
+    `кадр ${width} × ${height} → ${inputSize} px`,
+  nZoneW: (frameWidth, zoneWidth) =>
+    `Зона не помещается по ширине: у ближнего края ширина кадра ${frameWidth} м, ширина зоны ${zoneWidth} м.`,
+  nZoneD: (requiredAngle, availableAngle) =>
+    `Зона не помещается по глубине: требуется ${requiredAngle}° по вертикали, доступно ${availableAngle}°.`,
+  nFMax: (requiredFocal, maxFocal) =>
+    `Для зоны требуется фокусное расстояние ≈ ${requiredFocal} мм, максимум объектива — ${maxFocal} мм. Расчёт выполнен для ${maxFocal} мм: кадр шире зоны, пикселей на объекте меньше.`,
+  nFMin: (requiredFocal, minFocal) =>
+    `Для зоны требуется фокусное расстояние ≈ ${requiredFocal} мм, минимум объектива — ${minFocal} мм. Расчёт выполнен для ${minFocal} мм: зона не помещается в кадр целиком. Поднимите камеру, уменьшите зону или выберите объектив с большим углом обзора.`,
+  nFOut: (focal, range) =>
+    `Фокусное расстояние ${focal} мм вне диапазона объектива камеры (${range} мм).`,
+  nWide: (hfov) =>
+    `HFOV ${hfov}°: такие объективы заметно сжимают края кадра (бочкообразная дисторсия), расчёт этого не учитывает. Уменьшите коэффициент качества или поднимите камеру.`,
   nTop: "Вид сверху: детали в ячейках видны торцами, это удобно для подсчёта. Человек виден сверху (голова и плечи), действия рук различаются хуже.",
-  nLowRay: (a) =>
-    `Луч на дальний край зоны идёт под углом ${a}° к плоскости: объекты будут перекрывать друг друга. Поднимите камеру или уменьшите вынос.`,
-  nAfps: (a, b) =>
-    `Частота для аналитики (${a} кадр/с) больше частоты потока (${b} кадр/с). В расчёте использовано ${b} кадр/с.`,
+  nLowRay: (angle) =>
+    `Луч на дальний край зоны идёт под углом ${angle}° к плоскости: объекты будут перекрывать друг друга. Поднимите камеру или уменьшите вынос.`,
+  nAfps: (analyticsFps, streamFps) =>
+    `Частота для аналитики (${analyticsFps} кадр/с) больше частоты потока (${streamFps} кадр/с). В расчёте использовано ${streamFps} кадр/с.`,
   pNoObj: "Нет объектов",
   pBad: "Недостаточно",
   pWarn: "На грани",
@@ -648,33 +653,34 @@ const RU = {
   pCheck: "Есть замечания",
   hNoObj:
     "Добавьте объект с габаритами и моделью, чтобы проверить его различимость.",
-  hItem: (n, px, req) => `${n} — ${px} при пороге ${req}`,
-  hBad: (l) => `Недостаточно пикселей на входе модели: ${l}.`,
-  hWarn: (l) => `На грани на входе модели: ${l}.`,
-  hOk: (n, px) =>
-    `Все объекты различимы на входе модели. Самый мелкий: ${n} — ${px}.`,
-  nScale: (n, px, inp, adv, need) =>
-    `«${n}»: на матрице ${px}, пиксели теряются при уменьшении до входа ${inp} px. ${adv} или увеличьте вход до ≈ ${need} px.`,
+  hItem: (name, modelPx, requiredPx) =>
+    `${name} — ${modelPx} при пороге ${requiredPx}`,
+  hBad: (list) => `Недостаточно пикселей на входе модели: ${list}.`,
+  hWarn: (list) => `На грани на входе модели: ${list}.`,
+  hOk: (name, modelPx) =>
+    `Все объекты различимы на входе модели. Самый мелкий: ${name} — ${modelPx}.`,
+  nScale: (name, sensorPx, inputSize, advice, neededInputSize) =>
+    `«${name}»: на матрице ${sensorPx}, пиксели теряются при уменьшении до входа ${inputSize} px. ${advice} или увеличьте вход до ≈ ${neededInputSize} px.`,
   advFull: "Выберите подачу «Вырез зоны» или «Тайлы»",
   advRoi: "Выберите подачу «Тайлы»",
   advTiles: "Проверьте размер входа",
-  nRes: (n, px, res) =>
-    `Для «${n}» требуется не меньше ${px} px по горизонтали (${res}) при том же угле обзора.`,
-  nResNone: (n, px) =>
-    `Для «${n}» требуется ${px} px по горизонтали — больше, чем у любого разрешения из списка. Установите отдельную камеру ближе к объекту или выберите объектив с меньшим углом обзора.`,
+  nRes: (name, requiredWidthPx, resolution) =>
+    `Для «${name}» требуется не меньше ${requiredWidthPx} px по горизонтали (${resolution}) при том же угле обзора.`,
+  nResNone: (name, requiredWidthPx) =>
+    `Для «${name}» требуется ${requiredWidthPx} px по горизонтали — больше, чем у любого разрешения из списка. Установите отдельную камеру ближе к объекту или выберите объектив с меньшим углом обзора.`,
   objDefault: "Объект",
   // система
   sCams: "Камеры",
-  sTypes: (n, names) => `Типов: ${n}${names ? ` (${names})` : ""}`,
-  sCamCost: (c) => ` · стоимость камер ${c}`,
+  sTypes: (count, names) => `Типов: ${count}${names ? ` (${names})` : ""}`,
+  sCamCost: (cost) => ` · стоимость камер ${cost}`,
   sObjs: "Объекты различимы",
-  sOfN: (a, b) => `${a} из ${b}`,
-  sSmallest: (n, px) => `Самый мелкий: ${n}, ${px} px`,
+  sOfN: (okCount, total) => `${okCount} из ${total}`,
+  sSmallest: (name, modelPx) => `Самый мелкий: ${name}, ${modelPx} px`,
   sNoObjs: "Нет объектов",
   sCompute: "Вычислитель",
   sNoCams: "Нет камер",
   sNet: "Сетевой поток",
-  sPort: (p, w) => `Порт ${p} · PoE ≈ ${w} Вт`,
+  sPort: (port, poeWatts) => `Порт ${port} · PoE ≈ ${poeWatts} Вт`,
   // сеть и допущения
   netTitle: "Сеть и хранение",
   days: "Глубина архива, дн.",
@@ -686,11 +692,11 @@ const RU = {
   nAll: "Всего",
   nTotal: "Итого",
   nArch: "Архив",
-  nArchVal: (tb, d) => `≈ ${tb} ТБ за ${d} дн.`,
+  nArchVal: (terabytes, days) => `≈ ${terabytes} ТБ за ${days} дн.`,
   nArchOff: "Не ведётся",
   assTitle: "Допущения",
-  ass: (kr) => [
-    `Коэффициент реальности ${kr} к замеренной скорости`,
+  ass: (efficiency) => [
+    `Коэффициент реальности ${efficiency} к замеренной скорости`,
     "Модели из каталога: замеры Ultralytics на T4",
     "Декодер: производительность NVDEC по поколению GPU",
     "Стоимость сервера для GPU не учитывается",
@@ -788,8 +794,8 @@ const RU = {
     gb: "ГБ",
     w: "Вт",
   },
-  mp: (mp) => `${mp} Мп`,
-  sensMm: (s, w) => `${s} ≈ ${w} мм`,
+  mp: (megapixels) => `${megapixels} Мп`,
+  sensMm: (format, widthMm) => `${format} ≈ ${widthMm} мм`,
   camBuiltin: {
     k4: "Типовая 4 Мп · 1/2.7″ · 2,8–12 мм",
     k8: "Типовая 8 Мп · 1/1.8″ · 2,8–12 мм",
@@ -800,7 +806,7 @@ const RU = {
       "FP16 dense оценён как 4 PFLOPS FP4 / 8 по соотношению у RTX 5090.",
     agx: "Отдельный модуль. Память общая с CPU, для моделей доступно 60%. FP16 оценён как 16 SM × 2048 FLOP/такт × 1,3 ГГц.",
   },
-  decStreams: (n) => `потоков: ${n}`,
+  decStreams: (count) => `потоков: ${count}`,
   // шаблоны
   back: "← К расчёту",
   toCalc: "К расчёту",
@@ -814,7 +820,7 @@ const RU = {
   impBtn: "Импорт",
   impTitle: "Заменить все данные содержимым файла",
   impConfirm: "Заменить все данные",
-  catTitle: (n) => `Каталог GPU · ${n}`,
+  catTitle: (count) => `Каталог GPU · ${count}`,
   catTitle0: "Каталог GPU",
   catNote: "Характеристики из даташитов NVIDIA",
   kr: "Коэффициент реальности",
@@ -830,11 +836,11 @@ const RU = {
   ],
   gJet: "Модуль Jetson",
   gOwn: "свой",
-  gPriceAria: (n) => `Цена ${n}, $`,
-  gOnAria: (n) => `${n} участвует в подборе`,
+  gPriceAria: (name) => `Цена ${name}, $`,
+  gOnAria: (name) => `${name} участвует в подборе`,
   del: "Удалить",
-  delAria: (n) => `Удалить ${n}`,
-  mineN: (n) => `Свои GPU · ${n}`,
+  delAria: (name) => `Удалить ${name}`,
+  mineN: (count) => `Свои GPU · ${count}`,
   mine0: "Свои GPU",
   mineEmpty:
     "Своих GPU нет. Добавленный GPU появится здесь, в списке «GPU» и в автоподборе.",
@@ -858,16 +864,16 @@ const RU = {
   ngHint2:
     "NVDEC: число аппаратных декодеров. Для Jetson укажите число потоков 1080p30 H.265 из спецификации.",
   addGpuBtn: "Добавить GPU",
-  ngErr: (l) => `Заполните поля: ${l}.`,
+  ngErr: (fields) => `Заполните поля: ${fields}.`,
   eName: "название",
   eTf: "FP16 Tensor",
   eDecJet: "потоки декодера",
   eDec: "число NVDEC",
   eMem: "память",
   ePrice: "цена (нужна для сравнения в подборе)",
-  gAdded: (n) => `«${n}» добавлен`,
+  gAdded: (name) => `«${name}» добавлен`,
   gDeleted: "GPU удалён",
-  camTitle: (n) => `Камеры · ${n}`,
+  camTitle: (count) => `Камеры · ${count}`,
   camTitle0: "Камеры",
   camNote: "Выбираются в параметрах типа, раздел «Матрица и объектив»",
   cHead: ["Камера", "Кадр", "Матрица", "Объектив", "Цена", "В системе"],
@@ -889,19 +895,19 @@ const RU = {
   ncHint2:
     "Для объектива с фиксированным фокусным расстоянием укажите одно значение в обоих полях. Если поля пустые, фокусное расстояние подбирается без ограничений.",
   addCamBtn: "Добавить камеру",
-  ncErr: (l) => `Укажите: ${l}.`,
+  ncErr: (fields) => `Укажите: ${fields}.`,
   eFrame: "размер кадра в пикселях",
   eSw: "ширину матрицы или размер пикселя",
   eFRange: "фокусное расстояние «от» не больше «до»",
-  cAdded: (n) => `«${n}» добавлена`,
+  cAdded: (name) => `«${name}» добавлена`,
   cDeleted: "Камера удалена",
-  detTitle: (n) => `Детекторы · ${n}`,
+  detTitle: (count) => `Детекторы · ${count}`,
   detTitle0: "Детекторы",
   detNote: "Выбираются в карточке объекта, поле «Модель»",
   dHead: ["Модель", "Вход", "GFLOPs", "Скорость", "Объекты"],
   dOwn: "Свой",
   dCatalog: "Каталог Ultralytics",
-  dSpeed: (f, g) => `${f} кадр/с на ${g}`,
+  dSpeed: (fps, gpuName) => `${fps} кадр/с на ${gpuName}`,
   dEmpty: "Своих детекторов нет. Добавьте детектор в форме «Новый детектор».",
   ndTitle: "Новый детектор",
   ndNamePh: "Например, детектор деталей v2",
@@ -918,20 +924,20 @@ const RU = {
     "Для других GPU замер пересчитывается по FP16, для другого входа — по квадрату его стороны.",
   addDetBtn: "Добавить детектор",
   eFps: "замер",
-  dAdded: (n) => `«${n}» добавлен`,
+  dAdded: (name) => `«${name}» добавлен`,
   dDeleted: "Детектор удалён",
   // отчёт
-  rErr: (n, c) => `${n} × ${c}: ошибка в исходных данных`,
-  rCam: (o) =>
-    `  Камера: ${o.rl}${o.rot ? " (повёрнута на 90°)" : ""}, матрица ${o.s} мм, f ${o.f} мм, HFOV ${o.hf}°, наклон ${o.tilt}°, ${o.top ? "над центром зоны" : `вынос ${o.L0} м`}, высота ${o.H} м, зона ${o.Wz} × ${o.Dz} м`,
-  rObj: (o) =>
-    `  ${o.name}: ${o.model}, ${o.feed}; на матрице ${o.pxs}, на входе модели ${o.pxm}, порог ${o.req}: ${o.st}`,
-  rStream: (mb, x) =>
-    `  Поток ${mb} Мбит/с на камеру, выдержка не длиннее 1/${x} с`,
-  rSys: (c, mb, cost) =>
-    `Система: камер ${c}, ${mb} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
-  rCompute: (o) =>
-    `Вычислитель (оценка): ${o.n} × ${o.g}, ${o.cost}; инференс ${o.uI}%, декодер ${o.uD}%, видеопамять ${o.mem}/${o.cap} ГБ${o.best ? `; оптимум по цене: ${o.best}` : ""}`,
+  rErr: (name, count) => `${name} × ${count}: ошибка в исходных данных`,
+  rCam: (params) =>
+    `  Камера: ${params.cameraLabel}${params.rotated ? " (повёрнута на 90°)" : ""}, матрица ${params.sensorWidth} мм, f ${params.focal} мм, HFOV ${params.hfov}°, наклон ${params.tilt}°, ${params.overCenter ? "над центром зоны" : `вынос ${params.zoneStart} м`}, высота ${params.cameraHeight} м, зона ${params.zoneWidth} × ${params.zoneDepth} м`,
+  rObj: (params) =>
+    `  ${params.name}: ${params.model}, ${params.feed}; на матрице ${params.sensorPx}, на входе модели ${params.modelPx}, порог ${params.requiredPx}: ${params.status}`,
+  rStream: (mbps, shutterDenominator) =>
+    `  Поток ${mbps} Мбит/с на камеру, выдержка не длиннее 1/${shutterDenominator} с`,
+  rSys: (cameraCount, mbps, cost) =>
+    `Система: камер ${cameraCount}, ${mbps} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
+  rCompute: (params) =>
+    `Вычислитель (оценка): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; инференс ${params.inferenceLoad}%, декодер ${params.decodeLoad}%, видеопамять ${params.memoryUsed}/${params.memoryCap} ГБ${params.optimum ? `; оптимум по цене: ${params.optimum}` : ""}`,
   rNoCompute: "Вычислитель: нет данных",
   // уведомления
   stale: "Данные изменены в другой вкладке. Обновите страницу.",
@@ -947,19 +953,21 @@ const RU = {
   readFail: "Не удалось прочитать файл.",
   tipAria: "Подсказка",
   // схема
-  dZone: (a) => `Зона контроля ${a} м`,
-  dFrame: (a) => `Кадр ${a} м`,
-  dTilt: (a) => `Наклон ${a}°`,
-  dLen: (a) => `${a} м`,
-  dOffset: (a) => `Вынос ${a} м`,
-  dDepth: (a) => `Глубина зоны ${a} м`,
+  dZone: (depth) => `Зона контроля ${depth} м`,
+  dFrame: (width) => `Кадр ${width} м`,
+  dTilt: (degrees) => `Наклон ${degrees}°`,
+  dLen: (length) => `${length} м`,
+  dOffset: (offset) => `Вынос ${offset} м`,
+  dDepth: (depth) => `Глубина зоны ${depth} м`,
   dOverCenter: "Камера над центром зоны",
   dOverZone: "Камера над зоной",
-  dH: (a) => `H ${a} м`,
-  dh: (a) => `h ${a} м`,
-  dAria: (o) =>
-    `Вид сбоку: камера на высоте ${o.H} м, наклон ${o.tilt}°, VFOV ${o.vf}°, зона от ${o.x1} до ${o.x2} м на высоте ${o.h} м` +
-    (o.wN ? `, ширина кадра ${o.wN}–${o.wF} м` : ""),
+  dH: (height) => `H ${height} м`,
+  dh: (height) => `h ${height} м`,
+  dAria: (params) =>
+    `Вид сбоку: камера на высоте ${params.H} м, наклон ${params.tilt}°, VFOV ${params.vfov}°, зона от ${params.x1} до ${params.x2} м на высоте ${params.h} м` +
+    (params.frameWidthNear
+      ? `, ширина кадра ${params.frameWidthNear}–${params.frameWidthFar} м`
+      : ""),
   // подсказки «?»
   tips: {
     tName:
@@ -1028,29 +1036,30 @@ const EN = {
   gpuCustomMark: " (custom)",
   donutAria: "Inference load",
   donutCap: "inference",
-  donutAriaVal: (u, lim) => `Inference load ${u}, threshold ${lim}`,
+  donutAriaVal: (load, threshold) =>
+    `Inference load ${load}, threshold ${threshold}`,
   bottInf: "inference",
   bottDec: "decoding",
   bottMem: "GPU memory",
   optimum: "best price",
   manual: "manual selection",
   insufficient: "insufficient",
-  headroom: (p) => `headroom ${p}`,
-  bottleneck: (b) => `bottleneck: ${b}`,
-  otherRuns: (n) => `Other inference runs: ${n}`,
+  headroom: (percent) => `headroom ${percent}`,
+  bottleneck: (resource) => `bottleneck: ${resource}`,
+  otherRuns: (count) => `Other inference runs: ${count}`,
   free: "Free",
-  freeSub: (p) => `Threshold ${p} is marked on the ring`,
+  freeSub: (threshold) => `Threshold ${threshold} is marked on the ring`,
   noLoad: "Add cameras and objects with models.",
   gDec: "Decoder",
   gMem: "GPU memory",
-  gDecSub: (a, b) => `${a} of ${b} streams`,
-  gMemSub: (a, b) => `${a} of ${b} GB`,
+  gDecSub: (used, capacity) => `${used} of ${capacity} streams`,
+  gMemSub: (used, capacity) => `${used} of ${capacity} GB`,
   noCand: 'No GPU is selected for auto-selection. Select GPUs in "Templates".',
   noFit:
     "No GPU can handle the load, even 4 of them. Lower the analytics frame rate, use zone crop instead of tiles, choose a lighter model, or split the cameras across several servers.",
   // результат
   resTitle: "Result",
-  resTitleOf: (n) => `Result · ${n}`,
+  resTitleOf: (name) => `Result · ${name}`,
   untitled: "Untitled",
   sideFig: "Side view",
   lgFov: "Field of view",
@@ -1073,8 +1082,9 @@ const EN = {
   kFrame: "Frame width",
   kFrameSub: "at the near and far edge",
   objBad: "Enter the dimensions and the threshold in pixels.",
-  objSeen: (px, req) => `at model input ${px}, threshold ${req}`,
-  objSensor: (px, feed) => `on sensor ${px} · ${feed}`,
+  objSeen: (modelPx, requiredPx) =>
+    `at model input ${modelPx}, threshold ${requiredPx}`,
+  objSensor: (sensorPx, feed) => `on sensor ${sensorPx} · ${feed}`,
   densHead: "Density, px/m",
   across: "Across",
   depth: "In depth",
@@ -1088,30 +1098,33 @@ const EN = {
   camera: "Camera",
   st: { ok: "OK", warn: "marginal", bad: "insufficient" },
   tabErr: "Input data error",
-  tabObjs: (s) => `Objects: ${s}`,
+  tabObjs: (status) => `Objects: ${status}`,
   addType: "+ Camera type",
-  newType: (n) => `Camera ${n}`,
+  newType: (number) => `Camera ${number}`,
   // вердикт типа
-  feedTiles: (n, nx, ny, inp) => `tiles: ${n} (${nx} × ${ny}) of ${inp} px`,
-  feedRoi: (w, h, inp) => `crop ${w} × ${h} → ${inp} px`,
-  feedFull: (w, h, inp) => `frame ${w} × ${h} → ${inp} px`,
-  nZoneW: (a, b) =>
-    `Zone doesn't fit horizontally: at the near edge the frame width is ${a} m, the zone width is ${b} m.`,
-  nZoneD: (a, b) =>
-    `Zone doesn't fit in depth: ${a}° vertical is required, ${b}° is available.`,
-  nFMax: (a, b) =>
-    `The zone requires a focal length of ≈ ${a} mm, the lens maximum is ${b} mm. Calculated for ${b} mm: the frame is wider than the zone, and objects get fewer pixels.`,
-  nFMin: (a, b) =>
-    `The zone requires a focal length of ≈ ${a} mm, the lens minimum is ${b} mm. Calculated for ${b} mm: the zone doesn't fit in the frame entirely. Raise the camera, reduce the zone, or choose a lens with a wider field of view.`,
-  nFOut: (f, r) =>
-    `Focal length ${f} mm is outside the camera lens range (${r} mm).`,
-  nWide: (a) =>
-    `HFOV ${a}°: such lenses noticeably compress the frame edges (barrel distortion), and the calculation doesn't account for it. Lower the quality factor or raise the camera.`,
+  feedTiles: (count, columns, rows, inputSize) =>
+    `tiles: ${count} (${columns} × ${rows}) of ${inputSize} px`,
+  feedRoi: (width, height, inputSize) =>
+    `crop ${width} × ${height} → ${inputSize} px`,
+  feedFull: (width, height, inputSize) =>
+    `frame ${width} × ${height} → ${inputSize} px`,
+  nZoneW: (frameWidth, zoneWidth) =>
+    `Zone doesn't fit horizontally: at the near edge the frame width is ${frameWidth} m, the zone width is ${zoneWidth} m.`,
+  nZoneD: (requiredAngle, availableAngle) =>
+    `Zone doesn't fit in depth: ${requiredAngle}° vertical is required, ${availableAngle}° is available.`,
+  nFMax: (requiredFocal, maxFocal) =>
+    `The zone requires a focal length of ≈ ${requiredFocal} mm, the lens maximum is ${maxFocal} mm. Calculated for ${maxFocal} mm: the frame is wider than the zone, and objects get fewer pixels.`,
+  nFMin: (requiredFocal, minFocal) =>
+    `The zone requires a focal length of ≈ ${requiredFocal} mm, the lens minimum is ${minFocal} mm. Calculated for ${minFocal} mm: the zone doesn't fit in the frame entirely. Raise the camera, reduce the zone, or choose a lens with a wider field of view.`,
+  nFOut: (focal, range) =>
+    `Focal length ${focal} mm is outside the camera lens range (${range} mm).`,
+  nWide: (hfov) =>
+    `HFOV ${hfov}°: such lenses noticeably compress the frame edges (barrel distortion), and the calculation doesn't account for it. Lower the quality factor or raise the camera.`,
   nTop: "Overhead view: parts in cells are seen end-on, which is convenient for counting. A person is seen from above (head and shoulders), and hand actions are harder to tell apart.",
-  nLowRay: (a) =>
-    `The ray to the far zone edge meets the plane at ${a}°: objects will occlude each other. Raise the camera or reduce the zone offset.`,
-  nAfps: (a, b) =>
-    `Analytics frame rate (${a} fps) is higher than the stream frame rate (${b} fps). The calculation uses ${b} fps.`,
+  nLowRay: (angle) =>
+    `The ray to the far zone edge meets the plane at ${angle}°: objects will occlude each other. Raise the camera or reduce the zone offset.`,
+  nAfps: (analyticsFps, streamFps) =>
+    `Analytics frame rate (${analyticsFps} fps) is higher than the stream frame rate (${streamFps} fps). The calculation uses ${streamFps} fps.`,
   pNoObj: "No objects",
   pBad: "Insufficient",
   pWarn: "Marginal",
@@ -1119,33 +1132,34 @@ const EN = {
   pCheck: "Has warnings",
   hNoObj:
     "Add an object with dimensions and a model to check whether it can be detected.",
-  hItem: (n, px, req) => `${n} — ${px} at threshold ${req}`,
-  hBad: (l) => `Not enough pixels at model input: ${l}.`,
-  hWarn: (l) => `Marginal at model input: ${l}.`,
-  hOk: (n, px) =>
-    `All objects are detectable at model input. Smallest: ${n} — ${px}.`,
-  nScale: (n, px, inp, adv, need) =>
-    `"${n}": ${px} on the sensor, pixels are lost when downscaling to the ${inp} px input. ${adv} or increase the input to ≈ ${need} px.`,
+  hItem: (name, modelPx, requiredPx) =>
+    `${name} — ${modelPx} at threshold ${requiredPx}`,
+  hBad: (list) => `Not enough pixels at model input: ${list}.`,
+  hWarn: (list) => `Marginal at model input: ${list}.`,
+  hOk: (name, modelPx) =>
+    `All objects are detectable at model input. Smallest: ${name} — ${modelPx}.`,
+  nScale: (name, sensorPx, inputSize, advice, neededInputSize) =>
+    `"${name}": ${sensorPx} on the sensor, pixels are lost when downscaling to the ${inputSize} px input. ${advice} or increase the input to ≈ ${neededInputSize} px.`,
   advFull: 'Choose the "Zone crop" or "Tiles" input mode',
   advRoi: 'Choose the "Tiles" input mode',
   advTiles: "Check the input size",
-  nRes: (n, px, res) =>
-    `"${n}" requires at least ${px} px horizontally (${res}) at the same field of view.`,
-  nResNone: (n, px) =>
-    `"${n}" requires ${px} px horizontally, more than any resolution in the list. Install a separate camera closer to the object or choose a lens with a narrower field of view.`,
+  nRes: (name, requiredWidthPx, resolution) =>
+    `"${name}" requires at least ${requiredWidthPx} px horizontally (${resolution}) at the same field of view.`,
+  nResNone: (name, requiredWidthPx) =>
+    `"${name}" requires ${requiredWidthPx} px horizontally, more than any resolution in the list. Install a separate camera closer to the object or choose a lens with a narrower field of view.`,
   objDefault: "Object",
   // система
   sCams: "Cameras",
-  sTypes: (n, names) => `Types: ${n}${names ? ` (${names})` : ""}`,
-  sCamCost: (c) => ` · camera cost ${c}`,
+  sTypes: (count, names) => `Types: ${count}${names ? ` (${names})` : ""}`,
+  sCamCost: (cost) => ` · camera cost ${cost}`,
   sObjs: "Objects detectable",
-  sOfN: (a, b) => `${a} of ${b}`,
-  sSmallest: (n, px) => `Smallest: ${n}, ${px} px`,
+  sOfN: (okCount, total) => `${okCount} of ${total}`,
+  sSmallest: (name, modelPx) => `Smallest: ${name}, ${modelPx} px`,
   sNoObjs: "No objects",
   sCompute: "Compute node",
   sNoCams: "No cameras",
   sNet: "Network traffic",
-  sPort: (p, w) => `Port ${p} · PoE ≈ ${w} W`,
+  sPort: (port, poeWatts) => `Port ${port} · PoE ≈ ${poeWatts} W`,
   // сеть и допущения
   netTitle: "Network and storage",
   days: "Archive retention, days",
@@ -1157,11 +1171,11 @@ const EN = {
   nAll: "Total",
   nTotal: "Total",
   nArch: "Archive",
-  nArchVal: (tb, d) => `≈ ${tb} TB for ${d} days`,
+  nArchVal: (terabytes, days) => `≈ ${terabytes} TB for ${days} days`,
   nArchOff: "Not recorded",
   assTitle: "Assumptions",
-  ass: (kr) => [
-    `Derating factor ${kr} applied to the measured speed`,
+  ass: (efficiency) => [
+    `Derating factor ${efficiency} applied to the measured speed`,
     "Catalog models: Ultralytics benchmarks on T4",
     "Decoder: NVDEC performance by GPU generation",
     "Server cost for the GPUs isn't included",
@@ -1254,8 +1268,8 @@ const EN = {
     gb: "GB",
     w: "W",
   },
-  mp: (mp) => `${mp} MP`,
-  sensMm: (s, w) => `${s} ≈ ${w} mm`,
+  mp: (megapixels) => `${megapixels} MP`,
+  sensMm: (format, widthMm) => `${format} ≈ ${widthMm} mm`,
   camBuiltin: {
     k4: "Generic 4 MP · 1/2.7″ · 2.8–12 mm",
     k8: "Generic 8 MP · 1/1.8″ · 2.8–12 mm",
@@ -1266,7 +1280,7 @@ const EN = {
       "FP16 dense is estimated as 4 PFLOPS FP4 / 8, based on the RTX 5090 ratio.",
     agx: "Standalone module. Memory is shared with the CPU, 60% is available for models. FP16 is estimated as 16 SM × 2048 FLOP/cycle × 1.3 GHz.",
   },
-  decStreams: (n) => `streams: ${n}`,
+  decStreams: (count) => `streams: ${count}`,
   // шаблоны
   back: "← Back to calculator",
   toCalc: "Back to calculator",
@@ -1280,7 +1294,7 @@ const EN = {
   impBtn: "Import",
   impTitle: "Replace all data with the file contents",
   impConfirm: "Replace all data",
-  catTitle: (n) => `GPU catalog · ${n}`,
+  catTitle: (count) => `GPU catalog · ${count}`,
   catTitle0: "GPU catalog",
   catNote: "Specs from NVIDIA datasheets",
   kr: "Derating factor",
@@ -1296,11 +1310,11 @@ const EN = {
   ],
   gJet: "Jetson module",
   gOwn: "custom",
-  gPriceAria: (n) => `${n} price, $`,
-  gOnAria: (n) => `${n} is included in auto-selection`,
+  gPriceAria: (name) => `${name} price, $`,
+  gOnAria: (name) => `${name} is included in auto-selection`,
   del: "Delete",
-  delAria: (n) => `Delete ${n}`,
-  mineN: (n) => `Custom GPUs · ${n}`,
+  delAria: (name) => `Delete ${name}`,
+  mineN: (count) => `Custom GPUs · ${count}`,
   mine0: "Custom GPUs",
   mineEmpty:
     'No custom GPUs. An added GPU appears here, in the "GPU" list, and in auto-selection.',
@@ -1324,16 +1338,16 @@ const EN = {
   ngHint2:
     "NVDEC: the number of hardware decoders. For Jetson, enter the number of 1080p30 H.265 streams from the specification.",
   addGpuBtn: "Add GPU",
-  ngErr: (l) => `Fill in the fields: ${l}.`,
+  ngErr: (fields) => `Fill in the fields: ${fields}.`,
   eName: "name",
   eTf: "FP16 Tensor",
   eDecJet: "decoder streams",
   eDec: "NVDEC count",
   eMem: "memory",
   ePrice: "price (needed for comparison in auto-selection)",
-  gAdded: (n) => `"${n}" added`,
+  gAdded: (name) => `"${name}" added`,
   gDeleted: "GPU deleted",
-  camTitle: (n) => `Cameras · ${n}`,
+  camTitle: (count) => `Cameras · ${count}`,
   camTitle0: "Cameras",
   camNote: 'Selected in the type parameters, "Sensor and lens" section',
   cHead: ["Camera", "Frame", "Sensor", "Lens", "Price", "In system"],
@@ -1355,19 +1369,19 @@ const EN = {
   ncHint2:
     "For a fixed focal length lens, enter the same value in both fields. If the fields are empty, the focal length is selected without limits.",
   addCamBtn: "Add camera",
-  ncErr: (l) => `Enter: ${l}.`,
+  ncErr: (fields) => `Enter: ${fields}.`,
   eFrame: "frame size in pixels",
   eSw: "sensor width or pixel size",
   eFRange: 'focal length "from" not greater than "to"',
-  cAdded: (n) => `"${n}" added`,
+  cAdded: (name) => `"${name}" added`,
   cDeleted: "Camera deleted",
-  detTitle: (n) => `Detectors · ${n}`,
+  detTitle: (count) => `Detectors · ${count}`,
   detTitle0: "Detectors",
   detNote: 'Selected in the object card, "Model" field',
   dHead: ["Model", "Input", "GFLOPs", "Speed", "Objects"],
   dOwn: "Custom",
   dCatalog: "Ultralytics catalog",
-  dSpeed: (f, g) => `${f} fps on ${g}`,
+  dSpeed: (fps, gpuName) => `${fps} fps on ${gpuName}`,
   dEmpty: 'No custom detectors. Add a detector in the "New detector" form.',
   ndTitle: "New detector",
   ndNamePh: "For example, parts detector v2",
@@ -1384,20 +1398,20 @@ const EN = {
     "For other GPUs the benchmark is scaled by FP16, for another input size by the square of its side.",
   addDetBtn: "Add detector",
   eFps: "benchmark",
-  dAdded: (n) => `"${n}" added`,
+  dAdded: (name) => `"${name}" added`,
   dDeleted: "Detector deleted",
   // отчёт
-  rErr: (n, c) => `${n} × ${c}: input data error`,
-  rCam: (o) =>
-    `  Camera: ${o.rl}${o.rot ? " (rotated 90°)" : ""}, sensor ${o.s} mm, f ${o.f} mm, HFOV ${o.hf}°, tilt ${o.tilt}°, ${o.top ? "overhead" : `zone offset ${o.L0} m`}, height ${o.H} m, zone ${o.Wz} × ${o.Dz} m`,
-  rObj: (o) =>
-    `  ${o.name}: ${o.model}, ${o.feed}; on sensor ${o.pxs}, at model input ${o.pxm}, threshold ${o.req}: ${o.st}`,
-  rStream: (mb, x) =>
-    `  Stream ${mb} Mbps per camera, exposure time up to 1/${x} s`,
-  rSys: (c, mb, cost) =>
-    `System: ${c} cameras, ${mb} Mbps${cost ? `, camera cost ${cost}` : ""}`,
-  rCompute: (o) =>
-    `Compute node (estimate): ${o.n} × ${o.g}, ${o.cost}; inference ${o.uI}%, decoder ${o.uD}%, GPU memory ${o.mem}/${o.cap} GB${o.best ? `; best price: ${o.best}` : ""}`,
+  rErr: (name, count) => `${name} × ${count}: input data error`,
+  rCam: (params) =>
+    `  Camera: ${params.cameraLabel}${params.rotated ? " (rotated 90°)" : ""}, sensor ${params.sensorWidth} mm, f ${params.focal} mm, HFOV ${params.hfov}°, tilt ${params.tilt}°, ${params.overCenter ? "overhead" : `zone offset ${params.zoneStart} m`}, height ${params.cameraHeight} m, zone ${params.zoneWidth} × ${params.zoneDepth} m`,
+  rObj: (params) =>
+    `  ${params.name}: ${params.model}, ${params.feed}; on sensor ${params.sensorPx}, at model input ${params.modelPx}, threshold ${params.requiredPx}: ${params.status}`,
+  rStream: (mbps, shutterDenominator) =>
+    `  Stream ${mbps} Mbps per camera, exposure time up to 1/${shutterDenominator} s`,
+  rSys: (cameraCount, mbps, cost) =>
+    `System: ${cameraCount} cameras, ${mbps} Mbps${cost ? `, camera cost ${cost}` : ""}`,
+  rCompute: (params) =>
+    `Compute node (estimate): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; inference ${params.inferenceLoad}%, decoder ${params.decodeLoad}%, GPU memory ${params.memoryUsed}/${params.memoryCap} GB${params.optimum ? `; best price: ${params.optimum}` : ""}`,
   rNoCompute: "Compute node: no data",
   // уведомления
   stale: "The data was changed in another tab. Reload the page.",
@@ -1412,19 +1426,21 @@ const EN = {
   readFail: "Couldn't read the file.",
   tipAria: "Hint",
   // схема
-  dZone: (a) => `Monitored zone ${a} m`,
-  dFrame: (a) => `Frame ${a} m`,
-  dTilt: (a) => `Tilt ${a}°`,
-  dLen: (a) => `${a} m`,
-  dOffset: (a) => `Offset ${a} m`,
-  dDepth: (a) => `Zone depth ${a} m`,
+  dZone: (depth) => `Monitored zone ${depth} m`,
+  dFrame: (width) => `Frame ${width} m`,
+  dTilt: (degrees) => `Tilt ${degrees}°`,
+  dLen: (length) => `${length} m`,
+  dOffset: (offset) => `Offset ${offset} m`,
+  dDepth: (depth) => `Zone depth ${depth} m`,
   dOverCenter: "Camera above the zone center",
   dOverZone: "Camera above the zone",
-  dH: (a) => `H ${a} m`,
-  dh: (a) => `h ${a} m`,
-  dAria: (o) =>
-    `Side view: camera at ${o.H} m, tilt ${o.tilt}°, VFOV ${o.vf}°, zone from ${o.x1} to ${o.x2} m at ${o.h} m height` +
-    (o.wN ? `, frame width ${o.wN}–${o.wF} m` : ""),
+  dH: (height) => `H ${height} m`,
+  dh: (height) => `h ${height} m`,
+  dAria: (params) =>
+    `Side view: camera at ${params.H} m, tilt ${params.tilt}°, VFOV ${params.vfov}°, zone from ${params.x1} to ${params.x2} m at ${params.h} m height` +
+    (params.frameWidthNear
+      ? `, frame width ${params.frameWidthNear}–${params.frameWidthFar} m`
+      : ""),
   // подсказки «?»
   tips: {
     tName:
@@ -1474,63 +1490,67 @@ const EN = {
 // язык: выбор из localStorage, иначе язык браузера
 const LANG_KEY = "camcalc-lang";
 const LANG = (() => {
-  let l = null;
+  let saved = null;
   try {
-    l = localStorage.getItem(LANG_KEY);
-  } catch (e) {}
-  return l === "ru" || l === "en"
-    ? l
+    saved = localStorage.getItem(LANG_KEY);
+  } catch (error) {}
+  return saved === "ru" || saved === "en"
+    ? saved
     : /^ru\b/i.test(navigator.language || "")
       ? "ru"
       : "en";
 })();
 const STR = LANG === "en" ? EN : RU;
-const U = (x, u) => x + "\u00a0" + STR.u[u];
-const t = (k, ...a) => {
-  const v = STR[k];
-  return typeof v === "function" ? v(...a) : v;
+// \u0447\u0438\u0441\u043b\u043e \u0438 \u0435\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u0435\u0440\u0430\u0437\u0440\u044b\u0432\u043d\u044b\u0439 \u043f\u0440\u043e\u0431\u0435\u043b; unit \u2014 \u043a\u043b\u044e\u0447 \u0441\u043b\u043e\u0432\u0430\u0440\u044f STR.u
+const withUnit = (value, unit) => value + "\u00a0" + STR.u[unit];
+// t \u2014 \u0442\u0435\u043a\u0441\u0442 \u043f\u043e \u043a\u043b\u044e\u0447\u0443 \u0441\u043b\u043e\u0432\u0430\u0440\u044f; \u0435\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u2014 \u0444\u0443\u043d\u043a\u0446\u0438\u044f, \u0432\u044b\u0437\u044b\u0432\u0430\u0435\u0442\u0441\u044f \u0441 params
+const t = (key, ...params) => {
+  const text = STR[key];
+  return typeof text === "function" ? text(...params) : text;
 };
-function applyT() {
+function applyTranslations() {
   document.documentElement.lang = LANG;
   document.title = t("docTitle");
   document
     .querySelectorAll("#formulas>[lang]")
-    .forEach((el) => (el.hidden = el.lang !== LANG));
+    .forEach((block) => (block.hidden = block.lang !== LANG));
   document
     .querySelectorAll("[data-t]")
-    .forEach((el) => (el.textContent = t(el.dataset.t)));
+    .forEach((element) => (element.textContent = t(element.dataset.t)));
   [
     ["ta", "aria-label"],
     ["tt", "title"],
     ["tp", "placeholder"],
-  ].forEach(([d, attr]) =>
+  ].forEach(([dataKey, attr]) =>
     document
-      .querySelectorAll(`[data-${d}]`)
-      .forEach((el) => el.setAttribute(attr, t(el.dataset[d]))),
+      .querySelectorAll(`[data-${dataKey}]`)
+      .forEach((element) =>
+        element.setAttribute(attr, t(element.dataset[dataKey])),
+      ),
   );
 }
-applyT();
-const $ = (id) => document.getElementById(id);
-const R = Math.PI / 180;
-const fmt = (x, d = 1) =>
-  isFinite(x)
-    ? x
+applyTranslations();
+const byId = (id) => document.getElementById(id);
+const DEG = Math.PI / 180;
+const formatNumber = (value, digits = 1) =>
+  isFinite(value)
+    ? value
         .toLocaleString(LANG === "en" ? "en-US" : "ru-RU", {
-          minimumFractionDigits: d,
-          maximumFractionDigits: d,
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits,
         })
         .replace("-", "−")
     : "—";
-const esc = (s) =>
-  String(s ?? "").replace(
+const escapeHtml = (text) =>
+  String(text ?? "").replace(
     /[&<>"]/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char],
   );
-const P = (x) => parseFloat(String(x ?? "").replace(",", "."));
+const parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 // ---------- справочники
-const RES = [
+const RESOLUTIONS = [
   [2, 1920, 1080],
   [4, 2560, 1440],
   [5, 2592, 1944],
@@ -1538,8 +1558,12 @@ const RES = [
   [6, 3072, 2048],
   [8, 3840, 2160],
   [12, 4000, 3000],
-].map(([mp, w, h]) => [`${t("mp", mp)} · ${w} × ${h}`, w, h]);
-const SENS = [
+].map(([mp, width, height]) => [
+  `${t("mp", mp)} · ${width} × ${height}`,
+  width,
+  height,
+]);
+const SENSORS = [
   ['1/3"', 4.8],
   ['1/2.9"', 5.0],
   ['1/2.8"', 5.6],
@@ -1550,80 +1574,80 @@ const SENS = [
   ["pp", "pp"],
   ["own", null],
 ];
-// Каталог: tf — FP16 Tensor dense, TFLOPS (GeForce — с FP32-накоплением). price — ориентир, $, октябрь 2026
-const CATALOG = [
+// Каталог: tflops — FP16 Tensor dense, TFLOPS (GeForce — с FP32-накоплением). price — ориентир, $, октябрь 2026
+const GPU_CATALOG = [
   {
     id: "5090",
     name: "GeForce RTX 5090",
     arch: "Blackwell",
-    tf: 209.5,
+    tflops: 209.5,
     nvdec: 2,
-    mem: 32,
-    tdp: 575,
+    memoryGB: 32,
+    tdpW: 575,
     price: 5000,
   },
   {
     id: "pro6000",
     name: "RTX PRO 6000 Blackwell",
     arch: "Blackwell",
-    tf: 500,
+    tflops: 500,
     nvdec: 4,
-    mem: 96,
-    tdp: 600,
+    memoryGB: 96,
+    tdpW: 600,
     price: 13250,
   },
   {
     id: "l40s",
     name: "L40S",
     arch: "Ada",
-    tf: 362,
+    tflops: 362,
     nvdec: 3,
-    mem: 48,
-    tdp: 350,
+    memoryGB: 48,
+    tdpW: 350,
     price: 9000,
   },
   {
     id: "h100nvl",
     name: "H100 NVL",
     arch: "Hopper",
-    tf: 835.5,
+    tflops: 835.5,
     nvdec: 7,
-    mem: 94,
-    tdp: 400,
+    memoryGB: 94,
+    tdpW: 400,
     price: 27500,
   },
   {
     id: "h200nvl",
     name: "H200 NVL",
     arch: "Hopper",
-    tf: 835.5,
+    tflops: 835.5,
     nvdec: 7,
-    mem: 141,
-    tdp: 600,
+    memoryGB: 141,
+    tdpW: 600,
     price: 32000,
   },
   {
     id: "agx",
     name: "Jetson AGX Orin 64GB",
     arch: "Ampere",
-    tf: 42.6,
-    st: { h265: 22, h264: 11.6 },
-    mem: 64,
-    tdp: 60,
+    tflops: 42.6,
+    decodeStreams: { h265: 22, h264: 11.6 },
+    memoryGB: 64,
+    tdpW: 60,
     price: 3499,
-    jet: true,
+    jetson: true,
   },
 ];
-let CUSTOM = []; // свои карты: {id,name,arch,tf,nvdec|st,mem,tdp,price,jet,custom:true}
-let PRICE = {},
-  ON = {}; // правки цен и участие в подборе по id
-const allGpus = () => [...CATALOG, ...CUSTOM];
-const gpuById = (id) => allGpus().find((g) => g.id === id);
-const priceOf = (g) => {
-  const x = P(PRICE[g.id]);
-  return x > 0 ? x : g.price;
+let customGpus = []; // свои карты: {id,name,arch,tflops,nvdec|decodeStreams,memoryGB,tdpW,price,jetson,custom:true}
+let gpuPrices = {},
+  gpuEnabled = {}; // правки цен и участие в подборе по id
+const allGpus = () => [...GPU_CATALOG, ...customGpus];
+const gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
+const priceOf = (gpu) => {
+  const price = parseNum(gpuPrices[gpu.id]);
+  return price > 0 ? price : gpu.price;
 };
-const isOn = (g) => ON[g.id] !== false;
+const isOn = (gpu) => gpuEnabled[gpu.id] !== false;
 // 1080p к/с на один NVDEC (NVIDIA Video Codec SDK 13.0, NVDEC Application Note); Hopper = Turing
 const NVDEC_FPS = {
   Turing: { h264: 771, h265: 1316 },
@@ -1632,10 +1656,15 @@ const NVDEC_FPS = {
   Ada: { h264: 903, h265: 1641 },
   Blackwell: { h264: 2172, h265: 1872 },
 };
-const decStreams = (g, codec) =>
-  g.st ? g.st[codec] : (g.nvdec * NVDEC_FPS[g.arch][codec]) / 30;
-const decText = (g) =>
-  g.st ? t("decStreams", fmt(g.st.h265, 0)) : `${g.nvdec} NVDEC`;
+// потоков 1080p@30, которые GPU декодирует: st — замер для Jetson, иначе по числу NVDEC
+const decStreams = (gpu, codec) =>
+  gpu.decodeStreams
+    ? gpu.decodeStreams[codec]
+    : (gpu.nvdec * NVDEC_FPS[gpu.arch][codec]) / 30;
+const decText = (gpu) =>
+  gpu.decodeStreams
+    ? t("decStreams", formatNumber(gpu.decodeStreams.h265, 0))
+    : `${gpu.nvdec} NVDEC`;
 // Модели: GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
 const MODELS = [
   ["y26n", "YOLO26n", 5.5, 1.7],
@@ -1653,1047 +1682,1266 @@ const MODELS = [
   ["y11m", "YOLO11m", 68.1, 4.7],
   ["y11l", "YOLO11l", 87.2, 6.2],
   ["y11x", "YOLO11x", 195.3, 11.3],
-].map(([id, name, gf, ms]) => ({ id, name, gf, ms }));
-const T4TF = 65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
+].map(([id, name, gflops, latencyMs]) => ({ id, name, gflops, latencyMs }));
+const T4_TFLOPS = 65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
 const FEEDS = STR.feeds,
   FEED_SHORT = STR.feedsShort;
 const INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
 // ---------- состояние
-const PRESETS = [
+const OBJECT_PRESETS = [
   [50, 30, 170, 32, "y26s", "roi", 640],
   [9, 18, 4, 20, "y26s", "tiles", 640],
   [8, 8, 2, 20, "y26s", "roi", 640],
   [25, 6, 6, 20, "y26s", "roi", 640],
   [1.3, 1.3, 0.7, 10, "y26s", "tiles", 640],
-].map((p, i) => [STR.presetNames[i], ...p, `presetNames.${i}`]);
+].map((preset, i) => [STR.presetNames[i], ...preset, `presetNames.${i}`]);
 // встроенное название на текущем языке по ключу словаря, например "presetNames.0";
 // ключ есть, пока пользователь не изменил название
 const builtinName = (key) => {
-  const v = String(key)
+  const value = String(key)
     .split(".")
-    .reduce((v, k) => v?.[k], STR);
-  return typeof v === "string" ? v : undefined;
+    .reduce((node, part) => node?.[part], STR);
+  return typeof value === "string" ? value : undefined;
 };
-const mkObj = ([name, w, d, z, req, model, feed, inp, nameKey]) => ({
+const makeObject = ([
   name,
-  nameKey,
-  w,
-  d,
-  z,
-  req,
+  width,
+  length,
+  height,
+  requiredPx,
   model,
   feed,
-  inp,
-  ov: 20,
+  inputSize,
+  nameKey,
+]) => ({
+  name,
+  nameKey,
+  width,
+  length,
+  height,
+  requiredPx,
+  model,
+  feed,
+  inputSize,
+  overlap: 20,
   fps: 300,
   ref: "5090",
 });
-const FIELDS = [
-  "cam",
-  "H",
-  "h",
-  "L0",
-  "Dz",
-  "Wz",
-  "mg",
-  "res",
-  "sens",
-  "sw",
-  "pp",
-  "orient",
-  "fmm",
+const INPUT_IDS = [
+  "camera",
+  "cameraHeight",
+  "planeHeight",
+  "zoneStart",
+  "zoneDepth",
+  "zoneWidth",
+  "margin",
+  "resolution",
+  "sensor",
+  "sensorWidth",
+  "pixelPitch",
+  "orientation",
+  "focalLength",
   "hfov",
   "fps",
-  "afps",
+  "analyticsFps",
   "codec",
   "scene",
-  "k",
-  "v",
-  "blur",
+  "lensFactor",
+  "speed",
+  "blurPx",
 ];
-const DEF_V = {
-  cam: "",
-  H: "4",
-  h: "0.9",
-  L0: "1.5",
-  Dz: "3",
-  Wz: "3",
-  mg: "10",
-  res: "1",
-  sens: "3",
-  sw: "5.4",
-  pp: "2.0",
-  orient: "auto",
-  fmm: "6",
+const DEFAULT_INPUTS = {
+  camera: "",
+  cameraHeight: "4",
+  planeHeight: "0.9",
+  zoneStart: "1.5",
+  zoneDepth: "3",
+  zoneWidth: "3",
+  margin: "10",
+  resolution: "1",
+  sensor: "3",
+  sensorWidth: "5.4",
+  pixelPitch: "2.0",
+  orientation: "auto",
+  focalLength: "6",
   hfov: "50",
   fps: "12",
-  afps: "5",
+  analyticsFps: "5",
   codec: "0.04",
   scene: "1",
-  k: "0.6",
-  v: "1",
-  blur: "2",
-  mode: "auto",
-  pos: "side",
+  lensFactor: "0.6",
+  speed: "1",
+  blurPx: "2",
+  lensMode: "auto",
+  placement: "side",
 };
-const mkType = (name, count, over, objs, nameKey) => ({
+const makeType = (name, count, overrides, objects, nameKey) => ({
   id: uid(),
   name,
   nameKey,
   count: String(count),
-  v: { ...DEF_V, ...over },
-  objs: objs.map(mkObj),
+  inputs: { ...DEFAULT_INPUTS, ...overrides },
+  objects: objects.map(makeObject),
 });
-const defTypes = () => [
-  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]], "typeNames.0"),
-  mkType(
+const exampleTypes = () => [
+  makeType(
+    STR.typeNames[0],
+    10,
+    {},
+    [OBJECT_PRESETS[0], OBJECT_PRESETS[1]],
+    "typeNames.0",
+  ),
+  makeType(
     STR.typeNames[1],
     10,
     {
-      pos: "top",
-      H: "2.6",
-      h: "1.1",
-      Dz: "0.8",
-      Wz: "1.4",
-      afps: "2",
+      placement: "top",
+      cameraHeight: "2.6",
+      planeHeight: "1.1",
+      zoneDepth: "0.8",
+      zoneWidth: "1.4",
+      analyticsFps: "2",
       fps: "10",
     },
-    [PRESETS[2]],
+    [OBJECT_PRESETS[2]],
     "typeNames.1",
   ),
 ];
-let TYPES = defTypes(),
-  ACT = TYPES[0].id;
-const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
+let cameraTypes = exampleTypes(),
+  activeTypeId = cameraTypes[0].id;
+const activeType = () =>
+  cameraTypes.find((type) => type.id === activeTypeId) || cameraTypes[0];
 
 // ---------- форма ↔ тип
-RES.forEach((r, i) => $("res").add(new Option(r[0], i)));
-SENS.forEach((s, i) =>
-  $("sens").add(
+RESOLUTIONS.forEach(([label], i) =>
+  byId("resolution").add(new Option(label, i)),
+);
+SENSORS.forEach(([label, width], i) =>
+  byId("sensor").add(
     new Option(
-      typeof s[1] === "number"
-        ? t("sensMm", s[0], fmt(s[1], 1))
-        : s[1] === "pp"
+      typeof width === "number"
+        ? t("sensMm", label, formatNumber(width, 1))
+        : width === "pp"
           ? t("sensPp")
           : t("sensOwn"),
       i,
     ),
   ),
 );
-function writeForm(T) {
-  $("tName").value = T.name;
-  $("tCount").value = T.count;
-  FIELDS.forEach((id) => {
-    $(id).value = T.v[id] ?? DEF_V[id];
+function writeForm(type) {
+  byId("tName").value = type.name;
+  byId("tCount").value = type.count;
+  INPUT_IDS.forEach((id) => {
+    byId(id).value = type.inputs[id] ?? DEFAULT_INPUTS[id];
   });
-  const md =
-    document.querySelector(`input[name="mode"][value="${T.v.mode}"]`) ||
-    $("mAuto");
-  md.checked = true;
-  const ps =
-    document.querySelector(`input[name="pos"][value="${T.v.pos}"]`) ||
-    $("pSide");
-  ps.checked = true;
-  renderObjs();
+  const lensModeRadio =
+    document.querySelector(
+      `input[name="lensMode"][value="${type.inputs.lensMode}"]`,
+    ) || byId("mAuto");
+  lensModeRadio.checked = true;
+  const placementRadio =
+    document.querySelector(
+      `input[name="placement"][value="${type.inputs.placement}"]`,
+    ) || byId("pSide");
+  placementRadio.checked = true;
+  renderObjects();
 }
 function readForm() {
-  const T = act();
-  if (T.name !== $("tName").value) delete T.nameKey;
-  T.name = $("tName").value;
-  T.count = $("tCount").value;
-  FIELDS.forEach((id) => {
-    T.v[id] = $(id).value;
+  const type = activeType();
+  if (type.name !== byId("tName").value) delete type.nameKey;
+  type.name = byId("tName").value;
+  type.count = byId("tCount").value;
+  INPUT_IDS.forEach((id) => {
+    type.inputs[id] = byId(id).value;
   });
-  T.v.mode =
-    (document.querySelector('input[name="mode"]:checked') || {}).value ||
+  type.inputs.lensMode =
+    (document.querySelector('input[name="lensMode"]:checked') || {}).value ||
     "auto";
-  T.v.pos =
-    (document.querySelector('input[name="pos"]:checked') || {}).value || "side";
+  type.inputs.placement =
+    (document.querySelector('input[name="placement"]:checked') || {}).value ||
+    "side";
 }
 // ---------- шаблоны камер и детекторов
-const CAM_BUILTIN = [
+const BUILTIN_CAMERAS = [
   {
     id: "k4",
     name: STR.camBuiltin.k4,
     Nw: 2560,
     Nh: 1440,
-    sw: 5.4,
-    fmin: 2.8,
-    fmax: 12,
+    sensorWidth: 5.4,
+    focalMin: 2.8,
+    focalMax: 12,
   },
   {
     id: "k8",
     name: STR.camBuiltin.k8,
     Nw: 3840,
     Nh: 2160,
-    sw: 7.68,
-    fmin: 2.8,
-    fmax: 12,
+    sensorWidth: 7.68,
+    focalMin: 2.8,
+    focalMax: 12,
   },
 ];
-let CAMS_C = [],
-  DETS = [];
-const allCams = () => [...CAM_BUILTIN, ...CAMS_C];
-const camById = (id) => allCams().find((c) => c.id === id);
+let customCameras = [],
+  customDetectors = [];
+const allCameras = () => [...BUILTIN_CAMERAS, ...customCameras];
+const cameraById = (id) => allCameras().find((camera) => camera.id === id);
 const modelById = (id) =>
-  MODELS.find((x) => x.id === id) || DETS.find((x) => x.id === id);
-function buildCamSelect() {
-  const sel = $("cam"),
-    cur = sel.value;
-  sel.innerHTML =
+  MODELS.find((model) => model.id === id) ||
+  customDetectors.find((detector) => detector.id === id);
+function buildCameraSelect() {
+  const select = byId("camera"),
+    current = select.value;
+  select.innerHTML =
     `<option value="">${t("camManual")}</option>` +
-    allCams()
-      .map((c) => `<option value="${c.id}">${esc(c.name)}</option>`)
+    allCameras()
+      .map(
+        (camera) =>
+          `<option value="${camera.id}">${escapeHtml(camera.name)}</option>`,
+      )
       .join("");
-  sel.value = camById(cur) ? cur : "";
+  select.value = cameraById(current) ? current : "";
 }
 
 // ---------- карточки объектов
-function renderObjs() {
-  const T = act(),
-    L = $("objList");
-  L.innerHTML = "";
-  T.objs.forEach((o, i) => {
-    if (!modelById(o.model)) o.model = "y26s";
-    const r = document.createElement("article");
-    r.className = "ocard";
-    const mopts =
-      `<optgroup label="${t("ultralytics")}">${MODELS.map((mm) => `<option value="${mm.id}">${mm.name}</option>`).join("")}</optgroup>` +
-      (DETS.length
-        ? `<optgroup label="${t("ownDets")}">${DETS.map((d) => `<option value="${d.id}">${esc(d.name)}</option>`).join("")}</optgroup>`
+function renderObjects() {
+  const type = activeType(),
+    list = byId("objList");
+  list.innerHTML = "";
+  type.objects.forEach((obj, i) => {
+    if (!modelById(obj.model)) obj.model = "y26s";
+    const card = document.createElement("article");
+    card.className = "ocard";
+    const modelOptions =
+      `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` +
+      (customDetectors.length
+        ? `<optgroup label="${t("ownDets")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
-    r.innerHTML = `<div class="ohdr"><span class="dot" id="odot-${i}" aria-hidden="true"></span><input id="on-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
+    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="ow-${i}">${t("ow")}</label><input id="ow-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="od-${i}">${t("od")}</label><input id="od-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="oz-${i}">${t("oz")}</label><input id="oz-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="oq-${i}">${t("oq")}</label><input id="oq-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f c2"><label for="om-${i}">${t("om")}</label><select id="om-${i}">${mopts}</select></div>
-        <div class="f"><label for="of-${i}">${t("of")}</label><select id="of-${i}">${Object.entries(
+        <div class="f"><label for="obj-width-${i}">${t("ow")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-length-${i}">${t("od")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-height-${i}">${t("oz")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-required-${i}">${t("oq")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f c2"><label for="obj-model-${i}">${t("om")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
+        <div class="f"><label for="obj-feed-${i}">${t("of")}</label><select id="obj-feed-${i}">${Object.entries(
           FEEDS,
         )
-          .map(([k, v]) => `<option value="${k}">${v}</option>`)
+          .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
-        <div class="f"><label for="oi-${i}">${t("oi")}</label><select id="oi-${i}" style="font-family:var(--mono)">${INPUTS.map((x) => `<option>${x}</option>`).join("")}</select></div>
-        <div class="f" id="ovw-${i}"><label for="ov-${i}">${t("ov")}</label><input id="ov-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-input-${i}">${t("oi")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
+        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("ov")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
       </div>
-      <div class="ores" id="ores-${i}" aria-live="polite"></div>`;
-    L.append(r);
-    const sync = () => {
-      $(`ovw-${i}`).hidden = o.feed !== "tiles";
+      <div class="ores" id="obj-result-${i}" aria-live="polite"></div>`;
+    list.append(card);
+    // перекрытие задаётся только для тайлов
+    const syncOverlapBox = () => {
+      byId(`obj-overlap-box-${i}`).hidden = obj.feed !== "tiles";
     };
     [
-      ["on", "name"],
-      ["ow", "w"],
-      ["od", "d"],
-      ["oz", "z"],
-      ["oq", "req"],
-      ["ov", "ov"],
-    ].forEach(([p, f]) => {
-      const el = $(`${p}-${i}`);
-      el.value = o[f] ?? "";
-      el.addEventListener("input", (e) => {
-        e.stopPropagation();
-        o[f] = e.target.value;
-        if (f === "name") delete o.nameKey;
+      ["obj-name", "name"],
+      ["obj-width", "width"],
+      ["obj-length", "length"],
+      ["obj-height", "height"],
+      ["obj-required", "requiredPx"],
+      ["obj-overlap", "overlap"],
+    ].forEach(([idPrefix, field]) => {
+      const input = byId(`${idPrefix}-${i}`);
+      input.value = obj[field] ?? "";
+      input.addEventListener("input", (event) => {
+        event.stopPropagation();
+        obj[field] = event.target.value;
+        if (field === "name") delete obj.nameKey;
         calcAll();
       });
     });
     [
-      ["om", "model"],
-      ["of", "feed"],
-      ["oi", "inp"],
-    ].forEach(([p, f]) => {
-      const el = $(`${p}-${i}`);
-      el.value = String(o[f]);
-      if (el.selectedIndex < 0) el.selectedIndex = 0;
-      el.addEventListener("change", (e) => {
-        e.stopPropagation();
-        o[f] = e.target.value;
-        sync();
+      ["obj-model", "model"],
+      ["obj-feed", "feed"],
+      ["obj-input", "inputSize"],
+    ].forEach(([idPrefix, field]) => {
+      const select = byId(`${idPrefix}-${i}`);
+      select.value = String(obj[field]);
+      if (select.selectedIndex < 0) select.selectedIndex = 0;
+      select.addEventListener("change", (event) => {
+        event.stopPropagation();
+        obj[field] = event.target.value;
+        syncOverlapBox();
         calcAll();
       });
     });
-    r.querySelector(".odel").addEventListener("click", () => {
-      T.objs.splice(i, 1);
-      renderObjs();
+    card.querySelector(".odel").addEventListener("click", () => {
+      type.objects.splice(i, 1);
+      renderObjects();
       calcAll();
     });
-    sync();
+    syncOverlapBox();
   });
 }
-function syncFormUI(T, Rt) {
-  const v = T.v,
-    cam = camById(v.cam);
-  $("fBox").hidden = v.mode !== "f";
-  $("aBox").hidden = v.mode !== "a";
-  $("L0box").hidden = v.pos === "top";
-  const sv = (SENS[+v.sens] || SENS[3])[1];
-  $("res").disabled = !!cam;
-  $("sens").disabled = !!cam;
-  $("ppBox").hidden = !!cam || sv !== "pp";
-  $("sw").readOnly = !!cam || sv !== null;
-  if (Rt && isFinite(Rt.s) && (cam || sv !== null))
-    $("sw").value = +Rt.s.toFixed(2);
-  $("sumGeo").textContent =
-    `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(fmt(P(v.H), 1), "m")}, ${fmt(P(v.Wz), 1)} × ${U(fmt(P(v.Dz), 1), "m")}`;
-  $("sumCam").textContent =
-    (cam
-      ? `${cam.Nw} × ${cam.Nh}`
-      : (RES[+v.res] || RES[1])[0].split(" · ")[0]) +
-    (Rt && !Rt.err ? `, f ${U(fmt(Rt.f, 1), "mm")}` : "");
-  $("sumStr").textContent =
-    `${U(fmt(P(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
+function syncFormUI(type, result) {
+  const inputs = type.inputs,
+    camera = cameraById(inputs.camera);
+  byId("fBox").hidden = inputs.lensMode !== "focal";
+  byId("aBox").hidden = inputs.lensMode !== "angle";
+  byId("L0box").hidden = inputs.placement === "top";
+  const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
+  byId("resolution").disabled = !!camera;
+  byId("sensor").disabled = !!camera;
+  byId("ppBox").hidden = !!camera || sensorPreset !== "pp";
+  byId("sensorWidth").readOnly = !!camera || sensorPreset !== null;
+  if (result && isFinite(result.s) && (camera || sensorPreset !== null))
+    byId("sensorWidth").value = +result.s.toFixed(2);
+  byId("sumGeo").textContent =
+    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
+  byId("sumCam").textContent =
+    (camera
+      ? `${camera.Nw} × ${camera.Nh}`
+      : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
+          " · ",
+        )[0]) +
+    (result && !result.err
+      ? `, f ${withUnit(formatNumber(result.f, 1), "mm")}`
+      : "");
+  byId("sumStr").textContent =
+    `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }
 // ---------- расчёт одного типа камер (без DOM)
-function computeType(T) {
-  const v = T.v,
-    m = v.mode,
-    pos = v.pos,
-    count = Math.max(0, Math.round(P(T.count)) || 0);
-  const cam = camById(v.cam);
-  let [rl, Nw, Nh] = RES[+v.res] || RES[1];
-  const sv = (SENS[+v.sens] || SENS[3])[1];
+// Обозначения из формул (src/formulas.html):
+//   H — высота камеры, h — высота плоскости объектов, Hc = H − h — высота камеры над плоскостью, м;
+//   x — расстояние по полу от точки под камерой, x1 и x2 — края зоны, м;
+//   s — ширина матрицы, мм; f — фокусное расстояние, мм; Nw × Nh — разрешение кадра, px;
+//   fpx — фокусное расстояние в пикселях; φ (phi) — угол луча к плоскости; D — расстояние до точки, м;
+//   δ (delta) — угол луча к оптической оси; z — глубина по оптической оси, м; k — поправка объектива.
+function computeType(type) {
+  const inputs = type.inputs,
+    mode = inputs.lensMode,
+    placement = inputs.placement,
+    count = Math.max(0, Math.round(parseNum(type.count)) || 0);
+  const camera = cameraById(inputs.camera);
+  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1];
+  const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   let s =
-    typeof sv === "number" ? sv : sv === "pp" ? (P(v.pp) * Nw) / 1000 : P(v.sw);
-  if (cam) {
-    rl = cam.name;
-    Nw = cam.Nw;
-    Nh = cam.Nh;
-    s = cam.sw;
+    typeof sensorPreset === "number"
+      ? sensorPreset
+      : sensorPreset === "pp"
+        ? (parseNum(inputs.pixelPitch) * Nw) / 1000
+        : parseNum(inputs.sensorWidth);
+  if (camera) {
+    cameraLabel = camera.name;
+    Nw = camera.Nw;
+    Nh = camera.Nh;
+    s = camera.sensorWidth;
   }
-  const H = P(v.H),
-    h = P(v.h),
-    L0 = P(v.L0),
-    Dz = P(v.Dz),
-    Wz = P(v.Wz),
-    mg = (P(v.mg) || 0) / 100,
-    k = P(v.k),
-    vel = P(v.v),
-    bl = P(v.blur);
-  const fps = P(v.fps),
-    bpp = +v.codec,
-    sc = +v.scene,
-    afps0 = P(v.afps),
-    afps = Math.min(afps0, fps),
+  const H = parseNum(inputs.cameraHeight),
+    h = parseNum(inputs.planeHeight),
+    zoneStart = parseNum(inputs.zoneStart),
+    zoneDepth = parseNum(inputs.zoneDepth),
+    zoneWidth = parseNum(inputs.zoneWidth),
+    margin = (parseNum(inputs.margin) || 0) / 100,
+    k = parseNum(inputs.lensFactor),
+    speed = parseNum(inputs.speed),
+    blurPx = parseNum(inputs.blurPx);
+  const fps = parseNum(inputs.fps),
+    bpp = +inputs.codec,
+    sceneFactor = +inputs.scene,
+    analyticsFpsSet = parseNum(inputs.analyticsFps),
+    analyticsFps = Math.min(analyticsFpsSet, fps),
     codec = bpp < 0.055 ? "h265" : "h264";
   const Hc = H - h;
-  const base = { T, count, rl, Nw, Nh, s, fps, afps, afps0, codec, bpp, sc };
+  const common = {
+    type,
+    count,
+    cameraLabel,
+    Nw,
+    Nh,
+    s,
+    fps,
+    analyticsFps,
+    analyticsFpsSet,
+    codec,
+    bpp,
+    sceneFactor,
+  };
   if (
-    ![H, h, Dz, Wz, s, k].every(isFinite) ||
-    (pos === "side" && !isFinite(L0)) ||
+    ![H, h, zoneDepth, zoneWidth, s, k].every(isFinite) ||
+    (placement === "side" && !isFinite(zoneStart)) ||
     Hc <= 0 ||
-    Dz <= 0 ||
-    Wz <= 0 ||
+    zoneDepth <= 0 ||
+    zoneWidth <= 0 ||
     !(s > 0)
   )
-    return { ...base, err: true };
-  const x1 = pos === "top" ? -Dz / 2 : L0,
-    x2 = x1 + Dz;
+    return { ...common, err: true };
+  const x1 = placement === "top" ? -zoneDepth / 2 : zoneStart,
+    x2 = x1 + zoneDepth;
   const phi1 = Math.atan2(Hc, x1),
     phi2 = Math.atan2(Hc, x2);
-  const span = phi1 - phi2,
+  const zoneAngle = phi1 - phi2,
     tilt = (phi1 + phi2) / 2;
-  const zOf = (x) => x * Math.cos(tilt) + Hc * Math.sin(tilt);
-  const zMin = Math.min(zOf(x1), zOf(x2));
-  const fitFor = (rot) => {
-    const Nu = rot ? Nh : Nw,
-      Nv = rot ? Nw : Nh,
-      su = rot ? (s * Nh) / Nw : s,
-      a = Nu / Nv;
-    let hf,
+  const depthAt = (x) => x * Math.cos(tilt) + Hc * Math.sin(tilt);
+  const minDepth = Math.min(depthAt(x1), depthAt(x2));
+  // кадр в альбомной (rotated = false) или портретной ориентации
+  const fitOrientation = (rotated) => {
+    const frameWidthPx = rotated ? Nh : Nw,
+      frameHeightPx = rotated ? Nw : Nh,
+      sensorWidth = rotated ? (s * Nh) / Nw : s,
+      aspect = frameWidthPx / frameHeightPx;
+    let hfov,
       f,
-      fWant = null;
-    if (m === "auto") {
-      const hReq = 2 * Math.atan((Wz * (1 + mg)) / 2 / zMin),
-        vReq = span * (1 + mg);
-      hf = Math.max(hReq, 2 * Math.atan(a * Math.tan(vReq / 2)));
-      f = su / (2 * Math.tan(hf / 2));
-      fWant = f;
-      if (cam && cam.fmin > 0) {
-        const fc = Math.min(cam.fmax, Math.max(cam.fmin, f));
-        if (Math.abs(fc - f) > 1e-6) {
-          f = fc;
-          hf = 2 * Math.atan(su / (2 * f));
+      fNeeded = null;
+    if (mode === "auto") {
+      const hfovNeeded =
+          2 * Math.atan((zoneWidth * (1 + margin)) / 2 / minDepth),
+        vfovNeeded = zoneAngle * (1 + margin);
+      hfov = Math.max(
+        hfovNeeded,
+        2 * Math.atan(aspect * Math.tan(vfovNeeded / 2)),
+      );
+      f = sensorWidth / (2 * Math.tan(hfov / 2));
+      fNeeded = f;
+      if (camera && camera.focalMin > 0) {
+        const fClamped = Math.min(
+          camera.focalMax,
+          Math.max(camera.focalMin, f),
+        );
+        if (Math.abs(fClamped - f) > 1e-6) {
+          f = fClamped;
+          hfov = 2 * Math.atan(sensorWidth / (2 * f));
         }
       }
-    } else if (m === "f") {
-      f = P(v.fmm);
-      hf = 2 * Math.atan(su / (2 * f));
+    } else if (mode === "focal") {
+      f = parseNum(inputs.focalLength);
+      hfov = 2 * Math.atan(sensorWidth / (2 * f));
     } else {
-      hf = P(v.hfov) * R;
-      f = su / (2 * Math.tan(hf / 2));
+      hfov = parseNum(inputs.hfov) * DEG;
+      f = sensorWidth / (2 * Math.tan(hfov / 2));
     }
-    const vf = 2 * Math.atan(Math.tan(hf / 2) / a),
-      fpx = Nu / (2 * Math.tan(hf / 2));
+    const vfov = 2 * Math.atan(Math.tan(hfov / 2) / aspect),
+      fpx = frameWidthPx / (2 * Math.tan(hfov / 2));
     return {
-      rot,
-      Nu,
-      Nv,
-      hf,
+      rotated,
+      frameWidthPx,
+      frameHeightPx,
+      hfov,
       f,
-      fWant,
-      vf,
+      fNeeded,
+      vfov,
       fpx,
-      fits: 2 * zMin * Math.tan(hf / 2) >= Wz && vf >= span,
+      fits: 2 * minDepth * Math.tan(hfov / 2) >= zoneWidth && vfov >= zoneAngle,
     };
   };
-  let O;
-  if (v.orient === "land") O = fitFor(false);
-  else if (v.orient === "port") O = fitFor(true);
+  let fit;
+  if (inputs.orientation === "landscape") fit = fitOrientation(false);
+  else if (inputs.orientation === "portrait") fit = fitOrientation(true);
   else {
-    const A = fitFor(false),
-      B = fitFor(true);
-    O =
-      m === "auto" ? (B.fpx > A.fpx * 1.02 ? B : A) : A.fits || !B.fits ? A : B;
+    const landscape = fitOrientation(false),
+      portrait = fitOrientation(true);
+    fit =
+      mode === "auto"
+        ? portrait.fpx > landscape.fpx * 1.02
+          ? portrait
+          : landscape
+        : landscape.fits || !portrait.fits
+          ? landscape
+          : portrait;
   }
-  const { rot, hf, f, fWant, vf, fpx, Nu, Nv } = O;
-  if (!isFinite(fpx) || fpx <= 0) return { ...base, err: true };
-  const W = (z) => 2 * z * Math.tan(hf / 2);
-  const at = (x) => {
+  const { rotated, hfov, f, fNeeded, vfov, fpx, frameWidthPx, frameHeightPx } =
+    fit;
+  if (!isFinite(fpx) || fpx <= 0) return { ...common, err: true };
+  const frameWidthAt = (z) => 2 * z * Math.tan(hfov / 2);
+  // плотность пикселей (px/м) поперёк и вглубь в точке x
+  const densityAt = (x) => {
     const phi = Math.atan2(Hc, x),
       D = Math.hypot(Hc, x),
-      d = phi - tilt,
-      z = D * Math.cos(d);
+      delta = phi - tilt,
+      z = D * Math.cos(delta);
     return {
       x,
       D,
       z,
       phi,
       across: fpx / z,
-      depth: (fpx * Math.sin(phi)) / (D * Math.cos(d) ** 2),
+      depth: (fpx * Math.sin(phi)) / (D * Math.cos(delta) ** 2),
     };
   };
-  const P1 = at(x1),
-    P2 = at(x2),
-    S = [];
-  for (let i = 0; i <= 40; i++) S.push(at(x1 + ((x2 - x1) * i) / 40));
-  const minA = Math.min(...S.map((p) => p.across)),
-    minD = Math.min(...S.map((p) => p.depth)),
-    maxR = Math.max(...S.map((p) => Math.max(p.across, p.depth)));
+  const edge1 = densityAt(x1),
+    edge2 = densityAt(x2),
+    samples = [];
+  for (let i = 0; i <= 40; i++)
+    samples.push(densityAt(x1 + ((x2 - x1) * i) / 40));
+  const minAcross = Math.min(...samples.map((sample) => sample.across)),
+    minDepthDensity = Math.min(...samples.map((sample) => sample.depth)),
+    maxDensity = Math.max(
+      ...samples.map((sample) => Math.max(sample.across, sample.depth)),
+    );
   // точная проекция коробки Ш×Д×В, стоящей на плоскости по центру кадра
-  const ct = Math.cos(tilt),
-    st = Math.sin(tilt);
-  const proj = (X, Y, Z) => {
-    const dz = Z - Hc,
-      zc = X * ct - dz * st;
-    if (zc <= 1e-6) return null;
-    return [(fpx * Y) / zc, (fpx * (X * st + dz * ct)) / zc];
+  const cosTilt = Math.cos(tilt),
+    sinTilt = Math.sin(tilt);
+  // точка (x — вдоль пола, y — поперёк, height — над плоскостью) → координаты в кадре, px
+  const project = (x, y, height) => {
+    const dh = height - Hc,
+      z = x * cosTilt - dh * sinTilt;
+    if (z <= 1e-6) return null;
+    return [(fpx * y) / z, (fpx * (x * sinTilt + dh * cosTilt)) / z];
   };
-  const boxPx = (x0, w, d, zh) => {
-    const zt = Math.min(zh, Hc * 0.98);
-    let u0 = 1e9,
-      u1 = -1e9,
-      v0 = 1e9,
-      v1 = -1e9;
-    for (const X of [x0, x0 + d])
-      for (const Y of [-w / 2, w / 2])
-        for (const Z of [0, zt]) {
-          const q = proj(X, Y, Z);
-          if (!q) return null;
-          u0 = Math.min(u0, q[0]);
-          u1 = Math.max(u1, q[0]);
-          v0 = Math.min(v0, q[1]);
-          v1 = Math.max(v1, q[1]);
+  const boxSizePx = (x0, width, length, height) => {
+    const topHeight = Math.min(height, Hc * 0.98);
+    let uMin = 1e9,
+      uMax = -1e9,
+      vMin = 1e9,
+      vMax = -1e9;
+    for (const x of [x0, x0 + length])
+      for (const y of [-width / 2, width / 2])
+        for (const pointHeight of [0, topHeight]) {
+          const point = project(x, y, pointHeight);
+          if (!point) return null;
+          uMin = Math.min(uMin, point[0]);
+          uMax = Math.max(uMax, point[0]);
+          vMin = Math.min(vMin, point[1]);
+          vMax = Math.max(vMax, point[1]);
         }
-    return { bw: (u1 - u0) * k, bh: (v1 - v0) * k };
+    return { widthPx: (uMax - uMin) * k, heightPx: (vMax - vMin) * k };
   };
-  let ru0 = 1e9,
-    ru1 = -1e9,
-    rv0 = 1e9,
-    rv1 = -1e9;
-  for (const X of [x1, x2])
-    for (const Y of [-Wz / 2, Wz / 2]) {
-      const q = proj(X, Y, 0);
-      if (q) {
-        ru0 = Math.min(ru0, q[0]);
-        ru1 = Math.max(ru1, q[0]);
-        rv0 = Math.min(rv0, q[1]);
-        rv1 = Math.max(rv1, q[1]);
+  // область зоны в кадре (ROI)
+  let roiUMin = 1e9,
+    roiUMax = -1e9,
+    roiVMin = 1e9,
+    roiVMax = -1e9;
+  for (const x of [x1, x2])
+    for (const y of [-zoneWidth / 2, zoneWidth / 2]) {
+      const point = project(x, y, 0);
+      if (point) {
+        roiUMin = Math.min(roiUMin, point[0]);
+        roiUMax = Math.max(roiUMax, point[0]);
+        roiVMin = Math.min(roiVMin, point[1]);
+        roiVMax = Math.max(roiVMax, point[1]);
       }
     }
-  const roiW = Math.min(Nu, ru1 - ru0),
-    roiH = Math.min(Nv, rv1 - rv0);
-  const feedInfo = (feed, inp, ovp) => {
-    const ov = Math.min(0.9, Math.max(0, (ovp || 0) / 100));
-    let msc = 1,
+  const roiW = Math.min(frameWidthPx, roiUMax - roiUMin),
+    roiH = Math.min(frameHeightPx, roiVMax - roiVMin);
+  // подача кадра в модель: весь кадр, вырез ROI или тайлы
+  const describeFeed = (feed, inputSize, overlapPct) => {
+    const overlap = Math.min(0.9, Math.max(0, (overlapPct || 0) / 100));
+    let modelScale = 1,
       tiles = 1,
-      nx = 1,
-      ny = 1;
-    if (feed === "full") msc = Math.min(1, inp / Math.max(Nu, Nv));
-    else if (feed === "roi") msc = Math.min(1, inp / Math.max(roiW, roiH));
+      tilesX = 1,
+      tilesY = 1;
+    if (feed === "full")
+      modelScale = Math.min(
+        1,
+        inputSize / Math.max(frameWidthPx, frameHeightPx),
+      );
+    else if (feed === "roi")
+      modelScale = Math.min(1, inputSize / Math.max(roiW, roiH));
     else {
-      const step = inp * (1 - ov);
-      nx = roiW > inp ? Math.ceil((roiW - inp) / step) + 1 : 1;
-      ny = roiH > inp ? Math.ceil((roiH - inp) / step) + 1 : 1;
-      tiles = nx * ny;
+      const step = inputSize * (1 - overlap);
+      tilesX = roiW > inputSize ? Math.ceil((roiW - inputSize) / step) + 1 : 1;
+      tilesY = roiH > inputSize ? Math.ceil((roiH - inputSize) / step) + 1 : 1;
+      tiles = tilesX * tilesY;
     }
     return {
       feed,
-      inp,
-      msc,
+      inputSize,
+      modelScale,
       tiles,
-      nx,
-      ny,
-      txt:
+      tilesX,
+      tilesY,
+      text:
         feed === "tiles"
-          ? t("feedTiles", tiles, nx, ny, inp)
+          ? t("feedTiles", tiles, tilesX, tilesY, inputSize)
           : feed === "roi"
-            ? t("feedRoi", Math.round(roiW), Math.round(roiH), inp)
-            : t("feedFull", Nu, Nv, inp),
+            ? t("feedRoi", Math.round(roiW), Math.round(roiH), inputSize)
+            : t("feedFull", frameWidthPx, frameHeightPx, inputSize),
     };
   };
-  const objs = T.objs.map((o) => {
-    const w = P(o.w) / 100,
-      d = P(o.d) / 100,
-      zh = P(o.z) / 100,
-      req = P(o.req),
-      inp = P(o.inp) || 640;
-    const fi = feedInfo(o.feed, inp, P(o.ov));
+  const objs = type.objects.map((obj) => {
+    const width = parseNum(obj.width) / 100,
+      length = parseNum(obj.length) / 100,
+      height = parseNum(obj.height) / 100,
+      requiredPx = parseNum(obj.requiredPx),
+      inputSize = parseNum(obj.inputSize) || 640;
+    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.overlap));
     if (
-      ![w, d, zh].every((x) => isFinite(x) && x >= 0) ||
-      Math.max(w, d, zh) <= 0 ||
-      !(req > 0)
+      ![width, length, height].every((size) => isFinite(size) && size >= 0) ||
+      Math.max(width, length, height) <= 0 ||
+      !(requiredPx > 0)
     )
-      return { ...o, bad: true, fi };
-    const span0 = Math.max(0, x2 - x1 - d);
-    let best = null;
+      return { ...obj, bad: true, feedInfo };
+    // ищем положение объекта в зоне, где его рамка меньше всего
+    const travel = Math.max(0, x2 - x1 - length);
+    let worst = null;
     for (let i = 0; i <= 40; i++) {
-      const x0 = x1 + (span0 * i) / 40,
-        b = boxPx(x0, w, d, zh);
-      if (!b) continue;
-      const mm = Math.min(b.bw, b.bh);
-      if (!best || mm < best.m) best = { ...b, m: mm, x0 };
+      const x0 = x1 + (travel * i) / 40,
+        box = boxSizePx(x0, width, length, height);
+      if (!box) continue;
+      const minSidePx = Math.min(box.widthPx, box.heightPx);
+      if (!worst || minSidePx < worst.minSidePx)
+        worst = { ...box, minSidePx, x0 };
     }
-    if (!best) return { ...o, bad: true, fi };
-    const mm = best.m * fi.msc,
-      stt = mm >= req ? "ok" : mm >= 0.75 * req ? "warn" : "bad";
+    if (!worst) return { ...obj, bad: true, feedInfo };
+    const modelPx = worst.minSidePx * feedInfo.modelScale,
+      status =
+        modelPx >= requiredPx
+          ? "ok"
+          : modelPx >= 0.75 * requiredPx
+            ? "warn"
+            : "bad";
     return {
-      ...o,
-      ...best,
-      reqN: req,
-      fi,
-      mm,
-      st: stt,
-      NwMin: (Nw * req) / best.m,
-      sensorOk: best.m >= req,
+      ...obj,
+      ...worst,
+      requiredPx,
+      feedInfo,
+      modelPx,
+      status,
+      minSensorWidthPx: (Nw * requiredPx) / worst.minSidePx,
+      sensorOk: worst.minSidePx >= requiredPx,
     };
   });
   // вердикт
   const notes = [];
-  const clamped = fWant != null && Math.abs(fWant - f) > 0.05;
-  if (m !== "auto" || clamped) {
-    if (W(zMin) < Wz) notes.push(t("nZoneW", fmt(W(zMin), 2), fmt(Wz, 2)));
-    if (vf < span) notes.push(t("nZoneD", fmt(span / R, 1), fmt(vf / R, 1)));
+  const clamped = fNeeded != null && Math.abs(fNeeded - f) > 0.05;
+  if (mode !== "auto" || clamped) {
+    if (frameWidthAt(minDepth) < zoneWidth)
+      notes.push(
+        t(
+          "nZoneW",
+          formatNumber(frameWidthAt(minDepth), 2),
+          formatNumber(zoneWidth, 2),
+        ),
+      );
+    if (vfov < zoneAngle)
+      notes.push(
+        t(
+          "nZoneD",
+          formatNumber(zoneAngle / DEG, 1),
+          formatNumber(vfov / DEG, 1),
+        ),
+      );
   }
   if (clamped)
-    notes.unshift(t(fWant > f ? "nFMax" : "nFMin", fmt(fWant, 1), fmt(f, 1)));
+    notes.unshift(
+      t(
+        fNeeded > f ? "nFMax" : "nFMin",
+        formatNumber(fNeeded, 1),
+        formatNumber(f, 1),
+      ),
+    );
   else if (
-    m !== "auto" &&
-    cam &&
-    cam.fmin > 0 &&
-    (f < cam.fmin * 0.98 || f > cam.fmax * 1.02)
+    mode !== "auto" &&
+    camera &&
+    camera.focalMin > 0 &&
+    (f < camera.focalMin * 0.98 || f > camera.focalMax * 1.02)
   )
     notes.push(
       t(
         "nFOut",
-        fmt(f, 1),
-        cam.fmin === cam.fmax
-          ? fmt(cam.fmin, 1)
-          : fmt(cam.fmin, 1) + "–" + fmt(cam.fmax, 1),
+        formatNumber(f, 1),
+        camera.focalMin === camera.focalMax
+          ? formatNumber(camera.focalMin, 1)
+          : formatNumber(camera.focalMin, 1) +
+              "–" +
+              formatNumber(camera.focalMax, 1),
       ),
     );
-  if (hf / R > 100) notes.push(t("nWide", fmt(hf / R, 0)));
-  if (tilt / R > 75 && x1 < 0) notes.push(t("nTop"));
-  const thLow = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
-  if (thLow / R < 15) notes.push(t("nLowRay", fmt(thLow / R, 0)));
-  if (afps0 > fps) notes.push(t("nAfps", fmt(afps0, 0), fmt(fps, 0)));
-  const pxs = (o) => `${fmt(o.bw, 1)} × ${fmt(o.bh, 1)}\u00a0px`,
-    pxm = (o) =>
-      `${fmt(o.bw * o.fi.msc, 1)} × ${fmt(o.bh * o.fi.msc, 1)}\u00a0px`;
-  const valid = objs.filter((o) => !o.bad),
-    fails = valid.filter((o) => o.st === "bad"),
-    edge = valid.filter((o) => o.st === "warn");
-  let cls, pill, head;
+  if (hfov / DEG > 100) notes.push(t("nWide", formatNumber(hfov / DEG, 0)));
+  if (tilt / DEG > 75 && x1 < 0) notes.push(t("nTop"));
+  const lowestRayAngle = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
+  if (lowestRayAngle / DEG < 15)
+    notes.push(t("nLowRay", formatNumber(lowestRayAngle / DEG, 0)));
+  if (analyticsFpsSet > fps)
+    notes.push(
+      t("nAfps", formatNumber(analyticsFpsSet, 0), formatNumber(fps, 0)),
+    );
+  // размер объекта на матрице и на входе модели
+  const sensorPxText = (obj) =>
+      `${formatNumber(obj.widthPx, 1)} × ${formatNumber(obj.heightPx, 1)} px`,
+    modelPxText = (obj) =>
+      `${formatNumber(obj.widthPx * obj.feedInfo.modelScale, 1)} × ${formatNumber(obj.heightPx * obj.feedInfo.modelScale, 1)} px`;
+  const valid = objs.filter((obj) => !obj.bad),
+    failing = valid.filter((obj) => obj.status === "bad"),
+    marginal = valid.filter((obj) => obj.status === "warn");
+  let status, pill, headline;
   if (!valid.length) {
-    cls = "warn";
+    status = "warn";
     pill = t("pNoObj");
-    head = t("hNoObj");
-  } else if (fails.length) {
-    cls = "bad";
+    headline = t("hNoObj");
+  } else if (failing.length) {
+    status = "bad";
     pill = t("pBad");
-    head = t(
+    headline = t(
       "hBad",
-      fails
-        .map((o) =>
-          t("hItem", o.name || t("objDefault"), pxm(o), fmt(o.reqN, 0)),
+      failing
+        .map((obj) =>
+          t(
+            "hItem",
+            obj.name || t("objDefault"),
+            modelPxText(obj),
+            formatNumber(obj.requiredPx, 0),
+          ),
         )
         .join("; "),
     );
-    fails
-      .filter((o) => o.sensorOk)
-      .forEach((o) => {
-        const need = Math.ceil((o.fi.inp * o.reqN) / o.mm / 32) * 32;
+    failing
+      .filter((obj) => obj.sensorOk)
+      .forEach((obj) => {
+        const neededInput =
+          Math.ceil(
+            (obj.feedInfo.inputSize * obj.requiredPx) / obj.modelPx / 32,
+          ) * 32;
         notes.push(
           t(
             "nScale",
-            o.name,
-            pxs(o),
-            o.fi.inp,
+            obj.name,
+            sensorPxText(obj),
+            obj.feedInfo.inputSize,
             t(
-              o.feed === "full"
+              obj.feed === "full"
                 ? "advFull"
-                : o.feed === "roi"
+                : obj.feed === "roi"
                   ? "advRoi"
                   : "advTiles",
             ),
-            fmt(need, 0),
+            formatNumber(neededInput, 0),
           ),
         );
       });
-    const short = fails.filter((o) => !o.sensorOk);
-    if (short.length) {
-      const worst = short.reduce((a, b) => (a.NwMin > b.NwMin ? a : b)),
-        rec = RES.find((r) => r[1] >= worst.NwMin);
+    const lowResolution = failing.filter((obj) => !obj.sensorOk);
+    if (lowResolution.length) {
+      const worstObj = lowResolution.reduce((a, b) =>
+          a.minSensorWidthPx > b.minSensorWidthPx ? a : b,
+        ),
+        recommended = RESOLUTIONS.find(
+          (res) => res[1] >= worstObj.minSensorWidthPx,
+        );
       notes.unshift(
-        rec
-          ? t("nRes", worst.name, fmt(worst.NwMin, 0), rec[0])
-          : t("nResNone", worst.name, fmt(worst.NwMin, 0)),
+        recommended
+          ? t(
+              "nRes",
+              worstObj.name,
+              formatNumber(worstObj.minSensorWidthPx, 0),
+              recommended[0],
+            )
+          : t(
+              "nResNone",
+              worstObj.name,
+              formatNumber(worstObj.minSensorWidthPx, 0),
+            ),
       );
     }
-  } else if (edge.length) {
-    cls = "warn";
+  } else if (marginal.length) {
+    status = "warn";
     pill = t("pWarn");
-    head = t(
+    headline = t(
       "hWarn",
-      edge
-        .map((o) =>
-          t("hItem", o.name || t("objDefault"), pxm(o), fmt(o.reqN, 0)),
+      marginal
+        .map((obj) =>
+          t(
+            "hItem",
+            obj.name || t("objDefault"),
+            modelPxText(obj),
+            formatNumber(obj.requiredPx, 0),
+          ),
         )
         .join("; "),
     );
   } else {
-    const sm = valid.reduce((a, b) => (a.mm < b.mm ? a : b));
-    cls = "ok";
+    const smallest = valid.reduce((a, b) => (a.modelPx < b.modelPx ? a : b));
+    status = "ok";
     pill = t("pOk");
-    head = t("hOk", sm.name, pxm(sm));
+    headline = t("hOk", smallest.name, modelPxText(smallest));
   }
-  if (notes.length && cls === "ok") {
-    cls = "warn";
+  if (notes.length && status === "ok") {
+    status = "warn";
     pill = t("pCheck");
   }
   // группы запусков: одна модель с одинаковой подачей обслуживает свои объекты одним проходом
   const groups = [];
   objs
-    .filter((o) => o.fi)
-    .forEach((o) => {
+    .filter((obj) => obj.feedInfo)
+    .forEach((obj) => {
       const key = [
-        o.model,
-        o.feed,
-        o.fi.inp,
-        o.feed === "tiles" ? o.ov : "",
-        o.model === "custom" ? o.fps + "@" + o.ref : "",
+        obj.model,
+        obj.feed,
+        obj.feedInfo.inputSize,
+        obj.feed === "tiles" ? obj.overlap : "",
+        obj.model === "custom" ? obj.fps + "@" + obj.ref : "",
       ].join("|");
-      let g = groups.find((x) => x.key === key);
-      if (!g) {
-        g = {
+      let group = groups.find((existing) => existing.key === key);
+      if (!group) {
+        group = {
           key,
-          model: o.model,
-          feed: o.feed,
-          fi: o.fi,
-          fps: o.fps,
-          ref: o.ref,
+          model: obj.model,
+          feed: obj.feed,
+          feedInfo: obj.feedInfo,
+          fps: obj.fps,
+          ref: obj.ref,
           names: [],
-          type: T.name,
-          load: count * afps * o.fi.tiles,
+          type: type.name,
+          load: count * analyticsFps * obj.feedInfo.tiles,
         };
-        groups.push(g);
+        groups.push(group);
       }
-      g.names.push(o.name || t("objDefault"));
+      group.names.push(obj.name || t("objDefault"));
     });
-  const X = (vel * maxR) / bl;
-  const mb = (Nw * Nh * fps * bpp * sc) / 1e6;
+  // выдержка не длиннее 1 / shutterDenominator с, чтобы смаз не превысил blurPx
+  const shutterDenominator = (speed * maxDensity) / blurPx;
+  const bitrateMbps = (Nw * Nh * fps * bpp * sceneFactor) / 1e6;
   return {
-    ...base,
+    ...common,
     err: false,
     clamped,
-    fWant,
-    cam,
-    pos,
-    m,
+    fNeeded,
+    camera,
+    placement,
+    mode,
     H,
     h,
     Hc,
-    L0,
-    Dz,
-    Wz,
+    zoneStart,
+    zoneDepth,
+    zoneWidth,
     x1,
     x2,
     tilt,
-    span,
-    hf,
-    vf,
+    zoneAngle,
+    hfov,
+    vfov,
     f,
-    rot,
-    Nu,
-    Nv,
+    rotated,
+    frameWidthPx,
+    frameHeightPx,
     fpx,
-    W,
-    zOf,
-    P1,
-    P2,
-    minA,
-    minD,
-    maxR,
+    frameWidthAt,
+    depthAt,
+    edge1,
+    edge2,
+    minAcross,
+    minDepthDensity,
+    maxDensity,
     objs,
     valid,
     notes,
-    cls,
+    status,
     pill,
-    head,
-    pxs,
-    pxm,
+    headline,
+    sensorPxText,
+    modelPxText,
     groups,
-    X,
-    vel,
-    bl,
-    mb,
+    shutterDenominator,
+    speed,
+    blurPx,
+    bitrateMbps,
     k,
-    decUnits: (count * Nu * Nv * fps) / (1920 * 1080 * 30),
-    frameGB: (Nu * Nv * 1.5) / 1e9,
+    decUnits: (count * frameWidthPx * frameHeightPx * fps) / (1920 * 1080 * 30),
+    frameGB: (frameWidthPx * frameHeightPx * 1.5) / 1e9,
   };
 }
 // ---------- расчёт системы
-const mName = (o) => (modelById(o.model) || { name: "?" }).name;
-const gfOf = (id) => {
-  const m = modelById(id);
-  return m && m.gf > 0 ? m.gf : 0;
+const modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
+const modelGflops = (id) => {
+  const model = modelById(id);
+  return model && model.gflops > 0 ? model.gflops : 0;
 };
-function computeSystem(Rs) {
-  const live = Rs.filter((r) => !r.err && r.count > 0);
-  const kr = P($("kr").value),
-    resv = Math.max(0, P($("resv").value) || 0) / 100,
-    uMax = 1 / (1 + resv),
-    BATCH = 16;
-  const groups = live.flatMap((r) =>
-    r.groups.map((g) => ({ ...g, typeName: r.T.name })),
+// Подбор GPU. Загрузка (load) — доля ресурса GPU, 1 = 100%.
+function computeSystem(results) {
+  const liveResults = results.filter(
+    (result) => !result.err && result.count > 0,
   );
+  const efficiency = parseNum(byId("efficiency").value),
+    reserve = Math.max(0, parseNum(byId("reserve").value) || 0) / 100,
+    maxLoad = 1 / (1 + reserve),
+    BATCH_SIZE = 16;
+  const groups = liveResults.flatMap((result) =>
+    result.groups.map((group) => ({ ...group, typeName: result.type.name })),
+  );
+  // движок — модель с конкретным входом; в памяти GPU каждый движок один раз
   const engines = [
-    ...new Map(groups.map((g) => [`${g.model}|${g.fi.inp}`, g])).values(),
+    ...new Map(
+      groups.map((group) => [
+        `${group.model}|${group.feedInfo.inputSize}`,
+        group,
+      ]),
+    ).values(),
   ];
-  const modMemGB = (g) => {
-    const gf = gfOf(g.model);
-    return gf ? 0.15 + (BATCH * g.fi.inp ** 2 * 3 * 2 * (gf / 4)) / 1e9 : 0.5;
+  const engineMemoryGB = (engine) => {
+    const gflops = modelGflops(engine.model);
+    return gflops
+      ? 0.15 +
+          (BATCH_SIZE * engine.feedInfo.inputSize ** 2 * 3 * 2 * (gflops / 4)) /
+            1e9
+      : 0.5;
   };
-  const evalGPU = (g, n) => {
-    const mods = groups.map((o) => {
-      let base;
-      const m = modelById(o.model);
-      if (!m) return { ...o, bad: true };
-      if (MODELS.includes(m)) {
-        const inScale = (640 / o.fi.inp) ** 2;
-        base = ((1000 / m.ms) * inScale * g.tf) / T4TF;
+  const evaluateGpu = (gpu, count) => {
+    const runs = groups.map((group) => {
+      let framesPerSecond;
+      const model = modelById(group.model);
+      if (!model) return { ...group, bad: true };
+      if (MODELS.includes(model)) {
+        const inputScale = (640 / group.feedInfo.inputSize) ** 2;
+        framesPerSecond =
+          ((1000 / model.latencyMs) * inputScale * gpu.tflops) / T4_TFLOPS;
       } else {
-        const rg = gpuById(m.ref) || CATALOG[0],
-          inScale = (m.inp / o.fi.inp) ** 2;
-        base = (m.fps * inScale * g.tf) / rg.tf;
+        const refGpu = gpuById(model.refGpu) || GPU_CATALOG[0],
+          inputScale = (model.inputSize / group.feedInfo.inputSize) ** 2;
+        framesPerSecond = (model.fps * inputScale * gpu.tflops) / refGpu.tflops;
       }
-      const cap = base * kr;
-      return { ...o, cap, gpu: o.load / cap };
+      const capacity = framesPerSecond * efficiency;
+      return { ...group, capacity, gpusNeeded: group.load / capacity };
     });
-    const inf = mods.filter((o) => !o.bad).reduce((s, o) => s + o.gpu, 0);
-    const dec = live.reduce(
-      (s, r) => s + r.decUnits / (decStreams(g, r.codec) * kr),
+    const inferenceGpus = runs
+      .filter((run) => !run.bad)
+      .reduce((sum, run) => sum + run.gpusNeeded, 0);
+    const decodeGpus = liveResults.reduce(
+      (sum, result) =>
+        sum + result.decUnits / (decStreams(gpu, result.codec) * efficiency),
       0,
     );
-    const memUse =
+    const memoryUseGB =
         0.8 +
-        engines.reduce((s, e) => s + modMemGB(e), 0) +
-        live.reduce((s, r) => s + Math.ceil(r.count / n) * 20 * r.frameGB, 0),
-      memCap = g.mem * (g.jet ? 0.6 : 0.9);
-    const uI = inf / n,
-      uD = dec / n,
-      uM = memUse / memCap,
-      worst = Math.max(uI, uD, uM);
+        engines.reduce((sum, engine) => sum + engineMemoryGB(engine), 0) +
+        liveResults.reduce(
+          (sum, result) =>
+            sum + Math.ceil(result.count / count) * 20 * result.frameGB,
+          0,
+        ),
+      memoryCapGB = gpu.memoryGB * (gpu.jetson ? 0.6 : 0.9);
+    const inferenceLoad = inferenceGpus / count,
+      decodeLoad = decodeGpus / count,
+      memoryLoad = memoryUseGB / memoryCapGB,
+      worstLoad = Math.max(inferenceLoad, decodeLoad, memoryLoad);
     return {
-      g,
-      n,
-      mods,
-      inf,
-      dec,
-      uI,
-      uD,
-      uM,
-      memUse,
-      memCap,
-      worst,
-      ok: uI <= uMax && uD <= uMax && uM <= 1,
-      cost: n * priceOf(g),
-      bott: t(
-        uI >= uD && uI >= uM ? "bottInf" : uD >= uM ? "bottDec" : "bottMem",
+      gpu,
+      count,
+      runs,
+      inferenceGpus,
+      decodeGpus,
+      inferenceLoad,
+      decodeLoad,
+      memoryLoad,
+      memoryUseGB,
+      memoryCapGB,
+      worstLoad,
+      ok: inferenceLoad <= maxLoad && decodeLoad <= maxLoad && memoryLoad <= 1,
+      cost: count * priceOf(gpu),
+      bottleneck: t(
+        inferenceLoad >= decodeLoad && inferenceLoad >= memoryLoad
+          ? "bottInf"
+          : decodeLoad >= memoryLoad
+            ? "bottDec"
+            : "bottMem",
       ),
     };
   };
-  const cand = allGpus().filter(isOn),
-    all = [];
-  cand.forEach((g) => {
-    for (let n = 1; n <= 4; n++) all.push(evalGPU(g, n));
+  const candidates = allGpus().filter(isOn),
+    evaluations = [];
+  candidates.forEach((gpu) => {
+    for (let count = 1; count <= 4; count++)
+      evaluations.push(evaluateGpu(gpu, count));
   });
-  const okAll = all
-    .filter((e) => e.ok)
-    .sort((a, b) => a.cost - b.cost || a.n * a.g.tdp - b.n * b.g.tdp);
-  const best = okAll[0],
-    gSel = $("gpu").value,
-    cSel = $("gcnt").value;
-  const minWorst = (arr) =>
-    arr.length
-      ? arr.reduce((a, b) => (a.worst < b.worst ? a : b))
-      : evalGPU(allGpus()[0], 1);
-  let E;
-  if (gSel === "auto" && cSel === "auto") E = best || minWorst(all);
-  else if (gSel === "auto") {
-    const n = +cSel;
-    E = okAll.find((e) => e.n === n) || minWorst(all.filter((e) => e.n === n));
+  // подходящие варианты от дешёвых к дорогим, при равной цене — по мощности
+  const fitting = evaluations
+    .filter((option) => option.ok)
+    .sort(
+      (a, b) => a.cost - b.cost || a.count * a.gpu.tdpW - b.count * b.gpu.tdpW,
+    );
+  const optimum = fitting[0],
+    gpuChoice = byId("gpu").value,
+    countChoice = byId("gpuCount").value;
+  const leastLoaded = (options) =>
+    options.length
+      ? options.reduce((a, b) => (a.worstLoad < b.worstLoad ? a : b))
+      : evaluateGpu(allGpus()[0], 1);
+  let chosen;
+  if (gpuChoice === "auto" && countChoice === "auto")
+    chosen = optimum || leastLoaded(evaluations);
+  else if (gpuChoice === "auto") {
+    const count = +countChoice;
+    chosen =
+      fitting.find((option) => option.count === count) ||
+      leastLoaded(evaluations.filter((option) => option.count === count));
   } else {
-    const g = gpuById(gSel) || CATALOG[0];
-    if (cSel === "auto") {
-      E = null;
-      for (let n = 1; n <= 4 && !E; n++) {
-        const e = evalGPU(g, n);
-        if (e.ok) E = e;
+    const gpu = gpuById(gpuChoice) || GPU_CATALOG[0];
+    if (countChoice === "auto") {
+      chosen = null;
+      for (let count = 1; count <= 4 && !chosen; count++) {
+        const option = evaluateGpu(gpu, count);
+        if (option.ok) chosen = option;
       }
-      E = E || evalGPU(g, 4);
-    } else E = evalGPU(g, +cSel);
+      chosen = chosen || evaluateGpu(gpu, 4);
+    } else chosen = evaluateGpu(gpu, +countChoice);
   }
-  const decTotal = live.reduce((s, r) => s + r.decUnits, 0);
+  const decodeUnitsTotal = liveResults.reduce(
+    (sum, result) => sum + result.decUnits,
+    0,
+  );
   return {
-    live,
-    kr,
-    uMax,
-    resv,
-    E,
-    best,
+    liveResults,
+    efficiency,
+    maxLoad,
+    reserve,
+    chosen,
+    optimum,
     engines,
-    decTotal,
+    decodeUnitsTotal,
     groups,
-    noCand: !cand.length,
+    noCandidates: !candidates.length,
   };
 }
 
 // ---------- отрисовка типа
-const stTxt = STR.st;
-const cap1 = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
-function renderType(Rt) {
-  const vd = $("verdict");
-  $("resTitle").textContent = t("resTitleOf", Rt.T.name || t("untitled"));
-  if (Rt.err) {
-    vd.className = "verdict bad";
-    vd.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
-    ["kpis", "dens", "facts", "side"].forEach((id) => ($(id).innerHTML = ""));
+const STATUS_TEXT = STR.st;
+const capitalize = (text) =>
+  text ? text[0].toUpperCase() + text.slice(1) : text;
+function renderType(result) {
+  const verdict = byId("verdict");
+  byId("resTitle").textContent = t(
+    "resTitleOf",
+    result.type.name || t("untitled"),
+  );
+  if (result.err) {
+    verdict.className = "verdict bad";
+    verdict.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
+    ["kpis", "dens", "facts", "side"].forEach(
+      (id) => (byId(id).innerHTML = ""),
+    );
     return;
   }
-  vd.className = "verdict " + Rt.cls;
-  vd.innerHTML = `<span class="pill">${Rt.pill}</span><div>${esc(Rt.head)}${Rt.notes.length ? "<ul>" + Rt.notes.map((n) => "<li>" + esc(n) + "</li>").join("") + "</ul>" : ""}</div>`;
-  const { hf, vf, f, rot, tilt, W, zOf, x1, x2 } = Rt;
-  $("kpis").innerHTML = [
+  verdict.className = "verdict " + result.status;
+  verdict.innerHTML = `<span class="pill">${result.pill}</span><div>${escapeHtml(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((note) => "<li>" + escapeHtml(note) + "</li>").join("") + "</ul>" : ""}</div>`;
+  const { hfov, vfov, f, rotated, tilt, frameWidthAt, depthAt, x1, x2 } =
+    result;
+  byId("kpis").innerHTML = [
     [
       t("kF"),
-      U(fmt(f, 1), "mm"),
-      t(Rt.clamped ? "kFLimit" : Rt.m === "auto" ? "kFAuto" : "kFSet") +
-        (rot ? t("kRot") : ""),
+      withUnit(formatNumber(f, 1), "mm"),
+      t(
+        result.clamped
+          ? "kFLimit"
+          : result.mode === "auto"
+            ? "kFAuto"
+            : "kFSet",
+      ) + (rotated ? t("kRot") : ""),
     ],
     [
-      t(rot ? "kAngRot" : "kAng"),
-      fmt(hf / R, 0) + "° × " + fmt(vf / R, 0) + "°",
-      `DFOV ≈ ${fmt((2 * Math.atan(Math.hypot(Math.tan(hf / 2), Math.tan(vf / 2)))) / R, 0)}°`,
+      t(rotated ? "kAngRot" : "kAng"),
+      formatNumber(hfov / DEG, 0) + "° × " + formatNumber(vfov / DEG, 0) + "°",
+      `DFOV ≈ ${formatNumber((2 * Math.atan(Math.hypot(Math.tan(hfov / 2), Math.tan(vfov / 2)))) / DEG, 0)}°`,
     ],
     [
       t("kTilt"),
-      fmt(tilt / R, 0) + "°",
-      t(Math.abs(tilt / R - 90) < 1 ? "kTiltDown" : "kTiltHor"),
+      formatNumber(tilt / DEG, 0) + "°",
+      t(Math.abs(tilt / DEG - 90) < 1 ? "kTiltDown" : "kTiltHor"),
     ],
     [
       t("kFrame"),
-      U(fmt(W(zOf(x1)), 1) + "–" + fmt(W(zOf(x2)), 1), "m"),
+      withUnit(
+        formatNumber(frameWidthAt(depthAt(x1)), 1) +
+          "–" +
+          formatNumber(frameWidthAt(depthAt(x2)), 1),
+        "m",
+      ),
       t("kFrameSub"),
     ],
   ]
     .map(
-      ([l, v, e]) =>
-        `<div class="kpi"><span>${l}</span><strong>${v}</strong><em>${e}</em></div>`,
+      ([label, value, extra]) =>
+        `<div class="kpi"><span>${label}</span><strong>${value}</strong><em>${extra}</em></div>`,
     )
     .join("");
-  Rt.objs.forEach((o, i) => {
-    const el = $(`ores-${i}`),
-      dt = $(`odot-${i}`);
-    if (!el) return;
-    if (o.bad) {
-      el.className = "ores";
-      el.textContent = t("objBad");
-      if (dt) dt.className = "dot";
+  result.objs.forEach((obj, i) => {
+    const resultEl = byId(`obj-result-${i}`),
+      dotEl = byId(`obj-dot-${i}`);
+    if (!resultEl) return;
+    if (obj.bad) {
+      resultEl.className = "ores";
+      resultEl.textContent = t("objBad");
+      if (dotEl) dotEl.className = "dot";
       return;
     }
-    el.className = "ores " + o.st;
-    if (dt) dt.className = "dot " + o.st;
-    el.innerHTML = `<b>${cap1(stTxt[o.st])}</b><span>${t("objSeen", `<span class="mono">${Rt.pxm(o)}</span>`, fmt(o.reqN, 0))}</span><span class="m2">${t("objSensor", Rt.pxs(o), esc(o.fi.txt))}</span>`;
+    resultEl.className = "ores " + obj.status;
+    if (dotEl) dotEl.className = "dot " + obj.status;
+    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
   });
-  const top = Rt.pos === "top";
-  $("dens").innerHTML =
+  const top = result.placement === "top";
+  byId("dens").innerHTML =
     `<tr><th>${t("densHead")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
-    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(fmt(Rt.P1.D, 1), "m")}</td><td>${fmt(Rt.P1.across, 0)}</td><td>${fmt(Rt.P1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(fmt(Rt.P2.D, 1), "m")}</td><td>${fmt(Rt.P2.across, 0)}</td><td>${fmt(Rt.P2.depth, 0)}</td></tr>`;
-  const lv = [25, 62, 125, 250],
-    names = STR.dori;
-  let li = -1;
-  lv.forEach((l, i) => {
-    if (Rt.minA >= l) li = i;
+    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
+    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
+  const doriLevels = [25, 62, 125, 250],
+    doriNames = STR.dori;
+  let doriLevel = -1;
+  doriLevels.forEach((level, i) => {
+    if (result.minAcross >= level) doriLevel = i;
   });
-  const X = Rt.X;
-  $("facts").innerHTML =
-    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(fmt(Rt.minA, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(X) && X > 0 ? U("1/" + Math.ceil(X), "s") : "—"}</b></span><span>${t("camera")}: <b>${esc(Rt.rl)}</b></span>`;
+  const shutter = result.shutterDenominator;
+  byId("facts").innerHTML =
+    `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
   drawSide({
-    H: Rt.H,
-    h: Rt.h,
-    x1: Rt.x1,
-    x2: Rt.x2,
-    tilt: Rt.tilt,
-    vf: Rt.vf,
-    Hc: Rt.Hc,
-    pos: Rt.pos,
-    wN: W(zOf(x1)),
-    wF: W(zOf(x2)),
+    H: result.H,
+    h: result.h,
+    x1: result.x1,
+    x2: result.x2,
+    tilt: result.tilt,
+    vfov: result.vfov,
+    Hc: result.Hc,
+    placement: result.placement,
+    frameWidthNear: frameWidthAt(depthAt(x1)),
+    frameWidthFar: frameWidthAt(depthAt(x2)),
   });
 }
 
 // ---------- вкладки
-function renderTabs(Rs) {
-  const nav = $("tabs");
+function renderTabs(results) {
+  const nav = byId("tabs");
   nav.innerHTML = "";
-  Rs.forEach((r) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "tab";
-    b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(r.T.id === ACT));
-    b.setAttribute("aria-controls", "typeOut");
-    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.cls}" aria-hidden="true"></span><b>${esc(r.T.name || t("untitled"))}</b><small>× ${r.count}</small>`;
-    b.title = r.err ? t("tabErr") : t("tabObjs", stTxt[r.cls] || r.pill);
-    b.addEventListener("click", () => {
-      if (ACT === r.T.id) return;
-      ACT = r.T.id;
-      writeForm(act());
+  results.forEach((result) => {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "tab";
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", String(result.type.id === activeTypeId));
+    tab.setAttribute("aria-controls", "typeOut");
+    tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
+    tab.title = result.err
+      ? t("tabErr")
+      : t("tabObjs", STATUS_TEXT[result.status] || result.pill);
+    tab.addEventListener("click", () => {
+      if (activeTypeId === result.type.id) return;
+      activeTypeId = result.type.id;
+      writeForm(activeType());
       calcAll();
     });
-    nav.append(b);
+    nav.append(tab);
   });
-  const add = document.createElement("button");
-  add.type = "button";
-  add.className = "tab ghost";
-  add.textContent = t("addType");
-  add.addEventListener("click", () => {
-    const T = mkType(t("newType", TYPES.length + 1), 1, {}, [PRESETS[0]]);
-    TYPES.push(T);
-    ACT = T.id;
-    writeForm(T);
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "tab ghost";
+  addButton.textContent = t("addType");
+  addButton.addEventListener("click", () => {
+    const type = makeType(t("newType", cameraTypes.length + 1), 1, {}, [
+      OBJECT_PRESETS[0],
+    ]);
+    cameraTypes.push(type);
+    activeTypeId = type.id;
+    writeForm(type);
     calcAll();
   });
-  nav.append(add);
+  nav.append(addButton);
 }
 
 // ---------- кольца
-function ring(cx, cy, r, w, segs, mark) {
-  const C = 2 * Math.PI * r;
-  let off = 0,
-    s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${w}"/>`;
-  segs.forEach((sg) => {
-    const full = Math.max(0, Math.min(1 - off / C, sg.f)) * C;
-    if (full <= 0) return;
-    const len = segs.length > 1 && full > 2 ? full - 1 : full;
-    s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${sg.color}" stroke-width="${w}" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
-    off += full;
+// кольцо радиуса r и толщины width из дуг segments (fraction — доля круга); mark — риска на доле круга
+function ring(cx, cy, r, width, segments, mark) {
+  const circumference = 2 * Math.PI * r;
+  let offset = 0,
+    svg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${width}"/>`;
+  segments.forEach((segment) => {
+    const arc =
+      Math.max(0, Math.min(1 - offset / circumference, segment.fraction)) *
+      circumference;
+    if (arc <= 0) return;
+    // зазор 1 px между соседними дугами
+    const dash = segments.length > 1 && arc > 2 ? arc - 1 : arc;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${segment.color}" stroke-width="${width}" stroke-dasharray="${dash.toFixed(2)} ${(circumference - dash).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += arc;
   });
   if (mark != null) {
-    const a = -Math.PI / 2 + 2 * Math.PI * mark,
-      r1 = r - w / 2 - 2,
-      r2 = r + w / 2 + 2;
-    s += `<line x1="${(cx + r1 * Math.cos(a)).toFixed(2)}" y1="${(cy + r1 * Math.sin(a)).toFixed(2)}" x2="${(cx + r2 * Math.cos(a)).toFixed(2)}" y2="${(cy + r2 * Math.sin(a)).toFixed(2)}" stroke="var(--fg2)" stroke-width="1.5"/>`;
+    const angle = -Math.PI / 2 + 2 * Math.PI * mark,
+      innerR = r - width / 2 - 2,
+      outerR = r + width / 2 + 2;
+    svg += `<line x1="${(cx + innerR * Math.cos(angle)).toFixed(2)}" y1="${(cy + innerR * Math.sin(angle)).toFixed(2)}" x2="${(cx + outerR * Math.cos(angle)).toFixed(2)}" y2="${(cy + outerR * Math.sin(angle)).toFixed(2)}" stroke="var(--fg2)" stroke-width="1.5"/>`;
   }
-  return s;
+  return svg;
 }
 
 // ---------- система
-function renderSystem(Rs, S) {
-  const { E, best, kr, uMax, live } = S;
-  const pc = (u) => fmt(u * 100, 0) + "%";
-  const cams = Rs.reduce((s, r) => s + r.count, 0);
-  const vAll = Rs.flatMap((r) => r.valid || []),
-    objOk = vAll.filter((o) => o.st === "ok").length;
-  const worstCls = Rs.some((r) => r.err || r.cls === "bad")
+function renderSystem(results, system) {
+  const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
+  const percent = (share) => formatNumber(share * 100, 0) + "%";
+  const cameraCount = results.reduce((sum, result) => sum + result.count, 0);
+  const allObjects = results.flatMap((result) => result.valid || []),
+    okObjects = allObjects.filter((obj) => obj.status === "ok").length;
+  const worstStatus = results.some(
+    (result) => result.err || result.status === "bad",
+  )
     ? "bad"
-    : Rs.some((r) => r.cls === "warn")
+    : results.some((result) => result.status === "warn")
       ? "warn"
       : "ok";
-  const smallest = vAll.length
-    ? vAll.reduce((a, b) => (a.mm < b.mm ? a : b))
+  const smallest = allObjects.length
+    ? allObjects.reduce((a, b) => (a.modelPx < b.modelPx ? a : b))
     : null;
-  const mbTot = live.reduce((s, r) => s + r.mb * r.count, 0);
-  const camCost = Rs.reduce((s, r) => {
-    const c = camById(r.T.v.cam);
-    return s + (c && c.price > 0 ? c.price * r.count : 0);
+  const totalMbps = liveResults.reduce(
+    (sum, result) => sum + result.bitrateMbps * result.count,
+    0,
+  );
+  const cameraCost = results.reduce((sum, result) => {
+    const camera = cameraById(result.type.inputs.camera);
+    return sum + (camera && camera.price > 0 ? camera.price * result.count : 0);
   }, 0);
   const port =
-    mbTot * 1.3 < 900
-      ? U(1, "gbps")
-      : mbTot * 1.3 < 9000
-        ? U(10, "gbps")
-        : "> " + U(10, "gbps");
-  $("sysKpis").innerHTML = [
+    totalMbps * 1.3 < 900
+      ? withUnit(1, "gbps")
+      : totalMbps * 1.3 < 9000
+        ? withUnit(10, "gbps")
+        : "> " + withUnit(10, "gbps");
+  byId("sysKpis").innerHTML = [
     [
       t("sCams"),
-      `${cams}`,
-      camCost
-        ? t("sTypes", Rs.length) + t("sCamCost", "$" + fmt(camCost, 0))
-        : t("sTypes", Rs.length, Rs.map((r) => r.T.name).join(", ")),
+      `${cameraCount}`,
+      cameraCost
+        ? t("sTypes", results.length) +
+          t("sCamCost", "$" + formatNumber(cameraCost, 0))
+        : t(
+            "sTypes",
+            results.length,
+            results.map((result) => result.type.name).join(", "),
+          ),
     ],
     [
       t("sObjs"),
-      `<span class="dot ${worstCls}" aria-hidden="true"></span>${t("sOfN", objOk, vAll.length)}`,
+      `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("sOfN", okObjects, allObjects.length)}`,
       smallest
         ? t(
             "sSmallest",
             smallest.name,
-            fmt(Math.min(smallest.bw, smallest.bh) * smallest.fi.msc, 1),
+            formatNumber(
+              Math.min(smallest.widthPx, smallest.heightPx) *
+                smallest.feedInfo.modelScale,
+              1,
+            ),
           )
         : t("sNoObjs"),
     ],
     [
       t("sCompute"),
-      live.length ? `${E.n} × ${esc(E.g.name)}` : "—",
-      live.length
-        ? `$${fmt(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - E.worst))) : t("insufficient")}`
+      liveResults.length
+        ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}`
+        : "—",
+      liveResults.length
+        ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}`
         : t("sNoCams"),
     ],
     [
       t("sNet"),
-      `${U(fmt(mbTot, 0), "mbps")}`,
-      t("sPort", port, fmt(cams * 15.4, 0)),
+      `${withUnit(formatNumber(totalMbps, 0), "mbps")}`,
+      t("sPort", port, formatNumber(cameraCount * 15.4, 0)),
     ],
   ]
     .map(
-      ([l, v, e]) =>
-        `<div class="sk"><span>${l}</span><strong>${v}</strong><em>${esc(e)}</em></div>`,
+      ([label, value, extra]) =>
+        `<div class="sk"><span>${label}</span><strong>${value}</strong><em>${escapeHtml(extra)}</em></div>`,
     )
     .join("");
   // дашборд
-  const hot = E.uI > uMax;
-  $("dsum").innerHTML = live.length
-    ? `<b>${E.n} × ${esc(E.g.name)}</b> · $${fmt(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - E.worst)))} · ${t("bottleneck", E.bott)}`
+  const overloaded = chosen.inferenceLoad > maxLoad;
+  byId("dsum").innerHTML = liveResults.length
+    ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", chosen.bottleneck)}`
     : "";
-  const runs = E.mods
-    .filter((o) => !o.bad)
-    .map((o) => ({ ...o, u: o.gpu / E.n }))
-    .sort((a, b) => b.u - a.u);
-  const COLS = [
+  const runs = chosen.runs
+    .filter((run) => !run.bad)
+    .map((run) => ({ ...run, share: run.gpusNeeded / chosen.count }))
+    .sort((a, b) => b.share - a.share);
+  const RUN_COLORS = [
     "var(--c1)",
     "var(--c2)",
     "var(--c3)",
@@ -2702,127 +2950,150 @@ function renderSystem(Rs, S) {
   ];
   const shown = runs.slice(0, 5),
     rest = runs.slice(5),
-    restU = rest.reduce((s, o) => s + o.u, 0);
-  const segs = shown.map((o, i) => ({ f: o.u, color: COLS[i] }));
-  if (restU > 0) segs.push({ f: restU, color: "var(--c6)" });
-  $("donut").innerHTML = live.length
-    ? ring(60, 60, 48, 14, segs, uMax) +
-      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${hot ? "var(--bad)" : "var(--fg)"}">${pc(E.uI)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
+    restShare = rest.reduce((sum, run) => sum + run.share, 0);
+  const segments = shown.map((run, i) => ({
+    fraction: run.share,
+    color: RUN_COLORS[i],
+  }));
+  if (restShare > 0) segments.push({ fraction: restShare, color: "var(--c6)" });
+  byId("donut").innerHTML = liveResults.length
+    ? ring(60, 60, 48, 14, segments, maxLoad) +
+      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${overloaded ? "var(--bad)" : "var(--fg)"}">${percent(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
     : "";
-  $("donut").setAttribute("aria-label", t("donutAriaVal", pc(E.uI), pc(uMax)));
-  $("legend").innerHTML = live.length
+  byId("donut").setAttribute(
+    "aria-label",
+    t("donutAriaVal", percent(chosen.inferenceLoad), percent(maxLoad)),
+  );
+  byId("legend").innerHTML = liveResults.length
     ? shown
         .map(
-          (o, i) =>
-            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${esc(mName(o))} · ${FEED_SHORT[o.feed]} ${o.fi.inp}<span class="sub">${esc(o.typeName)}: ${esc(o.names.join(", "))} · ${U(fmt(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
+          (run, i) =>
+            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed]} ${run.feedInfo.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
         )
         .join("") +
       (rest.length
-        ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${pc(restU)}</span></li>`
+        ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${percent(restShare)}</span></li>`
         : "") +
-      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSub", pc(uMax))}</span></span><span class="pc">${pc(Math.max(0, 1 - E.uI))}</span></li>`
+      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSub", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>`
     : `<li class="note">${t("noLoad")}</li>`;
-  const decCapN = (E.n * S.decTotal) / (E.dec || 1);
-  const gauge = (label, u, lim, center, sub) =>
-    `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ f: u, color: u > lim ? "var(--bad)" : "var(--meter)" }], lim < 1 ? lim : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
-  $("gauges").innerHTML = live.length
+  const decodeCapacity =
+    (chosen.count * system.decodeUnitsTotal) / (chosen.decodeGpus || 1);
+  const gauge = (label, load, limit, center, sub) =>
+    `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load, color: load > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
+  byId("gauges").innerHTML = liveResults.length
     ? gauge(
         t("gDec"),
-        E.uD,
-        uMax,
-        pc(E.uD),
-        t("gDecSub", fmt(S.decTotal, 1), fmt(decCapN, 0)),
+        chosen.decodeLoad,
+        maxLoad,
+        percent(chosen.decodeLoad),
+        t(
+          "gDecSub",
+          formatNumber(system.decodeUnitsTotal, 1),
+          formatNumber(decodeCapacity, 0),
+        ),
       ) +
       gauge(
         t("gMem"),
-        E.uM,
+        chosen.memoryLoad,
         1,
-        pc(E.uM),
-        t("gMemSub", fmt(E.memUse, 1), fmt(E.memCap, 0)),
+        percent(chosen.memoryLoad),
+        t(
+          "gMemSub",
+          formatNumber(chosen.memoryUseGB, 1),
+          formatNumber(chosen.memoryCapGB, 0),
+        ),
       )
     : "";
-  const warn = S.noCand ? t("noCand") : !best && live.length ? t("noFit") : "";
-  $("loadNote").innerHTML = warn
-    ? `<span style="color:var(--bad)">${esc(warn)}</span>`
-    : live.length && STR.gpuNotes[E.g.id]
-      ? esc(STR.gpuNotes[E.g.id])
+  const warning = system.noCandidates
+    ? t("noCand")
+    : !optimum && liveResults.length
+      ? t("noFit")
       : "";
-  $("loadNote").hidden = !$("loadNote").innerHTML;
+  byId("loadNote").innerHTML = warning
+    ? `<span style="color:var(--bad)">${escapeHtml(warning)}</span>`
+    : liveResults.length && STR.gpuNotes[chosen.gpu.id]
+      ? escapeHtml(STR.gpuNotes[chosen.gpu.id])
+      : "";
+  byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
-  const days = P($("days").value) || 0,
-    tb = (((mbTot * 1e6) / 8) * 86400 * days) / 1e12;
-  $("netTbl").innerHTML =
-    `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((k) => `<th>${t(k)}</th>`).join("")}</tr>` +
-    Rs.map((r) =>
-      r.err
-        ? `<tr><td class="txt">${esc(r.T.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
-        : `<tr><td class="txt">${esc(r.T.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${fmt(r.fps, 0)}</td><td>${U(fmt(r.mb, 1), "mbps")}</td><td>${U(fmt(r.mb * r.count, 0), "mbps")}</td></tr>`,
-    ).join("") +
-    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(fmt(mbTot, 0), "mbps")}</td></tr>` +
-    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", fmt(tb, 1), fmt(days, 0)) : t("nArchOff")}</td></tr>`;
-  $("assList").innerHTML = t("ass", fmt(kr, 2))
-    .map((x) => `<li>${esc(x)}</li>`)
+  const archiveDays = parseNum(byId("archiveDays").value) || 0,
+    archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
+  byId("netTbl").innerHTML =
+    `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
+    results
+      .map((result) =>
+        result.err
+          ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
+          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.Nw} × ${result.Nh}</td><td>${formatNumber(result.fps, 0)}</td><td>${withUnit(formatNumber(result.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
+      )
+      .join("") +
+    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
+    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("nArchVal", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("nArchOff")}</td></tr>`;
+  byId("assList").innerHTML = t("ass", formatNumber(efficiency, 2))
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
-  return { cams, mbTot, camCost };
+  return { cameraCount, totalMbps, cameraCost };
 }
 
 // ---------- шаблоны: видеокарты
 function buildGpuSelect() {
-  const sel = $("gpu"),
-    cur = sel.value || "auto";
-  sel.innerHTML =
+  const select = byId("gpu"),
+    current = select.value || "auto";
+  select.innerHTML =
     `<option value="auto">${t("gpuAuto")}</option>` +
     allGpus()
       .map(
-        (g) =>
-          `<option value="${g.id}">${esc(g.name)}${g.custom ? t("gpuCustomMark") : ""}</option>`,
+        (gpu) =>
+          `<option value="${gpu.id}">${escapeHtml(gpu.name)}${gpu.custom ? t("gpuCustomMark") : ""}</option>`,
       )
       .join("");
-  sel.value = allGpus().some((g) => g.id === cur) ? cur : "auto";
-  const ref = $("ndRef");
-  if (ref) {
-    const c = ref.value;
-    ref.innerHTML = allGpus()
-      .map((g) => `<option value="${g.id}">${esc(g.name)}</option>`)
+  select.value = allGpus().some((gpu) => gpu.id === current) ? current : "auto";
+  const refSelect = byId("ndRef");
+  if (refSelect) {
+    const refCurrent = refSelect.value;
+    refSelect.innerHTML = allGpus()
+      .map(
+        (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}</option>`,
+      )
       .join("");
-    ref.value = gpuById(c) ? c : "5090";
+    refSelect.value = gpuById(refCurrent) ? refCurrent : "5090";
   }
 }
 function renderGpuView() {
   const row = (
-    g,
-  ) => `<tr><td class="txt"><b style="font-weight:600">${esc(g.name)}</b><span class="sub">${g.jet ? t("gJet") : esc(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${fmt(g.tf, 1)}</td><td>${decText(g)}</td><td>${U(fmt(g.mem, 0), "gb")}</td><td>${g.tdp ? U(fmt(g.tdp, 0), "w") : "—"}</td>
-    <td><input id="pr-${g.id}" value="${esc(PRICE[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${esc(t("gPriceAria", g.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${esc(t("gOnAria", g.name))}"></td>
-    ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${esc(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
-  const gh = STR.gHead,
-    head = `<tr>${gh
+    gpu,
+  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gJet") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
+    <td><input id="pr-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", gpu.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gon-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", gpu.name))}"></td>
+    ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("delAria", gpu.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
+  const headers = STR.gHead,
+    head = `<tr>${headers
       .slice(0, 6)
-      .map((x) => `<th>${x}</th>`)
-      .join("")}<th style="text-align:center">${gh[6]}</th><th></th></tr>`;
-  $("catTitle").textContent = t("catTitle", CATALOG.length);
-  $("catTbl").innerHTML = head + CATALOG.map(row).join("");
-  $("mine").innerHTML = CUSTOM.length
-    ? `<strong style="font-weight:600">${t("mineN", CUSTOM.length)}</strong><div class="tbl"><table>${head}${CUSTOM.map(row).join("")}</table></div>`
+      .map((header) => `<th>${header}</th>`)
+      .join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
+  byId("catTitle").textContent = t("catTitle", GPU_CATALOG.length);
+  byId("catTbl").innerHTML = head + GPU_CATALOG.map(row).join("");
+  byId("mine").innerHTML = customGpus.length
+    ? `<strong style="font-weight:600">${t("mineN", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("mine0")}</strong><span class="note" style="font-size:13px">${t("mineEmpty")}</span>`;
-  allGpus().forEach((g) => {
-    $(`pr-${g.id}`).addEventListener("input", (e) => {
-      PRICE[g.id] = e.target.value;
+  allGpus().forEach((gpu) => {
+    byId(`pr-${gpu.id}`).addEventListener("input", (event) => {
+      gpuPrices[gpu.id] = event.target.value;
       calcAll();
     });
-    $(`gon-${g.id}`).addEventListener("change", (e) => {
-      ON[g.id] = e.target.checked;
+    byId(`gon-${gpu.id}`).addEventListener("change", (event) => {
+      gpuEnabled[gpu.id] = event.target.checked;
       calcAll();
     });
   });
-  document.querySelectorAll("[data-delg]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = b.dataset.delg;
-      CUSTOM = CUSTOM.filter((g) => g.id !== id);
-      delete PRICE[id];
-      delete ON[id];
-      DETS.forEach((d) => {
-        if (d.ref === id) d.ref = "5090";
+  document.querySelectorAll("[data-delg]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const id = button.dataset.delg;
+      customGpus = customGpus.filter((gpu) => gpu.id !== id);
+      delete gpuPrices[id];
+      delete gpuEnabled[id];
+      customDetectors.forEach((detector) => {
+        if (detector.refGpu === id) detector.refGpu = "5090";
       });
       buildGpuSelect();
       renderGpuView();
@@ -2831,51 +3102,55 @@ function renderGpuView() {
     }),
   );
 }
-$("ngArch").addEventListener("change", () => {
-  const j = $("ngArch").value === "jet";
-  $("ngDecL").textContent = t(j ? "ngDecJet" : "ngDec");
-  $("ngDec").placeholder = j ? "22" : "2";
+byId("ngArch").addEventListener("change", () => {
+  const isJetson = byId("ngArch").value === "jet";
+  byId("ngDecL").textContent = t(isJetson ? "ngDecJet" : "ngDec");
+  byId("ngDec").placeholder = isJetson ? "22" : "2";
 });
-$("newForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = $("ngName").value.trim(),
-    arch = $("ngArch").value,
-    tf = P($("ngTf").value),
-    dec = P($("ngDec").value),
-    mem = P($("ngMem").value),
-    tdp = P($("ngTdp").value),
-    price = P($("ngPrice").value);
-  const errs = [];
-  if (!name) errs.push(t("eName"));
-  if (!(tf > 0)) errs.push(t("eTf"));
-  if (!(dec > 0)) errs.push(t(arch === "jet" ? "eDecJet" : "eDec"));
-  if (!(mem > 0)) errs.push(t("eMem"));
-  if (!(price > 0)) errs.push(t("ePrice"));
-  const er = $("ngErr");
-  if (errs.length) {
-    er.hidden = false;
-    er.textContent = t("ngErr", errs.join(", "));
+byId("newForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  // decode — число NVDEC, у Jetson — потоков 1080p30 H.265
+  const name = byId("ngName").value.trim(),
+    arch = byId("ngArch").value,
+    tflops = parseNum(byId("ngTf").value),
+    decode = parseNum(byId("ngDec").value),
+    memoryGB = parseNum(byId("ngMem").value),
+    tdpW = parseNum(byId("ngTdp").value),
+    price = parseNum(byId("ngPrice").value);
+  const errors = [];
+  if (!name) errors.push(t("eName"));
+  if (!(tflops > 0)) errors.push(t("eTf"));
+  if (!(decode > 0)) errors.push(t(arch === "jet" ? "eDecJet" : "eDec"));
+  if (!(memoryGB > 0)) errors.push(t("eMem"));
+  if (!(price > 0)) errors.push(t("ePrice"));
+  const errorEl = byId("ngErr");
+  if (errors.length) {
+    errorEl.hidden = false;
+    errorEl.textContent = t("ngErr", errors.join(", "));
     return;
   }
-  er.hidden = true;
-  const g = {
+  errorEl.hidden = true;
+  const gpu = {
     id: "c" + uid(),
     name,
     arch: arch === "jet" ? "Ampere" : arch,
-    tf,
-    mem,
-    tdp: tdp > 0 ? tdp : 0,
+    tflops,
+    memoryGB,
+    tdpW: tdpW > 0 ? tdpW : 0,
     price,
     custom: true,
   };
   if (arch === "jet") {
-    g.jet = true;
-    g.st = { h265: dec, h264: +((dec * 748) / 1415).toFixed(1) };
-  } else g.nvdec = Math.round(dec);
-  CUSTOM.push(g);
-  ON[g.id] = $("ngOn").checked;
+    gpu.jetson = true;
+    gpu.decodeStreams = {
+      h265: decode,
+      h264: +((decode * 748) / 1415).toFixed(1),
+    };
+  } else gpu.nvdec = Math.round(decode);
+  customGpus.push(gpu);
+  gpuEnabled[gpu.id] = byId("ngOn").checked;
   ["ngName", "ngTf", "ngDec", "ngMem", "ngTdp", "ngPrice"].forEach(
-    (id) => ($(id).value = ""),
+    (id) => (byId(id).value = ""),
   );
   buildGpuSelect();
   renderGpuView();
@@ -2886,67 +3161,68 @@ $("newForm").addEventListener("submit", (e) => {
 // ---------- шаблоны: камеры
 function renderCamView() {
   const used = (id) =>
-    TYPES.filter((t) => t.v.cam === id).reduce(
-      (s, t) => s + (Math.round(P(t.count)) || 0),
-      0,
-    );
-  $("camTitle").textContent = t("camTitle", allCams().length);
-  $("camTbl").innerHTML =
-    `<tr>${STR.cHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
-    allCams()
+    cameraTypes
+      .filter((type) => type.inputs.camera === id)
+      .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
+  byId("camTitle").textContent = t("camTitle", allCameras().length);
+  byId("camTbl").innerHTML =
+    `<tr>${STR.cHead.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
+    allCameras()
       .map(
-        (c) =>
-          `<tr><td class="txt"><b style="font-weight:600">${esc(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(fmt(c.sw, 2), "mm")}</td><td>${c.fmin > 0 ? (c.fmin === c.fmax ? U(fmt(c.fmin, 1), "mm") : U(fmt(c.fmin, 1) + "–" + fmt(c.fmax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + fmt(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${esc(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
+        (camera) =>
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cOwn" : "cBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cAny")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("delAria", camera.name))}">${t("del")}</button>` : ""}</td></tr>`,
       )
       .join("");
-  document.querySelectorAll("[data-delc]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = b.dataset.delc;
-      CAMS_C = CAMS_C.filter((c) => c.id !== id);
-      TYPES.forEach((t) => {
-        if (t.v.cam === id) t.v.cam = "";
+  document.querySelectorAll("[data-delc]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const id = button.dataset.delc;
+      customCameras = customCameras.filter((camera) => camera.id !== id);
+      cameraTypes.forEach((type) => {
+        if (type.inputs.camera === id) type.inputs.camera = "";
       });
-      buildCamSelect();
-      writeForm(act());
+      buildCameraSelect();
+      writeForm(activeType());
       renderCamView();
       calcAll();
       toast(t("cDeleted"));
     }),
   );
 }
-$("camForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = $("ncName").value.trim(),
-    Nw = Math.round(P($("ncW").value)),
-    Nh = Math.round(P($("ncH").value)),
-    pp = P($("ncPp").value);
-  let sw = P($("ncSw").value);
-  let fmin = P($("ncFmin").value),
-    fmax = P($("ncFmax").value);
-  const price = P($("ncPrice").value);
-  if (!(sw > 0) && pp > 0 && Nw > 0) sw = +((pp * Nw) / 1000).toFixed(3);
-  if (fmin > 0 && !(fmax > 0)) fmax = fmin;
-  if (fmax > 0 && !(fmin > 0)) fmin = fmax;
-  const errs = [];
-  if (!name) errs.push(t("eName"));
-  if (!(Nw > 0 && Nh > 0)) errs.push(t("eFrame"));
-  if (!(sw > 0)) errs.push(t("eSw"));
-  if (fmin > 0 && fmax > 0 && fmin > fmax) errs.push(t("eFRange"));
-  const er = $("ncErr");
-  if (errs.length) {
-    er.hidden = false;
-    er.textContent = t("ncErr", errs.join(", "));
+byId("camForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = byId("ncName").value.trim(),
+    Nw = Math.round(parseNum(byId("ncW").value)),
+    Nh = Math.round(parseNum(byId("ncH").value)),
+    pixelPitchUm = parseNum(byId("ncPp").value);
+  let sensorWidth = parseNum(byId("ncSw").value);
+  let focalMin = parseNum(byId("ncFmin").value),
+    focalMax = parseNum(byId("ncFmax").value);
+  const price = parseNum(byId("ncPrice").value);
+  if (!(sensorWidth > 0) && pixelPitchUm > 0 && Nw > 0)
+    sensorWidth = +((pixelPitchUm * Nw) / 1000).toFixed(3);
+  if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
+  if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
+  const errors = [];
+  if (!name) errors.push(t("eName"));
+  if (!(Nw > 0 && Nh > 0)) errors.push(t("eFrame"));
+  if (!(sensorWidth > 0)) errors.push(t("eSw"));
+  if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
+    errors.push(t("eFRange"));
+  const errorEl = byId("ncErr");
+  if (errors.length) {
+    errorEl.hidden = false;
+    errorEl.textContent = t("ncErr", errors.join(", "));
     return;
   }
-  er.hidden = true;
-  CAMS_C.push({
+  errorEl.hidden = true;
+  customCameras.push({
     id: "m" + uid(),
     name,
     Nw,
     Nh,
-    sw,
-    fmin: fmin > 0 ? fmin : 0,
-    fmax: fmax > 0 ? fmax : 0,
+    sensorWidth,
+    focalMin: focalMin > 0 ? focalMin : 0,
+    focalMax: focalMax > 0 ? focalMax : 0,
     price: price > 0 ? price : 0,
     custom: true,
   });
@@ -2959,8 +3235,8 @@ $("camForm").addEventListener("submit", (e) => {
     "ncFmin",
     "ncFmax",
     "ncPrice",
-  ].forEach((id) => ($(id).value = ""));
-  buildCamSelect();
+  ].forEach((id) => (byId(id).value = ""));
+  buildCameraSelect();
   renderCamView();
   save();
   toast(t("cAdded", name));
@@ -2968,68 +3244,79 @@ $("camForm").addEventListener("submit", (e) => {
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
-  $("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
+  byId("detTitle").textContent = t(
+    "detTitle",
+    MODELS.length + customDetectors.length,
+  );
   const used = (id) =>
-    TYPES.reduce((s, t) => s + t.objs.filter((o) => o.model === id).length, 0);
-  $("detTbl").innerHTML =
-    `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
-    (DETS.length
-      ? DETS.map((d) => {
-          const rg = gpuById(d.ref);
-          return `<tr><td class="txt"><b style="font-weight:600">${esc(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inp}</td><td>${d.gf > 0 ? fmt(d.gf, 1) : "—"}</td><td>${t("dSpeed", fmt(d.fps, 0), esc(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${esc(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
-        }).join("")
+    cameraTypes.reduce(
+      (sum, type) =>
+        sum + type.objects.filter((obj) => obj.model === id).length,
+      0,
+    );
+  byId("detTbl").innerHTML =
+    `<tr>${STR.dHead.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
+    (customDetectors.length
+      ? customDetectors
+          .map((detector) => {
+            const refGpu = gpuById(detector.refGpu);
+            return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(detector.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${detector.inputSize}</td><td>${detector.gflops > 0 ? formatNumber(detector.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(detector.fps, 0), escapeHtml(refGpu ? refGpu.name : "?"))}</td><td>${used(detector.id)}</td><td><button type="button" class="sm" data-deld="${detector.id}" aria-label="${escapeHtml(t("delAria", detector.name))}">${t("del")}</button></td></tr>`;
+          })
+          .join("")
       : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
     MODELS.map(
-      (m) =>
-        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${fmt(m.gf, 1)}</td><td>${t("dSpeed", fmt(1000 / m.ms, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
+      (model) =>
+        `<tr><td class="txt">${model.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(model.gflops, 1)}</td><td>${t("dSpeed", formatNumber(1000 / model.latencyMs, 0), "T4")}</td><td>${used(model.id)}</td><td></td></tr>`,
     ).join("");
-  document.querySelectorAll("[data-deld]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = b.dataset.deld;
-      DETS = DETS.filter((d) => d.id !== id);
-      TYPES.forEach((t) =>
-        t.objs.forEach((o) => {
-          if (o.model === id) o.model = "y26s";
+  document.querySelectorAll("[data-deld]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const id = button.dataset.deld;
+      customDetectors = customDetectors.filter(
+        (detector) => detector.id !== id,
+      );
+      cameraTypes.forEach((type) =>
+        type.objects.forEach((obj) => {
+          if (obj.model === id) obj.model = "y26s";
         }),
       );
-      renderObjs();
+      renderObjects();
       renderDetView();
       calcAll();
       toast(t("dDeleted"));
     }),
   );
 }
-$("ndInp").innerHTML = INPUTS.map(
-  (x) => `<option${x === 640 ? " selected" : ""}>${x}</option>`,
+byId("ndInp").innerHTML = INPUTS.map(
+  (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`,
 ).join("");
-$("detForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = $("ndName").value.trim(),
-    fps = P($("ndFps").value),
-    inp = +$("ndInp").value,
-    ref = $("ndRef").value,
-    gf = P($("ndGf").value);
-  const errs = [];
-  if (!name) errs.push(t("eName"));
-  if (!(fps > 0)) errs.push(t("eFps"));
-  const er = $("ndErr");
-  if (errs.length) {
-    er.hidden = false;
-    er.textContent = t("ncErr", errs.join(", "));
+byId("detForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = byId("ndName").value.trim(),
+    fps = parseNum(byId("ndFps").value),
+    inputSize = +byId("ndInp").value,
+    refGpu = byId("ndRef").value,
+    gflops = parseNum(byId("ndGf").value);
+  const errors = [];
+  if (!name) errors.push(t("eName"));
+  if (!(fps > 0)) errors.push(t("eFps"));
+  const errorEl = byId("ndErr");
+  if (errors.length) {
+    errorEl.hidden = false;
+    errorEl.textContent = t("ncErr", errors.join(", "));
     return;
   }
-  er.hidden = true;
-  DETS.push({
+  errorEl.hidden = true;
+  customDetectors.push({
     id: "d" + uid(),
     name,
     fps,
-    inp,
-    ref,
-    gf: gf > 0 ? gf : 0,
+    inputSize,
+    refGpu,
+    gflops: gflops > 0 ? gflops : 0,
     custom: true,
   });
-  ["ndName", "ndFps", "ndGf"].forEach((id) => ($(id).value = ""));
-  renderObjs();
+  ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
+  renderObjects();
   renderDetView();
   calcAll();
   toast(t("dAdded", name));
@@ -3038,92 +3325,98 @@ $("detForm").addEventListener("submit", (e) => {
 // ---------- главный цикл
 let report = "";
 function calcAll() {
-  const Rs = TYPES.map(computeType);
-  const i = Math.max(
+  const results = cameraTypes.map(computeType);
+  const activeIndex = Math.max(
     0,
-    TYPES.findIndex((t) => t.id === ACT),
+    cameraTypes.findIndex((type) => type.id === activeTypeId),
   );
-  syncFormUI(TYPES[i], Rs[i]);
-  renderType(Rs[i]);
-  renderTabs(Rs);
-  const S = computeSystem(Rs);
-  const sysTot = renderSystem(Rs, S);
-  const E = S.E;
+  syncFormUI(cameraTypes[activeIndex], results[activeIndex]);
+  renderType(results[activeIndex]);
+  renderTabs(results);
+  const system = computeSystem(results);
+  const systemTotals = renderSystem(results, system);
+  const chosen = system.chosen;
   report = [
     t("appTitle"),
-    ...Rs.flatMap((r) =>
-      r.err
-        ? ["\n" + t("rErr", r.T.name, r.count)]
+    ...results.flatMap((result) =>
+      result.err
+        ? ["\n" + t("rErr", result.type.name, result.count)]
         : [
-            `\n${r.T.name} × ${r.count}`,
+            `\n${result.type.name} × ${result.count}`,
             t("rCam", {
-              rl: r.rl,
-              rot: r.rot,
-              s: fmt(r.s, 2),
-              f: fmt(r.f, 1),
-              hf: fmt(r.hf / R, 0),
-              tilt: fmt(r.tilt / R, 0),
-              top: r.pos === "top",
-              L0: fmt(r.L0, 2),
-              H: fmt(r.H, 2),
-              Wz: fmt(r.Wz, 2),
-              Dz: fmt(r.Dz, 2),
+              cameraLabel: result.cameraLabel,
+              rotated: result.rotated,
+              sensorWidth: formatNumber(result.s, 2),
+              focal: formatNumber(result.f, 1),
+              hfov: formatNumber(result.hfov / DEG, 0),
+              tilt: formatNumber(result.tilt / DEG, 0),
+              overCenter: result.placement === "top",
+              zoneStart: formatNumber(result.zoneStart, 2),
+              cameraHeight: formatNumber(result.H, 2),
+              zoneWidth: formatNumber(result.zoneWidth, 2),
+              zoneDepth: formatNumber(result.zoneDepth, 2),
             }),
-            ...r.valid.map((o) =>
+            ...result.valid.map((obj) =>
               t("rObj", {
-                name: o.name,
-                model: mName(o),
-                feed: o.fi.txt,
-                pxs: r.pxs(o),
-                pxm: r.pxm(o),
-                req: fmt(o.reqN, 0),
-                st: stTxt[o.st],
+                name: obj.name,
+                model: modelName(obj),
+                feed: obj.feedInfo.text,
+                sensorPx: result.sensorPxText(obj),
+                modelPx: result.modelPxText(obj),
+                requiredPx: formatNumber(obj.requiredPx, 0),
+                status: STATUS_TEXT[obj.status],
               }),
             ),
-            t("rStream", fmt(r.mb, 1), Math.ceil(r.X)),
+            t(
+              "rStream",
+              formatNumber(result.bitrateMbps, 1),
+              Math.ceil(result.shutterDenominator),
+            ),
           ],
     ),
     "\n" +
       t(
         "rSys",
-        sysTot.cams,
-        fmt(sysTot.mbTot, 0),
-        sysTot.camCost ? "$" + fmt(sysTot.camCost, 0) : "",
+        systemTotals.cameraCount,
+        formatNumber(systemTotals.totalMbps, 0),
+        systemTotals.cameraCost
+          ? "$" + formatNumber(systemTotals.cameraCost, 0)
+          : "",
       ),
-    S.live.length
+    system.liveResults.length
       ? t("rCompute", {
-          n: E.n,
-          g: E.g.name,
-          cost: "$" + fmt(E.cost, 0),
-          uI: fmt(E.uI * 100, 0),
-          uD: fmt(E.uD * 100, 0),
-          mem: fmt(E.memUse, 1),
-          cap: fmt(E.memCap, 0),
-          best:
-            S.best && S.best !== E
-              ? `${S.best.n} × ${S.best.g.name}, $${fmt(S.best.cost, 0)}`
+          gpuCount: chosen.count,
+          gpuName: chosen.gpu.name,
+          cost: "$" + formatNumber(chosen.cost, 0),
+          inferenceLoad: formatNumber(chosen.inferenceLoad * 100, 0),
+          decodeLoad: formatNumber(chosen.decodeLoad * 100, 0),
+          memoryUsed: formatNumber(chosen.memoryUseGB, 1),
+          memoryCap: formatNumber(chosen.memoryCapGB, 0),
+          optimum:
+            system.optimum && system.optimum !== chosen
+              ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}`
               : "",
         })
       : t("rNoCompute"),
   ].join("\n");
   save();
 }
-const GL_IDS = ["kr", "resv", "days", "gpu", "gcnt"];
-const snap = () => ({
-  types: TYPES,
-  act: ACT,
-  gl: Object.fromEntries(GL_IDS.map((id) => [id, $(id).value])),
-  price: PRICE,
-  on: ON,
-  custom: CUSTOM,
-  cams: CAMS_C,
-  dets: DETS,
+const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
+const snapshot = () => ({
+  types: cameraTypes,
+  activeTypeId,
+  system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
+  gpuPrices,
+  gpuEnabled,
+  customGpus,
+  customCameras,
+  customDetectors,
   light: document.documentElement.classList.contains("light"),
 });
 let stale = false;
 const STALE_MSG = t("stale");
-addEventListener("storage", (e) => {
-  if (e.key === "camcalc3") {
+addEventListener("storage", (event) => {
+  if (event.key === "camcalc4") {
     stale = true;
     toast(STALE_MSG);
   }
@@ -3134,510 +3427,583 @@ function save() {
     return;
   }
   try {
-    localStorage.setItem("camcalc3", JSON.stringify(snap()));
-  } catch (e) {}
+    localStorage.setItem("camcalc4", JSON.stringify(snapshot()));
+  } catch (error) {}
 }
 function load() {
   try {
-    const st = JSON.parse(localStorage.getItem("camcalc3") || "null");
-    if (!st) return;
+    const saved = JSON.parse(localStorage.getItem("camcalc4") || "null");
+    if (!saved) return;
     // старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
-    const dot = (x) => (typeof x === "string" ? x.replace(",", ".") : x);
-    const dotAll = (obj) =>
-      Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
-    const shownName = (x) => (x.nameKey && builtinName(x.nameKey)) || x.name;
-    if (Array.isArray(st.custom))
-      CUSTOM = st.custom
-        .filter((g) => g && g.id && g.name && g.tf > 0)
-        .map((g) => ({ ...g, custom: true }));
-    if (Array.isArray(st.cams))
-      CAMS_C = st.cams
-        .filter((c) => c && c.id && c.Nw > 0 && c.Nh > 0 && c.sw > 0)
-        .map((c) => ({ ...c, custom: true }));
-    if (Array.isArray(st.dets))
-      DETS = st.dets
-        .filter((d) => d && d.id && d.fps > 0)
-        .map((d) => ({ ...d, custom: true }));
-    if (st.price && typeof st.price === "object") PRICE = dotAll(st.price);
-    if (st.on && typeof st.on === "object") ON = st.on;
-    if (st.light) setTheme(true);
+    const withDot = (value) =>
+      typeof value === "string" ? value.replace(",", ".") : value;
+    const allWithDot = (values) =>
+      Object.fromEntries(
+        Object.entries(values).map(([key, value]) => [key, withDot(value)]),
+      );
+    const shownName = (item) =>
+      (item.nameKey && builtinName(item.nameKey)) || item.name;
+    if (Array.isArray(saved.customGpus))
+      customGpus = saved.customGpus
+        .filter((gpu) => gpu && gpu.id && gpu.name && gpu.tflops > 0)
+        .map((gpu) => ({ ...gpu, custom: true }));
+    if (Array.isArray(saved.customCameras))
+      customCameras = saved.customCameras
+        .filter(
+          (camera) =>
+            camera &&
+            camera.id &&
+            camera.Nw > 0 &&
+            camera.Nh > 0 &&
+            camera.sensorWidth > 0,
+        )
+        .map((camera) => ({ ...camera, custom: true }));
+    if (Array.isArray(saved.customDetectors))
+      customDetectors = saved.customDetectors
+        .filter((detector) => detector && detector.id && detector.fps > 0)
+        .map((detector) => ({ ...detector, custom: true }));
+    if (saved.gpuPrices && typeof saved.gpuPrices === "object")
+      gpuPrices = allWithDot(saved.gpuPrices);
+    if (saved.gpuEnabled && typeof saved.gpuEnabled === "object")
+      gpuEnabled = saved.gpuEnabled;
+    if (saved.light) setTheme(true);
     buildGpuSelect();
-    buildCamSelect();
-    if (Array.isArray(st.types) && st.types.length) {
-      TYPES = st.types.map((t) => ({
-        id: t.id || uid(),
-        name: shownName(t),
-        nameKey: t.nameKey,
-        count: dot(t.count),
-        v: dotAll({ ...DEF_V, ...t.v }),
-        objs: (t.objs || []).map((o) => ({
-          ...mkObj([
-            shownName(o),
-            dot(o.w),
-            dot(o.d),
-            dot(o.z),
-            dot(o.req),
-            modelById(o.model) ? o.model : "y26s",
-            o.feed,
-            o.inp,
-            o.nameKey,
+    buildCameraSelect();
+    if (Array.isArray(saved.types) && saved.types.length) {
+      cameraTypes = saved.types.map((type) => ({
+        id: type.id || uid(),
+        name: shownName(type),
+        nameKey: type.nameKey,
+        count: withDot(type.count),
+        inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
+        objects: (type.objects || []).map((obj) => ({
+          ...makeObject([
+            shownName(obj),
+            withDot(obj.width),
+            withDot(obj.length),
+            withDot(obj.height),
+            withDot(obj.requiredPx),
+            modelById(obj.model) ? obj.model : "y26s",
+            obj.feed,
+            obj.inputSize,
+            obj.nameKey,
           ]),
-          ov: dot(o.ov ?? 20),
+          overlap: withDot(obj.overlap ?? 20),
         })),
       }));
-      ACT = TYPES.some((t) => t.id === st.act) ? st.act : TYPES[0].id;
+      activeTypeId = cameraTypes.some((type) => type.id === saved.activeTypeId)
+        ? saved.activeTypeId
+        : cameraTypes[0].id;
     }
-    if (st.gl)
-      GL_IDS.forEach((id) => {
-        const el = $(id);
-        if (st.gl[id] != null) el.value = dot(st.gl[id]);
-        if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = "auto";
+    if (saved.system)
+      SYSTEM_IDS.forEach((id) => {
+        const field = byId(id);
+        if (saved.system[id] != null) field.value = withDot(saved.system[id]);
+        if (field.tagName === "SELECT" && field.selectedIndex < 0)
+          field.value = "auto";
       });
-  } catch (e) {}
+  } catch (error) {}
 }
 
 // ---------- события
 function setTheme(light) {
   document.documentElement.classList.toggle("light", light);
-  $("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
-  $("themeBtn").setAttribute("aria-pressed", String(light));
+  byId("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
+  byId("themeBtn").setAttribute("aria-pressed", String(light));
 }
-$("themeBtn").addEventListener("click", () => {
+byId("themeBtn").addEventListener("click", () => {
   setTheme(!document.documentElement.classList.contains("light"));
   save();
 });
-$("langBtn").lang = LANG === "en" ? "ru" : "en";
-$("langBtn").addEventListener("click", () => {
+byId("langBtn").lang = LANG === "en" ? "ru" : "en";
+byId("langBtn").addEventListener("click", () => {
   try {
-    localStorage.setItem(LANG_KEY, $("langBtn").lang);
-  } catch (e) {
+    localStorage.setItem(LANG_KEY, byId("langBtn").lang);
+  } catch (error) {
     toast(t("saveFail"));
     return;
   }
   location.reload();
 });
-PRESETS.forEach((pr) => {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "chip";
-  b.textContent = pr[0];
-  b.addEventListener("click", () => {
-    act().objs.push(mkObj(pr));
-    renderObjs();
+OBJECT_PRESETS.forEach((preset) => {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip";
+  chip.textContent = preset[0];
+  chip.addEventListener("click", () => {
+    activeType().objects.push(makeObject(preset));
+    renderObjects();
     calcAll();
   });
-  $("presets").append(b);
+  byId("presets").append(chip);
 });
-$("addObj").addEventListener("click", () => {
-  const T = act();
-  T.objs.push(
-    mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
+byId("addObj").addEventListener("click", () => {
+  const type = activeType();
+  type.objects.push(
+    makeObject([
+      t("objDefault"),
+      10,
+      10,
+      10,
+      20,
+      "y26s",
+      "roi",
+      640,
+      "objDefault",
+    ]),
   );
-  renderObjs();
+  renderObjects();
   calcAll();
-  const i = T.objs.length - 1;
-  $(`on-${i}`).focus();
-  $(`on-${i}`).select();
+  const lastIndex = type.objects.length - 1;
+  byId(`obj-name-${lastIndex}`).focus();
+  byId(`obj-name-${lastIndex}`).select();
 });
-$("frm").addEventListener("input", () => {
+byId("frm").addEventListener("input", () => {
   readForm();
   calcAll();
 });
-$("frm").addEventListener("change", () => {
+byId("frm").addEventListener("change", () => {
   readForm();
   calcAll();
 });
-$("frm").addEventListener("submit", (e) => e.preventDefault());
-GL_IDS.forEach((id) => {
-  $(id).addEventListener("input", calcAll);
-  $(id).addEventListener("change", calcAll);
+byId("frm").addEventListener("submit", (event) => event.preventDefault());
+SYSTEM_IDS.forEach((id) => {
+  byId(id).addEventListener("input", calcAll);
+  byId(id).addEventListener("change", calcAll);
 });
-$("dupBtn").addEventListener("click", () => {
+byId("dupBtn").addEventListener("click", () => {
   readForm();
-  const src = act(),
-    T = JSON.parse(JSON.stringify(src));
-  T.id = uid();
-  T.name = src.name + t("copySuffix");
-  delete T.nameKey;
-  TYPES.splice(TYPES.indexOf(src) + 1, 0, T);
-  ACT = T.id;
-  writeForm(T);
+  const source = activeType(),
+    copy = JSON.parse(JSON.stringify(source));
+  copy.id = uid();
+  copy.name = source.name + t("copySuffix");
+  delete copy.nameKey;
+  cameraTypes.splice(cameraTypes.indexOf(source) + 1, 0, copy);
+  activeTypeId = copy.id;
+  writeForm(copy);
   calcAll();
   toast(t("typeCopied"));
 });
-let delArm = null;
-$("delBtn").addEventListener("click", () => {
-  const b = $("delBtn");
-  if (TYPES.length < 2) {
+let deleteTimer = null;
+byId("delBtn").addEventListener("click", () => {
+  const button = byId("delBtn");
+  if (cameraTypes.length < 2) {
     toast(t("lastType"));
     return;
   }
-  if (!delArm) {
-    b.textContent = t("delConfirm");
-    delArm = setTimeout(() => {
-      b.textContent = t("delBtn");
-      delArm = null;
+  if (!deleteTimer) {
+    button.textContent = t("delConfirm");
+    deleteTimer = setTimeout(() => {
+      button.textContent = t("delBtn");
+      deleteTimer = null;
     }, 3000);
     return;
   }
-  clearTimeout(delArm);
-  delArm = null;
-  b.textContent = t("delBtn");
-  const i = TYPES.findIndex((t) => t.id === ACT);
-  TYPES.splice(i, 1);
-  ACT = TYPES[Math.max(0, i - 1)].id;
-  writeForm(act());
+  clearTimeout(deleteTimer);
+  deleteTimer = null;
+  button.textContent = t("delBtn");
+  const index = cameraTypes.findIndex((type) => type.id === activeTypeId);
+  cameraTypes.splice(index, 1);
+  activeTypeId = cameraTypes[Math.max(0, index - 1)].id;
+  writeForm(activeType());
   calcAll();
   toast(t("typeDeleted"));
 });
-function toast(t) {
-  const el = $("toast");
-  el.textContent = t;
-  el.hidden = false;
-  clearTimeout(toast.t);
-  toast.t = setTimeout(() => (el.hidden = true), 1800);
+function toast(message) {
+  const toastEl = byId("toast");
+  toastEl.textContent = message;
+  toastEl.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => (toastEl.hidden = true), 1800);
 }
-$("resetBtn").addEventListener("click", () => {
-  TYPES = defTypes();
-  ACT = TYPES[0].id;
-  $("kr").value = "0.6";
-  $("resv").value = "20";
-  $("days").value = "0";
-  $("gcnt").value = "auto";
-  PRICE = {};
-  ON = {};
+byId("resetBtn").addEventListener("click", () => {
+  cameraTypes = exampleTypes();
+  activeTypeId = cameraTypes[0].id;
+  byId("efficiency").value = "0.6";
+  byId("reserve").value = "20";
+  byId("archiveDays").value = "0";
+  byId("gpuCount").value = "auto";
+  gpuPrices = {};
+  gpuEnabled = {};
   buildGpuSelect();
-  $("gpu").value = "auto";
-  writeForm(act());
+  byId("gpu").value = "auto";
+  writeForm(activeType());
   calcAll();
   toast(t("exampleLoaded"));
 });
-$("copyBtn").addEventListener("click", () => {
+byId("copyBtn").addEventListener("click", () => {
   navigator.clipboard.writeText(report).then(
     () => toast(t("reportCopied")),
     () => toast(t("copyFail")),
   );
 });
-$("expBtn").addEventListener("click", () => {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(
-    new Blob([JSON.stringify(snap(), null, 1)], { type: "application/json" }),
+byId("expBtn").addEventListener("click", () => {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(
+    new Blob([JSON.stringify(snapshot(), null, 1)], {
+      type: "application/json",
+    }),
   );
-  a.download = "camera-calc.json";
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 0);
+  link.download = "camera-calc.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 0);
 });
-function importText(s) {
-  let st;
+function importText(text) {
+  let saved;
   try {
-    st = JSON.parse(s);
-  } catch (e) {}
-  const isObj = (x) => x && typeof x === "object";
+    saved = JSON.parse(text);
+  } catch (error) {}
+  const isObject = (value) => value && typeof value === "object";
   if (
-    !isObj(st) ||
-    !Array.isArray(st.types) ||
-    !st.types.length ||
-    !st.types.every(
-      (t) =>
-        isObj(t) &&
-        typeof t.name === "string" &&
-        (t.objs == null || (Array.isArray(t.objs) && t.objs.every(isObj))),
+    !isObject(saved) ||
+    !Array.isArray(saved.types) ||
+    !saved.types.length ||
+    !saved.types.every(
+      (type) =>
+        isObject(type) &&
+        typeof type.name === "string" &&
+        (type.objects == null ||
+          (Array.isArray(type.objects) && type.objects.every(isObject))),
     ) ||
-    !["custom", "cams", "dets"].every((k) => Array.isArray(st[k])) ||
-    !isObj(st.price) ||
-    !isObj(st.on)
+    !["customGpus", "customCameras", "customDetectors"].every((key) =>
+      Array.isArray(saved[key]),
+    ) ||
+    !isObject(saved.gpuPrices) ||
+    !isObject(saved.gpuEnabled)
   ) {
     toast(t("badFile"));
     return;
   }
   try {
-    localStorage.setItem("camcalc3", JSON.stringify(st));
-  } catch (e) {
+    localStorage.setItem("camcalc4", JSON.stringify(saved));
+  } catch (error) {
     toast(t("saveFail"));
     return;
   }
   location.reload();
 }
-let impArm = null;
-$("impBtn").addEventListener("click", () => {
-  const b = $("impBtn");
-  if (!impArm) {
-    b.textContent = t("impConfirm");
-    impArm = setTimeout(() => {
-      b.textContent = t("impBtn");
-      impArm = null;
+let importTimer = null;
+byId("impBtn").addEventListener("click", () => {
+  const button = byId("impBtn");
+  if (!importTimer) {
+    button.textContent = t("impConfirm");
+    importTimer = setTimeout(() => {
+      button.textContent = t("impBtn");
+      importTimer = null;
     }, 3000);
     return;
   }
-  clearTimeout(impArm);
-  impArm = null;
-  b.textContent = t("impBtn");
-  $("impFile").click();
+  clearTimeout(importTimer);
+  importTimer = null;
+  button.textContent = t("impBtn");
+  byId("impFile").click();
 });
-$("impFile").addEventListener("change", (e) => {
-  const f = e.target.files[0];
-  e.target.value = "";
-  if (f) f.text().then(importText, () => toast(t("readFail")));
+byId("impFile").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (file) file.text().then(importText, () => toast(t("readFail")));
 });
-const TPL = {
+const TEMPLATE_VIEWS = {
   "tpl-gpus": renderGpuView,
   "tpl-cams": renderCamView,
   "tpl-dets": renderDetView,
 };
 function route() {
-  const h = location.hash.slice(1),
-    isTpl = h in TPL;
-  $("viewMain").style.display = isTpl ? "none" : "flex";
-  $("viewTpl").hidden = !isTpl;
-  $("viewTpl").style.display = isTpl ? "flex" : "none";
-  if (isTpl) {
-    Object.keys(TPL).forEach((k) => {
-      $(k + "-v").hidden = k !== h;
-      $(k + "-v").style.display = k === h ? "flex" : "none";
-      const a = $("tt-" + k.slice(4));
-      if (k === h) a.setAttribute("aria-current", "page");
-      else a.removeAttribute("aria-current");
+  const hash = location.hash.slice(1),
+    isTemplate = hash in TEMPLATE_VIEWS;
+  byId("viewMain").style.display = isTemplate ? "none" : "flex";
+  byId("viewTpl").hidden = !isTemplate;
+  byId("viewTpl").style.display = isTemplate ? "flex" : "none";
+  if (isTemplate) {
+    Object.keys(TEMPLATE_VIEWS).forEach((view) => {
+      byId(view + "-v").hidden = view !== hash;
+      byId(view + "-v").style.display = view === hash ? "flex" : "none";
+      const link = byId("tt-" + view.slice(4));
+      if (view === hash) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
     });
-    TPL[h]();
-  } else if (h === "") (writeForm(act()), calcAll());
+    TEMPLATE_VIEWS[hash]();
+  } else if (hash === "") (writeForm(activeType()), calcAll());
   try {
     window.scrollTo(0, 0);
-  } catch (e) {}
+  } catch (error) {}
 }
 window.addEventListener("hashchange", route);
-function drawSide({ H, h, x1, x2, tilt, vf, Hc, pos, wN, wF }) {
-  const Wv = 680,
-    Hv = 510,
-    ml = 64,
-    mr = 60,
-    mt = 28,
-    mb = 74;
-  const a1 = tilt + vf / 2,
-    a2 = tilt - vf / 2;
-  const hitX = (a) => (a > 0.02 && a < Math.PI - 0.02 ? Hc / Math.tan(a) : NaN);
-  const fwd = hitX(a2),
-    back = hitX(a1);
-  const xmax = Math.max(
+// Обозначения как в 04-compute-type:
+//   H — высота камеры, h — высота плоскости объектов, Hc = H − h — высота камеры над плоскостью, м;
+//   x1 и x2 — края зоны по полу от точки под камерой, м.
+// Переменные с окончанием X/Y — координаты на схеме, px.
+function drawSide({
+  H,
+  h,
+  x1,
+  x2,
+  tilt,
+  vfov,
+  Hc,
+  placement,
+  frameWidthNear,
+  frameWidthFar,
+}) {
+  const viewWidth = 680,
+    viewHeight = 510,
+    marginLeft = 64,
+    marginRight = 60,
+    marginTop = 28,
+    marginBottom = 74;
+  // углы краёв поля зрения ниже горизонта: ближний круче, дальний положе
+  const nearEdgeAngle = tilt + vfov / 2,
+    farEdgeAngle = tilt - vfov / 2;
+  const planeHitX = (angle) =>
+    angle > 0.02 && angle < Math.PI - 0.02 ? Hc / Math.tan(angle) : NaN;
+  const forwardHit = planeHitX(farEdgeAngle),
+    backHit = planeHitX(nearEdgeAngle);
+  const xMax = Math.max(
     x2 + 0.3,
-    isFinite(fwd)
-      ? Math.min(fwd, x2 + Math.abs(x2 - x1) * 0.6) + 0.3
+    isFinite(forwardHit)
+      ? Math.min(forwardHit, x2 + Math.abs(x2 - x1) * 0.6) + 0.3
       : x2 * 1.6 + 0.3,
   );
-  const xmin = Math.min(
+  const xMin = Math.min(
     -0.3,
     x1 - 0.3,
-    isFinite(back) && back < 0
-      ? Math.max(back, x1 - Math.abs(x2 - x1) * 0.6) - 0.3
+    isFinite(backHit) && backHit < 0
+      ? Math.max(backHit, x1 - Math.abs(x2 - x1) * 0.6) - 0.3
       : -0.3,
   );
-  const sc = Math.min(
-    (Wv - ml - mr) / (xmax - xmin),
-    (Hv - mt - mb) / (H * 1.04),
+  // px на метр
+  const scale = Math.min(
+    (viewWidth - marginLeft - marginRight) / (xMax - xMin),
+    (viewHeight - marginTop - marginBottom) / (H * 1.04),
   );
-  const ox = ml + (Wv - ml - mr - (xmax - xmin) * sc) / 2;
-  const X = (x) => ox + (x - xmin) * sc,
-    Y = (y) => Hv - mb - y * sc;
-  const n = (v) => (+v).toFixed(1);
-  const cx = X(0),
-    cy = Y(H),
-    yP = Y(h),
-    y0 = Y(0),
-    xL = X(xmin),
-    xR = X(xmax);
-  const ray = (a) => {
-    const hx = hitX(a);
-    if (isFinite(hx) && hx >= xmin && hx <= xmax) return [X(hx), yP];
-    const b = Math.cos(a) >= 0 ? xmax : xmin;
-    return [X(b), Y(H - b * Math.tan(a))];
+  const offsetX =
+    marginLeft +
+    (viewWidth - marginLeft - marginRight - (xMax - xMin) * scale) / 2;
+  const toX = (x) => offsetX + (x - xMin) * scale,
+    toY = (y) => viewHeight - marginBottom - y * scale;
+  const coord = (value) => (+value).toFixed(1);
+  const cameraX = toX(0),
+    cameraY = toY(H),
+    planeY = toY(h),
+    floorY = toY(0),
+    leftX = toX(xMin),
+    rightX = toX(xMax);
+  // конец луча: точка на плоскости или на краю схемы
+  const rayEnd = (angle) => {
+    const hit = planeHitX(angle);
+    if (isFinite(hit) && hit >= xMin && hit <= xMax) return [toX(hit), planeY];
+    const edge = Math.cos(angle) >= 0 ? xMax : xMin;
+    return [toX(edge), toY(H - edge * Math.tan(angle))];
   };
-  const [p1x, p1y] = ray(a1),
-    [p2x, p2y] = ray(a2),
-    [cxr, cyr] = ray(tilt);
-  let g = "";
+  const [nearRayX, nearRayY] = rayEnd(nearEdgeAngle),
+    [farRayX, farRayY] = rayEnd(farEdgeAngle),
+    [axisX, axisY] = rayEnd(tilt);
+  let svg = "";
   // сетка с шагом 1/2/5 м
-  const st = [0.5, 1, 2, 5, 10].find((s) => s * sc >= 45) || 10;
-  for (let x = Math.ceil(xmin / st) * st; x <= xmax + 1e-9; x += st)
-    g += `<line x1="${n(X(x))}" y1="${n(Y(H * 1.04))}" x2="${n(X(x))}" y2="${n(y0)}" stroke="var(--grid)"/>`;
-  for (let y = st; y <= H * 1.04 + 1e-9; y += st)
-    g += `<line x1="${n(xL)}" y1="${n(Y(y))}" x2="${n(xR)}" y2="${n(Y(y))}" stroke="var(--grid)"/>`;
+  const gridStep = [0.5, 1, 2, 5, 10].find((step) => step * scale >= 45) || 10;
+  for (
+    let x = Math.ceil(xMin / gridStep) * gridStep;
+    x <= xMax + 1e-9;
+    x += gridStep
+  )
+    svg += `<line x1="${coord(toX(x))}" y1="${coord(toY(H * 1.04))}" x2="${coord(toX(x))}" y2="${coord(floorY)}" stroke="var(--grid)"/>`;
+  for (let y = gridStep; y <= H * 1.04 + 1e-9; y += gridStep)
+    svg += `<line x1="${coord(leftX)}" y1="${coord(toY(y))}" x2="${coord(rightX)}" y2="${coord(toY(y))}" stroke="var(--grid)"/>`;
   // пол и плоскость интереса
-  g += `<line x1="${n(xL - 24)}" y1="${n(y0)}" x2="${n(xR)}" y2="${n(y0)}" stroke="var(--muted)" stroke-width="2"/>`;
+  svg += `<line x1="${coord(leftX - 24)}" y1="${coord(floorY)}" x2="${coord(rightX)}" y2="${coord(floorY)}" stroke="var(--muted)" stroke-width="2"/>`;
   if (h > 0.01)
-    g += `<line x1="${n(xL)}" y1="${n(yP)}" x2="${n(xR)}" y2="${n(yP)}" stroke="var(--dash)" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+    svg += `<line x1="${coord(leftX)}" y1="${coord(planeY)}" x2="${coord(rightX)}" y2="${coord(planeY)}" stroke="var(--dash)" stroke-width="1.5" stroke-dasharray="6 5"/>`;
   // поле зрения и ось
-  g += `<polygon points="${n(cx)},${n(cy)} ${n(p1x)},${n(p1y)} ${n(p2x)},${n(p2y)}" fill="var(--wedge)"/>`;
-  g += `<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(p1x)}" y2="${n(p1y)}" stroke="var(--wedge-line)" stroke-width="1.8"/><line x1="${n(cx)}" y1="${n(cy)}" x2="${n(p2x)}" y2="${n(p2y)}" stroke="var(--wedge-line)" stroke-width="1.8"/>`;
-  g += `<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(cxr)}" y2="${n(cyr)}" stroke="var(--wedge-line)" stroke-width="1.5" stroke-dasharray="7 6" opacity=".85"/>`;
+  svg += `<polygon points="${coord(cameraX)},${coord(cameraY)} ${coord(nearRayX)},${coord(nearRayY)} ${coord(farRayX)},${coord(farRayY)}" fill="var(--wedge)"/>`;
+  svg += `<line x1="${coord(cameraX)}" y1="${coord(cameraY)}" x2="${coord(nearRayX)}" y2="${coord(nearRayY)}" stroke="var(--wedge-line)" stroke-width="1.8"/><line x1="${coord(cameraX)}" y1="${coord(cameraY)}" x2="${coord(farRayX)}" y2="${coord(farRayY)}" stroke="var(--wedge-line)" stroke-width="1.8"/>`;
+  svg += `<line x1="${coord(cameraX)}" y1="${coord(cameraY)}" x2="${coord(axisX)}" y2="${coord(axisY)}" stroke="var(--wedge-line)" stroke-width="1.5" stroke-dasharray="7 6" opacity=".85"/>`;
   // зона
-  const zx1 = X(x1),
-    zx2 = X(x2),
-    zw = zx2 - zx1;
-  g += `<rect x="${n(zx1)}" y="${n(yP - 6)}" width="${n(zw)}" height="12" rx="2" fill="var(--accent)"/>`;
-  const room = y0 - yP >= 40;
-  const zLabY = room ? yP - 16 : yP - 40,
-    fLabY = room ? yP + 28 : yP - 18;
-  g += `<text x="${n((zx1 + zx2) / 2)}" y="${n(zLabY)}" text-anchor="middle" class="t-z">${t("dZone", fmt(x2 - x1, 1))}</text>`;
-  if (isFinite(wN) && isFinite(wF)) {
-    const nar = zw < 240;
-    g += `<line x1="${n(zx1)}" y1="${n(yP + 7)}" x2="${n(zx1)}" y2="${n(yP + 13)}" stroke="var(--accent)" stroke-width="1.5"/><line x1="${n(zx2)}" y1="${n(yP + 7)}" x2="${n(zx2)}" y2="${n(yP + 13)}" stroke="var(--accent)" stroke-width="1.5"/>`;
-    g += `<text x="${n(zx1)}" y="${n(fLabY)}" text-anchor="${nar ? "end" : "middle"}">${t("dFrame", fmt(wN, 1))}</text>`;
-    g += `<text x="${n(zx2)}" y="${n(fLabY)}" text-anchor="${nar ? "start" : "middle"}">${t("dFrame", fmt(wF, 1))}</text>`;
+  const zoneStartX = toX(x1),
+    zoneEndX = toX(x2),
+    zoneWidthPx = zoneEndX - zoneStartX;
+  svg += `<rect x="${coord(zoneStartX)}" y="${coord(planeY - 6)}" width="${coord(zoneWidthPx)}" height="12" rx="2" fill="var(--accent)"/>`;
+  const hasRoomBelow = floorY - planeY >= 40;
+  const zoneLabelY = hasRoomBelow ? planeY - 16 : planeY - 40,
+    frameLabelY = hasRoomBelow ? planeY + 28 : planeY - 18;
+  svg += `<text x="${coord((zoneStartX + zoneEndX) / 2)}" y="${coord(zoneLabelY)}" text-anchor="middle" class="t-z">${t("dZone", formatNumber(x2 - x1, 1))}</text>`;
+  if (isFinite(frameWidthNear) && isFinite(frameWidthFar)) {
+    const isNarrow = zoneWidthPx < 240;
+    svg += `<line x1="${coord(zoneStartX)}" y1="${coord(planeY + 7)}" x2="${coord(zoneStartX)}" y2="${coord(planeY + 13)}" stroke="var(--accent)" stroke-width="1.5"/><line x1="${coord(zoneEndX)}" y1="${coord(planeY + 7)}" x2="${coord(zoneEndX)}" y2="${coord(planeY + 13)}" stroke="var(--accent)" stroke-width="1.5"/>`;
+    svg += `<text x="${coord(zoneStartX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "end" : "middle"}">${t("dFrame", formatNumber(frameWidthNear, 1))}</text>`;
+    svg += `<text x="${coord(zoneEndX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "start" : "middle"}">${t("dFrame", formatNumber(frameWidthFar, 1))}</text>`;
   }
   // углы
-  const dAx = (yP - cy) / Math.max(Math.sin(tilt), 0.05);
-  const r2 = Math.max(40, Math.min(150, dAx * 0.55)),
-    r1 = Math.max(28, Math.min(70, r2 * 0.47));
-  const pt = (r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
-  g += `<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(cx + r1 + 60)}" y2="${n(cy)}" stroke="var(--dim)" stroke-dasharray="4 4"/>`;
-  const [t1x, t1y] = pt(r1, tilt);
-  g += `<path d="M${n(cx + r1)},${n(cy)} A${r1},${r1} 0 0 1 ${n(t1x)},${n(t1y)}" fill="none" stroke="var(--fg)" stroke-width="1.5"/>`;
-  const [tlx, tly] = pt(r1 + 10, tilt / 2);
-  g += `<text x="${n(tlx)}" y="${n(tly + 5)}" class="t-b">${t("dTilt", fmt(tilt / R, 0))}</text>`;
-  const [v1x, v1y] = pt(r2, a2),
-    [v2x, v2y] = pt(r2, a1);
-  g += `<path d="M${n(v1x)},${n(v1y)} A${n(r2)},${n(r2)} 0 0 1 ${n(v2x)},${n(v2y)}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`;
-  const [vlx, vly] = pt(r2 + 12, tilt);
-  g += `<text x="${n(vlx + 4)}" y="${n(vly + 5)}" class="t-a">VFOV ${fmt(vf / R, 0)}°</text>`;
+  const axisLength = (planeY - cameraY) / Math.max(Math.sin(tilt), 0.05);
+  const fovArcRadius = Math.max(40, Math.min(150, axisLength * 0.55)),
+    tiltArcRadius = Math.max(28, Math.min(70, fovArcRadius * 0.47));
+  const pointAt = (radius, angle) => [
+    cameraX + radius * Math.cos(angle),
+    cameraY + radius * Math.sin(angle),
+  ];
+  svg += `<line x1="${coord(cameraX)}" y1="${coord(cameraY)}" x2="${coord(cameraX + tiltArcRadius + 60)}" y2="${coord(cameraY)}" stroke="var(--dim)" stroke-dasharray="4 4"/>`;
+  const [tiltArcEndX, tiltArcEndY] = pointAt(tiltArcRadius, tilt);
+  svg += `<path d="M${coord(cameraX + tiltArcRadius)},${coord(cameraY)} A${tiltArcRadius},${tiltArcRadius} 0 0 1 ${coord(tiltArcEndX)},${coord(tiltArcEndY)}" fill="none" stroke="var(--fg)" stroke-width="1.5"/>`;
+  const [tiltLabelX, tiltLabelY] = pointAt(tiltArcRadius + 10, tilt / 2);
+  svg += `<text x="${coord(tiltLabelX)}" y="${coord(tiltLabelY + 5)}" class="t-b">${t("dTilt", formatNumber(tilt / DEG, 0))}</text>`;
+  const [fovArcStartX, fovArcStartY] = pointAt(fovArcRadius, farEdgeAngle),
+    [fovArcEndX, fovArcEndY] = pointAt(fovArcRadius, nearEdgeAngle);
+  svg += `<path d="M${coord(fovArcStartX)},${coord(fovArcStartY)} A${coord(fovArcRadius)},${coord(fovArcRadius)} 0 0 1 ${coord(fovArcEndX)},${coord(fovArcEndY)}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`;
+  const [fovLabelX, fovLabelY] = pointAt(fovArcRadius + 12, tilt);
+  svg += `<text x="${coord(fovLabelX + 4)}" y="${coord(fovLabelY + 5)}" class="t-a">VFOV ${formatNumber(vfov / DEG, 0)}°</text>`;
   // камера
-  g += `<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(cx)}" y2="${n(y0)}" stroke="var(--dim)" stroke-width="1.5"/>`;
-  g += `<rect x="${n(cx - 16)}" y="${n(cy - 10)}" width="28" height="18" rx="3" fill="var(--fg)"/><circle cx="${n(cx + 12)}" cy="${n(cy - 1)}" r="4" fill="var(--bg)"/>`;
+  svg += `<line x1="${coord(cameraX)}" y1="${coord(cameraY)}" x2="${coord(cameraX)}" y2="${coord(floorY)}" stroke="var(--dim)" stroke-width="1.5"/>`;
+  svg += `<rect x="${coord(cameraX - 16)}" y="${coord(cameraY - 10)}" width="28" height="18" rx="3" fill="var(--fg)"/><circle cx="${coord(cameraX + 12)}" cy="${coord(cameraY - 1)}" r="4" fill="var(--bg)"/>`;
   // H слева
-  const xd = Math.min(cx, xL) - 30;
-  g += `<line x1="${n(xd)}" y1="${n(cy)}" x2="${n(xd)}" y2="${n(y0)}" stroke="var(--muted)"/><line x1="${n(xd - 6)}" y1="${n(cy)}" x2="${n(xd + 6)}" y2="${n(cy)}" stroke="var(--muted)"/><line x1="${n(xd - 6)}" y1="${n(y0)}" x2="${n(xd + 6)}" y2="${n(y0)}" stroke="var(--muted)"/>`;
-  g += `<text x="${n(xd - 8)}" y="${n((cy + y0) / 2)}" transform="rotate(-90 ${n(xd - 8)} ${n((cy + y0) / 2)})" text-anchor="middle" class="t-b">${t("dH", fmt(H, 1))}</text>`;
+  const heightDimX = Math.min(cameraX, leftX) - 30;
+  svg += `<line x1="${coord(heightDimX)}" y1="${coord(cameraY)}" x2="${coord(heightDimX)}" y2="${coord(floorY)}" stroke="var(--muted)"/><line x1="${coord(heightDimX - 6)}" y1="${coord(cameraY)}" x2="${coord(heightDimX + 6)}" y2="${coord(cameraY)}" stroke="var(--muted)"/><line x1="${coord(heightDimX - 6)}" y1="${coord(floorY)}" x2="${coord(heightDimX + 6)}" y2="${coord(floorY)}" stroke="var(--muted)"/>`;
+  svg += `<text x="${coord(heightDimX - 8)}" y="${coord((cameraY + floorY) / 2)}" transform="rotate(-90 ${coord(heightDimX - 8)} ${coord((cameraY + floorY) / 2)})" text-anchor="middle" class="t-b">${t("dH", formatNumber(H, 1))}</text>`;
   // h справа — повернута, не пересекается с подписями кадра
   if (h > 0.01) {
-    const xh = xR + 22,
-      ym = (yP + y0) / 2;
-    g += `<line x1="${n(xh)}" y1="${n(yP)}" x2="${n(xh)}" y2="${n(y0)}" stroke="var(--muted)"/><line x1="${n(xh - 6)}" y1="${n(yP)}" x2="${n(xh + 6)}" y2="${n(yP)}" stroke="var(--muted)"/><line x1="${n(xh - 6)}" y1="${n(y0)}" x2="${n(xh + 6)}" y2="${n(y0)}" stroke="var(--muted)"/>`;
-    g += `<text x="${n(xh + 20)}" y="${n(ym)}" transform="rotate(-90 ${n(xh + 20)} ${n(ym)})" text-anchor="middle">${t("dh", fmt(h, 2))}</text>`;
+    const planeDimX = rightX + 22,
+      planeDimMidY = (planeY + floorY) / 2;
+    svg += `<line x1="${coord(planeDimX)}" y1="${coord(planeY)}" x2="${coord(planeDimX)}" y2="${coord(floorY)}" stroke="var(--muted)"/><line x1="${coord(planeDimX - 6)}" y1="${coord(planeY)}" x2="${coord(planeDimX + 6)}" y2="${coord(planeY)}" stroke="var(--muted)"/><line x1="${coord(planeDimX - 6)}" y1="${coord(floorY)}" x2="${coord(planeDimX + 6)}" y2="${coord(floorY)}" stroke="var(--muted)"/>`;
+    svg += `<text x="${coord(planeDimX + 20)}" y="${coord(planeDimMidY)}" transform="rotate(-90 ${coord(planeDimX + 20)} ${coord(planeDimMidY)})" text-anchor="middle">${t("dh", formatNumber(h, 2))}</text>`;
   }
   // размеры по полу
-  const yd = y0 + 26,
-    yt = y0 + 47;
-  const dim = (a, b, txt) => {
-    g += `<line x1="${n(a)}" y1="${n(yd)}" x2="${n(b)}" y2="${n(yd)}" stroke="var(--muted)"/><line x1="${n(a)}" y1="${n(yd - 6)}" x2="${n(a)}" y2="${n(yd + 6)}" stroke="var(--muted)"/><line x1="${n(b)}" y1="${n(yd - 6)}" x2="${n(b)}" y2="${n(yd + 6)}" stroke="var(--muted)"/><text x="${n((a + b) / 2)}" y="${n(yt)}" text-anchor="middle">${txt}</text>`;
+  const dimLineY = floorY + 26,
+    dimTextY = floorY + 47;
+  const addDimension = (startX, endX, label) => {
+    svg += `<line x1="${coord(startX)}" y1="${coord(dimLineY)}" x2="${coord(endX)}" y2="${coord(dimLineY)}" stroke="var(--muted)"/><line x1="${coord(startX)}" y1="${coord(dimLineY - 6)}" x2="${coord(startX)}" y2="${coord(dimLineY + 6)}" stroke="var(--muted)"/><line x1="${coord(endX)}" y1="${coord(dimLineY - 6)}" x2="${coord(endX)}" y2="${coord(dimLineY + 6)}" stroke="var(--muted)"/><text x="${coord((startX + endX) / 2)}" y="${coord(dimTextY)}" text-anchor="middle">${label}</text>`;
   };
-  g += `<line x1="${n(zx1)}" y1="${n(yP + 6)}" x2="${n(zx1)}" y2="${n(yd - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/><line x1="${n(zx2)}" y1="${n(yP + 6)}" x2="${n(zx2)}" y2="${n(yd - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/>`;
+  svg += `<line x1="${coord(zoneStartX)}" y1="${coord(planeY + 6)}" x2="${coord(zoneStartX)}" y2="${coord(dimLineY - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/><line x1="${coord(zoneEndX)}" y1="${coord(planeY + 6)}" x2="${coord(zoneEndX)}" y2="${coord(dimLineY - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/>`;
   if (x1 > 0.05) {
-    const w = zx1 - cx;
-    dim(cx, zx1, t(w > 110 ? "dOffset" : "dLen", fmt(x1, 1)));
+    const offsetWidthPx = zoneStartX - cameraX;
+    addDimension(
+      cameraX,
+      zoneStartX,
+      t(offsetWidthPx > 110 ? "dOffset" : "dLen", formatNumber(x1, 1)),
+    );
   }
-  dim(zx1, zx2, t(zw > 170 ? "dDepth" : "dLen", fmt(x2 - x1, 1)));
+  addDimension(
+    zoneStartX,
+    zoneEndX,
+    t(zoneWidthPx > 170 ? "dDepth" : "dLen", formatNumber(x2 - x1, 1)),
+  );
   if (x1 <= 0.05)
-    g += `<text x="${n(cx)}" y="${n(yt + 20)}" text-anchor="middle">${t(pos === "top" ? "dOverCenter" : "dOverZone")}</text>`;
-  const s = $("side");
-  s.innerHTML = g;
-  s.setAttribute(
+    svg += `<text x="${coord(cameraX)}" y="${coord(dimTextY + 20)}" text-anchor="middle">${t(placement === "top" ? "dOverCenter" : "dOverZone")}</text>`;
+  const side = byId("side");
+  side.innerHTML = svg;
+  side.setAttribute(
     "aria-label",
     t("dAria", {
-      H: fmt(H, 1),
-      tilt: fmt(tilt / R, 0),
-      vf: fmt(vf / R, 0),
-      x1: fmt(x1, 1),
-      x2: fmt(x2, 1),
-      h: fmt(h, 2),
-      wN: isFinite(wN) && fmt(wN, 1),
-      wF: fmt(wF, 1),
+      H: formatNumber(H, 1),
+      tilt: formatNumber(tilt / DEG, 0),
+      vfov: formatNumber(vfov / DEG, 0),
+      x1: formatNumber(x1, 1),
+      x2: formatNumber(x2, 1),
+      h: formatNumber(h, 2),
+      frameWidthNear:
+        isFinite(frameWidthNear) && formatNumber(frameWidthNear, 1),
+      frameWidthFar: formatNumber(frameWidthFar, 1),
     }),
   );
 }
-const pop = document.createElement("div");
-pop.className = "pop";
-pop.id = "pop";
-pop.setAttribute("role", "tooltip");
-pop.hidden = true;
-document.body.append(pop);
-let popFor = null,
+const popover = document.createElement("div");
+popover.className = "pop";
+popover.id = "pop";
+popover.setAttribute("role", "tooltip");
+popover.hidden = true;
+document.body.append(popover);
+// кнопка «?», для которой открыта подсказка; pinned — открыта щелчком, а не наведением
+let popoverOwner = null,
   pinned = false;
-function showTip(btn, pin) {
-  popFor = btn;
+function showTip(button, pin) {
+  popoverOwner = button;
   pinned = !!pin;
-  pop.textContent = STR.tips[btn.dataset.key];
-  pop.hidden = false;
+  popover.textContent = STR.tips[button.dataset.key];
+  popover.hidden = false;
   document
     .querySelectorAll(".tipbtn[aria-expanded=true]")
-    .forEach((x) => x.setAttribute("aria-expanded", "false"));
-  btn.setAttribute("aria-expanded", "true");
-  const r = btn.getBoundingClientRect(),
-    pw = pop.offsetWidth,
-    ph = pop.offsetHeight,
-    vw = document.documentElement.clientWidth,
-    vh = window.innerHeight;
+    .forEach((openButton) => openButton.setAttribute("aria-expanded", "false"));
+  button.setAttribute("aria-expanded", "true");
+  const rect = button.getBoundingClientRect(),
+    popoverWidth = popover.offsetWidth,
+    popoverHeight = popover.offsetHeight,
+    viewportWidth = document.documentElement.clientWidth,
+    viewportHeight = window.innerHeight;
   let left = Math.min(
-    Math.max(12, r.left + r.width / 2 - pw / 2),
-    vw - pw - 12,
+    Math.max(12, rect.left + rect.width / 2 - popoverWidth / 2),
+    viewportWidth - popoverWidth - 12,
   );
-  let top = r.bottom + 8;
-  if (top + ph > vh - 12 && r.top - ph - 8 > 12) top = r.top - ph - 8;
-  pop.style.left = left + "px";
-  pop.style.top = top + "px";
+  let top = rect.bottom + 8;
+  if (
+    top + popoverHeight > viewportHeight - 12 &&
+    rect.top - popoverHeight - 8 > 12
+  )
+    top = rect.top - popoverHeight - 8;
+  popover.style.left = left + "px";
+  popover.style.top = top + "px";
 }
 function hideTip() {
-  pop.hidden = true;
+  popover.hidden = true;
   pinned = false;
-  if (popFor) popFor.setAttribute("aria-expanded", "false");
-  popFor = null;
+  if (popoverOwner) popoverOwner.setAttribute("aria-expanded", "false");
+  popoverOwner = null;
 }
 Object.keys(STR.tips).forEach((key) => {
-  const lab =
+  const label =
     document.querySelector(`label[for="${key}"]`) ||
     document.querySelector(`[data-tip="${key}"]`);
-  if (!lab) return;
-  const box = lab.closest(".f");
+  if (!label) return;
+  const box = label.closest(".f");
   if (!box) return;
   const row = document.createElement("div");
   row.className = "lrow";
-  lab.before(row);
-  row.append(lab);
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "tipbtn";
-  b.textContent = "?";
-  b.dataset.key = key;
-  b.setAttribute("aria-label", t("tipAria"));
-  b.setAttribute("aria-expanded", "false");
-  b.setAttribute("aria-describedby", "pop");
-  row.append(b);
-  b.addEventListener("click", (e) => {
-    e.stopPropagation();
-    popFor === b && pinned ? hideTip() : showTip(b, true);
+  label.before(row);
+  row.append(label);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "tipbtn";
+  button.textContent = "?";
+  button.dataset.key = key;
+  button.setAttribute("aria-label", t("tipAria"));
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-describedby", "pop");
+  row.append(button);
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    popoverOwner === button && pinned ? hideTip() : showTip(button, true);
   });
-  b.addEventListener("mouseenter", () => {
-    if (!pinned) showTip(b, false);
+  button.addEventListener("mouseenter", () => {
+    if (!pinned) showTip(button, false);
   });
-  b.addEventListener("mouseleave", () => {
-    if (!pinned && popFor === b) hideTip();
+  button.addEventListener("mouseleave", () => {
+    if (!pinned && popoverOwner === button) hideTip();
   });
-  b.addEventListener("focus", () => {
-    if (!pinned) showTip(b, false);
+  button.addEventListener("focus", () => {
+    if (!pinned) showTip(button, false);
   });
-  b.addEventListener("blur", () => {
-    if (!pinned && popFor === b) hideTip();
+  button.addEventListener("blur", () => {
+    if (!pinned && popoverOwner === button) hideTip();
   });
 });
-document.addEventListener("click", (e) => {
-  if (!pop.hidden && !pop.contains(e.target)) hideTip();
+document.addEventListener("click", (event) => {
+  if (!popover.hidden && !popover.contains(event.target)) hideTip();
 });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") hideTip();
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") hideTip();
 });
 window.addEventListener(
   "scroll",
   () => {
-    if (!pop.hidden) hideTip();
+    if (!popover.hidden) hideTip();
   },
   { passive: true },
 );
 window.addEventListener("resize", () => {
-  if (!pop.hidden) hideTip();
+  if (!popover.hidden) hideTip();
 });
 buildGpuSelect();
-buildCamSelect();
+buildCameraSelect();
 load();
-writeForm(act());
+writeForm(activeType());
 calcAll();
 route();
 </script>

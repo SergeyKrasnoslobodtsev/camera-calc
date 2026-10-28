@@ -1,90 +1,95 @@
-const pop = document.createElement("div");
-pop.className = "pop";
-pop.id = "pop";
-pop.setAttribute("role", "tooltip");
-pop.hidden = true;
-document.body.append(pop);
-let popFor = null,
+const popover = document.createElement("div");
+popover.className = "pop";
+popover.id = "pop";
+popover.setAttribute("role", "tooltip");
+popover.hidden = true;
+document.body.append(popover);
+// кнопка «?», для которой открыта подсказка; pinned — открыта щелчком, а не наведением
+let popoverOwner = null,
   pinned = false;
-function showTip(btn, pin) {
-  popFor = btn;
+function showTip(button, pin) {
+  popoverOwner = button;
   pinned = !!pin;
-  pop.textContent = STR.tips[btn.dataset.key];
-  pop.hidden = false;
+  popover.textContent = STR.tips[button.dataset.key];
+  popover.hidden = false;
   document
     .querySelectorAll(".tipbtn[aria-expanded=true]")
-    .forEach((x) => x.setAttribute("aria-expanded", "false"));
-  btn.setAttribute("aria-expanded", "true");
-  const r = btn.getBoundingClientRect(),
-    pw = pop.offsetWidth,
-    ph = pop.offsetHeight,
-    vw = document.documentElement.clientWidth,
-    vh = window.innerHeight;
+    .forEach((openButton) => openButton.setAttribute("aria-expanded", "false"));
+  button.setAttribute("aria-expanded", "true");
+  const rect = button.getBoundingClientRect(),
+    popoverWidth = popover.offsetWidth,
+    popoverHeight = popover.offsetHeight,
+    viewportWidth = document.documentElement.clientWidth,
+    viewportHeight = window.innerHeight;
   let left = Math.min(
-    Math.max(12, r.left + r.width / 2 - pw / 2),
-    vw - pw - 12,
+    Math.max(12, rect.left + rect.width / 2 - popoverWidth / 2),
+    viewportWidth - popoverWidth - 12,
   );
-  let top = r.bottom + 8;
-  if (top + ph > vh - 12 && r.top - ph - 8 > 12) top = r.top - ph - 8;
-  pop.style.left = left + "px";
-  pop.style.top = top + "px";
+  let top = rect.bottom + 8;
+  if (
+    top + popoverHeight > viewportHeight - 12 &&
+    rect.top - popoverHeight - 8 > 12
+  )
+    top = rect.top - popoverHeight - 8;
+  popover.style.left = left + "px";
+  popover.style.top = top + "px";
 }
 function hideTip() {
-  pop.hidden = true;
+  popover.hidden = true;
   pinned = false;
-  if (popFor) popFor.setAttribute("aria-expanded", "false");
-  popFor = null;
+  if (popoverOwner) popoverOwner.setAttribute("aria-expanded", "false");
+  popoverOwner = null;
 }
 Object.keys(STR.tips).forEach((key) => {
-  const lab =
+  const label =
     document.querySelector(`label[for="${key}"]`) ||
     document.querySelector(`[data-tip="${key}"]`);
-  if (!lab) return;
-  const box = lab.closest(".f");
+  if (!label) return;
+  const box = label.closest(".f");
   if (!box) return;
   const row = document.createElement("div");
   row.className = "lrow";
-  lab.before(row);
-  row.append(lab);
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "tipbtn";
-  b.textContent = "?";
-  b.dataset.key = key;
-  b.setAttribute("aria-label", t("tipAria"));
-  b.setAttribute("aria-expanded", "false");
-  b.setAttribute("aria-describedby", "pop");
-  row.append(b);
-  b.addEventListener("click", (e) => {
-    e.stopPropagation();
-    popFor === b && pinned ? hideTip() : showTip(b, true);
+  label.before(row);
+  row.append(label);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "tipbtn";
+  button.textContent = "?";
+  button.dataset.key = key;
+  button.setAttribute("aria-label", t("tipAria"));
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-describedby", "pop");
+  row.append(button);
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    popoverOwner === button && pinned ? hideTip() : showTip(button, true);
   });
-  b.addEventListener("mouseenter", () => {
-    if (!pinned) showTip(b, false);
+  button.addEventListener("mouseenter", () => {
+    if (!pinned) showTip(button, false);
   });
-  b.addEventListener("mouseleave", () => {
-    if (!pinned && popFor === b) hideTip();
+  button.addEventListener("mouseleave", () => {
+    if (!pinned && popoverOwner === button) hideTip();
   });
-  b.addEventListener("focus", () => {
-    if (!pinned) showTip(b, false);
+  button.addEventListener("focus", () => {
+    if (!pinned) showTip(button, false);
   });
-  b.addEventListener("blur", () => {
-    if (!pinned && popFor === b) hideTip();
+  button.addEventListener("blur", () => {
+    if (!pinned && popoverOwner === button) hideTip();
   });
 });
-document.addEventListener("click", (e) => {
-  if (!pop.hidden && !pop.contains(e.target)) hideTip();
+document.addEventListener("click", (event) => {
+  if (!popover.hidden && !popover.contains(event.target)) hideTip();
 });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") hideTip();
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") hideTip();
 });
 window.addEventListener(
   "scroll",
   () => {
-    if (!pop.hidden) hideTip();
+    if (!popover.hidden) hideTip();
   },
   { passive: true },
 );
 window.addEventListener("resize", () => {
-  if (!pop.hidden) hideTip();
+  if (!popover.hidden) hideTip();
 });
