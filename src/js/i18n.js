@@ -1,7 +1,7 @@
 // ---------- тексты интерфейса (правила — docs/ui-text-rules.md)
 // Значение — строка или функция от параметров. Статичная разметка ссылается на ключи атрибутами
 // data-t (текст), data-ta (aria-label), data-tt (title), data-tp (placeholder).
-const RU = {
+export const RU = {
   // шапка
   docTitle: "Калькулятор камер",
   appTitle: "Калькулятор камер и вычислителя",
@@ -515,7 +515,7 @@ const RU = {
       "Сколько дней хранить видео. 0 — видео не записывается, хранятся только события аналитики.",
   },
 };
-const EN = {
+export const EN = {
   // шапка
   docTitle: "Camera calculator",
   appTitle: "Camera and compute calculator",
@@ -1024,8 +1024,8 @@ const EN = {
   },
 };
 // язык: выбор из localStorage, иначе язык браузера
-const LANG_KEY = "camcalc-lang";
-const LANG = (() => {
+export const LANG_KEY = "camcalc-lang";
+export const LANG = (() => {
   let saved = null;
   try {
     saved = localStorage.getItem(LANG_KEY);
@@ -1036,15 +1036,15 @@ const LANG = (() => {
       ? "ru"
       : "en";
 })();
-const STR = LANG === "en" ? EN : RU;
+export const STR = LANG === "en" ? EN : RU;
 // \u0447\u0438\u0441\u043b\u043e \u0438 \u0435\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u0435\u0440\u0430\u0437\u0440\u044b\u0432\u043d\u044b\u0439 \u043f\u0440\u043e\u0431\u0435\u043b; unit \u2014 \u043a\u043b\u044e\u0447 \u0441\u043b\u043e\u0432\u0430\u0440\u044f STR.units
-const withUnit = (value, unit) => value + "\u00a0" + STR.units[unit];
+export const withUnit = (value, unit) => value + "\u00a0" + STR.units[unit];
 // t \u2014 \u0442\u0435\u043a\u0441\u0442 \u043f\u043e \u043a\u043b\u044e\u0447\u0443 \u0441\u043b\u043e\u0432\u0430\u0440\u044f; \u0435\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u2014 \u0444\u0443\u043d\u043a\u0446\u0438\u044f, \u0432\u044b\u0437\u044b\u0432\u0430\u0435\u0442\u0441\u044f \u0441 params
-const t = (key, ...params) => {
+export const t = (key, ...params) => {
   const text = STR[key];
   return typeof text === "function" ? text(...params) : text;
 };
-function applyTranslations() {
+export function applyTranslations() {
   document.documentElement.lang = LANG;
   document.title = t("docTitle");
   document
@@ -1065,4 +1065,3 @@ function applyTranslations() {
       ),
   );
 }
-applyTranslations();

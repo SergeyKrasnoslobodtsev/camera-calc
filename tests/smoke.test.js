@@ -1,7 +1,9 @@
-const { JSDOM, VirtualConsole } = require("jsdom");
-const fs = require("fs");
+import { JSDOM, VirtualConsole } from "jsdom";
+import fs from "fs";
+import assert from "assert";
+import { RU, EN } from "../src/js/i18n.js";
 const dom = new JSDOM(
-  fs.readFileSync(__dirname + "/../dist/camera-calc.html", "utf8"),
+  fs.readFileSync(import.meta.dirname + "/../dist/camera-calc.html", "utf8"),
   {
     runScripts: "dangerously",
     url: "https://x.test/",
@@ -140,7 +142,6 @@ console.log(
 console.log("SYS:", T("systemKpis"));
 console.log("tips", d.querySelectorAll(".tipbtn").length);
 // export → import
-const assert = require("assert");
 let reloads = 0;
 const page = (seed, lang = "ru", nav) => {
   const vc = new VirtualConsole();
@@ -149,7 +150,7 @@ const page = (seed, lang = "ru", nav) => {
     else console.error(e);
   });
   return new JSDOM(
-    fs.readFileSync(__dirname + "/../dist/camera-calc.html", "utf8"),
+    fs.readFileSync(import.meta.dirname + "/../dist/camera-calc.html", "utf8"),
     {
       runScripts: "dangerously",
       url: "https://x.test/",
@@ -326,7 +327,7 @@ const sameKeys = (a, b, p) =>
     else if (a[k] && typeof a[k] === "object")
       sameKeys(a[k], b[k], p + k + ".");
   });
-sameKeys(w.eval("RU"), w.eval("EN"), "");
+sameKeys(RU, EN, "");
 const extraKeys = (a, b, p) =>
   Object.keys(a).flatMap((k) =>
     !(k in b)
@@ -335,22 +336,18 @@ const extraKeys = (a, b, p) =>
         ? extraKeys(a[k], b[k], p + k + ".")
         : [],
   );
-assert.deepStrictEqual(
-  extraKeys(w.eval("EN"), w.eval("RU"), ""),
-  [],
-  "ключи EN, которых нет в RU",
-);
+assert.deepStrictEqual(extraKeys(EN, RU, ""), [], "ключи EN, которых нет в RU");
 console.log("en keys: ok");
 // language: every key is used in the code or markup, every referenced key exists
-const srcDir = __dirname + "/../src/";
+const srcDir = import.meta.dirname + "/../src/";
 const appCode = fs
   .readdirSync(srcDir + "js")
   .map((file) => fs.readFileSync(srcDir + "js/" + file, "utf8"))
   .join("\n")
-  .replace(/^const (RU|EN) = \{\n[\s\S]*?^\};/gm, "")
+  .replace(/^export const (RU|EN) = \{\n[\s\S]*?^\};/gm, "")
   .replace(/byId\(["'`][^"'`]*["'`]\)/g, "");
 const layoutSource = fs.readFileSync(srcDir + "layout.html", "utf8");
-const dictKeys = Object.keys(w.eval("RU")).filter((key) => key !== "tips");
+const dictKeys = Object.keys(RU).filter((key) => key !== "tips");
 const markupKeys = [...layoutSource.matchAll(/data-t[atp]?="([^"]+)"/g)].map(
   (match) => match[1],
 );
@@ -375,10 +372,13 @@ assert.deepStrictEqual(
 );
 console.log("used keys: ok");
 // language: no key is declared twice in a dictionary (the last one would silently win)
-const i18nSource = fs.readFileSync(__dirname + "/../src/js/00-i18n.js", "utf8");
+const i18nSource = fs.readFileSync(
+  import.meta.dirname + "/../src/js/i18n.js",
+  "utf8",
+);
 ["RU", "EN"].forEach((name) => {
   const body = i18nSource.match(
-    new RegExp(`^const ${name} = \\{\\n([\\s\\S]*?)^\\};`, "m"),
+    new RegExp(`^export const ${name} = \\{\\n([\\s\\S]*?)^\\};`, "m"),
   )[1];
   const keys = body.match(/^ {2}[\w$]+(?=:)/gm).map((key) => key.trim());
   const repeated = keys.filter((key, i) => keys.indexOf(key) !== i);
@@ -387,7 +387,7 @@ const i18nSource = fs.readFileSync(__dirname + "/../src/js/00-i18n.js", "utf8");
 console.log("no duplicate keys: ok");
 // tips: every tip has a "?" button next to its field (objects: the tip sits in a heading, not in a field)
 assert.deepStrictEqual(
-  Object.keys(w.eval("STR.tips")).filter(
+  Object.keys(RU.tips).filter(
     (key) =>
       key !== "objects" && !d.querySelector(`.tipbtn[data-key="${key}"]`),
   ),
@@ -422,9 +422,7 @@ assert.ok(
     d6.querySelector("#formulas>[lang=ru]").hidden,
   "EN: не тот блок формул",
 );
-const builtinRu = [
-  ...w.eval("[...RU.typeNames, ...RU.presetNames, RU.objDefault]"),
-];
+const builtinRu = [...RU.typeNames, ...RU.presetNames, RU.objDefault];
 const userNames = [
   ...ex.types
     .flatMap((T) => [T.name, ...T.objects.map((o) => o.name)])

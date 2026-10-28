@@ -1,11 +1,14 @@
 // Тест-эталон: результаты расчёта для набора конфигураций сравниваются с tests/golden.txt.
 // Обновить эталон после намеренного изменения расчёта: node tests/golden.test.js --update
-const { JSDOM } = require("jsdom");
-const fs = require("fs");
-const assert = require("assert");
+import { JSDOM } from "jsdom";
+import fs from "fs";
+import assert from "assert";
 
-const html = fs.readFileSync(__dirname + "/../dist/camera-calc.html", "utf8");
-const goldenPath = __dirname + "/golden.txt";
+const html = fs.readFileSync(
+  import.meta.dirname + "/../dist/camera-calc.html",
+  "utf8",
+);
+const goldenPath = import.meta.dirname + "/golden.txt";
 
 function openPage(savedState) {
   return new JSDOM(html, {

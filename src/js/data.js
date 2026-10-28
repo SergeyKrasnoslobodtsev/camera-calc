@@ -1,6 +1,8 @@
-const byId = (id) => document.getElementById(id);
-const DEG = Math.PI / 180;
-const formatNumber = (value, digits = 1) =>
+import { LANG, STR, t } from "./i18n.js";
+import { store } from "./store.js";
+export const byId = (id) => document.getElementById(id);
+export const DEG = Math.PI / 180;
+export const formatNumber = (value, digits = 1) =>
   isFinite(value)
     ? value
         .toLocaleString(LANG === "en" ? "en-US" : "ru-RU", {
@@ -9,16 +11,17 @@ const formatNumber = (value, digits = 1) =>
         })
         .replace("-", "−")
     : "—";
-const escapeHtml = (text) =>
+export const escapeHtml = (text) =>
   String(text ?? "").replace(
     /[&<>"]/g,
     (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char],
   );
-const parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
-const uid = () => Math.random().toString(36).slice(2, 9);
+export const parseNum = (value) =>
+  parseFloat(String(value ?? "").replace(",", "."));
+export const uid = () => Math.random().toString(36).slice(2, 9);
 
 // ---------- справочники
-const RESOLUTIONS = [
+export const RESOLUTIONS = [
   [2, 1920, 1080],
   [4, 2560, 1440],
   [5, 2592, 1944],
@@ -31,7 +34,7 @@ const RESOLUTIONS = [
   width,
   height,
 ]);
-const SENSORS = [
+export const SENSORS = [
   ['1/3"', 4.8],
   ['1/2.9"', 5.0],
   ['1/2.8"', 5.6],
@@ -43,7 +46,7 @@ const SENSORS = [
   ["own", null],
 ];
 // Каталог: tflops — FP16 Tensor dense, TFLOPS (GeForce — с FP32-накоплением). price — ориентир, $, октябрь 2026
-const GPU_CATALOG = [
+export const GPU_CATALOG = [
   {
     id: "5090",
     name: "GeForce RTX 5090",
@@ -106,16 +109,13 @@ const GPU_CATALOG = [
     jetson: true,
   },
 ];
-let customGpus = []; // свои карты: {id,name,arch,tflops,nvdec|decodeStreams,memoryGB,tdpW,price,jetson,custom:true}
-let gpuPrices = {},
-  gpuEnabled = {}; // правки цен и участие в подборе по id
-const allGpus = () => [...GPU_CATALOG, ...customGpus];
-const gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
-const priceOf = (gpu) => {
-  const price = parseNum(gpuPrices[gpu.id]);
+export const allGpus = () => [...GPU_CATALOG, ...store.customGpus];
+export const gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
+export const priceOf = (gpu) => {
+  const price = parseNum(store.gpuPrices[gpu.id]);
   return price > 0 ? price : gpu.price;
 };
-const isOn = (gpu) => gpuEnabled[gpu.id] !== false;
+export const isOn = (gpu) => store.gpuEnabled[gpu.id] !== false;
 // 1080p к/с на один NVDEC (NVIDIA Video Codec SDK 13.0, NVDEC Application Note); Hopper = Turing
 const NVDEC_FPS = {
   Turing: { h264: 771, h265: 1316 },
@@ -125,16 +125,16 @@ const NVDEC_FPS = {
   Blackwell: { h264: 2172, h265: 1872 },
 };
 // потоков 1080p@30, которые GPU декодирует: st — замер для Jetson, иначе по числу NVDEC
-const decStreams = (gpu, codec) =>
+export const decStreams = (gpu, codec) =>
   gpu.decodeStreams
     ? gpu.decodeStreams[codec]
     : (gpu.nvdec * NVDEC_FPS[gpu.arch][codec]) / 30;
-const decText = (gpu) =>
+export const decText = (gpu) =>
   gpu.decodeStreams
     ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0))
     : `${gpu.nvdec} NVDEC`;
 // Модели: GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
-const MODELS = [
+export const MODELS = [
   ["y26n", "YOLO26n", 5.5, 1.7],
   ["y26s", "YOLO26s", 20.9, 2.5],
   ["y26m", "YOLO26m", 68.4, 4.7],
@@ -151,7 +151,7 @@ const MODELS = [
   ["y11l", "YOLO11l", 87.2, 6.2],
   ["y11x", "YOLO11x", 195.3, 11.3],
 ].map(([id, name, gflops, latencyMs]) => ({ id, name, gflops, latencyMs }));
-const T4_TFLOPS = 65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
-const FEEDS = STR.feeds,
+export const T4_TFLOPS = 65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
+export const FEEDS = STR.feeds,
   FEED_SHORT = STR.feedsShort;
-const INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
+export const INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];

@@ -1,3 +1,45 @@
+import { LANG, LANG_KEY, STR, t, withUnit } from "./i18n.js";
+import { store } from "./store.js";
+import {
+  DEG,
+  FEED_SHORT,
+  GPU_CATALOG,
+  INPUTS,
+  MODELS,
+  T4_TFLOPS,
+  allGpus,
+  byId,
+  decStreams,
+  decText,
+  escapeHtml,
+  formatNumber,
+  gpuById,
+  isOn,
+  parseNum,
+  priceOf,
+  uid,
+} from "./data.js";
+import {
+  DEFAULT_INPUTS,
+  OBJECT_PRESETS,
+  activeType,
+  builtinName,
+  exampleTypes,
+  makeObject,
+  makeType,
+  readForm,
+  writeForm,
+} from "./state.js";
+import {
+  allCameras,
+  buildCameraSelect,
+  cameraById,
+  modelById,
+  renderObjects,
+  syncFormUI,
+} from "./objects.js";
+import { computeType } from "./compute-type.js";
+import { drawSide } from "./draw-side.js";
 // ---------- расчёт системы
 const modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
 const modelGflops = (id) => {
@@ -261,15 +303,18 @@ function renderTabs(results) {
     tab.type = "button";
     tab.className = "tab";
     tab.setAttribute("role", "tab");
-    tab.setAttribute("aria-selected", String(result.type.id === activeTypeId));
+    tab.setAttribute(
+      "aria-selected",
+      String(result.type.id === store.activeTypeId),
+    );
     tab.setAttribute("aria-controls", "typeResult");
     tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
     tab.title = result.err
       ? t("tabError")
       : t("tabObjects", STATUS_TEXT[result.status] || result.pill);
     tab.addEventListener("click", () => {
-      if (activeTypeId === result.type.id) return;
-      activeTypeId = result.type.id;
+      if (store.activeTypeId === result.type.id) return;
+      store.activeTypeId = result.type.id;
       writeForm(activeType());
       calcAll();
     });
@@ -280,11 +325,11 @@ function renderTabs(results) {
   addButton.className = "tab ghost";
   addButton.textContent = t("addType");
   addButton.addEventListener("click", () => {
-    const type = makeType(t("newType", cameraTypes.length + 1), 1, {}, [
+    const type = makeType(t("newType", store.cameraTypes.length + 1), 1, {}, [
       OBJECT_PRESETS[0],
     ]);
-    cameraTypes.push(type);
-    activeTypeId = type.id;
+    store.cameraTypes.push(type);
+    store.activeTypeId = type.id;
     writeForm(type);
     calcAll();
   });
@@ -502,7 +547,7 @@ function renderSystem(results, system) {
 }
 
 // ---------- шаблоны: видеокарты
-function buildGpuSelect() {
+export function buildGpuSelect() {
   const select = byId("gpu"),
     current = select.value || "auto";
   select.innerHTML =
@@ -529,7 +574,7 @@ function renderGpuView() {
   const row = (
     gpu,
   ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(store.gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
   const headers = STR.gpuTableHeader,
@@ -539,26 +584,26 @@ function renderGpuView() {
       .join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
   byId("catalogTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
   byId("catalogTable").innerHTML = head + GPU_CATALOG.map(row).join("");
-  byId("customGpus").innerHTML = customGpus.length
-    ? `<strong style="font-weight:600">${t("customGpusTitle", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
+  byId("customGpus").innerHTML = store.customGpus.length
+    ? `<strong style="font-weight:600">${t("customGpusTitle", store.customGpus.length)}</strong><div class="tbl"><table>${head}${store.customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
   allGpus().forEach((gpu) => {
     byId(`gpuPrice-${gpu.id}`).addEventListener("input", (event) => {
-      gpuPrices[gpu.id] = event.target.value;
+      store.gpuPrices[gpu.id] = event.target.value;
       calcAll();
     });
     byId(`gpuEnabled-${gpu.id}`).addEventListener("change", (event) => {
-      gpuEnabled[gpu.id] = event.target.checked;
+      store.gpuEnabled[gpu.id] = event.target.checked;
       calcAll();
     });
   });
   document.querySelectorAll("[data-delg]").forEach((button) =>
     button.addEventListener("click", () => {
       const id = button.dataset.delg;
-      customGpus = customGpus.filter((gpu) => gpu.id !== id);
-      delete gpuPrices[id];
-      delete gpuEnabled[id];
-      customDetectors.forEach((detector) => {
+      store.customGpus = store.customGpus.filter((gpu) => gpu.id !== id);
+      delete store.gpuPrices[id];
+      delete store.gpuEnabled[id];
+      store.customDetectors.forEach((detector) => {
         if (detector.refGpu === id) detector.refGpu = "5090";
       });
       buildGpuSelect();
@@ -616,8 +661,8 @@ byId("gpuForm").addEventListener("submit", (event) => {
       h264: +((decode * 748) / 1415).toFixed(1),
     };
   } else gpu.nvdec = Math.round(decode);
-  customGpus.push(gpu);
-  gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
+  store.customGpus.push(gpu);
+  store.gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
   [
     "gpuFormName",
     "gpuFormTflops",
@@ -635,7 +680,7 @@ byId("gpuForm").addEventListener("submit", (event) => {
 // ---------- шаблоны: камеры
 function renderCamView() {
   const used = (id) =>
-    cameraTypes
+    store.cameraTypes
       .filter((type) => type.inputs.camera === id)
       .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
   byId("camerasTitle").textContent = t("camerasTitle", allCameras().length);
@@ -650,8 +695,10 @@ function renderCamView() {
   document.querySelectorAll("[data-delc]").forEach((button) =>
     button.addEventListener("click", () => {
       const id = button.dataset.delc;
-      customCameras = customCameras.filter((camera) => camera.id !== id);
-      cameraTypes.forEach((type) => {
+      store.customCameras = store.customCameras.filter(
+        (camera) => camera.id !== id,
+      );
+      store.cameraTypes.forEach((type) => {
         if (type.inputs.camera === id) type.inputs.camera = "";
       });
       buildCameraSelect();
@@ -689,7 +736,7 @@ byId("cameraForm").addEventListener("submit", (event) => {
     return;
   }
   errorEl.hidden = true;
-  customCameras.push({
+  store.customCameras.push({
     id: "m" + uid(),
     name,
     Nw,
@@ -720,18 +767,18 @@ byId("cameraForm").addEventListener("submit", (event) => {
 function renderDetView() {
   byId("detectorsTitle").textContent = t(
     "detectorsTitle",
-    MODELS.length + customDetectors.length,
+    MODELS.length + store.customDetectors.length,
   );
   const used = (id) =>
-    cameraTypes.reduce(
+    store.cameraTypes.reduce(
       (sum, type) =>
         sum + type.objects.filter((obj) => obj.model === id).length,
       0,
     );
   byId("detectorTable").innerHTML =
     `<tr>${STR.detectorTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
-    (customDetectors.length
-      ? customDetectors
+    (store.customDetectors.length
+      ? store.customDetectors
           .map((detector) => {
             const refGpu = gpuById(detector.refGpu);
             return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(detector.name)}</b><span class="sub">${t("detectorCustom")}</span></td><td>${detector.inputSize}</td><td>${detector.gflops > 0 ? formatNumber(detector.gflops, 1) : "—"}</td><td>${t("detectorSpeed", formatNumber(detector.fps, 0), escapeHtml(refGpu ? refGpu.name : "?"))}</td><td>${used(detector.id)}</td><td><button type="button" class="sm" data-deld="${detector.id}" aria-label="${escapeHtml(t("deleteAria", detector.name))}">${t("deleteBtn")}</button></td></tr>`;
@@ -745,10 +792,10 @@ function renderDetView() {
   document.querySelectorAll("[data-deld]").forEach((button) =>
     button.addEventListener("click", () => {
       const id = button.dataset.deld;
-      customDetectors = customDetectors.filter(
+      store.customDetectors = store.customDetectors.filter(
         (detector) => detector.id !== id,
       );
-      cameraTypes.forEach((type) =>
+      store.cameraTypes.forEach((type) =>
         type.objects.forEach((obj) => {
           if (obj.model === id) obj.model = "y26s";
         }),
@@ -780,7 +827,7 @@ byId("detectorForm").addEventListener("submit", (event) => {
     return;
   }
   errorEl.hidden = true;
-  customDetectors.push({
+  store.customDetectors.push({
     id: "d" + uid(),
     name,
     fps,
@@ -800,13 +847,13 @@ byId("detectorForm").addEventListener("submit", (event) => {
 
 // ---------- главный цикл
 let report = "";
-function calcAll() {
-  const results = cameraTypes.map(computeType);
+export function calcAll() {
+  const results = store.cameraTypes.map(computeType);
   const activeIndex = Math.max(
     0,
-    cameraTypes.findIndex((type) => type.id === activeTypeId),
+    store.cameraTypes.findIndex((type) => type.id === store.activeTypeId),
   );
-  syncFormUI(cameraTypes[activeIndex], results[activeIndex]);
+  syncFormUI(store.cameraTypes[activeIndex], results[activeIndex]);
   renderType(results[activeIndex]);
   renderTabs(results);
   const system = computeSystem(results);
@@ -879,14 +926,14 @@ function calcAll() {
 }
 const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
 const snapshot = () => ({
-  types: cameraTypes,
-  activeTypeId,
+  types: store.cameraTypes,
+  activeTypeId: store.activeTypeId,
   system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
-  gpuPrices,
-  gpuEnabled,
-  customGpus,
-  customCameras,
-  customDetectors,
+  gpuPrices: store.gpuPrices,
+  gpuEnabled: store.gpuEnabled,
+  customGpus: store.customGpus,
+  customCameras: store.customCameras,
+  customDetectors: store.customDetectors,
   light: document.documentElement.classList.contains("light"),
 });
 let stale = false;
@@ -906,7 +953,7 @@ function save() {
     localStorage.setItem("camcalc4", JSON.stringify(snapshot()));
   } catch (error) {}
 }
-function load() {
+export function load() {
   try {
     const saved = JSON.parse(localStorage.getItem("camcalc4") || "null");
     if (!saved) return;
@@ -920,11 +967,11 @@ function load() {
     const shownName = (item) =>
       (item.nameKey && builtinName(item.nameKey)) || item.name;
     if (Array.isArray(saved.customGpus))
-      customGpus = saved.customGpus
+      store.customGpus = saved.customGpus
         .filter((gpu) => gpu && gpu.id && gpu.name && gpu.tflops > 0)
         .map((gpu) => ({ ...gpu, custom: true }));
     if (Array.isArray(saved.customCameras))
-      customCameras = saved.customCameras
+      store.customCameras = saved.customCameras
         .filter(
           (camera) =>
             camera &&
@@ -935,18 +982,18 @@ function load() {
         )
         .map((camera) => ({ ...camera, custom: true }));
     if (Array.isArray(saved.customDetectors))
-      customDetectors = saved.customDetectors
+      store.customDetectors = saved.customDetectors
         .filter((detector) => detector && detector.id && detector.fps > 0)
         .map((detector) => ({ ...detector, custom: true }));
     if (saved.gpuPrices && typeof saved.gpuPrices === "object")
-      gpuPrices = allWithDot(saved.gpuPrices);
+      store.gpuPrices = allWithDot(saved.gpuPrices);
     if (saved.gpuEnabled && typeof saved.gpuEnabled === "object")
-      gpuEnabled = saved.gpuEnabled;
+      store.gpuEnabled = saved.gpuEnabled;
     if (saved.light) setTheme(true);
     buildGpuSelect();
     buildCameraSelect();
     if (Array.isArray(saved.types) && saved.types.length) {
-      cameraTypes = saved.types.map((type) => ({
+      store.cameraTypes = saved.types.map((type) => ({
         id: type.id || uid(),
         name: shownName(type),
         nameKey: type.nameKey,
@@ -967,9 +1014,11 @@ function load() {
           overlap: withDot(obj.overlap ?? 20),
         })),
       }));
-      activeTypeId = cameraTypes.some((type) => type.id === saved.activeTypeId)
+      store.activeTypeId = store.cameraTypes.some(
+        (type) => type.id === saved.activeTypeId,
+      )
         ? saved.activeTypeId
-        : cameraTypes[0].id;
+        : store.cameraTypes[0].id;
     }
     if (saved.system)
       SYSTEM_IDS.forEach((id) => {
@@ -1054,8 +1103,8 @@ byId("duplicateTypeBtn").addEventListener("click", () => {
   copy.id = uid();
   copy.name = source.name + t("copySuffix");
   delete copy.nameKey;
-  cameraTypes.splice(cameraTypes.indexOf(source) + 1, 0, copy);
-  activeTypeId = copy.id;
+  store.cameraTypes.splice(store.cameraTypes.indexOf(source) + 1, 0, copy);
+  store.activeTypeId = copy.id;
   writeForm(copy);
   calcAll();
   toast(t("typeCopied"));
@@ -1063,7 +1112,7 @@ byId("duplicateTypeBtn").addEventListener("click", () => {
 let deleteTimer = null;
 byId("deleteTypeBtn").addEventListener("click", () => {
   const button = byId("deleteTypeBtn");
-  if (cameraTypes.length < 2) {
+  if (store.cameraTypes.length < 2) {
     toast(t("lastType"));
     return;
   }
@@ -1078,9 +1127,11 @@ byId("deleteTypeBtn").addEventListener("click", () => {
   clearTimeout(deleteTimer);
   deleteTimer = null;
   button.textContent = t("deleteTypeBtn");
-  const index = cameraTypes.findIndex((type) => type.id === activeTypeId);
-  cameraTypes.splice(index, 1);
-  activeTypeId = cameraTypes[Math.max(0, index - 1)].id;
+  const index = store.cameraTypes.findIndex(
+    (type) => type.id === store.activeTypeId,
+  );
+  store.cameraTypes.splice(index, 1);
+  store.activeTypeId = store.cameraTypes[Math.max(0, index - 1)].id;
   writeForm(activeType());
   calcAll();
   toast(t("typeDeleted"));
@@ -1093,14 +1144,14 @@ function toast(message) {
   toast.timer = setTimeout(() => (toastEl.hidden = true), 1800);
 }
 byId("resetBtn").addEventListener("click", () => {
-  cameraTypes = exampleTypes();
-  activeTypeId = cameraTypes[0].id;
+  store.cameraTypes = exampleTypes();
+  store.activeTypeId = store.cameraTypes[0].id;
   byId("efficiency").value = "0.6";
   byId("reserve").value = "20";
   byId("archiveDays").value = "0";
   byId("gpuCount").value = "auto";
-  gpuPrices = {};
-  gpuEnabled = {};
+  store.gpuPrices = {};
+  store.gpuEnabled = {};
   buildGpuSelect();
   byId("gpu").value = "auto";
   writeForm(activeType());
@@ -1186,7 +1237,7 @@ const TEMPLATE_VIEWS = {
   "tpl-cams": renderCamView,
   "tpl-dets": renderDetView,
 };
-function route() {
+export function route() {
   const hash = location.hash.slice(1),
     isTemplate = hash in TEMPLATE_VIEWS;
   byId("viewMain").style.display = isTemplate ? "none" : "flex";
