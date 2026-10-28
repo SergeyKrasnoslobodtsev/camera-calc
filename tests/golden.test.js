@@ -15,7 +15,8 @@ function openPage(savedState) {
     beforeParse(window) {
       window.scrollTo = () => {};
       window.localStorage.setItem("camcalc-lang", "ru");
-      if (savedState) window.localStorage.setItem("camcalc3", JSON.stringify(savedState));
+      if (savedState)
+        window.localStorage.setItem("camcalc3", JSON.stringify(savedState));
     },
   }).window;
 }
@@ -24,9 +25,12 @@ function results(window) {
   const doc = window.document;
   const clean = (node) => node.textContent.replace(/\s+/g, " ").trim();
   const text = (id) => clean(doc.getElementById(id));
-  const items = (selector) => [...doc.querySelectorAll(selector)].map(clean).join(" || ");
+  const items = (selector) =>
+    [...doc.querySelectorAll(selector)].map(clean).join(" || ");
   const table = (id) =>
-    [...doc.querySelectorAll(`#${id} tr`)].map((row) => "  " + [...row.children].map(clean).join(" | ")).join("\n");
+    [...doc.querySelectorAll(`#${id} tr`)]
+      .map((row) => "  " + [...row.children].map(clean).join(" | "))
+      .join("\n");
   return [
     window.eval("report"),
     "",
@@ -48,7 +52,11 @@ function results(window) {
 // Состояние встроенного примера, от него строятся остальные конфигурации.
 const example = JSON.parse(openPage().eval("JSON.stringify(snap())"));
 const [sideType, topType] = example.types;
-const withType = (type, changes) => ({ ...type, v: { ...type.v, ...changes.v }, objs: changes.objs || type.objs });
+const withType = (type, changes) => ({
+  ...type,
+  v: { ...type.v, ...changes.v },
+  objs: changes.objs || type.objs,
+});
 
 const configs = {
   "Пример, вид сбоку": example,
@@ -57,8 +65,28 @@ const configs = {
 
   "Своя камера и свой детектор": {
     ...example,
-    cams: [{ id: "mtest", name: "Тест-камера 8 Мп", Nw: 3840, Nh: 2160, sw: 7.68, fmin: 6, fmax: 6, price: 300 }],
-    dets: [{ id: "dtest", name: "Детектор деталей", fps: 900, inp: 640, ref: "l40s", gf: 0 }],
+    cams: [
+      {
+        id: "mtest",
+        name: "Тест-камера 8 Мп",
+        Nw: 3840,
+        Nh: 2160,
+        sw: 7.68,
+        fmin: 6,
+        fmax: 6,
+        price: 300,
+      },
+    ],
+    dets: [
+      {
+        id: "dtest",
+        name: "Детектор деталей",
+        fps: 900,
+        inp: 640,
+        ref: "l40s",
+        gf: 0,
+      },
+    ],
     types: [
       withType(sideType, {
         v: { cam: "mtest" },
@@ -73,8 +101,20 @@ const configs = {
     gl: { ...example.gl, kr: "0.5", resv: "30", days: "30" },
     types: [
       withType(sideType, {
-        v: { mode: "f", fmm: "8", orient: "port", res: "5", sens: "7", pp: "2.0", codec: "0.07", scene: "1.5" },
-        objs: [{ ...sideType.objs[0], model: "y11m", feed: "full", inp: 1280 }, sideType.objs[1]],
+        v: {
+          mode: "f",
+          fmm: "8",
+          orient: "port",
+          res: "5",
+          sens: "7",
+          pp: "2.0",
+          codec: "0.07",
+          scene: "1.5",
+        },
+        objs: [
+          { ...sideType.objs[0], model: "y11m", feed: "full", inp: 1280 },
+          sideType.objs[1],
+        ],
       }),
       topType,
     ],
@@ -85,8 +125,27 @@ const configs = {
     act: topType.id,
     gl: { ...example.gl, gpu: "cgpu", gcnt: "2" },
     custom: [
-      { id: "cgpu", name: "Своя карта", arch: "Ada", tf: 150, nvdec: 2, mem: 24, tdp: 300, price: 2500 },
-      { id: "cjet", name: "Свой Jetson", arch: "Ampere", tf: 20, mem: 16, tdp: 40, price: 900, jet: true, st: { h265: 10, h264: 5.3 } },
+      {
+        id: "cgpu",
+        name: "Своя карта",
+        arch: "Ada",
+        tf: 150,
+        nvdec: 2,
+        mem: 24,
+        tdp: 300,
+        price: 2500,
+      },
+      {
+        id: "cjet",
+        name: "Свой Jetson",
+        arch: "Ampere",
+        tf: 20,
+        mem: 16,
+        tdp: 40,
+        price: 900,
+        jet: true,
+        st: { h265: 10, h264: 5.3 },
+      },
     ],
     price: { l40s: "7000" },
     on: { 5090: false, cjet: true },
@@ -108,6 +167,10 @@ if (process.argv.includes("--update")) {
   fs.writeFileSync(goldenPath, actual);
   console.log("golden: эталон обновлён");
 } else {
-  assert.strictEqual(actual, fs.readFileSync(goldenPath, "utf8"), "результаты расчёта отличаются от tests/golden.txt");
+  assert.strictEqual(
+    actual,
+    fs.readFileSync(goldenPath, "utf8"),
+    "результаты расчёта отличаются от tests/golden.txt",
+  );
   console.log("golden: ok");
 }

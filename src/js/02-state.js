@@ -1,39 +1,158 @@
 // ---------- состояние
-const PRESETS=[[50,30,170,32,"y26s","roi",640],[9,18,4,20,"y26s","tiles",640],[8,8,2,20,"y26s","roi",640],[25,6,6,20,"y26s","roi",640],[1.3,1.3,0.7,10,"y26s","tiles",640]].map((p,i)=>[STR.presetNames[i],...p]);
-const mkObj=([name,w,d,z,req,model,feed,inp])=>({name,w,d,z,req,model,feed,inp,ov:20,fps:300,ref:"5090"});
-const FIELDS=["cam","H","h","L0","Dz","Wz","mg","res","sens","sw","pp","orient","fmm","hfov","fps","afps","codec","scene","k","v","blur"];
-const DEF_V={cam:"",H:"4",h:"0.9",L0:"1.5",Dz:"3",Wz:"3",mg:"10",res:"1",sens:"3",sw:"5.4",pp:"2.0",orient:"auto",fmm:"6",hfov:"50",fps:"12",afps:"5",codec:"0.04",scene:"1",k:"0.6",v:"1",blur:"2",mode:"auto",pos:"side"};
-const mkType=(name,count,over,objs)=>({id:uid(),name,count:String(count),v:{...DEF_V,...over},objs:objs.map(mkObj)});
-const defTypes=()=>[
-  mkType(STR.typeNames[0],10,{},[PRESETS[0],PRESETS[1]]),
-  mkType(STR.typeNames[1],10,{pos:"top",H:"2.6",h:"1.1",Dz:"0.8",Wz:"1.4",afps:"2",fps:"10"},[PRESETS[2]])
+const PRESETS = [
+  [50, 30, 170, 32, "y26s", "roi", 640],
+  [9, 18, 4, 20, "y26s", "tiles", 640],
+  [8, 8, 2, 20, "y26s", "roi", 640],
+  [25, 6, 6, 20, "y26s", "roi", 640],
+  [1.3, 1.3, 0.7, 10, "y26s", "tiles", 640],
+].map((p, i) => [STR.presetNames[i], ...p]);
+const mkObj = ([name, w, d, z, req, model, feed, inp]) => ({
+  name,
+  w,
+  d,
+  z,
+  req,
+  model,
+  feed,
+  inp,
+  ov: 20,
+  fps: 300,
+  ref: "5090",
+});
+const FIELDS = [
+  "cam",
+  "H",
+  "h",
+  "L0",
+  "Dz",
+  "Wz",
+  "mg",
+  "res",
+  "sens",
+  "sw",
+  "pp",
+  "orient",
+  "fmm",
+  "hfov",
+  "fps",
+  "afps",
+  "codec",
+  "scene",
+  "k",
+  "v",
+  "blur",
 ];
-let TYPES=defTypes(), ACT=TYPES[0].id;
-const act=()=>TYPES.find(t=>t.id===ACT)||TYPES[0];
+const DEF_V = {
+  cam: "",
+  H: "4",
+  h: "0.9",
+  L0: "1.5",
+  Dz: "3",
+  Wz: "3",
+  mg: "10",
+  res: "1",
+  sens: "3",
+  sw: "5.4",
+  pp: "2.0",
+  orient: "auto",
+  fmm: "6",
+  hfov: "50",
+  fps: "12",
+  afps: "5",
+  codec: "0.04",
+  scene: "1",
+  k: "0.6",
+  v: "1",
+  blur: "2",
+  mode: "auto",
+  pos: "side",
+};
+const mkType = (name, count, over, objs) => ({
+  id: uid(),
+  name,
+  count: String(count),
+  v: { ...DEF_V, ...over },
+  objs: objs.map(mkObj),
+});
+const defTypes = () => [
+  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]]),
+  mkType(
+    STR.typeNames[1],
+    10,
+    {
+      pos: "top",
+      H: "2.6",
+      h: "1.1",
+      Dz: "0.8",
+      Wz: "1.4",
+      afps: "2",
+      fps: "10",
+    },
+    [PRESETS[2]],
+  ),
+];
+let TYPES = defTypes(),
+  ACT = TYPES[0].id;
+const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
 
 // ---------- форма ↔ тип
-RES.forEach((r,i)=>$("res").add(new Option(r[0],i)));
-SENS.forEach((s,i)=>$("sens").add(new Option(typeof s[1]==="number"?t("sensMm",s[0],fmt(s[1],1)):s[1]==="pp"?t("sensPp"):t("sensOwn"),i)));
-function writeForm(T){
-  $("tName").value=T.name;$("tCount").value=T.count;
-  FIELDS.forEach(id=>{$(id).value=T.v[id]??DEF_V[id]});
-  const md=document.querySelector(`input[name="mode"][value="${T.v.mode}"]`)||$("mAuto");md.checked=true;
-  const ps=document.querySelector(`input[name="pos"][value="${T.v.pos}"]`)||$("pSide");ps.checked=true;
+RES.forEach((r, i) => $("res").add(new Option(r[0], i)));
+SENS.forEach((s, i) =>
+  $("sens").add(
+    new Option(
+      typeof s[1] === "number"
+        ? t("sensMm", s[0], fmt(s[1], 1))
+        : s[1] === "pp"
+          ? t("sensPp")
+          : t("sensOwn"),
+      i,
+    ),
+  ),
+);
+function writeForm(T) {
+  $("tName").value = T.name;
+  $("tCount").value = T.count;
+  FIELDS.forEach((id) => {
+    $(id).value = T.v[id] ?? DEF_V[id];
+  });
+  const md =
+    document.querySelector(`input[name="mode"][value="${T.v.mode}"]`) ||
+    $("mAuto");
+  md.checked = true;
+  const ps =
+    document.querySelector(`input[name="pos"][value="${T.v.pos}"]`) ||
+    $("pSide");
+  ps.checked = true;
   renderObjs();
 }
-function readForm(){
-  const T=act();T.name=$("tName").value;T.count=$("tCount").value;
-  FIELDS.forEach(id=>{T.v[id]=$(id).value});
-  T.v.mode=(document.querySelector('input[name="mode"]:checked')||{}).value||"auto";
-  T.v.pos=(document.querySelector('input[name="pos"]:checked')||{}).value||"side";
+function readForm() {
+  const T = act();
+  T.name = $("tName").value;
+  T.count = $("tCount").value;
+  FIELDS.forEach((id) => {
+    T.v[id] = $(id).value;
+  });
+  T.v.mode =
+    (document.querySelector('input[name="mode"]:checked') || {}).value ||
+    "auto";
+  T.v.pos =
+    (document.querySelector('input[name="pos"]:checked') || {}).value || "side";
 }
-function syncFormUI(T,Rt){
-  const v=T.v;$("fBox").hidden=v.mode!=="f";$("aBox").hidden=v.mode!=="a";$("L0box").hidden=v.pos==="top";
-  const sv=(SENS[+v.sens]||SENS[3])[1];$("ppBox").hidden=sv!=="pp";$("sw").readOnly=sv!==null;
-  if(sv!==null&&Rt&&isFinite(Rt.s))$("sw").value=+Rt.s.toFixed(2);
-  $("sumGeo").textContent=`${v.pos==="top"?"сверху":"сбоку"}, ${v.H} м, ${v.Wz}×${v.Dz} м`;
-  $("sumCam").textContent=(RES[+v.res]||RES[1])[0].split(" · ")[0]+(Rt&&!Rt.err?`, f ${fmt(Rt.f,1)} мм`:"");
-  $("sumObj").textContent=`${T.objs.length} шт.`;
-  $("sumStr").textContent=`${v.fps} к/с, ${v.codec==="0.04"?"H.265":"H.264"}`;
+function syncFormUI(T, Rt) {
+  const v = T.v;
+  $("fBox").hidden = v.mode !== "f";
+  $("aBox").hidden = v.mode !== "a";
+  $("L0box").hidden = v.pos === "top";
+  const sv = (SENS[+v.sens] || SENS[3])[1];
+  $("ppBox").hidden = sv !== "pp";
+  $("sw").readOnly = sv !== null;
+  if (sv !== null && Rt && isFinite(Rt.s)) $("sw").value = +Rt.s.toFixed(2);
+  $("sumGeo").textContent =
+    `${v.pos === "top" ? "сверху" : "сбоку"}, ${v.H} м, ${v.Wz}×${v.Dz} м`;
+  $("sumCam").textContent =
+    (RES[+v.res] || RES[1])[0].split(" · ")[0] +
+    (Rt && !Rt.err ? `, f ${fmt(Rt.f, 1)} мм` : "");
+  $("sumObj").textContent = `${T.objs.length} шт.`;
+  $("sumStr").textContent =
+    `${v.fps} к/с, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
 }
-
