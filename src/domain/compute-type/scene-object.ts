@@ -1,11 +1,8 @@
 import type { SceneObject } from "../entities/camera-type.ts";
-import { parseNum } from "../parse-num.ts";
 import { describeFeed, type Feed } from "./feed.ts";
 import { boxSizePx, ZONE_STEPS, type Size, type View } from "./projection.ts";
 import type { Zone } from "./zone.ts";
 
-// вход модели, если в объекте не задан, px
-const DEFAULT_INPUT_SIZE = 640;
 // «на грани» — от этой доли порога до порога; источник значения не указан
 const WARN_SHARE = 0.75;
 
@@ -50,14 +47,14 @@ export function evaluateObject(
 ): ObjectResult {
   const { view, k, zone } = context;
   // габариты в см → м
-  const width = parseNum(object.width) / 100,
-    length = parseNum(object.length) / 100,
-    height = parseNum(object.height) / 100,
-    requiredPx = parseNum(object.requiredPx);
+  const width = object.width / 100,
+    length = object.length / 100,
+    height = object.height / 100,
+    { requiredPx } = object;
   const feed = describeFeed(
     object.feed,
-    parseNum(object.inputSize) || DEFAULT_INPUT_SIZE,
-    parseNum(object.overlap),
+    object.inputSize,
+    object.overlap,
     context.frame,
     context.roi,
   );

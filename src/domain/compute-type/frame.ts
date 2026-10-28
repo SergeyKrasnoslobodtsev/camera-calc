@@ -1,6 +1,5 @@
 import type { Camera } from "../entities/camera.ts";
 import type { CameraTypeInputs } from "../entities/camera-type.ts";
-import { parseNum } from "../parse-num.ts";
 import { DEFAULT_RESOLUTION, RESOLUTIONS } from "../references/resolutions.ts";
 import { DEFAULT_SENSOR, SENSORS } from "../references/sensors.ts";
 
@@ -19,13 +18,13 @@ export function resolveFrame(
       sensorWidth: camera.sensorWidth,
     };
   const { width, height } =
-    RESOLUTIONS[+inputs.resolution] ?? DEFAULT_RESOLUTION;
-  const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR;
+    RESOLUTIONS[inputs.resolution] ?? DEFAULT_RESOLUTION;
+  const sensor = SENSORS[inputs.sensor] ?? DEFAULT_SENSOR;
   const sensorWidth =
     sensor.kind === "format"
       ? sensor.widthMm
       : sensor.kind === "pixelPitch"
-        ? (parseNum(inputs.pixelPitch) * width) / 1000 // мкм × px → мм
-        : parseNum(inputs.sensorWidth);
+        ? (inputs.pixelPitch * width) / 1000 // мкм × px → мм
+        : inputs.sensorWidth;
   return { width, height, sensorWidth };
 }

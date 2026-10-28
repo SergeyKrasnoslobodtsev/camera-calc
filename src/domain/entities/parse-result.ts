@@ -1,3 +1,5 @@
+import { parseNum } from "../parse-num.ts";
+
 // Результат разбора сырой записи (форма, сохранение, файл импорта) в сущность.
 // code — правило, которое нарушило поле: required — нет значения нужного вида или пустая строка,
 // positive — не число больше нуля, nonNegative — не число ≥ 0, oneOf — значение не из списка,
@@ -22,6 +24,15 @@ export function readFields(raw: unknown, prefix = "") {
   const check = (ok: boolean, field: string, code: FieldError["code"]) => {
     if (!ok) errors.push({ field: prefix + field, code });
   };
+  // значение поля формы в черновике: строка как введена или число из шаблона
+  const formValue = (field: string, value = record[field]) => {
+    check(
+      typeof value === "string" || Number.isFinite(value),
+      field,
+      "required",
+    );
+    return value as string | number;
+  };
   return {
     record,
     errors,
@@ -29,14 +40,10 @@ export function readFields(raw: unknown, prefix = "") {
       check(typeof value === "string", field, "required");
       return String(value ?? "");
     },
-    // значение поля формы в черновике: строка как введена или число из шаблона
-    formValue(field: string, value = record[field]) {
-      check(
-        typeof value === "string" || Number.isFinite(value),
-        field,
-        "required",
-      );
-      return value as string | number;
+    formValue,
+    // число из поля формы в черновике (parseNum): не число — NaN, его отсекает расчёт
+    number(field: string, value = record[field]) {
+      return parseNum(formValue(field, value));
     },
     text(field: string, value = record[field]) {
       check(

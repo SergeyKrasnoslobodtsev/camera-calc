@@ -9,7 +9,7 @@ import {
   type TypeResult,
 } from "../../src/domain/compute-type/index.ts";
 import type { Camera } from "../../src/domain/entities/camera.ts";
-import type { CameraType } from "../../src/domain/entities/camera-type.ts";
+import { parseCameraType } from "../../src/domain/entities/camera-type.ts";
 import { BUILTIN_CAMERAS } from "../../src/domain/references/builtin-cameras.ts";
 
 // тексты — на русском, как в фикстуре: язык выбирается при загрузке i18n
@@ -21,7 +21,7 @@ const text = await import("../../src/i18n/domain-text.ts");
 
 type Case = {
   name: string;
-  type: CameraType;
+  type: unknown; // черновик типа камер
   cameraId: string | null;
   expected: Snapshot;
 };
@@ -190,6 +190,8 @@ function assertClose(actual: unknown, expected: unknown, path: string) {
 for (const { name, type, cameraId, expected } of fixture.cases)
   test(name, () => {
     const camera = cameras.find((item) => item.id === cameraId);
-    const actual = oldShape(computeType(type, camera));
+    const parsed = parseCameraType(type);
+    assert.ok(parsed.ok);
+    const actual = oldShape(computeType(parsed.value, camera));
     assertClose(actual, pick(expected, actual), "result");
   });
