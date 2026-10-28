@@ -319,6 +319,15 @@ const i18nSource = fs.readFileSync(__dirname + "/../src/js/00-i18n.js", "utf8");
   assert.deepStrictEqual(repeated, [], "повторяющиеся ключи в " + name);
 });
 console.log("no duplicate keys: ok");
+// tips: every tip has a "?" button next to its field (objs: the tip sits in a heading, not in a field)
+assert.deepStrictEqual(
+  Object.keys(w.eval("STR.tips")).filter(
+    (key) => key !== "objs" && !d.querySelector(`.tipbtn[data-key="${key}"]`),
+  ),
+  [],
+  "подсказки без кнопки «?»",
+);
+console.log("tip buttons: ok");
 // notes: an object too small for the camera resolution gets the full hint
 const tooSmall = JSON.parse(page(null, "ru").localStorage.getItem("camcalc4"));
 tooSmall.types[0].objects[0].width = 8;

@@ -440,44 +440,63 @@ const RU = {
       "Название типа камеры, например «Рабочее место» или «Тележка». Тип — группа одинаковых камер с одной задачей: общие геометрия, матрица, поток и объекты.",
     tCount:
       "Количество камер этого типа в системе. Влияет на сетевой поток, декодирование и нагрузку на GPU, но не на пиксели на объекте.",
-    cam: "Камера из «Шаблонов»: разрешение и матрица берутся из неё, а требуемое фокусное расстояние проверяется по диапазону её объектива. «Ручная настройка матрицы» — разрешение и матрица задаются вручную.",
+    camera:
+      "Камера из «Шаблонов»: разрешение и матрица берутся из неё, а требуемое фокусное расстояние проверяется по диапазону её объектива. «Ручная настройка матрицы» — разрешение и матрица задаются вручную.",
     ngTf: "FP16 Tensor из даташита NVIDIA без sparsity. Если значение отмечено звёздочкой «with sparsity», разделите его на 2. Для GeForce используйте FP16 с FP32-накоплением: оно вдвое меньше FP16-накопления.",
     ngArch:
       "Архитектура задаёт производительность одного аппаратного декодера NVDEC. Для Jetson выберите «Jetson или свой декодер» и укажите число потоков 1080p30 из спецификации.",
     ndFps:
       "Число кадров в секунду, которое модель обрабатывает на одном GPU в TensorRT с той же точностью и batch, что и в эксплуатации.",
     ncSw: "Ширина активной области сенсора из даташита. Если её нет, оставьте поле пустым и укажите размер пикселя.",
-    H: "Высота объектива над полом. Измерьте лазерным дальномером от пола до точки крепления. Чем выше камера, тем меньше перекрытий объектов, но ниже плотность пикселей.",
-    h: "Высота поверхности, на которой находятся объекты контроля: столешница ≈ 0,85–0,9 м, верх ложемента тележки. Для рук работника — ≈ 1,0–1,2 м. Весь расчёт выполняется для этой плоскости.",
+    cameraHeight:
+      "Высота объектива над полом. Измерьте лазерным дальномером от пола до точки крепления. Чем выше камера, тем меньше перекрытий объектов, но ниже плотность пикселей.",
+    planeHeight:
+      "Высота поверхности, на которой находятся объекты контроля: столешница ≈ 0,85–0,9 м, верх ложемента тележки. Для рук работника — ≈ 1,0–1,2 м. Весь расчёт выполняется для этой плоскости.",
     pos: "Сбоку — камера направлена под углом, видны и человек, и объекты. Над центром — камера направлена строго вниз: лучший вид на ячейки тележки, но человек виден сверху и действия рук различаются хуже.",
-    L0: "Расстояние по полу от точки под камерой до ближнего края зоны. Отрицательное значение — камера находится над частью зоны.",
-    Dz: "Размер зоны вдоль направления взгляда камеры, от ближнего края до дальнего.",
-    Wz: "Размер зоны поперёк направления взгляда камеры.",
-    orient:
+    zoneStart:
+      "Расстояние по полу от точки под камерой до ближнего края зоны. Отрицательное значение — камера находится над частью зоны.",
+    zoneDepth:
+      "Размер зоны вдоль направления взгляда камеры, от ближнего края до дальнего.",
+    zoneWidth: "Размер зоны поперёк направления взгляда камеры.",
+    orientation:
       "Камеру можно повернуть на 90°, чтобы длинная сторона кадра совпала с длинной стороной зоны. «Авто» выбирает вариант, при котором на метр зоны приходится больше пикселей. Поворот поддерживают многие корпусные камеры (режим «коридор»). Для купольных камер проверьте возможность поворота модуля.",
-    mg: "Запас, чтобы зона не доходила до краёв кадра: там ниже резкость и сильнее дисторсия, а при монтаже камера может сместиться. Типичное значение — 10–20%.",
-    res: "Разрешение потока, который обрабатывает аналитика. Если модель получает субпоток, укажите разрешение субпотока.",
-    sens: "Дюймовый формат матрицы условный, у разных производителей размеры отличаются. Точнее всего — режим «По размеру пикселя» с данными из даташита сенсора.",
-    sw: "Ширина области матрицы, которая формирует видео в выбранном разрешении. В даташите сенсора — effective или active area.",
-    pp: "Размер пикселя из даташита сенсора (pixel size, мкм), например 2,0 мкм у IMX334. Ширина матрицы = размер пикселя × число пикселей по горизонтали.",
+    margin:
+      "Запас, чтобы зона не доходила до краёв кадра: там ниже резкость и сильнее дисторсия, а при монтаже камера может сместиться. Типичное значение — 10–20%.",
+    resolution:
+      "Разрешение потока, который обрабатывает аналитика. Если модель получает субпоток, укажите разрешение субпотока.",
+    sensor:
+      "Дюймовый формат матрицы условный, у разных производителей размеры отличаются. Точнее всего — режим «По размеру пикселя» с данными из даташита сенсора.",
+    sensorWidth:
+      "Ширина области матрицы, которая формирует видео в выбранном разрешении. В даташите сенсора — effective или active area.",
+    pixelPitch:
+      "Размер пикселя из даташита сенсора (pixel size, мкм), например 2,0 мкм у IMX334. Ширина матрицы = размер пикселя × число пикселей по горизонтали.",
     mode: "«Подбор» — калькулятор подбирает угол обзора под зону. «Фокусное расстояние» или «Угол HFOV» — проверка конкретной камеры из каталога.",
-    fmm: "Фокусное расстояние объектива из даташита камеры. Для вариофокального объектива проверьте оба конца диапазона.",
+    focalLength:
+      "Фокусное расстояние объектива из даташита камеры. Для вариофокального объектива проверьте оба конца диапазона.",
     hfov: "Горизонтальный угол обзора из даташита. Не путайте его с диагональным (DFOV): диагональный больше и часто указан крупнее.",
     objs: "Карточка для каждого объекта: габариты (ширина поперёк взгляда камеры, длина вдоль, высота), модель, которая его обнаруживает, подача кадра в модель, размер входа и порог в пикселях на меньшую сторону объекта. Результат отображается в карточке. Объекты с одной моделью и одной подачей считаются одним запуском: нагрузка не удваивается.",
-    k: "Доля номинального разрешения, которая доходит до модели после сжатия, оптики и дисторсии. 0,7 — качественная камера с высоким битрейтом, 0,6 — типичное значение, 0,5 — широкоугольный объектив или вид сверху.",
-    v: "Скорость самого быстрого движения, которое должно быть видно без смаза: руки при работе ≈ 1 м/с, идущий человек ≈ 1,5 м/с.",
-    blur: "Допустимый смаз в пикселях. Для детекции — 1–2 px, для чтения маркировки — не больше 0,5–1 px.",
+    lensFactor:
+      "Доля номинального разрешения, которая доходит до модели после сжатия, оптики и дисторсии. 0,7 — качественная камера с высоким битрейтом, 0,6 — типичное значение, 0,5 — широкоугольный объектив или вид сверху.",
+    speed:
+      "Скорость самого быстрого движения, которое должно быть видно без смаза: руки при работе ≈ 1 м/с, идущий человек ≈ 1,5 м/с.",
+    blurPx:
+      "Допустимый смаз в пикселях. Для детекции — 1–2 px, для чтения маркировки — не больше 0,5–1 px.",
     fps: "Частота кадров потока для аналитики. Для фиксации событий с точностью ≈ 1 с достаточно 5–10 кадр/с, для отслеживания действий рук — 10–15 кадр/с.",
     codec:
       "H.265 даёт примерно вдвое меньший поток при том же качестве. H.264 используйте, если декодер сервера не поддерживает H.265.",
     scene:
       "Битрейт растёт с движением в кадре. Спокойная сцена — пустой склад, обычная — рабочее место, активная — проходы с большим числом людей и техники.",
-    afps: "Число кадров в секунду с каждой камеры, которое проходит через модели. Присутствие человека — 2–5 кадр/с, учёт деталей и такта — 5–10 кадр/с. Не больше частоты кадров потока.",
-    kr: "Доля замеренной скорости, которая сохраняется в реальной системе с учётом декодирования, пред- и постобработки, трекинга, записи в БД и пиков нагрузки. 0,7 — отлаженный DeepStream/TensorRT, 0,5–0,6 — типичное значение, 0,4 — Python-пайплайн без оптимизации.",
+    analyticsFps:
+      "Число кадров в секунду с каждой камеры, которое проходит через модели. Присутствие человека — 2–5 кадр/с, учёт деталей и такта — 5–10 кадр/с. Не больше частоты кадров потока.",
+    efficiency:
+      "Доля замеренной скорости, которая сохраняется в реальной системе с учётом декодирования, пред- и постобработки, трекинга, записи в БД и пиков нагрузки. 0,7 — отлаженный DeepStream/TensorRT, 0,5–0,6 — типичное значение, 0,4 — Python-пайплайн без оптимизации.",
     gpu: "«Авто» перебирает все отмеченные GPU в количестве от 1 до 4 и выбирает самую дешёвую конфигурацию, которая выдерживает нагрузку с запасом и помещается в видеопамять. Список GPU, цены и свои GPU — в «Шаблонах».",
-    gcnt: "Количество GPU. «Авто» — минимальное количество, которое выдерживает нагрузку. Два недорогих GPU часто выгоднее одного дорогого.",
-    resv: "Доля мощности, которая остаётся свободной под рост: новые камеры, вторая модель, пики нагрузки. При 20% загрузка инференса и декодера не превышает ≈ 83%.",
-    days: "Сколько дней хранить видео. 0 — видео не записывается, хранятся только события аналитики.",
+    gpuCount:
+      "Количество GPU. «Авто» — минимальное количество, которое выдерживает нагрузку. Два недорогих GPU часто выгоднее одного дорогого.",
+    reserve:
+      "Доля мощности, которая остаётся свободной под рост: новые камеры, вторая модель, пики нагрузки. При 20% загрузка инференса и декодера не превышает ≈ 83%.",
+    archiveDays:
+      "Сколько дней хранить видео. 0 — видео не записывается, хранятся только события аналитики.",
   },
 };
 const EN = {
@@ -913,44 +932,63 @@ const EN = {
       'Camera type name, for example "Workstation" or "Cart". A type is a group of identical cameras with one task: shared geometry, sensor, stream, and objects.',
     tCount:
       "Number of cameras of this type in the system. Affects network traffic, decoding, and GPU load, but not the pixels on the object.",
-    cam: 'Camera from "Templates": the resolution and sensor are taken from it, and the required focal length is checked against its lens range. "Manual sensor setup": the resolution and sensor are set manually.',
+    camera:
+      'Camera from "Templates": the resolution and sensor are taken from it, and the required focal length is checked against its lens range. "Manual sensor setup": the resolution and sensor are set manually.',
     ngTf: 'FP16 Tensor from the NVIDIA datasheet without sparsity. If the value is marked with an asterisk "with sparsity", divide it by 2. For GeForce, use FP16 with FP32 accumulate: it\'s half of FP16 accumulate.',
     ngArch:
       'The architecture defines the performance of one NVDEC hardware decoder. For Jetson, choose "Jetson or custom decoder" and enter the number of 1080p30 streams from the specification.',
     ndFps:
       "Frames per second the model processes on one GPU in TensorRT with the same precision and batch as in production.",
     ncSw: "Width of the sensor active area from the datasheet. If it isn't listed, leave the field empty and enter the pixel size.",
-    H: "Height of the lens above the floor. Measure with a laser rangefinder from the floor to the mounting point. The higher the camera, the less objects occlude each other, but the lower the pixel density.",
-    h: "Height of the surface the monitored objects are on: tabletop ≈ 0.85–0.9 m, top of a cart tray. For a worker's hands, ≈ 1.0–1.2 m. The whole calculation is done for this plane.",
+    cameraHeight:
+      "Height of the lens above the floor. Measure with a laser rangefinder from the floor to the mounting point. The higher the camera, the less objects occlude each other, but the lower the pixel density.",
+    planeHeight:
+      "Height of the surface the monitored objects are on: tabletop ≈ 0.85–0.9 m, top of a cart tray. For a worker's hands, ≈ 1.0–1.2 m. The whole calculation is done for this plane.",
     pos: "Side: the camera looks at an angle, and both the person and the objects are visible. Overhead: the camera looks straight down, which gives the best view of cart cells, but the person is seen from above and hand actions are harder to tell apart.",
-    L0: "Floor distance from the point below the camera to the near edge of the zone. A negative value means the camera is above part of the zone.",
-    Dz: "Zone size along the camera view direction, from the near edge to the far edge.",
-    Wz: "Zone size across the camera view direction.",
-    orient:
+    zoneStart:
+      "Floor distance from the point below the camera to the near edge of the zone. A negative value means the camera is above part of the zone.",
+    zoneDepth:
+      "Zone size along the camera view direction, from the near edge to the far edge.",
+    zoneWidth: "Zone size across the camera view direction.",
+    orientation:
       'The camera can be rotated 90° so that the long side of the frame matches the long side of the zone. "Auto" chooses the option that gives more pixels per meter of the zone. Many box cameras support rotation (corridor mode). For dome cameras, check whether the module can be rotated.',
-    mg: "Margin that keeps the zone away from the frame edges: sharpness is lower and distortion is stronger there, and the camera can shift during installation. Typical value is 10–20%.",
-    res: "Resolution of the stream the analytics processes. If the model receives a substream, enter the substream resolution.",
-    sens: 'The inch sensor format is nominal, and actual sizes differ between manufacturers. The most accurate option is "From pixel size" with data from the sensor datasheet.',
-    sw: "Width of the sensor area that forms the video at the selected resolution. In the sensor datasheet, it's the effective or active area.",
-    pp: "Pixel size from the sensor datasheet, for example 2.0 µm for IMX334. Sensor width = pixel size × number of horizontal pixels.",
+    margin:
+      "Margin that keeps the zone away from the frame edges: sharpness is lower and distortion is stronger there, and the camera can shift during installation. Typical value is 10–20%.",
+    resolution:
+      "Resolution of the stream the analytics processes. If the model receives a substream, enter the substream resolution.",
+    sensor:
+      'The inch sensor format is nominal, and actual sizes differ between manufacturers. The most accurate option is "From pixel size" with data from the sensor datasheet.',
+    sensorWidth:
+      "Width of the sensor area that forms the video at the selected resolution. In the sensor datasheet, it's the effective or active area.",
+    pixelPitch:
+      "Pixel size from the sensor datasheet, for example 2.0 µm for IMX334. Sensor width = pixel size × number of horizontal pixels.",
     mode: '"Auto": the calculator selects the field of view for the zone. "Focal length" or "HFOV angle": checks a specific camera from a catalog.',
-    fmm: "Lens focal length from the camera datasheet. For a varifocal lens, check both ends of the range.",
+    focalLength:
+      "Lens focal length from the camera datasheet. For a varifocal lens, check both ends of the range.",
     hfov: "Horizontal field of view from the datasheet. Don't confuse it with the diagonal one (DFOV): the diagonal one is larger and is often shown more prominently.",
     objs: "A card for each object: dimensions (width across the camera view, length along it, height), the model that detects it, the input mode, the input size, and the threshold in pixels for the smaller side of the object. The result is shown in the card. Objects with the same model and input mode count as one inference run: the load isn't doubled.",
-    k: "Fraction of the nominal resolution that reaches the model after compression, optics, and distortion. 0.7 is a high-quality camera with a high bitrate, 0.6 is typical, 0.5 is a wide-angle lens or an overhead view.",
-    v: "Speed of the fastest motion that must be visible without blur: hands at work ≈ 1 m/s, a walking person ≈ 1.5 m/s.",
-    blur: "Allowed motion blur in pixels. For detection, 1–2 pixels. For reading markings, no more than 0.5–1 pixel.",
+    lensFactor:
+      "Fraction of the nominal resolution that reaches the model after compression, optics, and distortion. 0.7 is a high-quality camera with a high bitrate, 0.6 is typical, 0.5 is a wide-angle lens or an overhead view.",
+    speed:
+      "Speed of the fastest motion that must be visible without blur: hands at work ≈ 1 m/s, a walking person ≈ 1.5 m/s.",
+    blurPx:
+      "Allowed motion blur in pixels. For detection, 1–2 pixels. For reading markings, no more than 0.5–1 pixel.",
     fps: "Stream frame rate for analytics. To record events with ≈ 1 s accuracy, 5–10 fps is enough. To track hand actions, use 10–15 fps.",
     codec:
       "H.265 gives roughly half the bitrate at the same quality. Use H.264 if the server decoder doesn't support H.265.",
     scene:
       "Bitrate grows with motion in the frame. Low: an empty warehouse. Normal: a workstation. High: aisles with many people and vehicles.",
-    afps: "Frames per second from each camera that go through the models. Person presence: 2–5 fps. Counting parts and cycles: 5–10 fps. Not higher than the stream frame rate.",
-    kr: "Fraction of the measured speed that remains in a real system, accounting for decoding, pre- and post-processing, tracking, database writes, and load peaks. 0.7 is a tuned DeepStream/TensorRT pipeline, 0.5–0.6 is typical, 0.4 is an unoptimized Python pipeline.",
+    analyticsFps:
+      "Frames per second from each camera that go through the models. Person presence: 2–5 fps. Counting parts and cycles: 5–10 fps. Not higher than the stream frame rate.",
+    efficiency:
+      "Fraction of the measured speed that remains in a real system, accounting for decoding, pre- and post-processing, tracking, database writes, and load peaks. 0.7 is a tuned DeepStream/TensorRT pipeline, 0.5–0.6 is typical, 0.4 is an unoptimized Python pipeline.",
     gpu: '"Auto" tries all selected GPUs in counts from 1 to 4 and picks the cheapest configuration that handles the load with headroom and fits in GPU memory. The GPU list, prices, and custom GPUs are in "Templates".',
-    gcnt: 'Number of GPUs. "Auto" is the minimum number that handles the load. Two inexpensive GPUs are often cheaper than one expensive GPU.',
-    resv: "Fraction of capacity that stays free for growth: new cameras, a second model, load peaks. At 20%, inference and decoder load don't exceed ≈ 83%.",
-    days: "How many days to keep video. 0 means video isn't recorded, and only analytics events are stored.",
+    gpuCount:
+      'Number of GPUs. "Auto" is the minimum number that handles the load. Two inexpensive GPUs are often cheaper than one expensive GPU.',
+    reserve:
+      "Fraction of capacity that stays free for growth: new cameras, a second model, load peaks. At 20%, inference and decoder load don't exceed ≈ 83%.",
+    archiveDays:
+      "How many days to keep video. 0 means video isn't recorded, and only analytics events are stored.",
   },
 };
 // язык: выбор из localStorage, иначе язык браузера
