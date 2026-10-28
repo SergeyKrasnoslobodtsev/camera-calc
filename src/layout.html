@@ -1,0 +1,483 @@
+<title>Калькулятор камер</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: вкладки типов → первый экран (результат | система, нагрузка; на узком экране система | нагрузка, под ними результат) → параметры | объекты → сеть и допущения. Тёмная тема по умолчанию, своя светлая по кнопке */
+:root{
+  --bg:#0F1215; --surface:#171B1F; --sunk:#1D2227; --line:#2E353B; --line2:#252B30; --track:#2A3036;
+  --fg:#E6E8E9; --muted:#9AA3AA; --fg2:#B9C2C9;
+  --accent:#E8A93A; --accent-soft:#3A2E10;
+  --ok:#4CC38A; --ok-soft:#13301F; --warn:#F0B429; --warn-soft:#3A2E10; --bad:#FF7A6E; --bad-soft:#3D1A17;
+  --tile:#20262C; --tile-fg:#F2F3F1; --tile-mute:#AEB5BB; --tile-sub:#C9CED2; --tile-gap:#2A3036;
+  --c1:#E8A93A; --c2:#5AA9E6; --c3:#4FC1B0; --c4:#B494F0; --c5:#E87FA3; --c6:#9AA3AA;
+  --meter:#8C98A3; --primary-bg:#E6E8E9; --primary-fg:#0F1215; --wedge:rgba(232,169,58,.16); --wedge-line:#E8A93A; --dash:#3A4248; --fig:#13171A; --grid:#1F2428; --dim:#5B646B;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+:root.light{
+  --bg:#F2F3F1; --surface:#FFFFFF; --sunk:#F7F8F6; --line:#DCDFDA; --line2:#ECEEEA; --track:#E6E8E4;
+  --fg:#15181B; --muted:#59626A; --fg2:#3F474E;
+  --accent:#8A5700; --accent-soft:#FFF2D6;
+  --ok:#1E7046; --ok-soft:#E3F2E9; --warn:#9A5800; --warn-soft:#FCEFD9; --bad:#B42318; --bad-soft:#FCE8E6;
+  --tile:#15181B; --tile-fg:#F2F3F1; --tile-mute:#AEB5BB; --tile-sub:#C9CED2; --tile-gap:#2A3036;
+  --c1:#A86A00; --c2:#2F6FB3; --c3:#1F7F70; --c4:#7457BD; --c5:#B83F70; --c6:#59626A;
+  --meter:#3B4650; --primary-bg:#15181B; --primary-fg:#F2F3F1; --wedge:rgba(138,87,0,.12); --wedge-line:#8A5700; --dash:#B9BEB7; --fig:#FAFAF8; --grid:#ECEEEA; --dim:#9AA19C;
+  color-scheme:light;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.45}
+.wrap{max-width:1360px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--cond);font-size:28px;font-weight:600;line-height:1.15;margin:0;text-wrap:balance}
+h2,.h2{font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.h2big{font-family:var(--cond);font-size:16px;font-weight:600;margin:0;color:var(--fg)}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+button,.btn{font:inherit;font-size:14px;min-height:40px;box-sizing:border-box;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button:hover,.btn:hover{border-color:var(--accent)}
+.primary{background:var(--primary-bg);color:var(--primary-fg);border-color:var(--primary-bg);font-weight:600}
+.ghost{background:transparent;border-style:dashed;border-color:var(--dash);color:var(--fg)}
+.sm{min-height:34px;padding:5px 12px;font-size:13px}
+button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+a{color:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+input,select{font:inherit;font-family:var(--mono);font-size:14px;width:100%;box-sizing:border-box;min-height:34px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--fg)}
+select{font-family:var(--sans)}
+input[readonly]{color:var(--muted)}
+input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:0;margin:0;accent-color:var(--accent)}
+.f{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px;color:var(--muted)}
+.f.full{grid-column:1/-1}
+.f>label,.f>span{font-size:12px;color:var(--muted)}
+.lrow{display:flex;align-items:center;gap:6px;min-width:0}
+.note{font-size:12px;color:var(--muted);margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* отчёт */
+.sys{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--tile-gap);border-radius:10px;overflow:hidden}
+.sk{background:var(--tile);color:var(--tile-fg);padding:8px 14px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.sk>span:first-child{font-size:12px;color:var(--tile-mute)}
+.sk strong{font-family:var(--mono);font-size:21px;font-weight:500;line-height:1.2;display:flex;align-items:center;gap:8px;overflow-wrap:anywhere}
+.sk em{font-style:normal;font-size:12px;color:var(--tile-sub)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--muted);display:inline-block}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.sk .dot{width:10px;height:10px}
+.sk .dot.ok{background:#4CC38A}.sk .dot.warn{background:#F0B429}.sk .dot.bad{background:#FF7A6E}
+
+/* нагрузка */
+.load{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px 24px}
+.lhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px}
+.lctl{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.lctl .f select{min-height:36px}
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.meters{grid-template-columns:1fr}}
+.meter{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--sunk);min-width:0}
+.meter span{font-size:12px;color:var(--muted)}
+.meter strong{font-family:var(--mono);font-size:22px;font-weight:500}
+.track{position:relative;height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.track i{position:absolute;inset:0 auto 0 0;background:var(--meter);border-radius:4px}
+.track i.hot{background:var(--bad)}
+.track .lim{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--fg2);opacity:.6}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{text-align:right;font-size:12px;font-weight:500;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line2);text-align:right;font-family:var(--mono);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td.txt{font-family:var(--sans);white-space:normal}
+td .sub{display:block;font-family:var(--sans);font-size:12px;color:var(--muted)}
+td.dim{color:var(--muted);font-size:12.5px}
+tr.total td{font-weight:600;border-bottom:0}
+.share{display:flex;align-items:center;gap:8px;min-width:120px}
+.share .track{flex:1;height:6px}
+.share b{font-weight:500;min-width:40px;text-align:right;font-size:13px}
+
+/* первый экран: широкий — результат слева, система и нагрузка справа; компактный — система | нагрузка сверху, результат ниже */
+.first{display:grid;gap:14px;grid-template-columns:minmax(0,1fr) minmax(340px,400px);grid-template-rows:auto 1fr;grid-template-areas:"res sys" "res load";align-items:stretch}
+.syswrap{grid-area:sys}.dash{grid-area:load}.res{grid-area:res}
+@media (max-width:1199px){.first{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);grid-template-rows:auto auto;grid-template-areas:"sys load" "res res"}}
+@media (max-width:759px){.first{grid-template-columns:minmax(0,1fr);grid-template-areas:"sys" "load" "res"}}
+.syswrap{background:var(--tile);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.syswrap h2{padding:10px 14px 4px;color:var(--tile-mute)}
+.syswrap .sys{flex:1;grid-template-columns:repeat(2,minmax(0,1fr));border-radius:0;border-top:1px solid var(--tile-gap)}
+
+/* дашборд нагрузки */
+.dash{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dsel{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:8px;align-items:end}
+.dsel .f select{min-height:36px}
+.dsum{font-size:12.5px;color:var(--fg2)}
+.dsum:empty{display:none}
+.dsum b{font-family:var(--mono);font-weight:500;color:var(--fg)}
+.donutbox{display:flex;gap:14px;align-items:center;min-width:0}
+#donut{width:116px;height:116px;flex:none}
+.legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:12.5px;min-width:0;flex:1}
+.legend li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:7px;align-items:baseline}
+.legend .sw{width:10px;height:10px;border-radius:2px;align-self:center}
+.legend .sub{display:block;color:var(--muted);font-size:11.5px}
+.legend .pc{font-family:var(--mono);font-variant-numeric:tabular-nums}
+@media (max-width:420px){.donutbox{flex-direction:column;align-items:stretch}#donut{align-self:center}}
+.gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border-top:1px solid var(--line2);padding-top:10px}
+.gauges:empty{display:none}
+.gauge{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);min-width:0}
+.gauge svg{width:56px;height:56px;flex:none}
+.gauge b{display:block;color:var(--fg);font-weight:500;font-size:13px}
+#loadNote[hidden]{display:none}
+svg text.big{font-family:var(--mono);font-size:20px;font-weight:500;fill:var(--fg)}
+svg text.cap{font-family:var(--sans);font-size:9px;fill:var(--muted)}
+svg text.mid{font-family:var(--mono);font-size:15px;font-weight:500;fill:var(--fg)}
+
+/* результат со схемой */
+.res{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.reshead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.reshead .verdict{flex:1 1 360px;padding:7px 10px}
+.resbody{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch}
+.sidefig{flex:999 1 420px;min-width:0;margin:0;padding:10px 12px;background:var(--fig);border:1px solid var(--line2);border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.sidefig figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;font-size:12px;color:var(--fg2)}
+.figt{font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.figl{display:flex;flex-wrap:wrap;gap:4px 12px}
+.figl>span{display:inline-flex;align-items:center;gap:5px}
+.lg-fov{width:12px;height:9px;background:var(--wedge);border:1px solid var(--accent)}
+.lg-ax{width:14px;border-top:2px dashed var(--accent)}
+.lg-zone{width:14px;height:5px;background:var(--accent)}
+#side{display:block;width:100%;height:auto;max-height:440px}
+@media (min-width:1200px){#side{max-height:500px}}
+#side text{font-family:var(--mono);font-size:14px;fill:var(--fg2)}
+#side text.t-b{font-size:15px;fill:var(--fg)}
+#side text.t-a{font-size:15px;fill:var(--accent)}
+#side text.t-z{font-family:var(--sans);font-size:15px;font-weight:600;fill:var(--fg)}
+.rcol{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.rcol .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.rcol .kpi{padding:8px 12px}
+.rcol .kpi strong{font-size:17px;white-space:nowrap}
+.rcol table{font-size:13px}.rcol td,.rcol th{padding:4px 5px}
+.rcol td.txt{font-size:12.5px}
+.rcol .facts{flex-direction:column;gap:3px;margin-top:auto}
+
+/* вкладки */
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{min-height:44px;border-radius:8px;gap:8px;padding:8px 14px}
+.tab[aria-selected="true"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+.tab b{font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab small{font-family:var(--mono);font-size:13px;color:var(--muted)}
+
+/* три колонки */
+.work{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px;align-items:stretch}
+.col{display:flex;flex-direction:column}
+.colhead{padding:14px 16px 12px;border-bottom:1px solid var(--line2)}
+.typehead{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px 10px;align-items:end}
+.typehead h2{grid-column:1/-1}
+.typehead input#tName{font-family:var(--sans);font-weight:600}
+details.sec{border-bottom:1px solid var(--line2)}
+details.sec>summary{list-style:none;cursor:pointer;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 2px 3px 6px;flex:none}
+details.sec[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
+.sumv{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--muted);text-align:right}
+.fs{padding:0 16px 14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+.seg{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg label{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;font-size:13px;color:var(--fg);cursor:pointer;border-left:1px solid var(--line);text-align:center;padding:0 4px}
+.seg label:first-child{border-left:0}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg label:has(input:checked){background:var(--accent-soft);font-weight:600}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.colfoot{margin-top:auto;padding:12px 16px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted)}
+.danger{color:var(--bad)}
+
+/* объекты */
+.olist{padding:12px 16px;display:flex;flex-direction:column;gap:10px;max-height:640px;overflow-y:auto;box-sizing:border-box}
+.ocard{border:1px solid var(--line);border-radius:8px;background:var(--sunk);display:flex;flex-direction:column}
+.ohdr{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border-bottom:1px solid var(--track)}
+.ohdr input{flex:1;min-width:0;border-color:transparent;background:transparent;font-family:var(--sans);font-weight:600}
+.ohdr input:hover{border-color:var(--line)}
+.odel{width:32px;height:32px;min-height:32px;padding:0;font-size:16px;color:var(--muted);flex:none}
+.ogrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px 10px}
+.ogrid .c2{grid-column:span 2}
+.ogrid .f input,.ogrid .f select{min-height:32px;padding:4px 6px;font-size:13px;background:var(--surface)}
+.ogrid .f{font-size:11.5px}
+.ores{margin:0 10px 10px;padding:7px 9px;border-radius:6px;font-size:12.5px;display:flex;flex-wrap:wrap;gap:3px 12px;background:var(--surface);border:1px solid var(--line)}
+.ores.ok{background:var(--ok-soft);border-color:transparent}.ores.warn{background:var(--warn-soft);border-color:transparent}.ores.bad{background:var(--bad-soft);border-color:transparent}
+.ores b{font-weight:600}.ores.ok b{color:var(--ok)}.ores.warn b{color:var(--warn)}.ores.bad b{color:var(--bad)}
+.ores .m2{color:var(--fg2)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.chip{min-height:32px;padding:4px 10px;border-radius:999px;font-size:12.5px}
+
+/* результат */
+.verdict{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:var(--sunk);font-size:13px}
+.verdict.ok{background:var(--ok-soft)}.verdict.warn{background:var(--warn-soft)}.verdict.bad{background:var(--bad-soft)}
+.pill{font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--muted);color:var(--bg)}
+.verdict.ok .pill{background:var(--ok)}.verdict.warn .pill{background:var(--warn)}.verdict.bad .pill{background:var(--bad)}
+.verdict ul{margin:6px 0 0;padding-left:18px;color:var(--fg2)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line2);border-bottom:1px solid var(--line2)}
+.kpi{background:var(--surface);padding:10px 16px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi strong{font-family:var(--mono);font-size:18px;font-weight:500}
+.kpi em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+figure{margin:0;padding:12px 16px 4px}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.resfoot{padding:4px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.resfoot table{font-size:13px}
+.resfoot td,.resfoot th{padding:5px 6px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--fg2)}
+.facts b{font-weight:600;color:var(--fg)}
+
+/* низ */
+.bottom{display:flex;flex-wrap:wrap;gap:14px}
+.bottom>.panel{padding:14px 16px}
+.net{flex:2 1 560px}
+.assum{flex:1 1 280px;display:flex;flex-direction:column;gap:8px}
+.assum ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--fg2)}
+.formulas{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--fg2);margin-top:6px}
+.formulas p{margin:0 0 6px;font-family:var(--sans);color:var(--muted);font-size:12.5px}
+details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
+.rowhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px;margin-bottom:8px}
+.rowhead .f{flex-direction:row;align-items:center;gap:8px}
+.rowhead .f input{width:72px;min-height:32px}
+
+/* шаблоны */
+.tplhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+.tpltabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tpltabs a{display:flex;align-items:center;min-height:40px;padding:0 16px;color:var(--fg);text-decoration:none;border-left:1px solid var(--line);font-size:14px}
+.tpltabs a:first-child{border-left:0}
+.tpltabs a[aria-current="page"]{background:var(--accent-soft);font-weight:600;box-shadow:inset 0 -3px 0 var(--accent)}
+.inlink{font-size:12.5px;text-decoration:none}
+/* видеокарты */
+.gpage{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.cat{flex:999 1 640px}
+.newc{flex:1 1 340px}
+.cat td input[type=text],.cat td input:not([type]){width:100px;min-height:32px;text-align:right}
+.mine{margin:0 16px 16px;padding:14px;border:1px dashed var(--dash);border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.newc form{padding:14px 16px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+.hint{grid-column:1/-1;padding:10px 12px;border-radius:8px;background:var(--sunk);font-size:12.5px;color:var(--fg2);display:flex;flex-direction:column;gap:4px}
+.hint b{color:var(--fg);font-weight:600}
+.err{grid-column:1/-1;color:var(--bad);font-size:12.5px}
+.params{padding:14px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;border-top:1px solid var(--line2)}
+
+.tipbtn{flex:none;width:18px;height:18px;min-height:18px;padding:0;border-radius:50%;font-size:11px;font-weight:600;line-height:16px;color:var(--muted);background:var(--sunk);border:1px solid var(--line)}
+.tipbtn:hover,.tipbtn[aria-expanded="true"]{color:var(--fg);border-color:var(--accent);background:var(--accent-soft)}
+.pop{position:fixed;z-index:50;max-width:min(300px,calc(100vw - 24px));box-sizing:border-box;font-size:12.5px;line-height:1.45;color:var(--fg);background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:8px 10px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:14px;z-index:60}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Калькулятор камер и вычислителя</h1>
+  <div class="acts">
+    <button type="button" id="themeBtn" aria-pressed="false">Светлая тема</button>
+    <a class="btn" href="#tpl-gpus" id="tplBtn">Шаблоны</a>
+    <button type="button" id="resetBtn">Пример</button>
+    <button type="button" id="copyBtn" class="primary">Копировать отчёт</button>
+  </div>
+</header>
+
+<div id="viewMain" style="display:flex;flex-direction:column;gap:14px">
+<nav class="tabs" role="tablist" aria-label="Типы камер" id="tabs"></nav>
+
+<div class="first">
+<section class="syswrap" aria-labelledby="sysTitle">
+  <h2 id="sysTitle">Система</h2>
+  <div class="sys" id="sysKpis"></div>
+</section>
+
+<section class="panel dash" aria-labelledby="loadTitle">
+  <div class="dhead">
+    <h2 id="loadTitle">Что нагружается</h2>
+    <a class="inlink" href="#tpl-gpus">+ Своя карта</a>
+  </div>
+  <div class="dsel">
+    <div class="f"><label for="gpu">Видеокарта</label><select id="gpu"></select></div>
+    <div class="f"><label for="gcnt">Кол-во</label><select id="gcnt"><option value="auto">Авто</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+  </div>
+  <div class="dsum" id="dsum"></div>
+  <div class="donutbox">
+    <svg id="donut" viewBox="0 0 120 120" role="img" aria-label="Загрузка инференса"></svg>
+    <ul class="legend" id="legend"></ul>
+  </div>
+  <div class="gauges" id="gauges"></div>
+  <p class="note" id="loadNote"></p>
+</section>
+
+<section class="panel res" aria-labelledby="resTitle" role="tabpanel" id="typeOut">
+  <div class="reshead">
+    <h2 id="resTitle">Результат</h2>
+    <div class="verdict" id="verdict"></div>
+  </div>
+  <div class="resbody">
+    <figure class="sidefig">
+      <figcaption><span class="figt">Вид сбоку</span>
+        <span class="figl"><span><i class="lg-fov" aria-hidden="true"></i>поле зрения</span><span><i class="lg-ax" aria-hidden="true"></i>ось</span><span><i class="lg-zone" aria-hidden="true"></i>зона</span></span>
+      </figcaption>
+      <svg id="side" viewBox="0 0 680 510" role="img" aria-label="Схема: камера, поле зрения и зона контроля, вид сбоку"></svg>
+    </figure>
+    <div class="rcol">
+      <div class="kpis" id="kpis"></div>
+      <table id="dens"></table>
+      <div class="facts" id="facts"></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="work">
+  <form class="panel col" id="frm" autocomplete="off" aria-labelledby="parTitle">
+    <div class="colhead typehead">
+      <h2 id="parTitle">Параметры типа</h2>
+      <div class="f"><label for="tName">Название</label><input id="tName"></div>
+      <div class="f"><label for="tCount">Камер</label><input id="tCount" inputmode="numeric"></div>
+    </div>
+    <details class="sec" open>
+      <summary>Геометрия <span class="sumv" id="sumGeo"></span></summary>
+      <div class="fs">
+        <div class="f"><label for="H">Высота камеры, м</label><input id="H" inputmode="decimal"></div>
+        <div class="f"><label for="h">Плоскость интереса, м</label><input id="h" inputmode="decimal"></div>
+        <div class="f" id="L0box"><label for="L0">Вынос до зоны, м</label><input id="L0" inputmode="decimal"></div>
+        <div class="f"><label for="mg">Запас кадра, %</label><input id="mg" inputmode="decimal"></div>
+        <div class="f"><label for="Dz">Глубина зоны, м</label><input id="Dz" inputmode="decimal"></div>
+        <div class="f"><label for="Wz">Ширина зоны, м</label><input id="Wz" inputmode="decimal"></div>
+        <div class="f full"><span data-tip="pos">Положение камеры</span>
+          <div class="seg" role="radiogroup" aria-label="Положение камеры">
+            <label><input type="radio" name="pos" id="pSide" value="side">Сбоку, под углом</label>
+            <label><input type="radio" name="pos" id="pTop" value="top">Над центром</label>
+          </div>
+        </div>
+      </div>
+    </details>
+    <details class="sec" open>
+      <summary>Матрица и объектив <span class="sumv" id="sumCam"></span></summary>
+      <div class="fs">
+        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="cam">Камера</label><a class="inlink" href="#tpl-cams">+ Своя камера</a></div><select id="cam"></select></div>
+        <div class="f full"><label for="res">Разрешение</label><select id="res"></select></div>
+        <div class="f"><label for="sens">Формат матрицы</label><select id="sens"></select></div>
+        <div class="f"><label for="sw">Ширина матрицы, мм</label><input id="sw" inputmode="decimal"></div>
+        <div class="f full" id="ppBox" hidden><label for="pp">Размер пикселя, мкм</label><input id="pp" inputmode="decimal"></div>
+        <div class="f full"><label for="orient">Ориентация кадра</label><select id="orient"><option value="auto">Авто — как выгоднее</option><option value="land">Длинная сторона поперёк взгляда</option><option value="port">Повернуть на 90°</option></select></div>
+        <div class="f full"><span data-tip="mode">Объектив</span>
+          <div class="seg three" role="radiogroup" aria-label="Режим объектива">
+            <label><input type="radio" name="mode" id="mAuto" value="auto">Подобрать</label>
+            <label><input type="radio" name="mode" id="mF" value="f">Фокусное</label>
+            <label><input type="radio" name="mode" id="mA" value="a">Угол HFOV</label>
+          </div>
+        </div>
+        <div class="f" id="fBox" hidden><label for="fmm">Фокусное, мм</label><input id="fmm" inputmode="decimal"></div>
+        <div class="f" id="aBox" hidden><label for="hfov">HFOV, °</label><input id="hfov" inputmode="decimal"></div>
+      </div>
+    </details>
+    <details class="sec">
+      <summary>Поток и качество <span class="sumv" id="sumStr"></span></summary>
+      <div class="fs">
+        <div class="f"><label for="fps">Кадров/с в потоке</label><input id="fps" inputmode="decimal"></div>
+        <div class="f"><label for="afps">На аналитику, к/с</label><input id="afps" inputmode="decimal"></div>
+        <div class="f"><label for="codec">Кодек</label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
+        <div class="f"><label for="scene">Движение в сцене</label><select id="scene"><option value="0.6">Спокойное</option><option value="1">Обычное</option><option value="1.5">Активное</option></select></div>
+        <div class="f"><label for="k">Коэфф. качества</label><input id="k" inputmode="decimal"></div>
+        <div class="f"><label for="v">Скорость движения, м/с</label><input id="v" inputmode="decimal"></div>
+        <div class="f"><label for="blur">Допустимый смаз, px</label><input id="blur" inputmode="decimal"></div>
+      </div>
+    </details>
+    <div class="colfoot"><button type="button" class="sm" id="dupBtn">Дублировать тип</button><button type="button" class="sm danger" id="delBtn">Удалить тип</button></div>
+  </form>
+
+  <section class="panel col" aria-labelledby="objTitle">
+    <div class="colhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2 id="objTitle"><span data-tip="objs">Что ищем и чем</span></h2>
+      <button type="button" class="primary sm" id="addObj">+ Объект</button>
+    </div>
+    <div class="olist">
+      <div id="objList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="presets"><span>Шаблоны:</span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto">+ Свой детектор</a></div>
+    </div>
+    <div class="colfoot">Список прокручивается внутри блока. Объекты с одной моделью и подачей считаются одним запуском.</div>
+  </section>
+
+</div>
+
+<div class="bottom">
+  <section class="panel net" aria-labelledby="netTitle">
+    <div class="rowhead"><h2 id="netTitle">Сеть и хранение</h2>
+      <div class="f"><label for="days">Архив, суток</label><input id="days" inputmode="numeric" value="0"></div></div>
+    <div class="tbl"><table id="netTbl"></table></div>
+  </section>
+  <section class="panel assum" aria-labelledby="assTitle">
+    <h2 id="assTitle">Допущения</h2>
+    <ul id="assList"></ul>
+    <details class="how" style="margin-top:auto"><summary>Все формулы</summary><div class="formulas" id="formulas"></div></details>
+  </section>
+</div>
+</div>
+
+<div id="viewTpl" hidden style="flex-direction:column;gap:14px">
+  <div class="tplhead">
+    <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none">← К расчёту</a><h2 class="h2big" style="font-size:22px">Шаблоны</h2></div>
+    <nav class="tpltabs" aria-label="Разделы шаблонов"><a href="#tpl-gpus" id="tt-gpus">Видеокарты</a><a href="#tpl-cams" id="tt-cams">Камеры</a><a href="#tpl-dets" id="tt-dets">Детекторы</a></nav>
+  </div>
+  <div class="gpage" id="tpl-gpus-v">
+    <section class="panel cat" aria-labelledby="catTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catTitle">Каталог</h2><span class="note">характеристики — даташиты NVIDIA</span></div>
+      <div class="tbl" style="padding:4px 8px 8px"><table id="catTbl"></table></div>
+      <div class="mine" id="mine"></div>
+      <div class="params">
+        <div class="f"><label for="kr">Коэфф. реальности</label><input id="kr" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="resv">Запас под рост, %</label><input id="resv" inputmode="decimal" value="20"></div>
+      </div>
+    </section>
+    <section class="panel newc" aria-labelledby="newTitle">
+      <div class="colhead"><h2 id="newTitle">Новая карта</h2></div>
+      <form id="newForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="ngName">Название</label><input id="ngName" placeholder="Например, RTX 6000 Ada" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ngArch">Архитектура</label><select id="ngArch"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet">Jetson / свой декодер</option></select></div>
+        <div class="f"><label for="ngTf">FP16 Tensor, TFLOPS</label><input id="ngTf" inputmode="decimal" placeholder="без sparsity"></div>
+        <div class="f"><label for="ngDec" id="ngDecL">NVDEC, шт.</label><input id="ngDec" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="ngMem">Память, ГБ</label><input id="ngMem" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="ngTdp">TDP, Вт</label><input id="ngTdp" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="ngPrice">Цена, $</label><input id="ngPrice" inputmode="numeric" placeholder="цена поставщика"></div>
+        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="ngOn" checked>Участвует в автоподборе</label>
+        <div class="hint"><b>Где взять цифры</b><span>FP16 Tensor — из даташита NVIDIA без sparsity: значение со звёздочкой делите на 2. Для GeForce берите FP16 с FP32-накоплением.</span><span>NVDEC — число аппаратных декодеров. Для Jetson укажите потоки 1080p30 H.265 из спецификации.</span></div>
+        <div class="err" id="ngErr" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить карту</button><a class="btn" href="#">К расчёту</a></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="gpage" id="tpl-cams-v" hidden>
+    <section class="panel cat" aria-labelledby="camTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camTitle">Камеры</h2><span class="note">выбираются в типе камеры, раздел «Матрица и объектив»</span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="camTbl"></table></div>
+    </section>
+    <section class="panel newc" aria-labelledby="ncTitle">
+      <div class="colhead"><h2 id="ncTitle">Новая камера</h2></div>
+      <form id="camForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="ncName">Название</label><input id="ncName" placeholder="Модель из каталога производителя" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ncW">Ширина кадра, px</label><input id="ncW" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="ncH">Высота кадра, px</label><input id="ncH" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="ncSw">Ширина матрицы, мм</label><input id="ncSw" inputmode="decimal" placeholder="5,4"></div>
+        <div class="f"><label for="ncPp">или пиксель, мкм</label><input id="ncPp" inputmode="decimal" placeholder="2,0"></div>
+        <div class="f"><label for="ncFmin">Фокусное от, мм</label><input id="ncFmin" inputmode="decimal" placeholder="2,8"></div>
+        <div class="f"><label for="ncFmax">Фокусное до, мм</label><input id="ncFmax" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="ncPrice">Цена, $</label><input id="ncPrice" inputmode="numeric" placeholder="необязательно"></div>
+        <div class="hint"><b>Где взять цифры</b><span>Ширина матрицы — активная область сенсора из даташита. Если её нет, укажите размер пикселя: ширина посчитается как пиксель × ширина кадра.</span><span>Фокусное для фиксированного объектива — одно число в обоих полях. Пустые поля — объектив подбирается без ограничений.</span></div>
+        <div class="err" id="ncErr" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить камеру</button><a class="btn" href="#">К расчёту</a></div>
+      </form>
+    </section>
+  </div>
+  <div class="gpage" id="tpl-dets-v" hidden>
+    <section class="panel cat" aria-labelledby="detTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detTitle">Детекторы</h2><span class="note">выбираются в карточке объекта, поле «Модель»</span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="detTbl"></table></div>
+    </section>
+    <section class="panel newc" aria-labelledby="ndTitle">
+      <div class="colhead"><h2 id="ndTitle">Новый детектор</h2></div>
+      <form id="detForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="ndName">Название</label><input id="ndName" placeholder="Например, детектор деталей v2" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ndFps">Замер, к/с</label><input id="ndFps" inputmode="decimal" placeholder="на одной карте"></div>
+        <div class="f"><label for="ndInp">При входе, px</label><select id="ndInp" style="font-family:var(--mono)"></select></div>
+        <div class="f full"><label for="ndRef">Замерено на карте</label><select id="ndRef"></select></div>
+        <div class="f full"><label for="ndGf">GFLOPs на кадр</label><input id="ndGf" inputmode="decimal" placeholder="необязательно, для оценки памяти"></div>
+        <div class="hint"><b>Как замерить</b><span>Кадров в секунду на одной карте в TensorRT, с той точностью и batch, что будут в работе (trtexec, DeepStream perf или свой бенчмарк).</span><span>На другие карты замер пересчитывается по FP16, на другой вход — по квадрату его стороны.</span></div>
+        <div class="err" id="ndErr" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить детектор</button><a class="btn" href="#">К расчёту</a></div>
+      </form>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>

@@ -1,0 +1,1148 @@
+<title>Калькулятор камер</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: вкладки типов → первый экран (результат | система, нагрузка; на узком экране система | нагрузка, под ними результат) → параметры | объекты → сеть и допущения. Тёмная тема по умолчанию, своя светлая по кнопке */
+:root{
+  --bg:#0F1215; --surface:#171B1F; --sunk:#1D2227; --line:#2E353B; --line2:#252B30; --track:#2A3036;
+  --fg:#E6E8E9; --muted:#9AA3AA; --fg2:#B9C2C9;
+  --accent:#E8A93A; --accent-soft:#3A2E10;
+  --ok:#4CC38A; --ok-soft:#13301F; --warn:#F0B429; --warn-soft:#3A2E10; --bad:#FF7A6E; --bad-soft:#3D1A17;
+  --tile:#20262C; --tile-fg:#F2F3F1; --tile-mute:#AEB5BB; --tile-sub:#C9CED2; --tile-gap:#2A3036;
+  --c1:#E8A93A; --c2:#5AA9E6; --c3:#4FC1B0; --c4:#B494F0; --c5:#E87FA3; --c6:#9AA3AA;
+  --meter:#8C98A3; --primary-bg:#E6E8E9; --primary-fg:#0F1215; --wedge:rgba(232,169,58,.16); --wedge-line:#E8A93A; --dash:#3A4248; --fig:#13171A; --grid:#1F2428; --dim:#5B646B;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+:root.light{
+  --bg:#F2F3F1; --surface:#FFFFFF; --sunk:#F7F8F6; --line:#DCDFDA; --line2:#ECEEEA; --track:#E6E8E4;
+  --fg:#15181B; --muted:#59626A; --fg2:#3F474E;
+  --accent:#8A5700; --accent-soft:#FFF2D6;
+  --ok:#1E7046; --ok-soft:#E3F2E9; --warn:#9A5800; --warn-soft:#FCEFD9; --bad:#B42318; --bad-soft:#FCE8E6;
+  --tile:#15181B; --tile-fg:#F2F3F1; --tile-mute:#AEB5BB; --tile-sub:#C9CED2; --tile-gap:#2A3036;
+  --c1:#A86A00; --c2:#2F6FB3; --c3:#1F7F70; --c4:#7457BD; --c5:#B83F70; --c6:#59626A;
+  --meter:#3B4650; --primary-bg:#15181B; --primary-fg:#F2F3F1; --wedge:rgba(138,87,0,.12); --wedge-line:#8A5700; --dash:#B9BEB7; --fig:#FAFAF8; --grid:#ECEEEA; --dim:#9AA19C;
+  color-scheme:light;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.45}
+.wrap{max-width:1360px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--cond);font-size:28px;font-weight:600;line-height:1.15;margin:0;text-wrap:balance}
+h2,.h2{font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.h2big{font-family:var(--cond);font-size:16px;font-weight:600;margin:0;color:var(--fg)}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+button,.btn{font:inherit;font-size:14px;min-height:40px;box-sizing:border-box;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button:hover,.btn:hover{border-color:var(--accent)}
+.primary{background:var(--primary-bg);color:var(--primary-fg);border-color:var(--primary-bg);font-weight:600}
+.ghost{background:transparent;border-style:dashed;border-color:var(--dash);color:var(--fg)}
+.sm{min-height:34px;padding:5px 12px;font-size:13px}
+button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+a{color:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+input,select{font:inherit;font-family:var(--mono);font-size:14px;width:100%;box-sizing:border-box;min-height:34px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--fg)}
+select{font-family:var(--sans)}
+input[readonly]{color:var(--muted)}
+input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:0;margin:0;accent-color:var(--accent)}
+.f{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px;color:var(--muted)}
+.f.full{grid-column:1/-1}
+.f>label,.f>span{font-size:12px;color:var(--muted)}
+.lrow{display:flex;align-items:center;gap:6px;min-width:0}
+.note{font-size:12px;color:var(--muted);margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* отчёт */
+.sys{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--tile-gap);border-radius:10px;overflow:hidden}
+.sk{background:var(--tile);color:var(--tile-fg);padding:8px 14px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.sk>span:first-child{font-size:12px;color:var(--tile-mute)}
+.sk strong{font-family:var(--mono);font-size:21px;font-weight:500;line-height:1.2;display:flex;align-items:center;gap:8px;overflow-wrap:anywhere}
+.sk em{font-style:normal;font-size:12px;color:var(--tile-sub)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--muted);display:inline-block}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.sk .dot{width:10px;height:10px}
+.sk .dot.ok{background:#4CC38A}.sk .dot.warn{background:#F0B429}.sk .dot.bad{background:#FF7A6E}
+
+/* нагрузка */
+.load{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px 24px}
+.lhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px}
+.lctl{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.lctl .f select{min-height:36px}
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.meters{grid-template-columns:1fr}}
+.meter{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--sunk);min-width:0}
+.meter span{font-size:12px;color:var(--muted)}
+.meter strong{font-family:var(--mono);font-size:22px;font-weight:500}
+.track{position:relative;height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.track i{position:absolute;inset:0 auto 0 0;background:var(--meter);border-radius:4px}
+.track i.hot{background:var(--bad)}
+.track .lim{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--fg2);opacity:.6}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{text-align:right;font-size:12px;font-weight:500;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line2);text-align:right;font-family:var(--mono);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td.txt{font-family:var(--sans);white-space:normal}
+td .sub{display:block;font-family:var(--sans);font-size:12px;color:var(--muted)}
+td.dim{color:var(--muted);font-size:12.5px}
+tr.total td{font-weight:600;border-bottom:0}
+.share{display:flex;align-items:center;gap:8px;min-width:120px}
+.share .track{flex:1;height:6px}
+.share b{font-weight:500;min-width:40px;text-align:right;font-size:13px}
+
+/* первый экран: широкий — результат слева, система и нагрузка справа; компактный — система | нагрузка сверху, результат ниже */
+.first{display:grid;gap:14px;grid-template-columns:minmax(0,1fr) minmax(340px,400px);grid-template-rows:auto 1fr;grid-template-areas:"res sys" "res load";align-items:stretch}
+.syswrap{grid-area:sys}.dash{grid-area:load}.res{grid-area:res}
+@media (max-width:1199px){.first{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);grid-template-rows:auto auto;grid-template-areas:"sys load" "res res"}}
+@media (max-width:759px){.first{grid-template-columns:minmax(0,1fr);grid-template-areas:"sys" "load" "res"}}
+.syswrap{background:var(--tile);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.syswrap h2{padding:10px 14px 4px;color:var(--tile-mute)}
+.syswrap .sys{flex:1;grid-template-columns:repeat(2,minmax(0,1fr));border-radius:0;border-top:1px solid var(--tile-gap)}
+
+/* дашборд нагрузки */
+.dash{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dsel{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:8px;align-items:end}
+.dsel .f select{min-height:36px}
+.dsum{font-size:12.5px;color:var(--fg2)}
+.dsum:empty{display:none}
+.dsum b{font-family:var(--mono);font-weight:500;color:var(--fg)}
+.donutbox{display:flex;gap:14px;align-items:center;min-width:0}
+#donut{width:116px;height:116px;flex:none}
+.legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:12.5px;min-width:0;flex:1}
+.legend li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:7px;align-items:baseline}
+.legend .sw{width:10px;height:10px;border-radius:2px;align-self:center}
+.legend .sub{display:block;color:var(--muted);font-size:11.5px}
+.legend .pc{font-family:var(--mono);font-variant-numeric:tabular-nums}
+@media (max-width:420px){.donutbox{flex-direction:column;align-items:stretch}#donut{align-self:center}}
+.gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border-top:1px solid var(--line2);padding-top:10px}
+.gauges:empty{display:none}
+.gauge{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);min-width:0}
+.gauge svg{width:56px;height:56px;flex:none}
+.gauge b{display:block;color:var(--fg);font-weight:500;font-size:13px}
+#loadNote[hidden]{display:none}
+svg text.big{font-family:var(--mono);font-size:20px;font-weight:500;fill:var(--fg)}
+svg text.cap{font-family:var(--sans);font-size:9px;fill:var(--muted)}
+svg text.mid{font-family:var(--mono);font-size:15px;font-weight:500;fill:var(--fg)}
+
+/* результат со схемой */
+.res{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.reshead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.reshead .verdict{flex:1 1 360px;padding:7px 10px}
+.resbody{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch}
+.sidefig{flex:999 1 420px;min-width:0;margin:0;padding:10px 12px;background:var(--fig);border:1px solid var(--line2);border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.sidefig figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;font-size:12px;color:var(--fg2)}
+.figt{font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.figl{display:flex;flex-wrap:wrap;gap:4px 12px}
+.figl>span{display:inline-flex;align-items:center;gap:5px}
+.lg-fov{width:12px;height:9px;background:var(--wedge);border:1px solid var(--accent)}
+.lg-ax{width:14px;border-top:2px dashed var(--accent)}
+.lg-zone{width:14px;height:5px;background:var(--accent)}
+#side{display:block;width:100%;height:auto;max-height:440px}
+@media (min-width:1200px){#side{max-height:500px}}
+#side text{font-family:var(--mono);font-size:14px;fill:var(--fg2)}
+#side text.t-b{font-size:15px;fill:var(--fg)}
+#side text.t-a{font-size:15px;fill:var(--accent)}
+#side text.t-z{font-family:var(--sans);font-size:15px;font-weight:600;fill:var(--fg)}
+.rcol{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.rcol .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.rcol .kpi{padding:8px 12px}
+.rcol .kpi strong{font-size:17px;white-space:nowrap}
+.rcol table{font-size:13px}.rcol td,.rcol th{padding:4px 5px}
+.rcol td.txt{font-size:12.5px}
+.rcol .facts{flex-direction:column;gap:3px;margin-top:auto}
+
+/* вкладки */
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{min-height:44px;border-radius:8px;gap:8px;padding:8px 14px}
+.tab[aria-selected="true"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+.tab b{font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab small{font-family:var(--mono);font-size:13px;color:var(--muted)}
+
+/* три колонки */
+.work{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px;align-items:stretch}
+.col{display:flex;flex-direction:column}
+.colhead{padding:14px 16px 12px;border-bottom:1px solid var(--line2)}
+.typehead{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px 10px;align-items:end}
+.typehead h2{grid-column:1/-1}
+.typehead input#tName{font-family:var(--sans);font-weight:600}
+details.sec{border-bottom:1px solid var(--line2)}
+details.sec>summary{list-style:none;cursor:pointer;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 2px 3px 6px;flex:none}
+details.sec[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
+.sumv{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--muted);text-align:right}
+.fs{padding:0 16px 14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+.seg{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg label{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;font-size:13px;color:var(--fg);cursor:pointer;border-left:1px solid var(--line);text-align:center;padding:0 4px}
+.seg label:first-child{border-left:0}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg label:has(input:checked){background:var(--accent-soft);font-weight:600}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.colfoot{margin-top:auto;padding:12px 16px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted)}
+.danger{color:var(--bad)}
+
+/* объекты */
+.olist{padding:12px 16px;display:flex;flex-direction:column;gap:10px;max-height:640px;overflow-y:auto;box-sizing:border-box}
+.ocard{border:1px solid var(--line);border-radius:8px;background:var(--sunk);display:flex;flex-direction:column}
+.ohdr{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border-bottom:1px solid var(--track)}
+.ohdr input{flex:1;min-width:0;border-color:transparent;background:transparent;font-family:var(--sans);font-weight:600}
+.ohdr input:hover{border-color:var(--line)}
+.odel{width:32px;height:32px;min-height:32px;padding:0;font-size:16px;color:var(--muted);flex:none}
+.ogrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px 10px}
+.ogrid .c2{grid-column:span 2}
+.ogrid .f input,.ogrid .f select{min-height:32px;padding:4px 6px;font-size:13px;background:var(--surface)}
+.ogrid .f{font-size:11.5px}
+.ores{margin:0 10px 10px;padding:7px 9px;border-radius:6px;font-size:12.5px;display:flex;flex-wrap:wrap;gap:3px 12px;background:var(--surface);border:1px solid var(--line)}
+.ores.ok{background:var(--ok-soft);border-color:transparent}.ores.warn{background:var(--warn-soft);border-color:transparent}.ores.bad{background:var(--bad-soft);border-color:transparent}
+.ores b{font-weight:600}.ores.ok b{color:var(--ok)}.ores.warn b{color:var(--warn)}.ores.bad b{color:var(--bad)}
+.ores .m2{color:var(--fg2)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.chip{min-height:32px;padding:4px 10px;border-radius:999px;font-size:12.5px}
+
+/* результат */
+.verdict{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:var(--sunk);font-size:13px}
+.verdict.ok{background:var(--ok-soft)}.verdict.warn{background:var(--warn-soft)}.verdict.bad{background:var(--bad-soft)}
+.pill{font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--muted);color:var(--bg)}
+.verdict.ok .pill{background:var(--ok)}.verdict.warn .pill{background:var(--warn)}.verdict.bad .pill{background:var(--bad)}
+.verdict ul{margin:6px 0 0;padding-left:18px;color:var(--fg2)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line2);border-bottom:1px solid var(--line2)}
+.kpi{background:var(--surface);padding:10px 16px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi strong{font-family:var(--mono);font-size:18px;font-weight:500}
+.kpi em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+figure{margin:0;padding:12px 16px 4px}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.resfoot{padding:4px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.resfoot table{font-size:13px}
+.resfoot td,.resfoot th{padding:5px 6px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--fg2)}
+.facts b{font-weight:600;color:var(--fg)}
+
+/* низ */
+.bottom{display:flex;flex-wrap:wrap;gap:14px}
+.bottom>.panel{padding:14px 16px}
+.net{flex:2 1 560px}
+.assum{flex:1 1 280px;display:flex;flex-direction:column;gap:8px}
+.assum ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--fg2)}
+.formulas{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--fg2);margin-top:6px}
+.formulas p{margin:0 0 6px;font-family:var(--sans);color:var(--muted);font-size:12.5px}
+details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
+.rowhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px;margin-bottom:8px}
+.rowhead .f{flex-direction:row;align-items:center;gap:8px}
+.rowhead .f input{width:72px;min-height:32px}
+
+/* шаблоны */
+.tplhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+.tpltabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tpltabs a{display:flex;align-items:center;min-height:40px;padding:0 16px;color:var(--fg);text-decoration:none;border-left:1px solid var(--line);font-size:14px}
+.tpltabs a:first-child{border-left:0}
+.tpltabs a[aria-current="page"]{background:var(--accent-soft);font-weight:600;box-shadow:inset 0 -3px 0 var(--accent)}
+.inlink{font-size:12.5px;text-decoration:none}
+/* видеокарты */
+.gpage{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.cat{flex:999 1 640px}
+.newc{flex:1 1 340px}
+.cat td input[type=text],.cat td input:not([type]){width:100px;min-height:32px;text-align:right}
+.mine{margin:0 16px 16px;padding:14px;border:1px dashed var(--dash);border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.newc form{padding:14px 16px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+.hint{grid-column:1/-1;padding:10px 12px;border-radius:8px;background:var(--sunk);font-size:12.5px;color:var(--fg2);display:flex;flex-direction:column;gap:4px}
+.hint b{color:var(--fg);font-weight:600}
+.err{grid-column:1/-1;color:var(--bad);font-size:12.5px}
+.params{padding:14px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;border-top:1px solid var(--line2)}
+
+.tipbtn{flex:none;width:18px;height:18px;min-height:18px;padding:0;border-radius:50%;font-size:11px;font-weight:600;line-height:16px;color:var(--muted);background:var(--sunk);border:1px solid var(--line)}
+.tipbtn:hover,.tipbtn[aria-expanded="true"]{color:var(--fg);border-color:var(--accent);background:var(--accent-soft)}
+.pop{position:fixed;z-index:50;max-width:min(300px,calc(100vw - 24px));box-sizing:border-box;font-size:12.5px;line-height:1.45;color:var(--fg);background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:8px 10px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:14px;z-index:60}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Калькулятор камер и вычислителя</h1>
+  <div class="acts">
+    <button type="button" id="themeBtn" aria-pressed="false">Светлая тема</button>
+    <a class="btn" href="#tpl-gpus" id="tplBtn">Шаблоны</a>
+    <button type="button" id="resetBtn">Пример</button>
+    <button type="button" id="copyBtn" class="primary">Копировать отчёт</button>
+  </div>
+</header>
+
+<div id="viewMain" style="display:flex;flex-direction:column;gap:14px">
+<nav class="tabs" role="tablist" aria-label="Типы камер" id="tabs"></nav>
+
+<div class="first">
+<section class="syswrap" aria-labelledby="sysTitle">
+  <h2 id="sysTitle">Система</h2>
+  <div class="sys" id="sysKpis"></div>
+</section>
+
+<section class="panel dash" aria-labelledby="loadTitle">
+  <div class="dhead">
+    <h2 id="loadTitle">Что нагружается</h2>
+    <a class="inlink" href="#tpl-gpus">+ Своя карта</a>
+  </div>
+  <div class="dsel">
+    <div class="f"><label for="gpu">Видеокарта</label><select id="gpu"></select></div>
+    <div class="f"><label for="gcnt">Кол-во</label><select id="gcnt"><option value="auto">Авто</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+  </div>
+  <div class="dsum" id="dsum"></div>
+  <div class="donutbox">
+    <svg id="donut" viewBox="0 0 120 120" role="img" aria-label="Загрузка инференса"></svg>
+    <ul class="legend" id="legend"></ul>
+  </div>
+  <div class="gauges" id="gauges"></div>
+  <p class="note" id="loadNote"></p>
+</section>
+
+<section class="panel res" aria-labelledby="resTitle" role="tabpanel" id="typeOut">
+  <div class="reshead">
+    <h2 id="resTitle">Результат</h2>
+    <div class="verdict" id="verdict"></div>
+  </div>
+  <div class="resbody">
+    <figure class="sidefig">
+      <figcaption><span class="figt">Вид сбоку</span>
+        <span class="figl"><span><i class="lg-fov" aria-hidden="true"></i>поле зрения</span><span><i class="lg-ax" aria-hidden="true"></i>ось</span><span><i class="lg-zone" aria-hidden="true"></i>зона</span></span>
+      </figcaption>
+      <svg id="side" viewBox="0 0 680 510" role="img" aria-label="Схема: камера, поле зрения и зона контроля, вид сбоку"></svg>
+    </figure>
+    <div class="rcol">
+      <div class="kpis" id="kpis"></div>
+      <table id="dens"></table>
+      <div class="facts" id="facts"></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="work">
+  <form class="panel col" id="frm" autocomplete="off" aria-labelledby="parTitle">
+    <div class="colhead typehead">
+      <h2 id="parTitle">Параметры типа</h2>
+      <div class="f"><label for="tName">Название</label><input id="tName"></div>
+      <div class="f"><label for="tCount">Камер</label><input id="tCount" inputmode="numeric"></div>
+    </div>
+    <details class="sec" open>
+      <summary>Геометрия <span class="sumv" id="sumGeo"></span></summary>
+      <div class="fs">
+        <div class="f"><label for="H">Высота камеры, м</label><input id="H" inputmode="decimal"></div>
+        <div class="f"><label for="h">Плоскость интереса, м</label><input id="h" inputmode="decimal"></div>
+        <div class="f" id="L0box"><label for="L0">Вынос до зоны, м</label><input id="L0" inputmode="decimal"></div>
+        <div class="f"><label for="mg">Запас кадра, %</label><input id="mg" inputmode="decimal"></div>
+        <div class="f"><label for="Dz">Глубина зоны, м</label><input id="Dz" inputmode="decimal"></div>
+        <div class="f"><label for="Wz">Ширина зоны, м</label><input id="Wz" inputmode="decimal"></div>
+        <div class="f full"><span data-tip="pos">Положение камеры</span>
+          <div class="seg" role="radiogroup" aria-label="Положение камеры">
+            <label><input type="radio" name="pos" id="pSide" value="side">Сбоку, под углом</label>
+            <label><input type="radio" name="pos" id="pTop" value="top">Над центром</label>
+          </div>
+        </div>
+      </div>
+    </details>
+    <details class="sec" open>
+      <summary>Матрица и объектив <span class="sumv" id="sumCam"></span></summary>
+      <div class="fs">
+        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="cam">Камера</label><a class="inlink" href="#tpl-cams">+ Своя камера</a></div><select id="cam"></select></div>
+        <div class="f full"><label for="res">Разрешение</label><select id="res"></select></div>
+        <div class="f"><label for="sens">Формат матрицы</label><select id="sens"></select></div>
+        <div class="f"><label for="sw">Ширина матрицы, мм</label><input id="sw" inputmode="decimal"></div>
+        <div class="f full" id="ppBox" hidden><label for="pp">Размер пикселя, мкм</label><input id="pp" inputmode="decimal"></div>
+        <div class="f full"><label for="orient">Ориентация кадра</label><select id="orient"><option value="auto">Авто — как выгоднее</option><option value="land">Длинная сторона поперёк взгляда</option><option value="port">Повернуть на 90°</option></select></div>
+        <div class="f full"><span data-tip="mode">Объектив</span>
+          <div class="seg three" role="radiogroup" aria-label="Режим объектива">
+            <label><input type="radio" name="mode" id="mAuto" value="auto">Подобрать</label>
+            <label><input type="radio" name="mode" id="mF" value="f">Фокусное</label>
+            <label><input type="radio" name="mode" id="mA" value="a">Угол HFOV</label>
+          </div>
+        </div>
+        <div class="f" id="fBox" hidden><label for="fmm">Фокусное, мм</label><input id="fmm" inputmode="decimal"></div>
+        <div class="f" id="aBox" hidden><label for="hfov">HFOV, °</label><input id="hfov" inputmode="decimal"></div>
+      </div>
+    </details>
+    <details class="sec">
+      <summary>Поток и качество <span class="sumv" id="sumStr"></span></summary>
+      <div class="fs">
+        <div class="f"><label for="fps">Кадров/с в потоке</label><input id="fps" inputmode="decimal"></div>
+        <div class="f"><label for="afps">На аналитику, к/с</label><input id="afps" inputmode="decimal"></div>
+        <div class="f"><label for="codec">Кодек</label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
+        <div class="f"><label for="scene">Движение в сцене</label><select id="scene"><option value="0.6">Спокойное</option><option value="1">Обычное</option><option value="1.5">Активное</option></select></div>
+        <div class="f"><label for="k">Коэфф. качества</label><input id="k" inputmode="decimal"></div>
+        <div class="f"><label for="v">Скорость движения, м/с</label><input id="v" inputmode="decimal"></div>
+        <div class="f"><label for="blur">Допустимый смаз, px</label><input id="blur" inputmode="decimal"></div>
+      </div>
+    </details>
+    <div class="colfoot"><button type="button" class="sm" id="dupBtn">Дублировать тип</button><button type="button" class="sm danger" id="delBtn">Удалить тип</button></div>
+  </form>
+
+  <section class="panel col" aria-labelledby="objTitle">
+    <div class="colhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2 id="objTitle"><span data-tip="objs">Что ищем и чем</span></h2>
+      <button type="button" class="primary sm" id="addObj">+ Объект</button>
+    </div>
+    <div class="olist">
+      <div id="objList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="presets"><span>Шаблоны:</span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto">+ Свой детектор</a></div>
+    </div>
+    <div class="colfoot">Список прокручивается внутри блока. Объекты с одной моделью и подачей считаются одним запуском.</div>
+  </section>
+
+</div>
+
+<div class="bottom">
+  <section class="panel net" aria-labelledby="netTitle">
+    <div class="rowhead"><h2 id="netTitle">Сеть и хранение</h2>
+      <div class="f"><label for="days">Архив, суток</label><input id="days" inputmode="numeric" value="0"></div></div>
+    <div class="tbl"><table id="netTbl"></table></div>
+  </section>
+  <section class="panel assum" aria-labelledby="assTitle">
+    <h2 id="assTitle">Допущения</h2>
+    <ul id="assList"></ul>
+    <details class="how" style="margin-top:auto"><summary>Все формулы</summary><div class="formulas" id="formulas"><p>Hc = H − h — высота камеры над плоскостью. x — расстояние по полу от точки под камерой (отрицательное — позади неё). Камера наклонена на середину зоны: t = (φ(x₁) + φ(x₂)) / 2.</p>
+        HFOV = 2·arctg(s / 2f), &nbsp;VFOV = 2·arctg(tg(HFOV/2) · Nh/Nw)<br>
+        f<sub>px</sub> = Nw / (2·tg(HFOV/2)) — фокусное в пикселях<br>
+        φ(x) = arctg(Hc / x), &nbsp;D = √(Hc² + x²), &nbsp;δ = φ − t<br>
+        z(x) = x·cos t + Hc·sin t — глубина по оптической оси<br>
+        ширина кадра на линии x: W = 2·z·tg(HFOV/2)<br>
+        ρ<sub>поперёк</sub> = f<sub>px</sub> / z<br>
+        ρ<sub>вглубь</sub> = f<sub>px</sub> · sin φ / (D · cos²δ)<br>
+        объект, px = размер · ρ · k<br>
+        t<sub>max</sub> = смаз / (v · ρ<sub>max</sub>)<br>
+        рамка объекта — проекция 8 углов коробки Ш×Д×В, стоящей на плоскости, в худшей точке зоны, × k<br>
+        битрейт = Nw · Nh · fps · bpp · коэфф. сцены<br>
+        масштаб на вход модели: весь кадр min(1, вход / max(Nw, Nh)); вырез min(1, вход / max(ROI)); тайлы 1<br>
+        тайлов = ⌈(ROI<sub>w</sub> − вход) / шаг⌉ + 1 по каждой оси, шаг = вход · (1 − перекрытие)<br>
+        нагрузка модели = камер · к/с аналитики · вызовов на кадр · (тайлов)<br>
+        ёмкость модели = к/с на T4 · (640 / вход)² · FP16<sub>карты</sub> / 65 · k<sub>реальн</sub> (или свой замер · FP16<sub>карты</sub> / FP16<sub>карты замера</sub>)<br>
+        GPU на модель = нагрузка / ёмкость<br>
+        декодирование = камер · Nw · Nh · fps / (1920 · 1080 · 30) / (NVDEC · к/с на NVDEC / 30 · k<sub>реальн</sub>)<br>
+        память на карту ≈ 0,8 ГБ + Σ моделей (0,15 ГБ + 16 · вход² · 6 Б · GFLOPs/4) + потоков на карту · 20 · Nw · Nh · 1,5 Б<br>
+        оптимум: минимальная цена n · цена карты при n = 1…4, где инференс и декодер ≤ 1/(1 + запас), память ≤ 90% (Jetson 60%)
+        <p style="margin-top:8px">Модель — идеальный прямолинейный объектив (камера-обскура) и горизонтальная плоскость. Формулы плотности сверены с численной проекцией пикселей на плоскость. Дисторсию реальных широкоугольных объективов закладывайте в коэффициент k.</p>
+<p style="margin-top:8px">Несколько типов камер: нагрузка инференса — сумма по всем запускам всех типов; одна модель с одинаковым входом занимает память один раз; декодирование — сумма по типам с учётом их кодека. Свой детектор: замер × (вход замера / вход)² × FP16 карты / FP16 карты замера.</p></div></details>
+  </section>
+</div>
+</div>
+
+<div id="viewTpl" hidden style="flex-direction:column;gap:14px">
+  <div class="tplhead">
+    <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none">← К расчёту</a><h2 class="h2big" style="font-size:22px">Шаблоны</h2></div>
+    <nav class="tpltabs" aria-label="Разделы шаблонов"><a href="#tpl-gpus" id="tt-gpus">Видеокарты</a><a href="#tpl-cams" id="tt-cams">Камеры</a><a href="#tpl-dets" id="tt-dets">Детекторы</a></nav>
+  </div>
+  <div class="gpage" id="tpl-gpus-v">
+    <section class="panel cat" aria-labelledby="catTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catTitle">Каталог</h2><span class="note">характеристики — даташиты NVIDIA</span></div>
+      <div class="tbl" style="padding:4px 8px 8px"><table id="catTbl"></table></div>
+      <div class="mine" id="mine"></div>
+      <div class="params">
+        <div class="f"><label for="kr">Коэфф. реальности</label><input id="kr" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="resv">Запас под рост, %</label><input id="resv" inputmode="decimal" value="20"></div>
+      </div>
+    </section>
+    <section class="panel newc" aria-labelledby="newTitle">
+      <div class="colhead"><h2 id="newTitle">Новая карта</h2></div>
+      <form id="newForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="ngName">Название</label><input id="ngName" placeholder="Например, RTX 6000 Ada" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ngArch">Архитектура</label><select id="ngArch"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet">Jetson / свой декодер</option></select></div>
+        <div class="f"><label for="ngTf">FP16 Tensor, TFLOPS</label><input id="ngTf" inputmode="decimal" placeholder="без sparsity"></div>
+        <div class="f"><label for="ngDec" id="ngDecL">NVDEC, шт.</label><input id="ngDec" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="ngMem">Память, ГБ</label><input id="ngMem" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="ngTdp">TDP, Вт</label><input id="ngTdp" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="ngPrice">Цена, $</label><input id="ngPrice" inputmode="numeric" placeholder="цена поставщика"></div>
+        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="ngOn" checked>Участвует в автоподборе</label>
+        <div class="hint"><b>Где взять цифры</b><span>FP16 Tensor — из даташита NVIDIA без sparsity: значение со звёздочкой делите на 2. Для GeForce берите FP16 с FP32-накоплением.</span><span>NVDEC — число аппаратных декодеров. Для Jetson укажите потоки 1080p30 H.265 из спецификации.</span></div>
+        <div class="err" id="ngErr" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить карту</button><a class="btn" href="#">К расчёту</a></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="gpage" id="tpl-cams-v" hidden>
+    <section class="panel cat" aria-labelledby="camTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camTitle">Камеры</h2><span class="note">выбираются в типе камеры, раздел «Матрица и объектив»</span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="camTbl"></table></div>
+    </section>
+    <section class="panel newc" aria-labelledby="ncTitle">
+      <div class="colhead"><h2 id="ncTitle">Новая камера</h2></div>
+      <form id="camForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="ncName">Название</label><input id="ncName" placeholder="Модель из каталога производителя" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ncW">Ширина кадра, px</label><input id="ncW" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="ncH">Высота кадра, px</label><input id="ncH" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="ncSw">Ширина матрицы, мм</label><input id="ncSw" inputmode="decimal" placeholder="5,4"></div>
+        <div class="f"><label for="ncPp">или пиксель, мкм</label><input id="ncPp" inputmode="decimal" placeholder="2,0"></div>
+        <div class="f"><label for="ncFmin">Фокусное от, мм</label><input id="ncFmin" inputmode="decimal" placeholder="2,8"></div>
+        <div class="f"><label for="ncFmax">Фокусное до, мм</label><input id="ncFmax" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="ncPrice">Цена, $</label><input id="ncPrice" inputmode="numeric" placeholder="необязательно"></div>
+        <div class="hint"><b>Где взять цифры</b><span>Ширина матрицы — активная область сенсора из даташита. Если её нет, укажите размер пикселя: ширина посчитается как пиксель × ширина кадра.</span><span>Фокусное для фиксированного объектива — одно число в обоих полях. Пустые поля — объектив подбирается без ограничений.</span></div>
+        <div class="err" id="ncErr" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить камеру</button><a class="btn" href="#">К расчёту</a></div>
+      </form>
+    </section>
+  </div>
+  <div class="gpage" id="tpl-dets-v" hidden>
+    <section class="panel cat" aria-labelledby="detTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detTitle">Детекторы</h2><span class="note">выбираются в карточке объекта, поле «Модель»</span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="detTbl"></table></div>
+    </section>
+    <section class="panel newc" aria-labelledby="ndTitle">
+      <div class="colhead"><h2 id="ndTitle">Новый детектор</h2></div>
+      <form id="detForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="ndName">Название</label><input id="ndName" placeholder="Например, детектор деталей v2" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ndFps">Замер, к/с</label><input id="ndFps" inputmode="decimal" placeholder="на одной карте"></div>
+        <div class="f"><label for="ndInp">При входе, px</label><select id="ndInp" style="font-family:var(--mono)"></select></div>
+        <div class="f full"><label for="ndRef">Замерено на карте</label><select id="ndRef"></select></div>
+        <div class="f full"><label for="ndGf">GFLOPs на кадр</label><input id="ndGf" inputmode="decimal" placeholder="необязательно, для оценки памяти"></div>
+        <div class="hint"><b>Как замерить</b><span>Кадров в секунду на одной карте в TensorRT, с той точностью и batch, что будут в работе (trtexec, DeepStream perf или свой бенчмарк).</span><span>На другие карты замер пересчитывается по FP16, на другой вход — по квадрату его стороны.</span></div>
+        <div class="err" id="ndErr" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить детектор</button><a class="btn" href="#">К расчёту</a></div>
+      </form>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const R=Math.PI/180;
+const fmt=(x,d=1)=>isFinite(x)?x.toLocaleString("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const P=x=>parseFloat(String(x??"").replace(",","."));
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+// ---------- справочники
+const RES=[["2 Мп · 1920×1080",1920,1080],["4 Мп · 2560×1440",2560,1440],["5 Мп · 2592×1944",2592,1944],["5 Мп · 2880×1620",2880,1620],["6 Мп · 3072×2048",3072,2048],["8 Мп · 3840×2160",3840,2160],["12 Мп · 4000×3000",4000,3000]];
+const SENS=[['1/3"',4.8],['1/2.9"',5.0],['1/2.8"',5.6],['1/2.7"',5.4],['1/2.5"',5.8],['1/1.8" 16:9',7.7],['1/1.2" 16:9',11.2],['По размеру пикселя','pp'],['Своя',null]];
+// Каталог: tf — FP16 Tensor dense, TFLOPS (GeForce — с FP32-накоплением). price — ориентир, $, октябрь 2026
+const CATALOG=[
+ {id:"5090",name:"GeForce RTX 5090",arch:"Blackwell",tf:209.5,nvdec:2,mem:32,tdp:575,price:5000,note:"цена — уличная на октябрь 2026, рекомендованная NVIDIA $1 999"},
+ {id:"pro6000",name:"RTX PRO 6000 Blackwell",arch:"Blackwell",tf:500,nvdec:4,mem:96,tdp:600,price:13250,note:"FP16 dense оценён как 4 PFLOPS FP4 / 8, по соотношению у RTX 5090"},
+ {id:"l40s",name:"L40S",arch:"Ada",tf:362,nvdec:3,mem:48,tdp:350,price:9000},
+ {id:"h100nvl",name:"H100 NVL",arch:"Hopper",tf:835.5,nvdec:7,mem:94,tdp:400,price:27500},
+ {id:"h200nvl",name:"H200 NVL",arch:"Hopper",tf:835.5,nvdec:7,mem:141,tdp:600,price:32000},
+ {id:"agx",name:"Jetson AGX Orin 64GB",arch:"Ampere",tf:42.6,st:{h265:22,h264:11.6},mem:64,tdp:60,price:3499,jet:true,note:"отдельный модуль; память общая с CPU, под модели берётся 60%; FP16 оценён: 16 SM × 2048 FLOP/такт × 1,3 ГГц"}
+];
+let CUSTOM=[];            // свои карты: {id,name,arch,tf,nvdec|st,mem,tdp,price,jet,custom:true}
+let PRICE={}, ON={};      // правки цен и участие в подборе по id
+const allGpus=()=>[...CATALOG,...CUSTOM];
+const gpuById=id=>allGpus().find(g=>g.id===id);
+const priceOf=g=>{const x=P(PRICE[g.id]);return x>0?x:g.price};
+const isOn=g=>ON[g.id]!==false;
+// 1080p к/с на один NVDEC (NVIDIA Video Codec SDK 13.0, NVDEC Application Note); Hopper = Turing
+const NVDEC_FPS={Turing:{h264:771,h265:1316},Hopper:{h264:771,h265:1316},Ampere:{h264:748,h265:1415},Ada:{h264:903,h265:1641},Blackwell:{h264:2172,h265:1872}};
+const decStreams=(g,codec)=>g.st?g.st[codec]:g.nvdec*NVDEC_FPS[g.arch][codec]/30;
+const decText=g=>g.st?`${fmt(g.st.h265,0)} потоков`:`${g.nvdec} NVDEC`;
+// Модели: GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
+const MODELS=[
+ ["y26n","YOLO26n",5.5,1.7],["y26s","YOLO26s",20.9,2.5],["y26m","YOLO26m",68.4,4.7],["y26l","YOLO26l",86.8,6.2],["y26x","YOLO26x",194.4,11.8],
+ ["y26np","YOLO26n-pose",7.6,1.8],["y26sp","YOLO26s-pose",24.1,2.7],["y26mp","YOLO26m-pose",73.3,5.0],["y26lp","YOLO26l-pose",91.7,6.5],["y26xp","YOLO26x-pose",202.3,12.2],
+ ["y11n","YOLO11n",6.5,1.5],["y11s","YOLO11s",21.6,2.5],["y11m","YOLO11m",68.1,4.7],["y11l","YOLO11l",87.2,6.2],["y11x","YOLO11x",195.3,11.3]
+].map(([id,name,gf,ms])=>({id,name,gf,ms}));
+const T4TF=65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
+const FEEDS={roi:"Вырез зоны",tiles:"Тайлы",full:"Весь кадр"};
+const FEED_SHORT={roi:"вырез",tiles:"тайлы",full:"весь кадр"};
+const INPUTS=[320,416,512,640,768,960,1024,1280];
+// ---------- состояние
+const PRESETS=[["Человек",50,30,170,32,"y26s","roi",640],["Кисть руки",9,18,4,20,"y26s","tiles",640],["Ячейка ложемента",8,8,2,20,"y26s","roi",640],["Деталь",25,6,6,20,"y26s","roi",640],["Гайка М8",1.3,1.3,0.7,10,"y26s","tiles",640]];
+const mkObj=([name,w,d,z,req,model,feed,inp])=>({name,w,d,z,req,model,feed,inp,ov:20,fps:300,ref:"5090"});
+const FIELDS=["cam","H","h","L0","Dz","Wz","mg","res","sens","sw","pp","orient","fmm","hfov","fps","afps","codec","scene","k","v","blur"];
+const DEF_V={cam:"",H:"4",h:"0.9",L0:"1.5",Dz:"3",Wz:"3",mg:"10",res:"1",sens:"3",sw:"5.4",pp:"2.0",orient:"auto",fmm:"6",hfov:"50",fps:"12",afps:"5",codec:"0.04",scene:"1",k:"0.6",v:"1",blur:"2",mode:"auto",pos:"side"};
+const mkType=(name,count,over,objs)=>({id:uid(),name,count:String(count),v:{...DEF_V,...over},objs:objs.map(mkObj)});
+const defTypes=()=>[
+  mkType("Рабочее место",10,{},[PRESETS[0],PRESETS[1]]),
+  mkType("Тележка",10,{pos:"top",H:"2.6",h:"1.1",Dz:"0.8",Wz:"1.4",afps:"2",fps:"10"},[PRESETS[2]])
+];
+let TYPES=defTypes(), ACT=TYPES[0].id;
+const act=()=>TYPES.find(t=>t.id===ACT)||TYPES[0];
+
+// ---------- форма ↔ тип
+RES.forEach((r,i)=>$("res").add(new Option(r[0],i)));
+SENS.forEach((s,i)=>$("sens").add(new Option(typeof s[1]==="number"?`${s[0]} ≈ ${s[1]} мм`:s[1]==="pp"?"По размеру пикселя":"Своя ширина",i)));
+function writeForm(T){
+  $("tName").value=T.name;$("tCount").value=T.count;
+  FIELDS.forEach(id=>{$(id).value=T.v[id]??DEF_V[id]});
+  const md=document.querySelector(`input[name="mode"][value="${T.v.mode}"]`)||$("mAuto");md.checked=true;
+  const ps=document.querySelector(`input[name="pos"][value="${T.v.pos}"]`)||$("pSide");ps.checked=true;
+  renderObjs();
+}
+function readForm(){
+  const T=act();T.name=$("tName").value;T.count=$("tCount").value;
+  FIELDS.forEach(id=>{T.v[id]=$(id).value});
+  T.v.mode=(document.querySelector('input[name="mode"]:checked')||{}).value||"auto";
+  T.v.pos=(document.querySelector('input[name="pos"]:checked')||{}).value||"side";
+}
+function syncFormUI(T,Rt){
+  const v=T.v;$("fBox").hidden=v.mode!=="f";$("aBox").hidden=v.mode!=="a";$("L0box").hidden=v.pos==="top";
+  const sv=(SENS[+v.sens]||SENS[3])[1];$("ppBox").hidden=sv!=="pp";$("sw").readOnly=sv!==null;
+  if(sv!==null&&Rt&&isFinite(Rt.s))$("sw").value=+Rt.s.toFixed(2);
+  $("sumGeo").textContent=`${v.pos==="top"?"сверху":"сбоку"}, ${v.H} м, ${v.Wz}×${v.Dz} м`;
+  $("sumCam").textContent=(RES[+v.res]||RES[1])[0].split(" · ")[0]+(Rt&&!Rt.err?`, f ${fmt(Rt.f,1)} мм`:"");
+  $("sumObj").textContent=`${T.objs.length} шт.`;
+  $("sumStr").textContent=`${v.fps} к/с, ${v.codec==="0.04"?"H.265":"H.264"}`;
+}
+// ---------- шаблоны камер и детекторов
+const CAM_BUILTIN=[
+ {id:"k4",name:"Типовая 4 Мп · 1/2.7″ · 2,8–12 мм",Nw:2560,Nh:1440,sw:5.4,fmin:2.8,fmax:12},
+ {id:"k8",name:"Типовая 8 Мп · 1/1.8″ · 2,8–12 мм",Nw:3840,Nh:2160,sw:7.68,fmin:2.8,fmax:12}
+];
+let CAMS_C=[], DETS=[];
+const allCams=()=>[...CAM_BUILTIN,...CAMS_C];
+const camById=id=>allCams().find(c=>c.id===id);
+const modelById=id=>MODELS.find(x=>x.id===id)||DETS.find(x=>x.id===id);
+function buildCamSelect(){
+  const sel=$("cam"),cur=sel.value;
+  sel.innerHTML=`<option value="">Свои настройки матрицы</option>`+allCams().map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  sel.value=camById(cur)?cur:"";
+}
+
+// ---------- карточки объектов
+function renderObjs(){
+  const T=act(),L=$("objList");L.innerHTML="";
+  T.objs.forEach((o,i)=>{
+    if(!modelById(o.model))o.model="y26s";
+    const r=document.createElement("article");r.className="ocard";
+    const mopts=`<optgroup label="Каталог Ultralytics">${MODELS.map(mm=>`<option value="${mm.id}">${mm.name}</option>`).join("")}</optgroup>`+
+      (DETS.length?`<optgroup label="Свои детекторы">${DETS.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join("")}</optgroup>`:"");
+    r.innerHTML=`<div class="ohdr"><span class="dot" id="odot-${i}" aria-hidden="true"></span><input id="on-${i}" aria-label="Название объекта"><button type="button" class="odel" aria-label="Удалить объект">×</button></div>
+      <div class="ogrid">
+        <div class="f"><label for="ow-${i}">Ширина, см</label><input id="ow-${i}" inputmode="decimal"></div>
+        <div class="f"><label for="od-${i}">Длина, см</label><input id="od-${i}" inputmode="decimal"></div>
+        <div class="f"><label for="oz-${i}">Высота, см</label><input id="oz-${i}" inputmode="decimal"></div>
+        <div class="f"><label for="oq-${i}">Нужно, px</label><input id="oq-${i}" inputmode="decimal"></div>
+        <div class="f c2"><label for="om-${i}">Модель</label><select id="om-${i}">${mopts}</select></div>
+        <div class="f"><label for="of-${i}">Подача</label><select id="of-${i}">${Object.entries(FEEDS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></div>
+        <div class="f"><label for="oi-${i}">Вход, px</label><select id="oi-${i}" style="font-family:var(--mono)">${INPUTS.map(x=>`<option>${x}</option>`).join("")}</select></div>
+        <div class="f" id="ovw-${i}"><label for="ov-${i}">Перекрытие, %</label><input id="ov-${i}" inputmode="decimal"></div>
+      </div>
+      <div class="ores" id="ores-${i}" aria-live="polite"></div>`;
+    L.append(r);
+    const sync=()=>{$(`ovw-${i}`).hidden=o.feed!=="tiles"};
+    [["on","name"],["ow","w"],["od","d"],["oz","z"],["oq","req"],["ov","ov"]].forEach(([p,f])=>{const el=$(`${p}-${i}`);el.value=o[f]??"";el.addEventListener("input",e=>{e.stopPropagation();o[f]=e.target.value;calcAll()})});
+    [["om","model"],["of","feed"],["oi","inp"]].forEach(([p,f])=>{const el=$(`${p}-${i}`);el.value=String(o[f]);if(el.selectedIndex<0)el.selectedIndex=0;el.addEventListener("change",e=>{e.stopPropagation();o[f]=e.target.value;sync();calcAll()})});
+    r.querySelector(".odel").addEventListener("click",()=>{T.objs.splice(i,1);renderObjs();calcAll()});
+    sync();
+  });
+}
+function syncFormUI(T,Rt){
+  const v=T.v,cam=camById(v.cam);
+  $("fBox").hidden=v.mode!=="f";$("aBox").hidden=v.mode!=="a";$("L0box").hidden=v.pos==="top";
+  const sv=(SENS[+v.sens]||SENS[3])[1];
+  $("res").disabled=!!cam;$("sens").disabled=!!cam;
+  $("ppBox").hidden=!!cam||sv!=="pp";$("sw").readOnly=!!cam||sv!==null;
+  if(Rt&&isFinite(Rt.s)&&(cam||sv!==null))$("sw").value=+Rt.s.toFixed(2);
+  $("sumGeo").textContent=`${v.pos==="top"?"сверху":"сбоку"}, ${v.H} м, ${v.Wz}×${v.Dz} м`;
+  $("sumCam").textContent=(cam?`${cam.Nw}×${cam.Nh}`:(RES[+v.res]||RES[1])[0].split(" · ")[0])+(Rt&&!Rt.err?`, f ${fmt(Rt.f,1)} мм`:"");
+  $("sumStr").textContent=`${v.fps} к/с, ${v.codec==="0.04"?"H.265":"H.264"}`;
+}
+// ---------- расчёт одного типа камер (без DOM)
+function computeType(T){
+  const v=T.v,m=v.mode,pos=v.pos,count=Math.max(0,Math.round(P(T.count))||0);
+  const cam=camById(v.cam);
+  let [rl,Nw,Nh]=RES[+v.res]||RES[1];
+  const sv=(SENS[+v.sens]||SENS[3])[1];
+  let s=typeof sv==="number"?sv:sv==="pp"?P(v.pp)*Nw/1000:P(v.sw);
+  if(cam){rl=cam.name;Nw=cam.Nw;Nh=cam.Nh;s=cam.sw}
+  const H=P(v.H),h=P(v.h),L0=P(v.L0),Dz=P(v.Dz),Wz=P(v.Wz),mg=(P(v.mg)||0)/100,k=P(v.k),vel=P(v.v),bl=P(v.blur);
+  const fps=P(v.fps),bpp=+v.codec,sc=+v.scene,afps0=P(v.afps),afps=Math.min(afps0,fps),codec=bpp<0.055?"h265":"h264";
+  const Hc=H-h;
+  const base={T,count,rl,Nw,Nh,s,fps,afps,afps0,codec,bpp,sc};
+  if(![H,h,Dz,Wz,s,k].every(isFinite)||(pos==="side"&&!isFinite(L0))||Hc<=0||Dz<=0||Wz<=0||!(s>0))return {...base,err:true};
+  const x1=pos==="top"?-Dz/2:L0,x2=x1+Dz;
+  const phi1=Math.atan2(Hc,x1),phi2=Math.atan2(Hc,x2);
+  const span=phi1-phi2,tilt=(phi1+phi2)/2;
+  const zOf=x=>x*Math.cos(tilt)+Hc*Math.sin(tilt);
+  const zMin=Math.min(zOf(x1),zOf(x2));
+  const fitFor=rot=>{const Nu=rot?Nh:Nw,Nv=rot?Nw:Nh,su=rot?s*Nh/Nw:s,a=Nu/Nv;let hf,f,fWant=null;
+    if(m==="auto"){const hReq=2*Math.atan(Wz*(1+mg)/2/zMin),vReq=span*(1+mg);hf=Math.max(hReq,2*Math.atan(a*Math.tan(vReq/2)));f=su/(2*Math.tan(hf/2));fWant=f;if(cam&&cam.fmin>0){const fc=Math.min(cam.fmax,Math.max(cam.fmin,f));if(Math.abs(fc-f)>1e-6){f=fc;hf=2*Math.atan(su/(2*f))}}}
+    else if(m==="f"){f=P(v.fmm);hf=2*Math.atan(su/(2*f))}
+    else{hf=P(v.hfov)*R;f=su/(2*Math.tan(hf/2))}
+    const vf=2*Math.atan(Math.tan(hf/2)/a),fpx=Nu/(2*Math.tan(hf/2));
+    return {rot,Nu,Nv,hf,f,fWant,vf,fpx,fits:2*zMin*Math.tan(hf/2)>=Wz&&vf>=span}};
+  let O;
+  if(v.orient==="land")O=fitFor(false);else if(v.orient==="port")O=fitFor(true);
+  else{const A=fitFor(false),B=fitFor(true);O=m==="auto"?(B.fpx>A.fpx*1.02?B:A):(A.fits||!B.fits?A:B)}
+  const {rot,hf,f,fWant,vf,fpx,Nu,Nv}=O;
+  if(!isFinite(fpx)||fpx<=0)return {...base,err:true};
+  const W=z=>2*z*Math.tan(hf/2);
+  const at=x=>{const phi=Math.atan2(Hc,x),D=Math.hypot(Hc,x),d=phi-tilt,z=D*Math.cos(d);
+    return {x,D,z,phi,across:fpx/z,depth:fpx*Math.sin(phi)/(D*Math.cos(d)**2)}};
+  const P1=at(x1),P2=at(x2),S=[];for(let i=0;i<=40;i++)S.push(at(x1+(x2-x1)*i/40));
+  const minA=Math.min(...S.map(p=>p.across)),minD=Math.min(...S.map(p=>p.depth)),maxR=Math.max(...S.map(p=>Math.max(p.across,p.depth)));
+  // точная проекция коробки Ш×Д×В, стоящей на плоскости по центру кадра
+  const ct=Math.cos(tilt),st=Math.sin(tilt);
+  const proj=(X,Y,Z)=>{const dz=Z-Hc,zc=X*ct-dz*st;if(zc<=1e-6)return null;return [fpx*Y/zc,fpx*(X*st+dz*ct)/zc]};
+  const boxPx=(x0,w,d,zh)=>{const zt=Math.min(zh,Hc*0.98);let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
+    for(const X of [x0,x0+d])for(const Y of [-w/2,w/2])for(const Z of [0,zt]){const q=proj(X,Y,Z);if(!q)return null;u0=Math.min(u0,q[0]);u1=Math.max(u1,q[0]);v0=Math.min(v0,q[1]);v1=Math.max(v1,q[1])}
+    return {bw:(u1-u0)*k,bh:(v1-v0)*k}};
+  let ru0=1e9,ru1=-1e9,rv0=1e9,rv1=-1e9;
+  for(const X of [x1,x2])for(const Y of [-Wz/2,Wz/2]){const q=proj(X,Y,0);if(q){ru0=Math.min(ru0,q[0]);ru1=Math.max(ru1,q[0]);rv0=Math.min(rv0,q[1]);rv1=Math.max(rv1,q[1])}}
+  const roiW=Math.min(Nu,ru1-ru0),roiH=Math.min(Nv,rv1-rv0);
+  const feedInfo=(feed,inp,ovp)=>{const ov=Math.min(0.9,Math.max(0,(ovp||0)/100));let msc=1,tiles=1,nx=1,ny=1;
+    if(feed==="full")msc=Math.min(1,inp/Math.max(Nu,Nv));
+    else if(feed==="roi")msc=Math.min(1,inp/Math.max(roiW,roiH));
+    else{const step=inp*(1-ov);nx=roiW>inp?Math.ceil((roiW-inp)/step)+1:1;ny=roiH>inp?Math.ceil((roiH-inp)/step)+1:1;tiles=nx*ny}
+    return {feed,inp,msc,tiles,nx,ny,txt:feed==="tiles"?`${tiles} тайлов ${nx}×${ny} по ${inp} px`:feed==="roi"?`вырез ${fmt(roiW,0)}×${fmt(roiH,0)} → ${inp} px`:`кадр ${Nu}×${Nv} → ${inp} px`}};
+  const objs=T.objs.map(o=>{
+    const w=P(o.w)/100,d=P(o.d)/100,zh=P(o.z)/100,req=P(o.req),inp=P(o.inp)||640;
+    const fi=feedInfo(o.feed,inp,P(o.ov));
+    if(![w,d,zh].every(x=>isFinite(x)&&x>=0)||Math.max(w,d,zh)<=0||!(req>0))return {...o,bad:true,fi};
+    const span0=Math.max(0,(x2-x1)-d);let best=null;
+    for(let i=0;i<=40;i++){const x0=x1+span0*i/40,b=boxPx(x0,w,d,zh);if(!b)continue;const mm=Math.min(b.bw,b.bh);if(!best||mm<best.m)best={...b,m:mm,x0}}
+    if(!best)return {...o,bad:true,fi};
+    const mm=best.m*fi.msc,stt=mm>=req?"ok":mm>=0.75*req?"warn":"bad";
+    return {...o,...best,reqN:req,fi,mm,st:stt,NwMin:Nw*req/best.m,sensorOk:best.m>=req};
+  });
+  // вердикт
+  const notes=[];const clamped=fWant!=null&&Math.abs(fWant-f)>0.05;
+  if(m!=="auto"||clamped){
+    if(W(zMin)<Wz)notes.push(`Зона не влезает по ширине: на ближнем краю кадр ${fmt(W(zMin),2)} м при зоне ${fmt(Wz,2)} м.`);
+    if(vf<span)notes.push(`Зона не влезает по глубине: нужно ${fmt(span/R,1)}° по вертикали, есть ${fmt(vf/R,1)}°.`);
+  }
+  if(clamped)notes.unshift(fWant>f?`Для зоны нужно фокусное ≈ ${fmt(fWant,1)} мм, а объектив камеры — не больше ${fmt(f,1)} мм. Расчёт сделан для ${fmt(f,1)} мм: кадр шире зоны, пикселей на объекте меньше.`:`Для зоны нужно фокусное ≈ ${fmt(fWant,1)} мм, а объектив камеры — не меньше ${fmt(f,1)} мм. Расчёт сделан для ${fmt(f,1)} мм: зона не помещается в кадр целиком — поднимите камеру, сузьте зону или возьмите объектив шире.`);
+  else if(m!=="auto"&&cam&&cam.fmin>0&&(f<cam.fmin*0.98||f>cam.fmax*1.02))notes.push(`Заданное фокусное ${fmt(f,1)} мм вне диапазона объектива камеры (${cam.fmin===cam.fmax?fmt(cam.fmin,1):fmt(cam.fmin,1)+"–"+fmt(cam.fmax,1)} мм).`);
+  if(hf/R>100)notes.push(`HFOV ${fmt(hf/R,0)}°: объективы с таким углом заметно сжимают края кадра (бочка), расчёт этого не учитывает. Уменьшите коэффициент качества или поднимите камеру.`);
+  if(tilt/R>75&&x1<0)notes.push("Вид сверху: детали в ячейках видны торцами, это хорошо для подсчёта. Человек виден как голова и плечи, действия рук различаются хуже.");
+  const thLow=Math.atan2(Hc,Math.max(Math.abs(x1),Math.abs(x2)));
+  if(thLow/R<15)notes.push(`Луч на дальний край идёт под ${fmt(thLow/R,0)}° к плоскости: объекты будут заслонять друг друга. Поднимите камеру или сократите вынос.`);
+  if(afps0>fps)notes.push(`Кадров на аналитику (${fmt(afps0,0)}) больше, чем в потоке (${fmt(fps,0)}): в расчёте взято ${fmt(fps,0)}.`);
+  const pxs=o=>`${fmt(o.bw,1)}×${fmt(o.bh,1)} px`,pxm=o=>`${fmt(o.bw*o.fi.msc,1)}×${fmt(o.bh*o.fi.msc,1)} px`;
+  const valid=objs.filter(o=>!o.bad),fails=valid.filter(o=>o.st==="bad"),edge=valid.filter(o=>o.st==="warn");
+  let cls,pill,head;
+  if(!valid.length){cls="warn";pill="Нет объектов";head="Добавьте объект с габаритами и моделью, чтобы проверить, различим ли он."}
+  else if(fails.length){cls="bad";pill="Мало";
+    head=`Не различимы на входе модели: ${fails.map(o=>`${o.name||"объект"} — ${pxm(o)} при нужных ${fmt(o.reqN,0)}`).join("; ")}.`;
+    fails.filter(o=>o.sensorOk).forEach(o=>{const need=Math.ceil(o.fi.inp*o.reqN/o.mm/32)*32;
+      notes.push(`«${o.name}»: камера даёт ${pxs(o)}, пиксели теряются при уменьшении до входа ${o.fi.inp} px. ${o.feed==="full"?"Подавайте вырез зоны или тайлы":o.feed==="roi"?"Включите тайлы":"Проверьте размер входа"} или увеличьте вход до ≈ ${fmt(need,0)} px.`)});
+    const short=fails.filter(o=>!o.sensorOk);
+    if(short.length){const worst=short.reduce((a,b)=>a.NwMin>b.NwMin?a:b),rec=RES.find(r=>r[1]>=worst.NwMin);
+      notes.unshift(rec?`Для «${worst.name}» нужно не меньше ${fmt(worst.NwMin,0)} px по горизонтали (${rec[0]}) при том же угле.`:`Для «${worst.name}» нужно ${fmt(worst.NwMin,0)} px по горизонтали — больше, чем даёт любая камера из списка. Нужна отдельная камера ближе к объекту или объектив уже.`)}}
+  else if(edge.length){cls="warn";pill="На грани";head=`На грани на входе модели: ${edge.map(o=>`${o.name||"объект"} — ${pxm(o)} при нужных ${fmt(o.reqN,0)}`).join("; ")}.`}
+  else{const sm=valid.reduce((a,b)=>a.mm<b.mm?a:b);cls="ok";pill="Хватает";head=`Все объекты различимы на входе модели. Самый мелкий: ${sm.name} — ${pxm(sm)}.`}
+  if(notes.length&&cls==="ok"){cls="warn";pill="Проверить"}
+  // группы запусков: одна модель с одинаковой подачей обслуживает свои объекты одним проходом
+  const groups=[];objs.filter(o=>o.fi).forEach(o=>{const key=[o.model,o.feed,o.fi.inp,o.feed==="tiles"?o.ov:"",o.model==="custom"?o.fps+"@"+o.ref:""].join("|");
+    let g=groups.find(x=>x.key===key);if(!g){g={key,model:o.model,feed:o.feed,fi:o.fi,fps:o.fps,ref:o.ref,names:[],type:T.name,load:count*afps*o.fi.tiles};groups.push(g)}g.names.push(o.name||"объект")});
+  const X=vel*maxR/bl;
+  const mb=Nw*Nh*fps*bpp*sc/1e6;
+  return {...base,err:false,clamped,fWant,cam,pos,m,H,h,Hc,L0,Dz,Wz,x1,x2,tilt,span,hf,vf,f,rot,Nu,Nv,fpx,W,zOf,P1,P2,minA,minD,maxR,objs,valid,notes,cls,pill,head,pxs,pxm,groups,X,vel,bl,mb,k,
+    decUnits:count*Nu*Nv*fps/(1920*1080*30),frameGB:Nu*Nv*1.5/1e9};
+}
+// ---------- расчёт системы
+const mName=o=>(modelById(o.model)||{name:"?"}).name;
+const gfOf=id=>{const m=modelById(id);return m&&m.gf>0?m.gf:0};
+function computeSystem(Rs){
+  const live=Rs.filter(r=>!r.err&&r.count>0);
+  const kr=P($("kr").value),resv=Math.max(0,P($("resv").value)||0)/100,uMax=1/(1+resv),BATCH=16;
+  const groups=live.flatMap(r=>r.groups.map(g=>({...g,typeName:r.T.name})));
+  const engines=[...new Map(groups.map(g=>[`${g.model}|${g.fi.inp}`,g])).values()];
+  const modMemGB=g=>{const gf=gfOf(g.model);return gf?0.15+BATCH*g.fi.inp**2*3*2*(gf/4)/1e9:0.5};
+  const evalGPU=(g,n)=>{
+    const mods=groups.map(o=>{let base,srcTxt;const m=modelById(o.model);
+      if(!m)return {...o,bad:true};
+      if(MODELS.includes(m)){const inScale=(640/o.fi.inp)**2;base=1000/m.ms*inScale*g.tf/T4TF;srcTxt=`T4 ${fmt(1000/m.ms,0)} к/с${inScale!==1?` × (640/${o.fi.inp})²`:""} × ${fmt(g.tf/T4TF,2)}`}
+      else{const rg=gpuById(m.ref)||CATALOG[0],inScale=(m.inp/o.fi.inp)**2;base=m.fps*inScale*g.tf/rg.tf;srcTxt=`замер ${fmt(m.fps,0)} к/с на ${rg.name}${inScale!==1?` × (${m.inp}/${o.fi.inp})²`:""}${rg.id!==g.id?` × ${fmt(g.tf/rg.tf,2)}`:""}`}
+      const cap=base*kr;return {...o,cap,gpu:o.load/cap,srcTxt}});
+    const inf=mods.filter(o=>!o.bad).reduce((s,o)=>s+o.gpu,0);
+    const dec=live.reduce((s,r)=>s+r.decUnits/(decStreams(g,r.codec)*kr),0);
+    const memUse=0.8+engines.reduce((s,e)=>s+modMemGB(e),0)+live.reduce((s,r)=>s+Math.ceil(r.count/n)*20*r.frameGB,0),memCap=g.mem*(g.jet?0.6:0.9);
+    const uI=inf/n,uD=dec/n,uM=memUse/memCap,worst=Math.max(uI,uD,uM);
+    return {g,n,mods,inf,dec,uI,uD,uM,memUse,memCap,worst,ok:uI<=uMax&&uD<=uMax&&uM<=1,cost:n*priceOf(g),
+      bott:uI>=uD&&uI>=uM?"инференс":uD>=uM?"декодирование":"память"}};
+  const cand=allGpus().filter(isOn), all=[];
+  cand.forEach(g=>{for(let n=1;n<=4;n++)all.push(evalGPU(g,n))});
+  const okAll=all.filter(e=>e.ok).sort((a,b)=>a.cost-b.cost||a.n*a.g.tdp-b.n*b.g.tdp);
+  const best=okAll[0],gSel=$("gpu").value,cSel=$("gcnt").value;
+  const minWorst=arr=>arr.length?arr.reduce((a,b)=>a.worst<b.worst?a:b):evalGPU(allGpus()[0],1);
+  let E;
+  if(gSel==="auto"&&cSel==="auto")E=best||minWorst(all);
+  else if(gSel==="auto"){const n=+cSel;E=okAll.find(e=>e.n===n)||minWorst(all.filter(e=>e.n===n))}
+  else{const g=gpuById(gSel)||CATALOG[0];if(cSel==="auto"){E=null;for(let n=1;n<=4&&!E;n++){const e=evalGPU(g,n);if(e.ok)E=e}E=E||evalGPU(g,4)}else E=evalGPU(g,+cSel)}
+  const decTotal=live.reduce((s,r)=>s+r.decUnits,0);
+  return {live,kr,uMax,resv,E,best,engines,decTotal,groups,noCand:!cand.length};
+}
+
+// ---------- отрисовка типа
+const stTxt={ok:"хватает",warn:"на грани",bad:"мало"};
+const cap1=s=>s?s[0].toUpperCase()+s.slice(1):s;
+function renderType(Rt){
+  const vd=$("verdict");
+  $("resTitle").textContent="Результат · "+(Rt.T.name||"тип камеры").toLowerCase();
+  if(Rt.err){vd.className="verdict bad";vd.innerHTML='<span class="pill">Ввод</span><div>Проверьте исходные данные: высота камеры должна быть больше высоты плоскости, размеры зоны и матрицы — больше нуля.</div>';
+    ["kpis","dens","facts","side"].forEach(id=>$(id).innerHTML="");return}
+  vd.className="verdict "+Rt.cls;
+  vd.innerHTML=`<span class="pill">${Rt.pill}</span><div>${esc(Rt.head)}${Rt.notes.length?"<ul>"+Rt.notes.map(n=>"<li>"+esc(n)+"</li>").join("")+"</ul>":""}</div>`;
+  const {hf,vf,f,rot,tilt,W,zOf,x1,x2}=Rt;
+  $("kpis").innerHTML=[
+    ["Фокусное",fmt(f,1)+" мм",(Rt.clamped?"предел объектива":Rt.m==="auto"?"подобрано":"задано")+(rot?", кадр на 90°":"")],
+    [rot?"Угол поперёк × вдоль":"HFOV × VFOV",fmt(hf/R,0)+"° × "+fmt(vf/R,0)+"°",`DFOV ≈ ${fmt(2*Math.atan(Math.hypot(Math.tan(hf/2),Math.tan(vf/2)))/R,0)}°`],
+    ["Наклон",fmt(tilt/R,0)+"°",Math.abs(tilt/R-90)<1?"строго вниз":"вниз от горизонта"],
+    ["Кадр по ширине",fmt(W(zOf(x1)),1)+"–"+fmt(W(zOf(x2)),1)+" м","ближний – дальний край"]
+  ].map(([l,v,e])=>`<div class="kpi"><span>${l}</span><strong>${v}</strong><em>${e}</em></div>`).join("");
+  Rt.objs.forEach((o,i)=>{const el=$(`ores-${i}`),dt=$(`odot-${i}`);if(!el)return;
+    if(o.bad){el.className="ores";el.textContent="Укажите габариты и порог в пикселях.";if(dt)dt.className="dot";return}
+    el.className="ores "+o.st;if(dt)dt.className="dot "+o.st;
+    el.innerHTML=`<b>${cap1(stTxt[o.st])}</b><span>модель видит <span class="mono">${Rt.pxm(o)}</span> при нужных ${fmt(o.reqN,0)}</span><span class="m2">матрица ${Rt.pxs(o)} · ${esc(o.fi.txt)}</span>`});
+  const top=Rt.pos==="top";
+  $("dens").innerHTML=`<tr><th>Плотность, px/м</th><th>поперёк</th><th>вглубь</th></tr>
+    <tr><td class="txt">${top?"Край зоны (назад)":"Ближний край"}, ${fmt(Rt.P1.D,1)}&nbsp;м</td><td>${fmt(Rt.P1.across,0)}</td><td>${fmt(Rt.P1.depth,0)}</td></tr>
+    <tr><td class="txt">${top?"Край зоны (вперёд)":"Дальний край"}, ${fmt(Rt.P2.D,1)}&nbsp;м</td><td>${fmt(Rt.P2.across,0)}</td><td>${fmt(Rt.P2.depth,0)}</td></tr>`;
+  const lv=[25,62,125,250],names=["обнаружение","наблюдение","распознавание","идентификация"];let li=-1;lv.forEach((l,i)=>{if(Rt.minA>=l)li=i});
+  const X=Rt.X;
+  $("facts").innerHTML=`<span>DORI: <b>${li<0?"ниже обнаружения":names[li]}</b> (${fmt(Rt.minA,0)} px/м)</span><span>Выдержка не длиннее <b class="mono">${isFinite(X)&&X>0?"1/"+Math.ceil(X)+" с":"—"}</b></span><span>Камера: <b>${esc(Rt.rl)}</b></span>`;
+  drawSide({H:Rt.H,h:Rt.h,x1:Rt.x1,x2:Rt.x2,tilt:Rt.tilt,vf:Rt.vf,Hc:Rt.Hc,pos:Rt.pos,wN:W(zOf(x1)),wF:W(zOf(x2))});
+}
+
+// ---------- вкладки
+function renderTabs(Rs){
+  const nav=$("tabs");nav.innerHTML="";
+  Rs.forEach(r=>{const b=document.createElement("button");b.type="button";b.className="tab";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(r.T.id===ACT));b.setAttribute("aria-controls","typeOut");
+    b.innerHTML=`<span class="dot ${r.err?"bad":r.cls}" aria-hidden="true"></span><b>${esc(r.T.name||"Без названия")}</b><small>× ${r.count}</small>`;
+    b.title=r.err?"Ошибка в исходных данных":`Объекты: ${stTxt[r.cls]||r.pill}`;
+    b.addEventListener("click",()=>{if(ACT===r.T.id)return;ACT=r.T.id;writeForm(act());calcAll()});nav.append(b)});
+  const add=document.createElement("button");add.type="button";add.className="tab ghost";add.textContent="+ Тип камеры";
+  add.addEventListener("click",()=>{const T=mkType(`Камера ${TYPES.length+1}`,1,{},[PRESETS[0]]);TYPES.push(T);ACT=T.id;writeForm(T);calcAll()});nav.append(add);
+}
+
+// ---------- кольца
+function ring(cx,cy,r,w,segs,mark){
+  const C=2*Math.PI*r;let off=0,s=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${w}"/>`;
+  segs.forEach(sg=>{const full=Math.max(0,Math.min(1-off/C,sg.f))*C;if(full<=0)return;const len=segs.length>1&&full>2?full-1:full;
+    s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${sg.color}" stroke-width="${w}" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;off+=full});
+  if(mark!=null){const a=-Math.PI/2+2*Math.PI*mark,r1=r-w/2-2,r2=r+w/2+2;
+    s+=`<line x1="${(cx+r1*Math.cos(a)).toFixed(2)}" y1="${(cy+r1*Math.sin(a)).toFixed(2)}" x2="${(cx+r2*Math.cos(a)).toFixed(2)}" y2="${(cy+r2*Math.sin(a)).toFixed(2)}" stroke="var(--fg2)" stroke-width="1.5"/>`}
+  return s;
+}
+
+// ---------- система
+function renderSystem(Rs,S){
+  const {E,best,kr,uMax,live}=S;
+  const pc=u=>fmt(u*100,0)+"%";
+  const cams=Rs.reduce((s,r)=>s+r.count,0);
+  const vAll=Rs.flatMap(r=>r.valid||[]),objOk=vAll.filter(o=>o.st==="ok").length;
+  const worstCls=Rs.some(r=>r.err||r.cls==="bad")?"bad":Rs.some(r=>r.cls==="warn")?"warn":"ok";
+  const smallest=vAll.length?vAll.reduce((a,b)=>a.mm<b.mm?a:b):null;
+  const mbTot=live.reduce((s,r)=>s+r.mb*r.count,0);
+  const camCost=Rs.reduce((s,r)=>{const c=camById(r.T.v.cam);return s+(c&&c.price>0?c.price*r.count:0)},0);
+  const port=mbTot*1.3<900?"1 Гбит/с":mbTot*1.3<9000?"10 Гбит/с":"> 10 Гбит/с";
+  const typesTxt=Rs.length===1?"1 тип":`${Rs.length} ${Rs.length<5?"типа":"типов"}`;
+  $("sysKpis").innerHTML=[
+    ["Камер",`${cams}`,`${typesTxt}${camCost?` · камеры $${fmt(camCost,0)}`:`: ${Rs.map(r=>r.T.name.toLowerCase()).join(", ")}`}`],
+    ["Объекты различимы",`<span class="dot ${worstCls}" aria-hidden="true"></span>${objOk} из ${vAll.length}`,smallest?`самый мелкий: ${smallest.name.toLowerCase()}, ${fmt(Math.min(smallest.bw,smallest.bh)*smallest.fi.msc,1)} px`:"нет объектов"],
+    ["Вычислитель",live.length?`${E.n} × ${esc(E.g.name)}`:"—",live.length?`$${fmt(E.cost,0)} · ${E.ok?(E===best?"оптимум по цене":"выбрано вручную")+" · запас "+pc(Math.max(0,1-E.worst)):"не тянет"}`:"нет камер"],
+    ["Поток в сеть",`${fmt(mbTot,0)} Мбит/с`,`порт ${port} · PoE ≈ ${fmt(cams*15.4,0)} Вт`]
+  ].map(([l,v,e])=>`<div class="sk"><span>${l}</span><strong>${v}</strong><em>${esc(e)}</em></div>`).join("");
+  // дашборд
+  const hot=E.uI>uMax;
+  $("dsum").innerHTML=live.length?`<b>${E.n} × ${esc(E.g.name)}</b> · $${fmt(E.cost,0)} · ${E.ok?(E===best?"оптимум по цене":"выбрано вручную"):"<span style=\"color:var(--bad)\">не тянет</span>"}<br>запас ${pc(Math.max(0,1-E.worst))} · узкое место — ${E.bott}`:"";
+  const runs=E.mods.filter(o=>!o.bad).map(o=>({...o,u:o.gpu/E.n})).sort((a,b)=>b.u-a.u);
+  const COLS=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)"];
+  const shown=runs.slice(0,5),rest=runs.slice(5),restU=rest.reduce((s,o)=>s+o.u,0);
+  const segs=shown.map((o,i)=>({f:o.u,color:COLS[i]}));if(restU>0)segs.push({f:restU,color:"var(--c6)"});
+  $("donut").innerHTML=live.length?ring(60,60,48,14,segs,uMax)+`<text x="60" y="61" text-anchor="middle" class="big" style="fill:${hot?"var(--bad)":"var(--fg)"}">${pc(E.uI)}</text><text x="60" y="77" text-anchor="middle" class="cap">инференс</text>`:"";
+  $("donut").setAttribute("aria-label",`Инференс загружен на ${pc(E.uI)} при пороге ${pc(uMax)}`);
+  $("legend").innerHTML=live.length?shown.map((o,i)=>`<li><span class="sw" style="background:${COLS[i]}"></span><span>${esc(mName(o))} · ${FEED_SHORT[o.feed]} ${o.fi.inp}<span class="sub">${esc(o.typeName)}: ${esc(o.names.join(", ").toLowerCase())} · ${fmt(o.load,0)}&nbsp;к/с</span></span><span class="pc">${pc(o.u)}</span></li>`).join("")+
+    (rest.length?`<li><span class="sw" style="background:var(--c6)"></span><span>Ещё ${rest.length} запуск.</span><span class="pc">${pc(restU)}</span></li>`:"")+
+    `<li><span class="sw" style="background:var(--track)"></span><span>Свободно<span class="sub">порог ${pc(uMax)} отмечен чертой на кольце</span></span><span class="pc">${pc(Math.max(0,1-E.uI))}</span></li>`:`<li class="note">Добавьте камеры и объекты с моделями.</li>`;
+  const decCapN=E.n*S.decTotal/(E.dec||1);
+  const gauge=(label,u,lim,center,sub)=>`<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42,42,32,9,[{f:u,color:u>lim?"var(--bad)":"var(--meter)"}],lim<1?lim:null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
+  $("gauges").innerHTML=live.length?gauge("Декодер",E.uD,uMax,pc(E.uD),`${fmt(S.decTotal,1)} из ${fmt(decCapN,0)} потоков`)+gauge("Видеопамять",E.uM,1,pc(E.uM),`${fmt(E.memUse,1)} из ${fmt(E.memCap,0)} ГБ`):"";
+  const warn=S.noCand?"Ни одна карта не отмечена для подбора — отметьте карты в «Шаблонах».":(!best&&live.length)?"Ни одна карта не тянет нагрузку даже в количестве 4 шт. Снизьте кадры на аналитику, подавайте вырез зоны вместо тайлов, возьмите модель полегче или разделите камеры на несколько серверов.":"";
+  $("loadNote").innerHTML=warn?`<span style="color:var(--bad)">${esc(warn)}</span>`:(live.length&&E.g.note?esc(cap1(E.g.note))+".":"");
+  $("loadNote").hidden=!$("loadNote").innerHTML;
+  // сеть
+  const days=P($("days").value)||0,tb=mbTot*1e6/8*86400*days/1e12;
+  $("netTbl").innerHTML=`<tr><th>Тип камеры</th><th>Камер</th><th>Разрешение</th><th>Кадров/с</th><th>На камеру</th><th>Всего</th></tr>`+
+    Rs.map(r=>r.err?`<tr><td class="txt">${esc(r.T.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">ошибка в исходных данных</td></tr>`:
+      `<tr><td class="txt">${esc(r.T.name)}</td><td>${r.count}</td><td>${r.Nw}×${r.Nh}</td><td>${fmt(r.fps,0)}</td><td>${fmt(r.mb,1)} Мбит/с</td><td>${fmt(r.mb*r.count,0)} Мбит/с</td></tr>`).join("")+
+    `<tr class="total"><td class="txt">Итого</td><td>${cams}</td><td></td><td></td><td></td><td>${fmt(mbTot,0)} Мбит/с</td></tr>`+
+    `<tr><td class="txt dim">Архив</td><td colspan="5" class="dim">${days>0?"≈ "+fmt(tb,1)+" ТБ за "+fmt(days,0)+" сут.":"не ведётся"}</td></tr>`;
+  $("assList").innerHTML=[`Коэффициент реальности ${fmt(kr,2)} к паспортной скорости`,"Каталожные модели — замеры Ultralytics на T4","Декодер — NVDEC по поколению карты","Сервер под карты в цену не входит"].map(x=>`<li>${esc(x)}</li>`).join("");
+  return {cams,mbTot,camCost};
+}
+
+// ---------- шаблоны: видеокарты
+function buildGpuSelect(){
+  const sel=$("gpu"),cur=sel.value||"auto";
+  sel.innerHTML=`<option value="auto">Авто — оптимум по цене</option>`+allGpus().map(g=>`<option value="${g.id}">${esc(g.name)}${g.custom?" (своя)":""}</option>`).join("");
+  sel.value=allGpus().some(g=>g.id===cur)?cur:"auto";
+  const ref=$("ndRef");if(ref){const c=ref.value;ref.innerHTML=allGpus().map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join("");ref.value=gpuById(c)?c:"5090"}
+}
+function renderGpuView(){
+  const row=g=>`<tr><td class="txt"><b style="font-weight:600">${esc(g.name)}</b><span class="sub">${g.jet?"модуль Jetson":esc(g.arch)}${g.custom?" · своя":""}</span></td><td>${fmt(g.tf,1)}</td><td>${decText(g)}</td><td>${fmt(g.mem,0)} ГБ</td><td>${g.tdp?fmt(g.tdp,0)+" Вт":"—"}</td>
+    <td><input id="pr-${g.id}" value="${esc(PRICE[g.id]??g.price)}" inputmode="numeric" aria-label="Цена ${esc(g.name)}, долларов"></td>
+    <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g)?"checked":""} aria-label="${esc(g.name)} участвует в подборе"></td>
+    ${g.custom?`<td><button type="button" class="sm" data-delg="${g.id}" aria-label="Удалить ${esc(g.name)}">Удалить</button></td>`:"<td></td>"}</tr>`;
+  const head=`<tr><th>Карта</th><th>FP16, TFLOPS</th><th>Декодер</th><th>Память</th><th>TDP</th><th>Цена, $</th><th style="text-align:center">В подборе</th><th></th></tr>`;
+  $("catTitle").textContent=`Каталог · ${CATALOG.length} карт`;
+  $("catTbl").innerHTML=head+CATALOG.map(row).join("");
+  $("mine").innerHTML=CUSTOM.length?`<strong style="font-weight:600">Свои карты · ${CUSTOM.length}</strong><div class="tbl"><table>${head}${CUSTOM.map(row).join("")}</table></div>`:
+    `<strong style="font-weight:600">Свои карты</strong><span class="note" style="font-size:13px">Пока нет. Добавленная карта появится здесь, в списке «Видеокарта» и в автоподборе.</span>`;
+  allGpus().forEach(g=>{
+    $(`pr-${g.id}`).addEventListener("input",e=>{PRICE[g.id]=e.target.value;calcAll()});
+    $(`gon-${g.id}`).addEventListener("change",e=>{ON[g.id]=e.target.checked;calcAll()});
+  });
+  document.querySelectorAll("[data-delg]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.delg;CUSTOM=CUSTOM.filter(g=>g.id!==id);delete PRICE[id];delete ON[id];
+    DETS.forEach(d=>{if(d.ref===id)d.ref="5090"});buildGpuSelect();renderGpuView();calcAll();toast("Карта удалена")}));
+}
+$("ngArch").addEventListener("change",()=>{const j=$("ngArch").value==="jet";$("ngDecL").textContent=j?"Потоков 1080p30 H.265":"NVDEC, шт.";$("ngDec").placeholder=j?"22":"2"});
+$("newForm").addEventListener("submit",e=>{e.preventDefault();
+  const name=$("ngName").value.trim(),arch=$("ngArch").value,tf=P($("ngTf").value),dec=P($("ngDec").value),mem=P($("ngMem").value),tdp=P($("ngTdp").value),price=P($("ngPrice").value);
+  const errs=[];if(!name)errs.push("название");if(!(tf>0))errs.push("FP16 Tensor");if(!(dec>0))errs.push(arch==="jet"?"потоки декодера":"число NVDEC");if(!(mem>0))errs.push("память");if(!(price>0))errs.push("цену — без неё карту не с чем сравнить в подборе");
+  const er=$("ngErr");if(errs.length){er.hidden=false;er.textContent="Заполните: "+errs.join(", ")+".";return}
+  er.hidden=true;
+  const g={id:"c"+uid(),name,arch:arch==="jet"?"Ampere":arch,tf,mem,tdp:tdp>0?tdp:0,price,custom:true};
+  if(arch==="jet"){g.jet=true;g.st={h265:dec,h264:+(dec*748/1415).toFixed(1)}}else g.nvdec=Math.round(dec);
+  CUSTOM.push(g);ON[g.id]=$("ngOn").checked;
+  ["ngName","ngTf","ngDec","ngMem","ngTdp","ngPrice"].forEach(id=>$(id).value="");
+  buildGpuSelect();renderGpuView();calcAll();toast(`«${name}» добавлена`);
+});
+
+// ---------- шаблоны: камеры
+function renderCamView(){
+  const used=id=>TYPES.filter(t=>t.v.cam===id).reduce((s,t)=>s+(Math.round(P(t.count))||0),0);
+  $("camTitle").textContent=`Камеры · ${allCams().length}`;
+  $("camTbl").innerHTML=`<tr><th>Камера</th><th>Кадр</th><th>Матрица</th><th>Объектив</th><th>Цена</th><th>В системе</th><th></th></tr>`+
+    allCams().map(c=>`<tr><td class="txt"><b style="font-weight:600">${esc(c.name)}</b><span class="sub">${c.custom?"своя":"типовая, для примера"}</span></td><td>${c.Nw}×${c.Nh}</td><td>${fmt(c.sw,2)} мм</td><td>${c.fmin>0?(c.fmin===c.fmax?fmt(c.fmin,1)+" мм":fmt(c.fmin,1)+"–"+fmt(c.fmax,1)+" мм"):"любой"}</td><td>${c.price>0?"$"+fmt(c.price,0):"—"}</td><td>${used(c.id)} шт.</td><td>${c.custom?`<button type="button" class="sm" data-delc="${c.id}" aria-label="Удалить ${esc(c.name)}">Удалить</button>`:""}</td></tr>`).join("");
+  document.querySelectorAll("[data-delc]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.delc;CAMS_C=CAMS_C.filter(c=>c.id!==id);
+    TYPES.forEach(t=>{if(t.v.cam===id)t.v.cam=""});buildCamSelect();writeForm(act());renderCamView();calcAll();toast("Камера удалена")}));
+}
+$("camForm").addEventListener("submit",e=>{e.preventDefault();
+  const name=$("ncName").value.trim(),Nw=Math.round(P($("ncW").value)),Nh=Math.round(P($("ncH").value)),pp=P($("ncPp").value);let sw=P($("ncSw").value);
+  let fmin=P($("ncFmin").value),fmax=P($("ncFmax").value);const price=P($("ncPrice").value);
+  if(!(sw>0)&&pp>0&&Nw>0)sw=+(pp*Nw/1000).toFixed(3);
+  if(fmin>0&&!(fmax>0))fmax=fmin;if(fmax>0&&!(fmin>0))fmin=fmax;
+  const errs=[];if(!name)errs.push("название");if(!(Nw>0&&Nh>0))errs.push("размер кадра в пикселях");if(!(sw>0))errs.push("ширину матрицы или размер пикселя");
+  if(fmin>0&&fmax>0&&fmin>fmax)errs.push("фокусное «от» не больше «до»");
+  const er=$("ncErr");if(errs.length){er.hidden=false;er.textContent="Укажите: "+errs.join(", ")+".";return}
+  er.hidden=true;
+  CAMS_C.push({id:"m"+uid(),name,Nw,Nh,sw,fmin:fmin>0?fmin:0,fmax:fmax>0?fmax:0,price:price>0?price:0,custom:true});
+  ["ncName","ncW","ncH","ncSw","ncPp","ncFmin","ncFmax","ncPrice"].forEach(id=>$(id).value="");
+  buildCamSelect();renderCamView();save();toast(`«${name}» добавлена`);
+});
+
+// ---------- шаблоны: детекторы
+function renderDetView(){
+  $("detTitle").textContent=`Детекторы · ${MODELS.length+DETS.length}`;
+  const used=id=>TYPES.reduce((s,t)=>s+t.objs.filter(o=>o.model===id).length,0);
+  $("detTbl").innerHTML=`<tr><th>Модель</th><th>Вход</th><th>GFLOPs</th><th>Скорость</th><th>Объектов</th><th></th></tr>`+
+    (DETS.length?DETS.map(d=>{const rg=gpuById(d.ref);return `<tr><td class="txt"><b style="font-weight:600">${esc(d.name)}</b><span class="sub">свой</span></td><td>${d.inp}</td><td>${d.gf>0?fmt(d.gf,1):"—"}</td><td>${fmt(d.fps,0)} к/с на ${esc(rg?rg.name:"?")}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="Удалить ${esc(d.name)}">Удалить</button></td></tr>`}).join(""):`<tr><td class="txt dim" colspan="6">Своих детекторов пока нет — добавьте справа.</td></tr>`)+
+    MODELS.map(m=>`<tr><td class="txt">${m.name}<span class="sub">каталог Ultralytics</span></td><td>640</td><td>${fmt(m.gf,1)}</td><td>${fmt(1000/m.ms,0)} к/с на T4</td><td>${used(m.id)}</td><td></td></tr>`).join("");
+  document.querySelectorAll("[data-deld]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.deld;DETS=DETS.filter(d=>d.id!==id);
+    TYPES.forEach(t=>t.objs.forEach(o=>{if(o.model===id)o.model="y26s"}));renderObjs();renderDetView();calcAll();toast("Детектор удалён")}));
+}
+$("ndInp").innerHTML=INPUTS.map(x=>`<option${x===640?" selected":""}>${x}</option>`).join("");
+$("detForm").addEventListener("submit",e=>{e.preventDefault();
+  const name=$("ndName").value.trim(),fps=P($("ndFps").value),inp=+$("ndInp").value,ref=$("ndRef").value,gf=P($("ndGf").value);
+  const errs=[];if(!name)errs.push("название");if(!(fps>0))errs.push("замер, к/с");
+  const er=$("ndErr");if(errs.length){er.hidden=false;er.textContent="Укажите: "+errs.join(", ")+".";return}
+  er.hidden=true;
+  DETS.push({id:"d"+uid(),name,fps,inp,ref,gf:gf>0?gf:0,custom:true});
+  ["ndName","ndFps","ndGf"].forEach(id=>$(id).value="");
+  renderObjs();renderDetView();calcAll();toast(`«${name}» добавлен`);
+});
+
+// ---------- главный цикл
+let report="";
+function calcAll(){
+  const Rs=TYPES.map(computeType);
+  const i=Math.max(0,TYPES.findIndex(t=>t.id===ACT));
+  syncFormUI(TYPES[i],Rs[i]);
+  renderType(Rs[i]);
+  renderTabs(Rs);
+  const S=computeSystem(Rs);
+  const sysTot=renderSystem(Rs,S);
+  const E=S.E;
+  report=["Калькулятор камер и вычислителя",
+    ...Rs.flatMap(r=>r.err?[`\n${r.T.name} × ${r.count}: ошибка в исходных данных`]:[
+      `\n${r.T.name} × ${r.count}`,
+      `  Камера: ${r.rl}${r.rot?" (повёрнута на 90°)":""}, матрица ${fmt(r.s,2)} мм, f ${fmt(r.f,1)} мм, HFOV ${fmt(r.hf/R,0)}°, наклон ${fmt(r.tilt/R,0)}°, ${r.pos==="top"?"над центром зоны":"вынос "+fmt(r.L0,2)+" м"}, высота ${fmt(r.H,2)} м, зона ${fmt(r.Wz,2)}×${fmt(r.Dz,2)} м`,
+      ...r.valid.map(o=>`  ${o.name}: ${mName(o)}, ${o.fi.txt}; на матрице ${r.pxs(o)}, на входе модели ${r.pxm(o)}, нужно ${fmt(o.reqN,0)} — ${stTxt[o.st]}`),
+      `  Поток ${fmt(r.mb,1)} Мбит/с на камеру, выдержка не длиннее 1/${Math.ceil(r.X)} с`]),
+    `\nСистема: ${sysTot.cams} камер, ${fmt(sysTot.mbTot,0)} Мбит/с${sysTot.camCost?`, камеры $${fmt(sysTot.camCost,0)}`:""}`,
+    S.live.length?`Вычислитель (оценка): ${E.n} × ${E.g.name}, $${fmt(E.cost,0)}; инференс ${fmt(E.uI*100,0)}%, декодер ${fmt(E.uD*100,0)}%, память ${fmt(E.memUse,1)}/${fmt(E.memCap,0)} ГБ${S.best&&S.best!==E?`; оптимум по цене — ${S.best.n} × ${S.best.g.name}, $${fmt(S.best.cost,0)}`:""}`:"Вычислитель: нет данных"].join("\n");
+  save();
+}
+const GL_IDS=["kr","resv","days","gpu","gcnt"];
+function save(){try{localStorage.setItem("camcalc3",JSON.stringify({types:TYPES,act:ACT,gl:Object.fromEntries(GL_IDS.map(id=>[id,$(id).value])),price:PRICE,on:ON,custom:CUSTOM,cams:CAMS_C,dets:DETS,light:document.documentElement.classList.contains("light")}))}catch(e){}}
+function load(){try{const st=JSON.parse(localStorage.getItem("camcalc3")||"null");if(!st)return;
+  if(Array.isArray(st.custom))CUSTOM=st.custom.filter(g=>g&&g.id&&g.name&&g.tf>0).map(g=>({...g,custom:true}));
+  if(Array.isArray(st.cams))CAMS_C=st.cams.filter(c=>c&&c.id&&c.Nw>0&&c.Nh>0&&c.sw>0).map(c=>({...c,custom:true}));
+  if(Array.isArray(st.dets))DETS=st.dets.filter(d=>d&&d.id&&d.fps>0).map(d=>({...d,custom:true}));
+  if(st.price&&typeof st.price==="object")PRICE=st.price;if(st.on&&typeof st.on==="object")ON=st.on;
+  if(st.light)setTheme(true);
+  buildGpuSelect();buildCamSelect();
+  if(Array.isArray(st.types)&&st.types.length){
+    TYPES=st.types.map(t=>({id:t.id||uid(),name:t.name,count:t.count,v:{...DEF_V,...t.v},objs:(t.objs||[]).map(o=>({...mkObj([o.name,o.w,o.d,o.z,o.req,modelById(o.model)?o.model:"y26s",o.feed,o.inp]),ov:o.ov??20}))}));
+    ACT=TYPES.some(t=>t.id===st.act)?st.act:TYPES[0].id}
+  if(st.gl)GL_IDS.forEach(id=>{if(st.gl[id]!=null)$(id).value=st.gl[id]});if(![...$("gpu").options].some(o=>o.value===$("gpu").value))$("gpu").value="auto";
+}catch(e){}}
+
+// ---------- события
+function setTheme(light){document.documentElement.classList.toggle("light",light);$("themeBtn").textContent=light?"Тёмная тема":"Светлая тема";$("themeBtn").setAttribute("aria-pressed",String(light))}
+$("themeBtn").addEventListener("click",()=>{setTheme(!document.documentElement.classList.contains("light"));save()});
+PRESETS.forEach(pr=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=pr[0];
+  b.addEventListener("click",()=>{act().objs.push(mkObj(pr));renderObjs();calcAll()});$("presets").append(b)});
+$("addObj").addEventListener("click",()=>{const T=act();T.objs.push(mkObj(["Объект",10,10,10,20,"y26s","roi",640]));renderObjs();calcAll();const i=T.objs.length-1;$(`on-${i}`).focus();$(`on-${i}`).select()});
+$("frm").addEventListener("input",()=>{readForm();calcAll()});$("frm").addEventListener("change",()=>{readForm();calcAll()});
+$("frm").addEventListener("submit",e=>e.preventDefault());
+GL_IDS.forEach(id=>{$(id).addEventListener("input",calcAll);$(id).addEventListener("change",calcAll)});
+$("dupBtn").addEventListener("click",()=>{readForm();const src=act(),T=JSON.parse(JSON.stringify(src));T.id=uid();T.name=src.name+" (копия)";TYPES.splice(TYPES.indexOf(src)+1,0,T);ACT=T.id;writeForm(T);calcAll();toast("Тип скопирован")});
+let delArm=null;
+$("delBtn").addEventListener("click",()=>{const b=$("delBtn");
+  if(TYPES.length<2){toast("Должен остаться хотя бы один тип камеры");return}
+  if(!delArm){b.textContent="Нажмите ещё раз";delArm=setTimeout(()=>{b.textContent="Удалить тип";delArm=null},3000);return}
+  clearTimeout(delArm);delArm=null;b.textContent="Удалить тип";
+  const i=TYPES.findIndex(t=>t.id===ACT);TYPES.splice(i,1);ACT=TYPES[Math.max(0,i-1)].id;writeForm(act());calcAll();toast("Тип удалён")});
+function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,1800)}
+$("resetBtn").addEventListener("click",()=>{TYPES=defTypes();ACT=TYPES[0].id;$("kr").value="0.6";$("resv").value="20";$("days").value="0";$("gcnt").value="auto";PRICE={};ON={};buildGpuSelect();$("gpu").value="auto";writeForm(act());calcAll();toast("Загружен пример. Свои шаблоны сохранены")});
+$("copyBtn").addEventListener("click",()=>{navigator.clipboard.writeText(report).then(()=>toast("Отчёт скопирован"),()=>toast("Не удалось скопировать: браузер запретил доступ к буферу"))});
+const TPL={"tpl-gpus":renderGpuView,"tpl-cams":renderCamView,"tpl-dets":renderDetView};
+function route(){
+  const h=location.hash.slice(1),isTpl=h in TPL;
+  $("viewMain").style.display=isTpl?"none":"flex";$("viewTpl").hidden=!isTpl;$("viewTpl").style.display=isTpl?"flex":"none";
+  if(isTpl){Object.keys(TPL).forEach(k=>{$(k+"-v").hidden=k!==h;$(k+"-v").style.display=k===h?"flex":"none";const a=$("tt-"+k.slice(4));if(k===h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});TPL[h]()}
+  else if(h==="")writeForm(act()),calcAll();
+  try{window.scrollTo(0,0)}catch(e){}
+}
+window.addEventListener("hashchange",route);
+function drawSide({H,h,x1,x2,tilt,vf,Hc,pos,wN,wF}){
+  const Wv=680,Hv=510,ml=64,mr=60,mt=28,mb=74;
+  const a1=tilt+vf/2,a2=tilt-vf/2;
+  const hitX=a=>(a>0.02&&a<Math.PI-0.02)?Hc/Math.tan(a):NaN;
+  const fwd=hitX(a2),back=hitX(a1);
+  const xmax=Math.max(x2+0.3,isFinite(fwd)?Math.min(fwd,x2+Math.abs(x2-x1)*0.6)+0.3:x2*1.6+0.3);
+  const xmin=Math.min(-0.3,x1-0.3,isFinite(back)&&back<0?Math.max(back,x1-Math.abs(x2-x1)*0.6)-0.3:-0.3);
+  const sc=Math.min((Wv-ml-mr)/(xmax-xmin),(Hv-mt-mb)/(H*1.04));
+  const ox=ml+((Wv-ml-mr)-(xmax-xmin)*sc)/2;
+  const X=x=>ox+(x-xmin)*sc,Y=y=>Hv-mb-y*sc;
+  const n=v=>(+v).toFixed(1);
+  const cx=X(0),cy=Y(H),yP=Y(h),y0=Y(0),xL=X(xmin),xR=X(xmax);
+  const ray=a=>{const hx=hitX(a);if(isFinite(hx)&&hx>=xmin&&hx<=xmax)return[X(hx),yP];const b=Math.cos(a)>=0?xmax:xmin;return[X(b),Y(H-b*Math.tan(a))]};
+  const [p1x,p1y]=ray(a1),[p2x,p2y]=ray(a2),[cxr,cyr]=ray(tilt);
+  let g="";
+  // сетка с шагом 1/2/5 м
+  const st=[0.5,1,2,5,10].find(s=>s*sc>=45)||10;
+  for(let x=Math.ceil(xmin/st)*st;x<=xmax+1e-9;x+=st)g+=`<line x1="${n(X(x))}" y1="${n(Y(H*1.04))}" x2="${n(X(x))}" y2="${n(y0)}" stroke="var(--grid)"/>`;
+  for(let y=st;y<=H*1.04+1e-9;y+=st)g+=`<line x1="${n(xL)}" y1="${n(Y(y))}" x2="${n(xR)}" y2="${n(Y(y))}" stroke="var(--grid)"/>`;
+  // пол и плоскость интереса
+  g+=`<line x1="${n(xL-24)}" y1="${n(y0)}" x2="${n(xR)}" y2="${n(y0)}" stroke="var(--muted)" stroke-width="2"/>`;
+  if(h>0.01)g+=`<line x1="${n(xL)}" y1="${n(yP)}" x2="${n(xR)}" y2="${n(yP)}" stroke="var(--dash)" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+  // поле зрения и ось
+  g+=`<polygon points="${n(cx)},${n(cy)} ${n(p1x)},${n(p1y)} ${n(p2x)},${n(p2y)}" fill="var(--wedge)"/>`;
+  g+=`<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(p1x)}" y2="${n(p1y)}" stroke="var(--wedge-line)" stroke-width="1.8"/><line x1="${n(cx)}" y1="${n(cy)}" x2="${n(p2x)}" y2="${n(p2y)}" stroke="var(--wedge-line)" stroke-width="1.8"/>`;
+  g+=`<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(cxr)}" y2="${n(cyr)}" stroke="var(--wedge-line)" stroke-width="1.5" stroke-dasharray="7 6" opacity=".85"/>`;
+  // зона
+  const zx1=X(x1),zx2=X(x2),zw=zx2-zx1;
+  g+=`<rect x="${n(zx1)}" y="${n(yP-6)}" width="${n(zw)}" height="12" rx="2" fill="var(--accent)"/>`;
+  const room=y0-yP>=40;
+  const zLabY=room?yP-16:yP-40,fLabY=room?yP+28:yP-18;
+  g+=`<text x="${n((zx1+zx2)/2)}" y="${n(zLabY)}" text-anchor="middle" class="t-z">зона контроля ${fmt(x2-x1,1)} м</text>`;
+  if(isFinite(wN)&&isFinite(wF)){
+    const nar=zw<240;
+    g+=`<line x1="${n(zx1)}" y1="${n(yP+7)}" x2="${n(zx1)}" y2="${n(yP+13)}" stroke="var(--accent)" stroke-width="1.5"/><line x1="${n(zx2)}" y1="${n(yP+7)}" x2="${n(zx2)}" y2="${n(yP+13)}" stroke="var(--accent)" stroke-width="1.5"/>`;
+    g+=`<text x="${n(zx1)}" y="${n(fLabY)}" text-anchor="${nar?"end":"middle"}">кадр ${fmt(wN,1)} м</text>`;
+    g+=`<text x="${n(zx2)}" y="${n(fLabY)}" text-anchor="${nar?"start":"middle"}">кадр ${fmt(wF,1)} м</text>`;
+  }
+  // углы
+  const dAx=(yP-cy)/Math.max(Math.sin(tilt),0.05);
+  const r2=Math.max(40,Math.min(150,dAx*0.55)),r1=Math.max(28,Math.min(70,r2*0.47));
+  const pt=(r,a)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+  g+=`<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(cx+r1+60)}" y2="${n(cy)}" stroke="var(--dim)" stroke-dasharray="4 4"/>`;
+  const [t1x,t1y]=pt(r1,tilt);
+  g+=`<path d="M${n(cx+r1)},${n(cy)} A${r1},${r1} 0 0 1 ${n(t1x)},${n(t1y)}" fill="none" stroke="var(--fg)" stroke-width="1.5"/>`;
+  const [tlx,tly]=pt(r1+10,tilt/2);
+  g+=`<text x="${n(tlx)}" y="${n(tly+5)}" class="t-b">наклон ${fmt(tilt/R,0)}°</text>`;
+  const [v1x,v1y]=pt(r2,a2),[v2x,v2y]=pt(r2,a1);
+  g+=`<path d="M${n(v1x)},${n(v1y)} A${n(r2)},${n(r2)} 0 0 1 ${n(v2x)},${n(v2y)}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`;
+  const [vlx,vly]=pt(r2+12,tilt);
+  g+=`<text x="${n(vlx+4)}" y="${n(vly+5)}" class="t-a">VFOV ${fmt(vf/R,0)}°</text>`;
+  // камера
+  g+=`<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(cx)}" y2="${n(y0)}" stroke="var(--dim)" stroke-width="1.5"/>`;
+  g+=`<rect x="${n(cx-16)}" y="${n(cy-10)}" width="28" height="18" rx="3" fill="var(--fg)"/><circle cx="${n(cx+12)}" cy="${n(cy-1)}" r="4" fill="var(--bg)"/>`;
+  // H слева
+  const xd=Math.min(cx,xL)-30;
+  g+=`<line x1="${n(xd)}" y1="${n(cy)}" x2="${n(xd)}" y2="${n(y0)}" stroke="var(--muted)"/><line x1="${n(xd-6)}" y1="${n(cy)}" x2="${n(xd+6)}" y2="${n(cy)}" stroke="var(--muted)"/><line x1="${n(xd-6)}" y1="${n(y0)}" x2="${n(xd+6)}" y2="${n(y0)}" stroke="var(--muted)"/>`;
+  g+=`<text x="${n(xd-8)}" y="${n((cy+y0)/2)}" transform="rotate(-90 ${n(xd-8)} ${n((cy+y0)/2)})" text-anchor="middle" class="t-b">H ${fmt(H,1)} м</text>`;
+  // h справа — повернута, не пересекается с подписями кадра
+  if(h>0.01){const xh=xR+22,ym=(yP+y0)/2;
+    g+=`<line x1="${n(xh)}" y1="${n(yP)}" x2="${n(xh)}" y2="${n(y0)}" stroke="var(--muted)"/><line x1="${n(xh-6)}" y1="${n(yP)}" x2="${n(xh+6)}" y2="${n(yP)}" stroke="var(--muted)"/><line x1="${n(xh-6)}" y1="${n(y0)}" x2="${n(xh+6)}" y2="${n(y0)}" stroke="var(--muted)"/>`;
+    g+=`<text x="${n(xh+20)}" y="${n(ym)}" transform="rotate(-90 ${n(xh+20)} ${n(ym)})" text-anchor="middle">h ${fmt(h,2)} м</text>`}
+  // размеры по полу
+  const yd=y0+26,yt=y0+47;
+  const dim=(a,b,txt)=>{g+=`<line x1="${n(a)}" y1="${n(yd)}" x2="${n(b)}" y2="${n(yd)}" stroke="var(--muted)"/><line x1="${n(a)}" y1="${n(yd-6)}" x2="${n(a)}" y2="${n(yd+6)}" stroke="var(--muted)"/><line x1="${n(b)}" y1="${n(yd-6)}" x2="${n(b)}" y2="${n(yd+6)}" stroke="var(--muted)"/><text x="${n((a+b)/2)}" y="${n(yt)}" text-anchor="middle">${txt}</text>`};
+  g+=`<line x1="${n(zx1)}" y1="${n(yP+6)}" x2="${n(zx1)}" y2="${n(yd-6)}" stroke="var(--line)" stroke-dasharray="3 4"/><line x1="${n(zx2)}" y1="${n(yP+6)}" x2="${n(zx2)}" y2="${n(yd-6)}" stroke="var(--line)" stroke-dasharray="3 4"/>`;
+  if(x1>0.05){const w=zx1-cx;dim(cx,zx1,w>110?`вынос ${fmt(x1,1)} м`:`${fmt(x1,1)} м`)}
+  dim(zx1,zx2,zw>170?`глубина зоны ${fmt(x2-x1,1)} м`:`${fmt(x2-x1,1)} м`);
+  if(x1<=0.05)g+=`<text x="${n(cx)}" y="${n(yt+20)}" text-anchor="middle">${pos==="top"?"камера над центром зоны":"камера над зоной"}</text>`;
+  const s=$("side");s.innerHTML=g;
+  s.setAttribute("aria-label",`Вид сбоку: камера на высоте ${fmt(H,1)} м, наклон ${fmt(tilt/R,0)}°, VFOV ${fmt(vf/R,0)}°, зона от ${fmt(x1,1)} до ${fmt(x2,1)} м на высоте ${fmt(h,2)} м`+(isFinite(wN)?`, ширина кадра ${fmt(wN,1)}–${fmt(wF,1)} м`:""));
+}
+const TIPS={
+tName:"Название типа камеры, например «Рабочее место» или «Тележка». Тип — группа одинаковых камер с одной задачей: своя геометрия, матрица, поток и объекты.",
+tCount:"Сколько камер этого типа в системе. Влияет на трафик, декодирование и нагрузку на вычислитель, но не на пиксели на объекте.",
+cam:"Камера из «Шаблонов»: разрешение и матрица берутся из неё, а нужное фокусное проверяется по диапазону её объектива. «Свои настройки матрицы» — задать разрешение и матрицу вручную.",
+ngTf:"FP16 Tensor из даташита NVIDIA без sparsity: если цифра со звёздочкой «with sparsity», делите на 2. Для GeForce берите FP16 с FP32-накоплением — она вдвое меньше FP16-накопления.",
+ngArch:"Архитектура задаёт производительность одного аппаратного декодера NVDEC. Для Jetson выберите «Jetson / свой декодер» и укажите число потоков 1080p30 из спецификации.",
+ndFps:"Сколько кадров в секунду модель обрабатывает на одной карте в TensorRT — с той точностью и batch, что будут в работе.",
+ncSw:"Ширина активной области сенсора из даташита. Если её нет, оставьте пустым и укажите размер пикселя.",
+H:"Высота объектива над полом. Меряйте лазерным дальномером от пола до точки крепления. Выше — меньше заслонений, но ниже плотность пикселей.",
+h:"Высота поверхности, где лежат объекты контроля: столешница ≈ 0,85–0,9 м, верх ложемента тележки. Для рук работника берите ≈ 1,0–1,2 м. Весь расчёт ведётся на этой плоскости.",
+pos:"Сбоку — камера смотрит под углом, видны и человек, и объекты. Над центром — строго вниз: лучший вид на ячейки тележки, но человек виден сверху, действия рук различать сложнее.",
+L0:"Расстояние по полу от точки прямо под камерой до ближней кромки зоны. Отрицательное значение — камера висит над частью зоны.",
+Dz:"Размер зоны вдоль направления взгляда камеры, от ближней кромки до дальней.",
+Wz:"Размер зоны поперёк направления взгляда камеры.",
+orient:"Камеру можно повернуть на 90°, чтобы длинная сторона кадра легла вдоль длинной стороны зоны. «Авто» выбирает вариант, где на метр зоны приходится больше пикселей. Поворот поддерживают многие корпусные камеры (режим «коридор»); у купольных проверьте поворот модуля.",
+mg:"Запас, чтобы зона не упиралась в края кадра: там хуже резкость и сильнее дисторсия, а при монтаже камера может сместиться. Обычно 10–20%.",
+res:"Разрешение потока, на котором работает аналитика. Если модель получает субпоток, указывайте его разрешение, а не основного потока.",
+sens:"Дюймовый формат матрицы условный, размеры у производителей отличаются. Точнее всего — режим «По размеру пикселя» с данными из даташита сенсора.",
+sw:"Ширина области матрицы, которая реально снимает видео в выбранном разрешении. В даташите сенсора — effective или active area.",
+pp:"Размер пикселя из даташита сенсора (pixel size, мкм), например 2,0 мкм у IMX334. Ширина матрицы = пиксель × пикселей по горизонтали.",
+mode:"«Подобрать» — калькулятор сам найдёт угол под зону. «Фокусное» или «Угол HFOV» — проверить конкретную камеру из каталога.",
+fmm:"Фокусное расстояние объектива из даташита камеры. Для вариофокального объектива проверьте оба конца диапазона.",
+hfov:"Горизонтальный угол обзора из даташита. Не путайте с диагональным (DFOV): он больше и часто указан крупнее.",
+objs:"Карточка на каждый объект: габариты (ширина поперёк взгляда камеры, длина вдоль, высота вверх), модель, которой его ищем, как кадр подаётся в модель, размер входа и сколько пикселей нужно на меньшую сторону объекта. Результат виден прямо в карточке. Объекты с одной и той же моделью и подачей считаются одним запуском: нагрузка не удваивается.",
+k:"Доля номинального разрешения, которая реально доходит до модели после сжатия, оптики и дисторсии. 0,7 — хорошая камера на высоком битрейте, 0,6 — типично, 0,5 — широкоугольник или вид сверху.",
+v:"Скорость самого быстрого движения, которое нужно видеть без смаза: руки при работе ≈ 1 м/с, идущий человек ≈ 1,5 м/с.",
+blur:"Допустимый смаз в пикселях. Для детекции 1–2 px, для чтения маркировки не больше 0,5–1 px.",
+fps:"Кадров в секунду в потоке для аналитики. Для фиксации событий с точностью ≈ 1 с хватает 5–10, для отслеживания действий рук 10–15.",
+codec:"H.265 даёт примерно вдвое меньший поток при том же качестве. H.264 — если декодер сервера не поддерживает H.265.",
+scene:"Битрейт растёт с движением в кадре. Спокойная сцена — пустой склад, обычная — рабочее место, активная — проходы, много людей и техники.",
+afps:"Сколько кадров в секунду с каждой камеры реально проходит через модели. Присутствие человека — 2–5, учёт деталей и такт — 5–10. Не больше fps потока.",
+kr:"Какая доля замеренной скорости останется в живой системе: декодирование, пред- и постобработка, трекинг, запись в БД, пики нагрузки. 0,7 — отлаженный DeepStream/TensorRT, 0,5–0,6 — типично, 0,4 — Python-пайплайн без оптимизации.",
+gpu:"«Авто» перебирает все отмеченные карты в количестве от 1 до 4 и берёт самую дешёвую конфигурацию, которая тянет нагрузку с запасом и помещается в память. Список карт, цены и свои карты — в «Шаблонах».",
+gcnt:"Сколько карт ставить. «Авто» — минимальное число, которое тянет нагрузку. Две недорогие карты часто выгоднее одной дорогой: смотрите таблицу «Варианты по цене».",
+resv:"Сколько мощности оставить свободной под рост: новые камеры, вторую модель, пики. 20% — значит загрузка инференса и декодера не выше ≈ 83%.",
+days:"Сколько суток хранить видео. 0 — видео не пишется, хранятся только события аналитики."
+};
+const pop=document.createElement("div");pop.className="pop";pop.id="pop";pop.setAttribute("role","tooltip");pop.hidden=true;document.body.append(pop);
+let popFor=null,pinned=false;
+function showTip(btn,pin){
+  popFor=btn;pinned=!!pin;pop.textContent=TIPS[btn.dataset.key];pop.hidden=false;
+  document.querySelectorAll(".tipbtn[aria-expanded=true]").forEach(x=>x.setAttribute("aria-expanded","false"));
+  btn.setAttribute("aria-expanded","true");
+  const r=btn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight,vw=document.documentElement.clientWidth,vh=window.innerHeight;
+  let left=Math.min(Math.max(12,r.left+r.width/2-pw/2),vw-pw-12);
+  let top=r.bottom+8; if(top+ph>vh-12&&r.top-ph-8>12)top=r.top-ph-8;
+  pop.style.left=left+"px";pop.style.top=top+"px";
+}
+function hideTip(){pop.hidden=true;pinned=false;if(popFor)popFor.setAttribute("aria-expanded","false");popFor=null}
+Object.entries(TIPS).forEach(([key])=>{
+  const lab=document.querySelector(`label[for="${key}"]`)||document.querySelector(`[data-tip="${key}"]`);
+  if(!lab)return; const box=lab.closest(".f"); if(!box)return;
+  const row=document.createElement("div");row.className="lrow";lab.before(row);row.append(lab);
+  const b=document.createElement("button");b.type="button";b.className="tipbtn";b.textContent="?";b.dataset.key=key;
+  b.setAttribute("aria-label","Подсказка");b.setAttribute("aria-expanded","false");b.setAttribute("aria-describedby","pop");
+  row.append(b);
+  b.addEventListener("click",e=>{e.stopPropagation();(popFor===b&&pinned)?hideTip():showTip(b,true)});
+  b.addEventListener("mouseenter",()=>{if(!pinned)showTip(b,false)});
+  b.addEventListener("mouseleave",()=>{if(!pinned&&popFor===b)hideTip()});
+  b.addEventListener("focus",()=>{if(!pinned)showTip(b,false)});
+  b.addEventListener("blur",()=>{if(!pinned&&popFor===b)hideTip()});
+});
+document.addEventListener("click",e=>{if(!pop.hidden&&!pop.contains(e.target))hideTip()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")hideTip()});
+window.addEventListener("scroll",()=>{if(!pop.hidden)hideTip()},{passive:true});
+window.addEventListener("resize",()=>{if(!pop.hidden)hideTip()});
+buildGpuSelect();buildCamSelect();load();writeForm(act());calcAll();route();
+</script>

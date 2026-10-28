@@ -1,0 +1,40 @@
+const {JSDOM}=require('jsdom');const fs=require('fs');
+const dom=new JSDOM(fs.readFileSync(__dirname+'/../dist/camera-calc.html','utf8'),{runScripts:'dangerously',url:'https://x.test/',pretendToBeVisual:true,beforeParse(w){w.scrollTo=()=>{}}});
+const d=dom.window.document,w=dom.window;
+w.scrollTo=()=>{};
+w.addEventListener('error',e=>console.log('ERR',e.message));
+const T=id=>d.getElementById(id).textContent.replace(/\s+/g,' ').trim();
+const tbl=id=>[...d.querySelectorAll('#'+id+' tr')].map(r=>'   '+[...r.children].map(c=>c.textContent.replace(/\s+/g,' ').trim()).join(' | ')).join('\n');
+const go=h=>{w.location.hash=h;w.dispatchEvent(new w.HashChangeEvent('hashchange'))};
+const set=(id,v)=>d.getElementById(id).value=v;
+const fire=(id,ev='input')=>d.getElementById(id).dispatchEvent(new w.Event(ev,{bubbles:true}));
+console.log('SYS:',T('sysKpis'));
+console.log('DSUM:',T('dsum'));
+console.log('DONUT:',T('donut'),'| circles',d.querySelectorAll('#donut circle').length);
+console.log('LEGEND:',[...d.querySelectorAll('#legend li')].map(l=>l.textContent.replace(/\s+/g,' ').trim()).join(' || '));
+console.log('GAUGES:',T('gauges'));
+console.log('VERDICT:',T('verdict'));console.log('FACTS:',T('facts'));
+console.log('header btn:',T('tplBtn'),d.getElementById('tplBtn').getAttribute('href'));
+// templates: cameras
+go('#tpl-cams');
+console.log('tpl visible',!d.getElementById('viewTpl').hidden,'cams',!d.getElementById('tpl-cams-v').hidden,'gpus',!d.getElementById('tpl-gpus-v').hidden);
+console.log(tbl('camTbl'));
+set('ncName','Тест-камера 8 Мп');set('ncW','3840');set('ncH','2160');set('ncPp','2');set('ncFmin','6');set('ncFmax','6');set('ncPrice','300');
+d.getElementById('camForm').dispatchEvent(new w.Event('submit',{cancelable:true}));
+console.log('after add cam rows',d.querySelectorAll('#camTbl tr').length);
+// detectors
+go('#tpl-dets');
+set('ndName','Детектор деталей');set('ndFps','900');set('ndInp','640');set('ndRef','l40s');
+d.getElementById('detForm').dispatchEvent(new w.Event('submit',{cancelable:true}));
+console.log('det first row:',tbl('detTbl').split('\n')[1]);
+d.getElementById('detForm').dispatchEvent(new w.Event('submit',{cancelable:true}));console.log('det err:',T('ndErr'));
+// back to main, apply camera to type 1 and detector to object 2
+go('');
+const camSel=d.getElementById('cam');const custom=[...camSel.options].find(o=>o.text.startsWith('Тест-камера'));
+camSel.value=custom.value;fire('cam','change');
+console.log('res disabled',d.getElementById('res').disabled,'sw',d.getElementById('sw').value);
+console.log('VERDICT cam:',T('verdict'));
+const om=d.getElementById('om-1');const det=[...om.options].find(o=>o.text==='Детектор деталей');om.value=det.value;om.dispatchEvent(new w.Event('change',{bubbles:true}));
+console.log('LEGEND det:',[...d.querySelectorAll('#legend li')].map(l=>l.textContent.replace(/\s+/g,' ').trim()).join(' || '));
+console.log('SYS:',T('sysKpis'));
+console.log('tips',d.querySelectorAll('.tipbtn').length);

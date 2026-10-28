@@ -1,0 +1,13 @@
+{
+  "name": "camera-calc",
+  "version": "0.15.0",
+  "private": true,
+  "description": "Калькулятор подбора камер, объективов и вычислителя (GPU) для видеоаналитики",
+  "scripts": {
+    "build": "python3 build.py",
+    "test": "node tests/smoke.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}

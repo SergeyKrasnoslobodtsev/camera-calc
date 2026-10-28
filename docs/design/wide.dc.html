@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Калькулятор камер — схема в первом экране</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Sans+Condensed:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#0F1215;color-scheme:dark}
+a{color:#E8A93A}a:hover{color:#F5C46A}
+input,select,button{font:inherit}
+details>summary{list-style:none}
+details>summary::-webkit-details-marker{display:none}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #0F1215; color: #E6E8E9; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; line-height: 1.45; padding: 20px 24px 40px;">
+<div style="max-width: 1360px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;">
+
+  <!-- Шапка -->
+  <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px;">
+    <h1 style="margin: 0; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 26px; font-weight: 600; line-height: 1.15;">Калькулятор камер и вычислителя</h1>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <button type="button" style="min-height: 40px; padding: 8px 14px; border-radius: 6px; border: 1px solid #2E353B; background: #171B1F; color: #E6E8E9;">Светлая тема</button>
+      <a href="#" style="display: inline-flex; align-items: center; min-height: 40px; box-sizing: border-box; padding: 8px 14px; border-radius: 6px; border: 1px solid #2E353B; background: #171B1F; color: #E6E8E9; text-decoration: none;">Шаблоны</a>
+      <button type="button" style="min-height: 40px; padding: 8px 14px; border-radius: 6px; border: 1px solid #2E353B; background: #171B1F; color: #E6E8E9;">Пример</button>
+      <button type="button" style="min-height: 40px; padding: 8px 14px; border-radius: 6px; border: 1px solid #E6E8E9; background: #E6E8E9; color: #0F1215; font-weight: 600;">Копировать отчёт</button>
+    </div>
+  </header>
+
+  <!-- Вкладки типов -->
+  <nav aria-label="Типы камер" style="display: flex; flex-wrap: wrap; gap: 6px;">
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 8px; min-height: 44px; box-sizing: border-box; padding: 8px 14px; border-radius: 8px; background: #171B1F; border: 1px solid #E8A93A; box-shadow: inset 0 -3px 0 #E8A93A; color: #E6E8E9; text-decoration: none;"><span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; background: #4CC38A;"></span><strong style="font-weight: 600;">Рабочее место</strong><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9AA3AA;">× 10</span></a>
+    <a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; box-sizing: border-box; padding: 8px 14px; border-radius: 8px; background: #171B1F; border: 1px solid #2E353B; color: #E6E8E9; text-decoration: none;"><span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; background: #4CC38A;"></span><strong style="font-weight: 600;">Тележка</strong><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9AA3AA;">× 10</span></a>
+    <button type="button" style="min-height: 44px; padding: 8px 14px; border-radius: 8px; background: transparent; border: 1px dashed #3A4248; color: #E6E8E9;">+ Тип камеры</button>
+  </nav>
+
+  <!-- Первый экран: результат типа | система -->
+  <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch;">
+
+    <!-- Результат со схемой -->
+    <section aria-labelledby="resTitle" style="flex: 999 1 640px; min-width: 0; background: #171B1F; border: 1px solid #2E353B; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;">
+        <h2 id="resTitle" style="margin: 0; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9AA3AA;">Результат · рабочее место</h2>
+        <div style="flex: 1 1 360px; display: flex; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 8px; background: #13301F; font-size: 13px;">
+          <span style="font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: #4CC38A; color: #0F1215; white-space: nowrap;">Хватает</span>
+          <span>Все объекты различимы. Самый мелкий — кисть руки, 25,9×39,8 px при нужных 20.</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch;">
+        <figure style="flex: 999 1 420px; min-width: 0; margin: 0; padding: 10px 12px; background: #13171A; border: 1px solid #252B30; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
+          <figcaption style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; font-size: 12px; color: #B9C2C9;">
+            <span style="font-family: 'IBM Plex Sans Condensed', sans-serif; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9AA3AA;">Вид сбоку</span>
+            <span style="display: flex; flex-wrap: wrap; gap: 4px 12px;">
+              <span style="display: inline-flex; align-items: center; gap: 5px;"><span aria-hidden="true" style="width: 12px; height: 9px; background: rgba(232,169,58,0.22); border: 1px solid #E8A93A;"></span>поле зрения</span>
+              <span style="display: inline-flex; align-items: center; gap: 5px;"><span aria-hidden="true" style="width: 14px; border-top: 2px dashed #E8A93A;"></span>ось</span>
+              <span style="display: inline-flex; align-items: center; gap: 5px;"><span aria-hidden="true" style="width: 14px; height: 5px; background: #E8A93A;"></span>зона</span>
+            </span>
+          </figcaption>
+          <svg viewBox="0 0 660 510" width="100%" style="display: block; width: 100%; height: auto; max-height: 420px;" role="img" aria-label="Вид сбоку: камера на высоте 4 метра наклонена на 49 градусов, угол обзора по вертикали 33 градуса, зона контроля от 1,5 до 4,5 метра на высоте 0,9 метра, ширина кадра 3,5 метра на ближнем краю и 5,5 метра на дальнем">
+            <g stroke="#1F2428" stroke-width="1">
+              <line x1="170" y1="40" x2="170" y2="450"></line><line x1="270" y1="40" x2="270" y2="450"></line><line x1="370" y1="40" x2="370" y2="450"></line><line x1="470" y1="40" x2="470" y2="450"></line><line x1="570" y1="40" x2="570" y2="450"></line>
+              <line x1="70" y1="350" x2="640" y2="350"></line><line x1="70" y1="250" x2="640" y2="250"></line><line x1="70" y1="150" x2="640" y2="150"></line>
+            </g>
+            <line x1="40" y1="450" x2="650" y2="450" stroke="#9AA3AA" stroke-width="2"></line>
+            <line x1="70" y1="360" x2="650" y2="360" stroke="#3A4248" stroke-width="1.5" stroke-dasharray="6 5"></line>
+            <polygon points="70,50 208.5,360 549,360" fill="rgba(232,169,58,0.16)"></polygon>
+            <line x1="70" y1="50" x2="208.5" y2="360" stroke="#E8A93A" stroke-width="1.8"></line>
+            <line x1="70" y1="50" x2="549" y2="360" stroke="#E8A93A" stroke-width="1.8"></line>
+            <line x1="70" y1="50" x2="336" y2="360" stroke="#E8A93A" stroke-width="1.5" stroke-dasharray="7 6" opacity="0.85"></line>
+            <rect x="220" y="354" width="300" height="12" rx="2" fill="#E8A93A"></rect>
+            <text x="370" y="342" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" fill="#E6E8E9">зона контроля 3,0 м</text>
+            <line x1="208.5" y1="368" x2="208.5" y2="380" stroke="#E8A93A" stroke-width="1.5"></line>
+            <line x1="549" y1="368" x2="549" y2="380" stroke="#E8A93A" stroke-width="1.5"></line>
+            <text x="208.5" y="398" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="#B9C2C9">кадр 3,5 м</text>
+            <text x="549" y="398" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="#B9C2C9">кадр 5,5 м</text>
+            <line x1="70" y1="50" x2="190" y2="50" stroke="#5B646B" stroke-width="1" stroke-dasharray="4 4"></line>
+            <path d="M140,50 A70,70 0 0 1 115.6,103.1" fill="none" stroke="#E6E8E9" stroke-width="1.5"></path>
+            <text x="148" y="84" font-family="IBM Plex Mono, monospace" font-size="15" fill="#E6E8E9">наклон 49°</text>
+            <path d="M195.9,131.5 A150,150 0 0 1 131.2,186.9" fill="none" stroke="#E8A93A" stroke-width="1.5"></path>
+            <text x="196" y="170" font-family="IBM Plex Mono, monospace" font-size="15" fill="#E8A93A">VFOV 33°</text>
+            <line x1="70" y1="50" x2="70" y2="450" stroke="#5B646B" stroke-width="1.5"></line>
+            <rect x="54" y="40" width="28" height="18" rx="3" fill="#E6E8E9"></rect>
+            <circle cx="82" cy="49" r="4" fill="#0F1215"></circle>
+            <line x1="30" y1="50" x2="30" y2="450" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="24" y1="50" x2="36" y2="50" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="24" y1="450" x2="36" y2="450" stroke="#9AA3AA" stroke-width="1"></line>
+            <text x="22" y="250" transform="rotate(-90 22 250)" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="15" fill="#E6E8E9">H 4,0 м</text>
+            <line x1="620" y1="360" x2="620" y2="450" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="614" y1="360" x2="626" y2="360" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="614" y1="450" x2="626" y2="450" stroke="#9AA3AA" stroke-width="1"></line>
+            <text x="612" y="410" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="14" fill="#B9C2C9">h 0,9 м</text>
+            <line x1="70" y1="476" x2="520" y2="476" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="70" y1="470" x2="70" y2="482" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="220" y1="470" x2="220" y2="482" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="520" y1="470" x2="520" y2="482" stroke="#9AA3AA" stroke-width="1"></line>
+            <line x1="220" y1="366" x2="220" y2="470" stroke="#2E353B" stroke-width="1" stroke-dasharray="3 4"></line>
+            <line x1="520" y1="366" x2="520" y2="470" stroke="#2E353B" stroke-width="1" stroke-dasharray="3 4"></line>
+            <text x="145" y="499" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="#B9C2C9">вынос 1,5 м</text>
+            <text x="370" y="499" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="#B9C2C9">глубина зоны 3,0 м</text>
+          </svg>
+        </figure>
+        <!-- цифры справа от схемы -->
+        <div style="flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 1px; background: #252B30; border: 1px solid #252B30; border-radius: 8px; overflow: hidden;">
+            <sc-for list="{{kpis}}" as="kp" hint-placeholder-count="4">
+              <div style="background: #171B1F; padding: 8px 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+                <span style="font-size: 12px; color: #9AA3AA;">{{kp.l}}</span>
+                <span style="text-align: right;"><strong style="display: block; font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 500;">{{kp.v}}</strong><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #9AA3AA;">{{kp.s}}</span></span>
+              </div>
+            </sc-for>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 13px;">
+            <thead><tr>
+              <th scope="col" style="text-align: left; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 4px 4px; border-bottom: 1px solid #2E353B;">px/м</th>
+              <th scope="col" style="text-align: right; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 4px 4px; border-bottom: 1px solid #2E353B;">поперёк</th>
+              <th scope="col" style="text-align: right; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 4px 4px; border-bottom: 1px solid #2E353B;">вглубь</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding: 4px; border-bottom: 1px solid #252B30;">ближний</td><td style="padding: 4px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">740</td><td style="padding: 4px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">689</td></tr>
+              <tr><td style="padding: 4px;">дальний</td><td style="padding: 4px; text-align: right; font-family: 'IBM Plex Mono', monospace;">466</td><td style="padding: 4px; text-align: right; font-family: 'IBM Plex Mono', monospace;">274</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top: auto; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: #B9C2C9;">
+            <span>DORI: <strong style="color: #E6E8E9; font-weight: 600;">идентификация</strong></span>
+            <span>Выдержка ≤ <strong style="color: #E6E8E9; font-weight: 500; font-family: 'IBM Plex Mono', monospace;">1/371 с</strong></span>
+            <span>Камера: <strong style="color: #E6E8E9; font-weight: 600;">4 Мп · 2560×1440</strong></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Система -->
+    <aside aria-labelledby="sysTitle" style="flex: 1 1 340px; max-width: 440px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+      <section aria-label="Итог по системе" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #2A3036; border-radius: 10px; overflow: hidden;">
+        <h2 id="sysTitle" style="grid-column: 1 / -1; margin: 0; padding: 10px 14px 6px; background: #20262C; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #AEB5BB;">Система</h2>
+        <div style="background: #20262C; padding: 8px 14px 12px; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 12px; color: #AEB5BB;">Камер</span><strong style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500;">20</strong><span style="font-size: 12px; color: #C9CED2;">2 типа</span></div>
+        <div style="background: #20262C; padding: 8px 14px 12px; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 12px; color: #AEB5BB;">Объекты</span><strong style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; background: #4CC38A;"></span>3 из 3</strong><span style="font-size: 12px; color: #C9CED2;">различимы</span></div>
+        <div style="background: #20262C; padding: 8px 14px 12px; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 12px; color: #AEB5BB;">Вычислитель</span><strong style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500;">1 × L40S</strong><span style="font-size: 12px; color: #C9CED2;">$9 000 · оптимум</span></div>
+        <div style="background: #20262C; padding: 8px 14px 12px; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 12px; color: #AEB5BB;">Поток в сеть</span><strong style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500;">32 Мбит/с</strong><span style="font-size: 12px; color: #C9CED2;">порт 1 Гбит/с</span></div>
+      </section>
+
+      <section aria-labelledby="loadTitle" style="flex: 1; background: #171B1F; border: 1px solid #2E353B; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
+        <h2 id="loadTitle" style="margin: 0; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9AA3AA;">Что нагружается</h2>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; align-items: end;">
+          <label style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #9AA3AA;">Видеокарта<select style="min-height: 34px; padding: 4px 8px; border: 1px solid #2E353B; border-radius: 6px; background: #1D2227; color: #E6E8E9;"><option>Авто — оптимум по цене</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #9AA3AA;">Количество<select style="min-height: 34px; padding: 4px 8px; border: 1px solid #2E353B; border-radius: 6px; background: #1D2227; color: #E6E8E9;"><option>Авто</option></select></label>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <svg viewBox="0 0 120 120" width="116" height="116" style="flex: none;" role="img" aria-label="Инференс загружен на 61 процент при пороге 83">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#2A3036" stroke-width="14"></circle>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#E8A93A" stroke-width="14" stroke-dasharray="167.9 133.7" transform="rotate(-90 60 60)"></circle>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#5AA9E6" stroke-width="14" stroke-dasharray="11.1 290.5" stroke-dashoffset="-168.9" transform="rotate(-90 60 60)"></circle>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#4FC1B0" stroke-width="14" stroke-dasharray="3 298.6" stroke-dashoffset="-181" transform="rotate(-90 60 60)"></circle>
+            <line x1="25.8" y1="41.2" x2="10.1" y2="32.5" stroke="#B9C2C9" stroke-width="1.5"></line>
+            <text x="60" y="61" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="20" font-weight="500" fill="#E6E8E9">61%</text>
+            <text x="60" y="77" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="9" fill="#9AA3AA">инференс</text>
+          </svg>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; flex: 1; min-width: 0;">
+            <sc-for list="{{runs}}" as="r" hint-placeholder-count="4">
+              <li style="display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 7px; align-items: baseline;"><span aria-hidden="true" style="{{r.sw}}"></span><span style="min-width: 0;">{{r.name}}<span style="display: block; color: #9AA3AA; font-size: 11.5px;">{{r.who}}</span></span><span style="font-family: 'IBM Plex Mono', monospace;">{{r.pct}}</span></li>
+            </sc-for>
+          </ul>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; border-top: 1px solid #252B30; padding-top: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg viewBox="0 0 84 84" width="58" height="58" style="flex: none;" role="img" aria-label="Декодер загружен на 13 процентов"><circle cx="42" cy="42" r="32" fill="none" stroke="#2A3036" stroke-width="10"></circle><circle cx="42" cy="42" r="32" fill="none" stroke="#8C98A3" stroke-width="10" stroke-dasharray="26.1 175" transform="rotate(-90 42 42)"></circle><text x="42" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" font-weight="500" fill="#E6E8E9">13%</text></svg>
+            <span style="font-size: 12px; color: #9AA3AA;"><strong style="display: block; color: #E6E8E9; font-weight: 500; font-size: 13px;">Декодер</strong>13 из 98 потоков</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg viewBox="0 0 84 84" width="58" height="58" style="flex: none;" role="img" aria-label="Видеопамять занята на 8 процентов"><circle cx="42" cy="42" r="32" fill="none" stroke="#2A3036" stroke-width="10"></circle><circle cx="42" cy="42" r="32" fill="none" stroke="#8C98A3" stroke-width="10" stroke-dasharray="16.1 185" transform="rotate(-90 42 42)"></circle><text x="42" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" font-weight="500" fill="#E6E8E9">8%</text></svg>
+            <span style="font-size: 12px; color: #9AA3AA;"><strong style="display: block; color: #E6E8E9; font-weight: 500; font-size: 13px;">Видеопамять</strong>3,4 из 43 ГБ</span>
+          </div>
+        </div>
+        <p style="margin: auto 0 0; font-size: 12px; color: #9AA3AA;">Запас 39% · узкое место — инференс детектора на тайлах.</p>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Параметры | Объекты -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; align-items: stretch;">
+    <section aria-labelledby="parTitle" style="background: #171B1F; border: 1px solid #2E353B; border-radius: 10px; display: flex; flex-direction: column; min-width: 0;">
+      <div style="padding: 14px 16px 12px; border-bottom: 1px solid #252B30; display: grid; grid-template-columns: minmax(0, 1fr) 84px; gap: 8px 10px; align-items: end;">
+        <h2 id="parTitle" style="grid-column: 1 / -1; margin: 0; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9AA3AA;">Параметры типа</h2>
+        <label style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #9AA3AA;">Название<input value="Рабочее место" style="min-height: 34px; box-sizing: border-box; padding: 5px 8px; border: 1px solid #2E353B; border-radius: 6px; background: #1D2227; color: #E6E8E9; font-weight: 600;"></label>
+        <label style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #9AA3AA;">Камер<input value="10" style="min-height: 34px; box-sizing: border-box; padding: 5px 8px; border: 1px solid #2E353B; border-radius: 6px; background: #1D2227; color: #E6E8E9; font-family: 'IBM Plex Mono', monospace;"></label>
+      </div>
+      <details open="" style="border-bottom: 1px solid #252B30;">
+        <summary style="cursor: pointer; padding: 11px 16px; display: flex; justify-content: space-between; gap: 8px; font-weight: 600;">Геометрия<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 400; color: #9AA3AA;">сбоку · 4 м · 3×3 м</span></summary>
+        <div style="padding: 0 16px 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px;">
+          <sc-for list="{{geo}}" as="fld" hint-placeholder-count="6">
+            <label style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #9AA3AA;">{{fld.l}}<input value="{{fld.v}}" style="min-height: 34px; box-sizing: border-box; padding: 5px 8px; border: 1px solid #2E353B; border-radius: 6px; background: #1D2227; color: #E6E8E9; font-family: 'IBM Plex Mono', monospace;"></label>
+          </sc-for>
+          <div role="radiogroup" aria-label="Положение камеры" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid #2E353B; border-radius: 6px; overflow: hidden;">
+            <label style="display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; background: #3A2E10; font-weight: 600; font-size: 13px;"><input type="radio" name="pos" checked="" style="margin: 0; accent-color: #E8A93A;">Сбоку, под углом</label>
+            <label style="display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; border-left: 1px solid #2E353B; font-size: 13px;"><input type="radio" name="pos" style="margin: 0; accent-color: #E8A93A;">Над центром</label>
+          </div>
+        </div>
+      </details>
+      <details style="border-bottom: 1px solid #252B30;">
+        <summary style="cursor: pointer; padding: 11px 16px; display: flex; justify-content: space-between; gap: 8px; font-weight: 600;">Матрица и объектив<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 400; color: #9AA3AA;">4 Мп · f 5,2 мм</span></summary>
+      </details>
+      <details>
+        <summary style="cursor: pointer; padding: 11px 16px; display: flex; justify-content: space-between; gap: 8px; font-weight: 600;">Поток и качество<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 400; color: #9AA3AA;">12 к/с · H.265</span></summary>
+      </details>
+      <div style="margin-top: auto; padding: 12px 16px; border-top: 1px solid #252B30; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" style="min-height: 34px; padding: 5px 12px; border-radius: 6px; border: 1px solid #2E353B; background: #171B1F; color: #E6E8E9; font-size: 13px;">Дублировать тип</button>
+        <button type="button" style="min-height: 34px; padding: 5px 12px; border-radius: 6px; border: 1px solid #2E353B; background: #171B1F; color: #FF7A6E; font-size: 13px;">Удалить тип</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="objTitle" style="background: #171B1F; border: 1px solid #2E353B; border-radius: 10px; display: flex; flex-direction: column; min-width: 0;">
+      <div style="padding: 14px 16px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #252B30;">
+        <h2 id="objTitle" style="margin: 0; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9AA3AA;">Что ищем и чем</h2>
+        <button type="button" style="min-height: 34px; padding: 5px 12px; border-radius: 6px; border: 1px solid #E6E8E9; background: #E6E8E9; color: #0F1215; font-size: 13px; font-weight: 600;">+ Объект</button>
+      </div>
+      <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 10px;">
+        <sc-for list="{{objs}}" as="o" hint-placeholder-count="2">
+          <article aria-label="{{o.name}}" style="border: 1px solid #2E353B; border-radius: 8px; background: #1D2227; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 10px; border-bottom: 1px solid #2A3036;">
+              <span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; background: #4CC38A; flex: none;"></span>
+              <input value="{{o.name}}" aria-label="Название объекта" style="flex: 1; min-width: 0; min-height: 32px; box-sizing: border-box; padding: 4px 8px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #E6E8E9; font-weight: 600;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9AA3AA; white-space: nowrap;">{{o.dims}}</span>
+              <button type="button" aria-label="Удалить объект" style="width: 32px; height: 32px; padding: 0; border-radius: 6px; border: 1px solid #2E353B; background: #171B1F; color: #9AA3AA; flex: none;">×</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px 10px;">
+              <label style="grid-column: span 2; display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: #9AA3AA;">Модель<select style="min-height: 32px; padding: 4px 6px; border: 1px solid #2E353B; border-radius: 5px; background: #171B1F; color: #E6E8E9; font-size: 13px;"><option>YOLO26s</option></select></label>
+              <label style="display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: #9AA3AA;">Подача<select style="min-height: 32px; padding: 4px 6px; border: 1px solid #2E353B; border-radius: 5px; background: #171B1F; color: #E6E8E9; font-size: 13px;"><option>{{o.feed}}</option></select></label>
+              <label style="display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: #9AA3AA;">Нужно, px<input value="{{o.req}}" style="min-height: 32px; box-sizing: border-box; padding: 4px 6px; border: 1px solid #2E353B; border-radius: 5px; background: #171B1F; color: #E6E8E9; font-family: 'IBM Plex Mono', monospace; font-size: 13px;"></label>
+            </div>
+            <div style="margin: 0 10px 10px; padding: 7px 9px; border-radius: 6px; background: #13301F; font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 3px 12px;">
+              <strong style="color: #4CC38A; font-weight: 600;">Хватает</strong>
+              <span>модель видит <span style="font-family: 'IBM Plex Mono', monospace;">{{o.seen}}</span></span>
+              <span style="color: #B9C2C9;">матрица {{o.raw}} · {{o.how}}</span>
+            </div>
+          </article>
+        </sc-for>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; color: #9AA3AA;">
+          <span>Шаблоны:</span>
+          <button type="button" style="min-height: 32px; padding: 4px 10px; border-radius: 999px; border: 1px solid #2E353B; background: #171B1F; color: #E6E8E9; font-size: 12.5px;">Человек</button>
+          <button type="button" style="min-height: 32px; padding: 4px 10px; border-radius: 999px; border: 1px solid #2E353B; background: #171B1F; color: #E6E8E9; font-size: 12.5px;">Кисть руки</button>
+          <button type="button" style="min-height: 32px; padding: 4px 10px; border-radius: 999px; border: 1px solid #2E353B; background: #171B1F; color: #E6E8E9; font-size: 12.5px;">Ячейка ложемента</button>
+          <a href="#" style="margin-left: auto; font-size: 12.5px; text-decoration: none;">+ Свой детектор</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Сеть и допущения -->
+  <div style="display: flex; flex-wrap: wrap; gap: 14px;">
+    <section aria-labelledby="netTitle" style="flex: 2 1 560px; min-width: 0; background: #171B1F; border: 1px solid #2E353B; border-radius: 10px; padding: 14px 16px;">
+      <h2 id="netTitle" style="margin: 0 0 8px; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9AA3AA;">Сеть и хранение</h2>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;">
+          <thead><tr>
+            <th scope="col" style="text-align: left; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 6px 8px; border-bottom: 1px solid #2E353B;">Тип камеры</th>
+            <th scope="col" style="text-align: right; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 6px 8px; border-bottom: 1px solid #2E353B;">Камер</th>
+            <th scope="col" style="text-align: right; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 6px 8px; border-bottom: 1px solid #2E353B;">Разрешение</th>
+            <th scope="col" style="text-align: right; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 6px 8px; border-bottom: 1px solid #2E353B;">На камеру</th>
+            <th scope="col" style="text-align: right; font-size: 12px; font-weight: 500; color: #9AA3AA; padding: 6px 8px; border-bottom: 1px solid #2E353B;">Всего</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding: 7px 8px; border-bottom: 1px solid #252B30;">Рабочее место</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">10</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">2560×1440</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">1,8 Мбит/с</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">18 Мбит/с</td></tr>
+            <tr><td style="padding: 7px 8px; border-bottom: 1px solid #252B30;">Тележка</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">10</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">2560×1440</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">1,5 Мбит/с</td><td style="padding: 7px 8px; border-bottom: 1px solid #252B30; text-align: right; font-family: 'IBM Plex Mono', monospace;">15 Мбит/с</td></tr>
+            <tr><td style="padding: 7px 8px; font-weight: 600;">Итого</td><td style="padding: 7px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600;">20</td><td style="padding: 7px 8px;"></td><td style="padding: 7px 8px;"></td><td style="padding: 7px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600;">32 Мбит/с</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section aria-labelledby="assTitle" style="flex: 1 1 280px; min-width: 0; background: #171B1F; border: 1px solid #2E353B; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+      <h2 id="assTitle" style="margin: 0; font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9AA3AA;">Допущения</h2>
+      <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #B9C2C9;">
+        <li>Коэффициент реальности 0,60</li>
+        <li>Каталожные модели — замеры Ultralytics на T4</li>
+        <li>Декодер — NVDEC по поколению карты</li>
+        <li>Сервер под карты в цену не входит</li>
+      </ul>
+      <a href="#" style="margin-top: auto; font-size: 13px;">Все формулы</a>
+    </section>
+  </div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sw = (c) => 'width: 10px; height: 10px; border-radius: 2px; align-self: center; background: ' + c + ';';
+    return {
+      kpis: [
+        { l: 'Фокусное', v: '5,2 мм', s: 'подобрано' },
+        { l: 'HFOV × VFOV', v: '55° × 33°', s: 'DFOV ≈ 62°' },
+        { l: 'Наклон', v: '49°', s: 'вниз' },
+        { l: 'Кадр по ширине', v: '3,5–5,5 м', s: 'ближн. – дальн.' }
+      ],
+      runs: [
+        { name: 'YOLO26s · тайлы', who: 'кисть руки', pct: '56%', sw: sw('#E8A93A') },
+        { name: 'YOLO26s · вырез', who: 'человек', pct: '4%', sw: sw('#5AA9E6') },
+        { name: 'YOLO26s · вырез', who: 'тележка: ячейка', pct: '1%', sw: sw('#4FC1B0') },
+        { name: 'Свободно', who: 'порог 83% — черта', pct: '39%', sw: sw('#2A3036') }
+      ],
+      geo: [
+        { l: 'Высота камеры, м', v: '4' },
+        { l: 'Плоскость интереса, м', v: '0,9' },
+        { l: 'Вынос до зоны, м', v: '1,5' },
+        { l: 'Запас кадра, %', v: '10' },
+        { l: 'Глубина зоны, м', v: '3' },
+        { l: 'Ширина зоны, м', v: '3' }
+      ],
+      objs: [
+        { name: 'Человек', dims: '50×30×170', req: '32', feed: 'Вырез', seen: '56×169 px', raw: '195×587 px', how: 'вырез → 640' },
+        { name: 'Кисть руки', dims: '9×18×4', req: '20', feed: 'Тайлы', seen: '26×40 px', raw: '26×40 px', how: '15 тайлов' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
