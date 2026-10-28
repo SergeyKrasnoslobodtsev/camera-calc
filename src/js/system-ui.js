@@ -7,10 +7,12 @@ import {
   withUnit,
 } from "../i18n/index.ts";
 import {
+  bottleneckText,
   feedText,
   modelPxText,
   noteText,
   objectName,
+  portText,
   resolutionLabel,
   sensorPxText,
   verdictHeadline,
@@ -18,12 +20,10 @@ import {
 } from "../i18n/domain-text.ts";
 import { DEG } from "../domain/angles.ts";
 import { computeType } from "../domain/compute-type/index.ts";
+import { computeSystem, systemTotals } from "../domain/compute-system/index.ts";
 import { parseNum } from "../domain/parse-num.ts";
-import {
-  GPU_CATALOG,
-  decodableStreams,
-} from "../domain/references/gpu-catalog.ts";
-import { MODELS, T4_TFLOPS } from "../domain/references/models.ts";
+import { GPU_CATALOG } from "../domain/references/gpu-catalog.ts";
+import { MODELS } from "../domain/references/models.ts";
 import {
   DEFAULT_RESOLUTION,
   RESOLUTIONS,
@@ -72,156 +72,6 @@ const cameraLabel = ({ type }) => {
         RESOLUTIONS[+type.inputs.resolution] ?? DEFAULT_RESOLUTION,
       );
 };
-const modelGflops = (id) => {
-  const model = modelById(id);
-  return model && model.gflops > 0 ? model.gflops : 0;
-};
-// Подбор GPU. Загрузка (load) — доля ресурса GPU, 1 = 100%.
-function computeSystem(results) {
-  const liveResults = results.filter((result) => result.ok && result.count > 0);
-  const efficiency = parseNum(byId("efficiency").value),
-    reserve = Math.max(0, parseNum(byId("reserve").value) || 0) / 100,
-    maxLoad = 1 / (1 + reserve),
-    BATCH_SIZE = 16;
-  const groups = liveResults.flatMap((result) =>
-    result.runGroups.map((group) => ({
-      ...group,
-      typeName: result.type.name,
-      names: group.objects.map(objectName),
-    })),
-  );
-  // движок — модель с конкретным входом; в памяти GPU каждый движок один раз
-  const engines = [
-    ...new Map(
-      groups.map((group) => [`${group.model}|${group.feed.inputSize}`, group]),
-    ).values(),
-  ];
-  const engineMemoryGB = (engine) => {
-    const gflops = modelGflops(engine.model);
-    return gflops
-      ? 0.15 +
-          (BATCH_SIZE * engine.feed.inputSize ** 2 * 3 * 2 * (gflops / 4)) / 1e9
-      : 0.5;
-  };
-  const evaluateGpu = (gpu, count) => {
-    const runs = groups.map((group) => {
-      let framesPerSecond;
-      const model = modelById(group.model);
-      if (!model) return { ...group, bad: true };
-      if (MODELS.includes(model)) {
-        const inputScale = (640 / group.feed.inputSize) ** 2;
-        framesPerSecond =
-          ((1000 / model.latencyMs) * inputScale * gpu.tflops) / T4_TFLOPS;
-      } else {
-        const refGpu = gpuById(model.refGpu) || GPU_CATALOG[0],
-          inputScale = (model.inputSize / group.feed.inputSize) ** 2;
-        framesPerSecond = (model.fps * inputScale * gpu.tflops) / refGpu.tflops;
-      }
-      const capacity = framesPerSecond * efficiency;
-      return { ...group, capacity, gpusNeeded: group.load / capacity };
-    });
-    const inferenceGpus = runs
-      .filter((run) => !run.bad)
-      .reduce((sum, run) => sum + run.gpusNeeded, 0);
-    const decodeGpus = liveResults.reduce(
-      (sum, result) =>
-        sum +
-        result.stream.decodeUnits /
-          (decodableStreams(gpu, result.stream.codec) * efficiency),
-      0,
-    );
-    const memoryUseGB =
-        0.8 +
-        engines.reduce((sum, engine) => sum + engineMemoryGB(engine), 0) +
-        liveResults.reduce(
-          (sum, result) =>
-            sum + Math.ceil(result.count / count) * 20 * result.stream.frameGB,
-          0,
-        ),
-      memoryCapGB = gpu.memoryGB * (gpu.jetson ? 0.6 : 0.9);
-    const inferenceLoad = inferenceGpus / count,
-      decodeLoad = decodeGpus / count,
-      memoryLoad = memoryUseGB / memoryCapGB,
-      worstLoad = Math.max(inferenceLoad, decodeLoad, memoryLoad);
-    return {
-      gpu,
-      count,
-      runs,
-      inferenceGpus,
-      decodeGpus,
-      inferenceLoad,
-      decodeLoad,
-      memoryLoad,
-      memoryUseGB,
-      memoryCapGB,
-      worstLoad,
-      ok: inferenceLoad <= maxLoad && decodeLoad <= maxLoad && memoryLoad <= 1,
-      cost: count * priceOf(gpu),
-      bottleneck: t(
-        inferenceLoad >= decodeLoad && inferenceLoad >= memoryLoad
-          ? "bottleneckInference"
-          : decodeLoad >= memoryLoad
-            ? "bottleneckDecoder"
-            : "bottleneckMemory",
-      ),
-    };
-  };
-  const candidates = allGpus().filter(isOn),
-    evaluations = [];
-  candidates.forEach((gpu) => {
-    for (let count = 1; count <= 4; count++)
-      evaluations.push(evaluateGpu(gpu, count));
-  });
-  // подходящие варианты от дешёвых к дорогим, при равной цене — по мощности
-  const fitting = evaluations
-    .filter((option) => option.ok)
-    .sort(
-      (a, b) => a.cost - b.cost || a.count * a.gpu.tdpW - b.count * b.gpu.tdpW,
-    );
-  const optimum = fitting[0],
-    gpuChoice = byId("gpu").value,
-    countChoice = byId("gpuCount").value;
-  const leastLoaded = (options) =>
-    options.length
-      ? options.reduce((a, b) => (a.worstLoad < b.worstLoad ? a : b))
-      : evaluateGpu(allGpus()[0], 1);
-  let chosen;
-  if (gpuChoice === "auto" && countChoice === "auto")
-    chosen = optimum || leastLoaded(evaluations);
-  else if (gpuChoice === "auto") {
-    const count = +countChoice;
-    chosen =
-      fitting.find((option) => option.count === count) ||
-      leastLoaded(evaluations.filter((option) => option.count === count));
-  } else {
-    const gpu = gpuById(gpuChoice) || GPU_CATALOG[0];
-    if (countChoice === "auto") {
-      chosen = null;
-      for (let count = 1; count <= 4 && !chosen; count++) {
-        const option = evaluateGpu(gpu, count);
-        if (option.ok) chosen = option;
-      }
-      chosen = chosen || evaluateGpu(gpu, 4);
-    } else chosen = evaluateGpu(gpu, +countChoice);
-  }
-  const decodeUnitsTotal = liveResults.reduce(
-    (sum, result) => sum + result.stream.decodeUnits,
-    0,
-  );
-  return {
-    liveResults,
-    efficiency,
-    maxLoad,
-    reserve,
-    chosen,
-    optimum,
-    engines,
-    decodeUnitsTotal,
-    groups,
-    noCandidates: !candidates.length,
-  };
-}
-
 // ---------- отрисовка типа
 const STATUS_TEXT = STR.status;
 const capitalize = (text) =>
@@ -392,10 +242,10 @@ function ring(cx, cy, r, width, segments, mark) {
 }
 
 // ---------- система
-function renderSystem(results, system) {
+function renderSystem(results, system, totals) {
   const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
+  const { cameraCount, totalMbps, cameraCost } = totals;
   const percent = (share) => formatNumber(share * 100, 0) + "%";
-  const cameraCount = results.reduce((sum, result) => sum + result.count, 0);
   const allObjects = results.flatMap((result) =>
       result.ok ? result.objects.filter((item) => item.valid) : [],
     ),
@@ -410,20 +260,6 @@ function renderSystem(results, system) {
   const smallest = allObjects.length
     ? allObjects.reduce((a, b) => (a.modelPx < b.modelPx ? a : b))
     : null;
-  const totalMbps = liveResults.reduce(
-    (sum, result) => sum + result.stream.bitrateMbps * result.count,
-    0,
-  );
-  const cameraCost = results.reduce((sum, result) => {
-    const camera = cameraById(result.type.inputs.camera);
-    return sum + (camera && camera.price > 0 ? camera.price * result.count : 0);
-  }, 0);
-  const port =
-    totalMbps * 1.3 < 900
-      ? withUnit(1, "gbps")
-      : totalMbps * 1.3 < 9000
-        ? withUnit(10, "gbps")
-        : "> " + withUnit(10, "gbps");
   byId("systemKpis").innerHTML = [
     [
       t("systemCameras"),
@@ -464,7 +300,7 @@ function renderSystem(results, system) {
     [
       t("systemNetwork"),
       `${withUnit(formatNumber(totalMbps, 0), "mbps")}`,
-      t("systemPort", port, formatNumber(cameraCount * 15.4, 0)),
+      t("systemPort", portText(totals.port), formatNumber(totals.poeW, 0)),
     ],
   ]
     .map(
@@ -475,10 +311,10 @@ function renderSystem(results, system) {
   // дашборд
   const overloaded = chosen.inferenceLoad > maxLoad;
   byId("loadSummary").innerHTML = liveResults.length
-    ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", chosen.bottleneck)}`
+    ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", bottleneckText(chosen.bottleneck))}`
     : "";
   const runs = chosen.runs
-    .filter((run) => !run.bad)
+    .filter((run) => !run.unknownModel)
     .map((run) => ({ ...run, share: run.gpusNeeded / chosen.count }))
     .sort((a, b) => b.share - a.share);
   const RUN_COLORS = [
@@ -508,7 +344,7 @@ function renderSystem(results, system) {
     ? shown
         .map(
           (run, i) =>
-            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
+            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.objects.map(objectName).join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
         )
         .join("") +
       (rest.length
@@ -556,8 +392,7 @@ function renderSystem(results, system) {
       : "";
   byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
-  const archiveDays = parseNum(byId("archiveDays").value) || 0,
-    archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
+  const { archiveDays, archiveTB } = totals;
   byId("networkTable").innerHTML =
     `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
     results
@@ -575,7 +410,6 @@ function renderSystem(results, system) {
   )
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
-  return { cameraCount, totalMbps, cameraCost };
 }
 
 // ---------- шаблоны: видеокарты
@@ -890,8 +724,15 @@ export function calcAll() {
   syncFormUI(store.cameraTypes[activeIndex], results[activeIndex]);
   renderType(results[activeIndex]);
   renderTabs(results);
-  const system = computeSystem(results);
-  const systemTotals = renderSystem(results, system);
+  const settings = readSystemSettings();
+  const gpus = allGpus().map((gpu) => ({ ...gpu, price: priceOf(gpu) }));
+  const system = computeSystem(results, settings, {
+    gpus,
+    candidates: gpus.filter(isOn),
+    detectors: store.customDetectors,
+  });
+  const totals = systemTotals(results, settings, allCameras());
+  renderSystem(results, system, totals);
   const chosen = system.chosen;
   report = [
     t("appTitle"),
@@ -936,11 +777,9 @@ export function calcAll() {
     "\n" +
       t(
         "reportSystem",
-        systemTotals.cameraCount,
-        formatNumber(systemTotals.totalMbps, 0),
-        systemTotals.cameraCost
-          ? "$" + formatNumber(systemTotals.cameraCost, 0)
-          : "",
+        totals.cameraCount,
+        formatNumber(totals.totalMbps, 0),
+        totals.cameraCost ? "$" + formatNumber(totals.cameraCost, 0) : "",
       ),
     system.liveResults.length
       ? t("reportCompute", {
@@ -961,10 +800,12 @@ export function calcAll() {
   save();
 }
 const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
+const readSystemSettings = () =>
+  Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value]));
 const snapshot = () => ({
   types: store.cameraTypes,
   activeTypeId: store.activeTypeId,
-  system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
+  system: readSystemSettings(),
   gpuPrices: store.gpuPrices,
   gpuEnabled: store.gpuEnabled,
   customGpus: store.customGpus,
