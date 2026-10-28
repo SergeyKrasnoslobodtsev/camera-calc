@@ -65,3 +65,8 @@ assert.ok([...w3.document.getElementById('cam').options].some(o=>o.text.startsWi
 assert.strictEqual(T3('sysKpis'),T('sysKpis'),'после импорта другие итоги');
 assert.strictEqual(w3.eval('report'),w.eval('report'),'после импорта другой отчёт');
 console.log('export/import: ok');
+// unreadable file
+const inp=d.getElementById('impFile'),kept=w.localStorage.getItem('camcalc3');d.getElementById('toast').textContent='';
+Object.defineProperty(inp,'files',{value:[{text:()=>Promise.reject(new Error('NotReadableError'))}]});
+inp.dispatchEvent(new w.Event('change'));
+setTimeout(()=>{assert.strictEqual(T('toast'),'Не удалось прочитать файл');assert.strictEqual(w.localStorage.getItem('camcalc3'),kept);console.log('unreadable file: ok')},0);
