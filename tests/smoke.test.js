@@ -312,8 +312,13 @@ assert.ok(
     d6.querySelector("#formulas>[lang=ru]").hidden,
   "EN: не тот блок формул",
 );
+const builtinRu = [
+  ...w.eval("[...RU.typeNames, ...RU.presetNames, RU.objDefault]"),
+];
 const userNames = [
-  ...ex.types.flatMap((T) => [T.name, ...T.objs.map((o) => o.name)]),
+  ...ex.types
+    .flatMap((T) => [T.name, ...T.objs.map((o) => o.name)])
+    .filter((n) => !builtinRu.includes(n)),
   ...ex.cams.map((c) => c.name),
   ...ex.dets.map((x) => x.name),
   ...ex.custom.map((g) => g.name),
@@ -359,6 +364,25 @@ assert.strictEqual(
 );
 assert.strictEqual(w8.document.getElementById("tplBtn").textContent, "Шаблоны");
 console.log("lang persists: ok");
+// language: example names saved on RU are shown in EN after switching
+const w10 = page(page(null, "ru").localStorage.getItem("camcalc3"), "en"),
+  d10 = w10.document;
+const shown = [
+  w10.eval("report"),
+  d10.getElementById("tabs").textContent,
+  d10.getElementById("tName").value,
+  ...[...d10.querySelectorAll("[id^=on-]")].map((el) => el.value),
+].join("\n");
+assert.deepStrictEqual(
+  builtinRu.filter((n) => shown.includes(n)),
+  [],
+  "EN: встроенные названия на русском",
+);
+assert.ok(
+  ["Workstation", "Cart", "Person"].every((n) => shown.includes(n)),
+  "EN: нет встроенных названий на английском",
+);
+console.log("example names follow lang: ok");
 // numbers: EN price "1,999" is not read as 1.999
 const w9 = page(null, "en"),
   d9 = w9.document;
