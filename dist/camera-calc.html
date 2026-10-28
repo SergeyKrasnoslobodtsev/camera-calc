@@ -1005,7 +1005,8 @@ $("delBtn").addEventListener("click",()=>{const b=$("delBtn");
 function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,1800)}
 $("resetBtn").addEventListener("click",()=>{TYPES=defTypes();ACT=TYPES[0].id;$("kr").value="0.6";$("resv").value="20";$("days").value="0";$("gcnt").value="auto";PRICE={};ON={};buildGpuSelect();$("gpu").value="auto";writeForm(act());calcAll();toast("Загружен пример. Свои шаблоны сохранены")});
 $("copyBtn").addEventListener("click",()=>{navigator.clipboard.writeText(report).then(()=>toast("Отчёт скопирован"),()=>toast("Не удалось скопировать: браузер запретил доступ к буферу"))});
-$("expBtn").addEventListener("click",()=>{const a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(snap(),null,1));a.download="camera-calc.json";a.click()});
+$("expBtn").addEventListener("click",()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(snap(),null,1)],{type:"application/json"}));a.download="camera-calc.json";
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),0)});
 function importText(s){let st;try{st=JSON.parse(s)}catch(e){}
   const isObj=x=>x&&typeof x==="object";
   if(!isObj(st)||!Array.isArray(st.types)||!st.types.length||!st.types.every(t=>isObj(t)&&typeof t.name==="string"&&(t.objs==null||Array.isArray(t.objs)&&t.objs.every(isObj)))
