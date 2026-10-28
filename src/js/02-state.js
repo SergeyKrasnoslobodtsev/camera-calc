@@ -155,7 +155,7 @@ function writeForm(type) {
       `input[name="placement"][value="${type.inputs.placement}"]`,
     ) || byId("pSide");
   placementRadio.checked = true;
-  renderObjs();
+  renderObjects();
 }
 function readForm() {
   const type = activeType();

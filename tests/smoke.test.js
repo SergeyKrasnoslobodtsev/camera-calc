@@ -107,7 +107,7 @@ console.log(
   d.getElementById("sensorWidth").value,
 );
 console.log("VERDICT cam:", T("verdict"));
-const om = d.getElementById("om-1");
+const om = d.getElementById("obj-model-1");
 const det = [...om.options].find((o) => o.text === "Детектор деталей");
 om.value = det.value;
 om.dispatchEvent(new w.Event("change", { bubbles: true }));
@@ -376,7 +376,7 @@ const shown = [
   w10.eval("report"),
   d10.getElementById("tabs").textContent,
   d10.getElementById("tName").value,
-  ...[...d10.querySelectorAll("[id^=on-]")].map((el) => el.value),
+  ...[...d10.querySelectorAll("[id^=obj-name-]")].map((el) => el.value),
 ].join("\n");
 assert.deepStrictEqual(
   builtinRu.filter((n) => shown.includes(n)),

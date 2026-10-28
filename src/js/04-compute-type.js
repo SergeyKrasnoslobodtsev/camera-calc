@@ -10,7 +10,7 @@ function computeType(type) {
     mode = inputs.lensMode,
     placement = inputs.placement,
     count = Math.max(0, Math.round(parseNum(type.count)) || 0);
-  const camera = camById(inputs.camera);
+  const camera = cameraById(inputs.camera);
   let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1];
   const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   let s =

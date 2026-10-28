@@ -1824,7 +1824,7 @@ function writeForm(type) {
       `input[name="placement"][value="${type.inputs.placement}"]`,
     ) || byId("pSide");
   placementRadio.checked = true;
-  renderObjs();
+  renderObjects();
 }
 function readForm() {
   const type = activeType();
@@ -1842,7 +1842,7 @@ function readForm() {
     "side";
 }
 // ---------- шаблоны камер и детекторов
-const CAM_BUILTIN = [
+const BUILTIN_CAMERAS = [
   {
     id: "k4",
     name: STR.camBuiltin.k4,
@@ -1862,115 +1862,120 @@ const CAM_BUILTIN = [
     focalMax: 12,
   },
 ];
-let CAMS_C = [],
-  DETS = [];
-const allCams = () => [...CAM_BUILTIN, ...CAMS_C];
-const camById = (id) => allCams().find((c) => c.id === id);
+let customCameras = [],
+  customDetectors = [];
+const allCameras = () => [...BUILTIN_CAMERAS, ...customCameras];
+const cameraById = (id) => allCameras().find((camera) => camera.id === id);
 const modelById = (id) =>
-  MODELS.find((x) => x.id === id) || DETS.find((x) => x.id === id);
-function buildCamSelect() {
-  const sel = byId("camera"),
-    cur = sel.value;
-  sel.innerHTML =
+  MODELS.find((model) => model.id === id) ||
+  customDetectors.find((detector) => detector.id === id);
+function buildCameraSelect() {
+  const select = byId("camera"),
+    current = select.value;
+  select.innerHTML =
     `<option value="">${t("camManual")}</option>` +
-    allCams()
-      .map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
+    allCameras()
+      .map(
+        (camera) =>
+          `<option value="${camera.id}">${escapeHtml(camera.name)}</option>`,
+      )
       .join("");
-  sel.value = camById(cur) ? cur : "";
+  select.value = cameraById(current) ? current : "";
 }
 
 // ---------- карточки объектов
-function renderObjs() {
-  const T = activeType(),
-    L = byId("objList");
-  L.innerHTML = "";
-  T.objects.forEach((o, i) => {
-    if (!modelById(o.model)) o.model = "y26s";
-    const r = document.createElement("article");
-    r.className = "ocard";
-    const mopts =
-      `<optgroup label="${t("ultralytics")}">${MODELS.map((mm) => `<option value="${mm.id}">${mm.name}</option>`).join("")}</optgroup>` +
-      (DETS.length
-        ? `<optgroup label="${t("ownDets")}">${DETS.map((d) => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join("")}</optgroup>`
+function renderObjects() {
+  const type = activeType(),
+    list = byId("objList");
+  list.innerHTML = "";
+  type.objects.forEach((obj, i) => {
+    if (!modelById(obj.model)) obj.model = "y26s";
+    const card = document.createElement("article");
+    card.className = "ocard";
+    const modelOptions =
+      `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` +
+      (customDetectors.length
+        ? `<optgroup label="${t("ownDets")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
-    r.innerHTML = `<div class="ohdr"><span class="dot" id="odot-${i}" aria-hidden="true"></span><input id="on-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
+    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="ow-${i}">${t("ow")}</label><input id="ow-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="od-${i}">${t("od")}</label><input id="od-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="oz-${i}">${t("oz")}</label><input id="oz-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="oq-${i}">${t("oq")}</label><input id="oq-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f c2"><label for="om-${i}">${t("om")}</label><select id="om-${i}">${mopts}</select></div>
-        <div class="f"><label for="of-${i}">${t("of")}</label><select id="of-${i}">${Object.entries(
+        <div class="f"><label for="obj-width-${i}">${t("ow")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-length-${i}">${t("od")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-height-${i}">${t("oz")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-required-${i}">${t("oq")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f c2"><label for="obj-model-${i}">${t("om")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
+        <div class="f"><label for="obj-feed-${i}">${t("of")}</label><select id="obj-feed-${i}">${Object.entries(
           FEEDS,
         )
-          .map(([k, v]) => `<option value="${k}">${v}</option>`)
+          .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
-        <div class="f"><label for="oi-${i}">${t("oi")}</label><select id="oi-${i}" style="font-family:var(--mono)">${INPUTS.map((x) => `<option>${x}</option>`).join("")}</select></div>
-        <div class="f" id="ovw-${i}"><label for="ov-${i}">${t("ov")}</label><input id="ov-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-input-${i}">${t("oi")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
+        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("ov")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
       </div>
-      <div class="ores" id="ores-${i}" aria-live="polite"></div>`;
-    L.append(r);
-    const sync = () => {
-      byId(`ovw-${i}`).hidden = o.feed !== "tiles";
+      <div class="ores" id="obj-result-${i}" aria-live="polite"></div>`;
+    list.append(card);
+    // перекрытие задаётся только для тайлов
+    const syncOverlapBox = () => {
+      byId(`obj-overlap-box-${i}`).hidden = obj.feed !== "tiles";
     };
     [
-      ["on", "name"],
-      ["ow", "width"],
-      ["od", "length"],
-      ["oz", "height"],
-      ["oq", "requiredPx"],
-      ["ov", "overlap"],
-    ].forEach(([p, f]) => {
-      const el = byId(`${p}-${i}`);
-      el.value = o[f] ?? "";
-      el.addEventListener("input", (e) => {
-        e.stopPropagation();
-        o[f] = e.target.value;
-        if (f === "name") delete o.nameKey;
+      ["obj-name", "name"],
+      ["obj-width", "width"],
+      ["obj-length", "length"],
+      ["obj-height", "height"],
+      ["obj-required", "requiredPx"],
+      ["obj-overlap", "overlap"],
+    ].forEach(([idPrefix, field]) => {
+      const input = byId(`${idPrefix}-${i}`);
+      input.value = obj[field] ?? "";
+      input.addEventListener("input", (event) => {
+        event.stopPropagation();
+        obj[field] = event.target.value;
+        if (field === "name") delete obj.nameKey;
         calcAll();
       });
     });
     [
-      ["om", "model"],
-      ["of", "feed"],
-      ["oi", "inputSize"],
-    ].forEach(([p, f]) => {
-      const el = byId(`${p}-${i}`);
-      el.value = String(o[f]);
-      if (el.selectedIndex < 0) el.selectedIndex = 0;
-      el.addEventListener("change", (e) => {
-        e.stopPropagation();
-        o[f] = e.target.value;
-        sync();
+      ["obj-model", "model"],
+      ["obj-feed", "feed"],
+      ["obj-input", "inputSize"],
+    ].forEach(([idPrefix, field]) => {
+      const select = byId(`${idPrefix}-${i}`);
+      select.value = String(obj[field]);
+      if (select.selectedIndex < 0) select.selectedIndex = 0;
+      select.addEventListener("change", (event) => {
+        event.stopPropagation();
+        obj[field] = event.target.value;
+        syncOverlapBox();
         calcAll();
       });
     });
-    r.querySelector(".odel").addEventListener("click", () => {
-      T.objects.splice(i, 1);
-      renderObjs();
+    card.querySelector(".odel").addEventListener("click", () => {
+      type.objects.splice(i, 1);
+      renderObjects();
       calcAll();
     });
-    sync();
+    syncOverlapBox();
   });
 }
-function syncFormUI(T, result) {
-  const inputs = T.inputs,
-    cam = camById(inputs.camera);
+function syncFormUI(type, result) {
+  const inputs = type.inputs,
+    camera = cameraById(inputs.camera);
   byId("fBox").hidden = inputs.lensMode !== "focal";
   byId("aBox").hidden = inputs.lensMode !== "angle";
   byId("L0box").hidden = inputs.placement === "top";
-  const sv = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
-  byId("resolution").disabled = !!cam;
-  byId("sensor").disabled = !!cam;
-  byId("ppBox").hidden = !!cam || sv !== "pp";
-  byId("sensorWidth").readOnly = !!cam || sv !== null;
-  if (result && isFinite(result.s) && (cam || sv !== null))
+  const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
+  byId("resolution").disabled = !!camera;
+  byId("sensor").disabled = !!camera;
+  byId("ppBox").hidden = !!camera || sensorPreset !== "pp";
+  byId("sensorWidth").readOnly = !!camera || sensorPreset !== null;
+  if (result && isFinite(result.s) && (camera || sensorPreset !== null))
     byId("sensorWidth").value = +result.s.toFixed(2);
   byId("sumGeo").textContent =
     `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${U(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("sumCam").textContent =
-    (cam
-      ? `${cam.Nw} × ${cam.Nh}`
+    (camera
+      ? `${camera.Nw} × ${camera.Nh}`
       : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
           " · ",
         )[0]) +
@@ -1990,7 +1995,7 @@ function computeType(type) {
     mode = inputs.lensMode,
     placement = inputs.placement,
     count = Math.max(0, Math.round(parseNum(type.count)) || 0);
-  const camera = camById(inputs.camera);
+  const camera = cameraById(inputs.camera);
   let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1];
   const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   let s =
@@ -2687,8 +2692,8 @@ function renderType(result) {
     )
     .join("");
   result.objs.forEach((o, i) => {
-    const el = byId(`ores-${i}`),
-      dt = byId(`odot-${i}`);
+    const el = byId(`obj-result-${i}`),
+      dt = byId(`obj-dot-${i}`);
     if (!el) return;
     if (o.bad) {
       el.className = "ores";
@@ -2803,7 +2808,7 @@ function renderSystem(Rs, S) {
     : null;
   const mbTot = live.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
   const camCost = Rs.reduce((s, r) => {
-    const c = camById(r.type.inputs.camera);
+    const c = cameraById(r.type.inputs.camera);
     return s + (c && c.price > 0 ? c.price * r.count : 0);
   }, 0);
   const port =
@@ -2993,7 +2998,7 @@ function renderGpuView() {
       customGpus = customGpus.filter((g) => g.id !== id);
       delete gpuPrices[id];
       delete gpuEnabled[id];
-      DETS.forEach((d) => {
+      customDetectors.forEach((d) => {
         if (d.refGpu === id) d.refGpu = "5090";
       });
       buildGpuSelect();
@@ -3061,10 +3066,10 @@ function renderCamView() {
     cameraTypes
       .filter((t) => t.inputs.camera === id)
       .reduce((s, t) => s + (Math.round(parseNum(t.count)) || 0), 0);
-  byId("camTitle").textContent = t("camTitle", allCams().length);
+  byId("camTitle").textContent = t("camTitle", allCameras().length);
   byId("camTbl").innerHTML =
     `<tr>${STR.cHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
-    allCams()
+    allCameras()
       .map(
         (c) =>
           `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(formatNumber(c.sensorWidth, 2), "mm")}</td><td>${c.focalMin > 0 ? (c.focalMin === c.focalMax ? U(formatNumber(c.focalMin, 1), "mm") : U(formatNumber(c.focalMin, 1) + "–" + formatNumber(c.focalMax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + formatNumber(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${escapeHtml(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
@@ -3073,11 +3078,11 @@ function renderCamView() {
   document.querySelectorAll("[data-delc]").forEach((b) =>
     b.addEventListener("click", () => {
       const id = b.dataset.delc;
-      CAMS_C = CAMS_C.filter((c) => c.id !== id);
+      customCameras = customCameras.filter((c) => c.id !== id);
       cameraTypes.forEach((t) => {
         if (t.inputs.camera === id) t.inputs.camera = "";
       });
-      buildCamSelect();
+      buildCameraSelect();
       writeForm(activeType());
       renderCamView();
       calcAll();
@@ -3112,7 +3117,7 @@ byId("camForm").addEventListener("submit", (e) => {
     return;
   }
   er.hidden = true;
-  CAMS_C.push({
+  customCameras.push({
     id: "m" + uid(),
     name,
     Nw,
@@ -3133,7 +3138,7 @@ byId("camForm").addEventListener("submit", (e) => {
     "ncFmax",
     "ncPrice",
   ].forEach((id) => (byId(id).value = ""));
-  buildCamSelect();
+  buildCameraSelect();
   renderCamView();
   save();
   toast(t("cAdded", name));
@@ -3141,7 +3146,10 @@ byId("camForm").addEventListener("submit", (e) => {
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
-  byId("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
+  byId("detTitle").textContent = t(
+    "detTitle",
+    MODELS.length + customDetectors.length,
+  );
   const used = (id) =>
     cameraTypes.reduce(
       (s, t) => s + t.objects.filter((o) => o.model === id).length,
@@ -3149,11 +3157,13 @@ function renderDetView() {
     );
   byId("detTbl").innerHTML =
     `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
-    (DETS.length
-      ? DETS.map((d) => {
-          const rg = gpuById(d.refGpu);
-          return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inputSize}</td><td>${d.gflops > 0 ? formatNumber(d.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
-        }).join("")
+    (customDetectors.length
+      ? customDetectors
+          .map((d) => {
+            const rg = gpuById(d.refGpu);
+            return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inputSize}</td><td>${d.gflops > 0 ? formatNumber(d.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
+          })
+          .join("")
       : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
     MODELS.map(
       (m) =>
@@ -3162,13 +3172,13 @@ function renderDetView() {
   document.querySelectorAll("[data-deld]").forEach((b) =>
     b.addEventListener("click", () => {
       const id = b.dataset.deld;
-      DETS = DETS.filter((d) => d.id !== id);
+      customDetectors = customDetectors.filter((d) => d.id !== id);
       cameraTypes.forEach((t) =>
         t.objects.forEach((o) => {
           if (o.model === id) o.model = "y26s";
         }),
       );
-      renderObjs();
+      renderObjects();
       renderDetView();
       calcAll();
       toast(t("dDeleted"));
@@ -3195,7 +3205,7 @@ byId("detForm").addEventListener("submit", (e) => {
     return;
   }
   er.hidden = true;
-  DETS.push({
+  customDetectors.push({
     id: "d" + uid(),
     name,
     fps,
@@ -3205,7 +3215,7 @@ byId("detForm").addEventListener("submit", (e) => {
     custom: true,
   });
   ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
-  renderObjs();
+  renderObjects();
   renderDetView();
   calcAll();
   toast(t("dAdded", name));
@@ -3296,8 +3306,8 @@ const snap = () => ({
   gpuPrices,
   gpuEnabled,
   customGpus,
-  customCameras: CAMS_C,
-  customDetectors: DETS,
+  customCameras,
+  customDetectors,
   light: document.documentElement.classList.contains("light"),
 });
 let stale = false;
@@ -3331,11 +3341,11 @@ function load() {
         .filter((g) => g && g.id && g.name && g.tflops > 0)
         .map((g) => ({ ...g, custom: true }));
     if (Array.isArray(st.customCameras))
-      CAMS_C = st.customCameras
+      customCameras = st.customCameras
         .filter((c) => c && c.id && c.Nw > 0 && c.Nh > 0 && c.sensorWidth > 0)
         .map((c) => ({ ...c, custom: true }));
     if (Array.isArray(st.customDetectors))
-      DETS = st.customDetectors
+      customDetectors = st.customDetectors
         .filter((d) => d && d.id && d.fps > 0)
         .map((d) => ({ ...d, custom: true }));
     if (st.gpuPrices && typeof st.gpuPrices === "object")
@@ -3344,7 +3354,7 @@ function load() {
       gpuEnabled = st.gpuEnabled;
     if (st.light) setTheme(true);
     buildGpuSelect();
-    buildCamSelect();
+    buildCameraSelect();
     if (Array.isArray(st.types) && st.types.length) {
       cameraTypes = st.types.map((t) => ({
         id: t.id || uid(),
@@ -3407,7 +3417,7 @@ OBJECT_PRESETS.forEach((pr) => {
   b.textContent = pr[0];
   b.addEventListener("click", () => {
     activeType().objects.push(makeObject(pr));
-    renderObjs();
+    renderObjects();
     calcAll();
   });
   byId("presets").append(b);
@@ -3427,11 +3437,11 @@ byId("addObj").addEventListener("click", () => {
       "objDefault",
     ]),
   );
-  renderObjs();
+  renderObjects();
   calcAll();
   const i = T.objects.length - 1;
-  byId(`on-${i}`).focus();
-  byId(`on-${i}`).select();
+  byId(`obj-name-${i}`).focus();
+  byId(`obj-name-${i}`).select();
 });
 byId("frm").addEventListener("input", () => {
   readForm();
@@ -3832,7 +3842,7 @@ window.addEventListener("resize", () => {
   if (!pop.hidden) hideTip();
 });
 buildGpuSelect();
-buildCamSelect();
+buildCameraSelect();
 load();
 writeForm(activeType());
 calcAll();

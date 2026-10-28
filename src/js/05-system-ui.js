@@ -179,8 +179,8 @@ function renderType(result) {
     )
     .join("");
   result.objs.forEach((o, i) => {
-    const el = byId(`ores-${i}`),
-      dt = byId(`odot-${i}`);
+    const el = byId(`obj-result-${i}`),
+      dt = byId(`obj-dot-${i}`);
     if (!el) return;
     if (o.bad) {
       el.className = "ores";
@@ -295,7 +295,7 @@ function renderSystem(Rs, S) {
     : null;
   const mbTot = live.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
   const camCost = Rs.reduce((s, r) => {
-    const c = camById(r.type.inputs.camera);
+    const c = cameraById(r.type.inputs.camera);
     return s + (c && c.price > 0 ? c.price * r.count : 0);
   }, 0);
   const port =
@@ -485,7 +485,7 @@ function renderGpuView() {
       customGpus = customGpus.filter((g) => g.id !== id);
       delete gpuPrices[id];
       delete gpuEnabled[id];
-      DETS.forEach((d) => {
+      customDetectors.forEach((d) => {
         if (d.refGpu === id) d.refGpu = "5090";
       });
       buildGpuSelect();
@@ -553,10 +553,10 @@ function renderCamView() {
     cameraTypes
       .filter((t) => t.inputs.camera === id)
       .reduce((s, t) => s + (Math.round(parseNum(t.count)) || 0), 0);
-  byId("camTitle").textContent = t("camTitle", allCams().length);
+  byId("camTitle").textContent = t("camTitle", allCameras().length);
   byId("camTbl").innerHTML =
     `<tr>${STR.cHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
-    allCams()
+    allCameras()
       .map(
         (c) =>
           `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(formatNumber(c.sensorWidth, 2), "mm")}</td><td>${c.focalMin > 0 ? (c.focalMin === c.focalMax ? U(formatNumber(c.focalMin, 1), "mm") : U(formatNumber(c.focalMin, 1) + "–" + formatNumber(c.focalMax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + formatNumber(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${escapeHtml(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
@@ -565,11 +565,11 @@ function renderCamView() {
   document.querySelectorAll("[data-delc]").forEach((b) =>
     b.addEventListener("click", () => {
       const id = b.dataset.delc;
-      CAMS_C = CAMS_C.filter((c) => c.id !== id);
+      customCameras = customCameras.filter((c) => c.id !== id);
       cameraTypes.forEach((t) => {
         if (t.inputs.camera === id) t.inputs.camera = "";
       });
-      buildCamSelect();
+      buildCameraSelect();
       writeForm(activeType());
       renderCamView();
       calcAll();
@@ -604,7 +604,7 @@ byId("camForm").addEventListener("submit", (e) => {
     return;
   }
   er.hidden = true;
-  CAMS_C.push({
+  customCameras.push({
     id: "m" + uid(),
     name,
     Nw,
@@ -625,7 +625,7 @@ byId("camForm").addEventListener("submit", (e) => {
     "ncFmax",
     "ncPrice",
   ].forEach((id) => (byId(id).value = ""));
-  buildCamSelect();
+  buildCameraSelect();
   renderCamView();
   save();
   toast(t("cAdded", name));
@@ -633,7 +633,10 @@ byId("camForm").addEventListener("submit", (e) => {
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
-  byId("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
+  byId("detTitle").textContent = t(
+    "detTitle",
+    MODELS.length + customDetectors.length,
+  );
   const used = (id) =>
     cameraTypes.reduce(
       (s, t) => s + t.objects.filter((o) => o.model === id).length,
@@ -641,11 +644,13 @@ function renderDetView() {
     );
   byId("detTbl").innerHTML =
     `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
-    (DETS.length
-      ? DETS.map((d) => {
-          const rg = gpuById(d.refGpu);
-          return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inputSize}</td><td>${d.gflops > 0 ? formatNumber(d.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
-        }).join("")
+    (customDetectors.length
+      ? customDetectors
+          .map((d) => {
+            const rg = gpuById(d.refGpu);
+            return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inputSize}</td><td>${d.gflops > 0 ? formatNumber(d.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
+          })
+          .join("")
       : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
     MODELS.map(
       (m) =>
@@ -654,13 +659,13 @@ function renderDetView() {
   document.querySelectorAll("[data-deld]").forEach((b) =>
     b.addEventListener("click", () => {
       const id = b.dataset.deld;
-      DETS = DETS.filter((d) => d.id !== id);
+      customDetectors = customDetectors.filter((d) => d.id !== id);
       cameraTypes.forEach((t) =>
         t.objects.forEach((o) => {
           if (o.model === id) o.model = "y26s";
         }),
       );
-      renderObjs();
+      renderObjects();
       renderDetView();
       calcAll();
       toast(t("dDeleted"));
@@ -687,7 +692,7 @@ byId("detForm").addEventListener("submit", (e) => {
     return;
   }
   er.hidden = true;
-  DETS.push({
+  customDetectors.push({
     id: "d" + uid(),
     name,
     fps,
@@ -697,7 +702,7 @@ byId("detForm").addEventListener("submit", (e) => {
     custom: true,
   });
   ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
-  renderObjs();
+  renderObjects();
   renderDetView();
   calcAll();
   toast(t("dAdded", name));
@@ -788,8 +793,8 @@ const snap = () => ({
   gpuPrices,
   gpuEnabled,
   customGpus,
-  customCameras: CAMS_C,
-  customDetectors: DETS,
+  customCameras,
+  customDetectors,
   light: document.documentElement.classList.contains("light"),
 });
 let stale = false;
@@ -823,11 +828,11 @@ function load() {
         .filter((g) => g && g.id && g.name && g.tflops > 0)
         .map((g) => ({ ...g, custom: true }));
     if (Array.isArray(st.customCameras))
-      CAMS_C = st.customCameras
+      customCameras = st.customCameras
         .filter((c) => c && c.id && c.Nw > 0 && c.Nh > 0 && c.sensorWidth > 0)
         .map((c) => ({ ...c, custom: true }));
     if (Array.isArray(st.customDetectors))
-      DETS = st.customDetectors
+      customDetectors = st.customDetectors
         .filter((d) => d && d.id && d.fps > 0)
         .map((d) => ({ ...d, custom: true }));
     if (st.gpuPrices && typeof st.gpuPrices === "object")
@@ -836,7 +841,7 @@ function load() {
       gpuEnabled = st.gpuEnabled;
     if (st.light) setTheme(true);
     buildGpuSelect();
-    buildCamSelect();
+    buildCameraSelect();
     if (Array.isArray(st.types) && st.types.length) {
       cameraTypes = st.types.map((t) => ({
         id: t.id || uid(),
@@ -899,7 +904,7 @@ OBJECT_PRESETS.forEach((pr) => {
   b.textContent = pr[0];
   b.addEventListener("click", () => {
     activeType().objects.push(makeObject(pr));
-    renderObjs();
+    renderObjects();
     calcAll();
   });
   byId("presets").append(b);
@@ -919,11 +924,11 @@ byId("addObj").addEventListener("click", () => {
       "objDefault",
     ]),
   );
-  renderObjs();
+  renderObjects();
   calcAll();
   const i = T.objects.length - 1;
-  byId(`on-${i}`).focus();
-  byId(`on-${i}`).select();
+  byId(`obj-name-${i}`).focus();
+  byId(`obj-name-${i}`).select();
 });
 byId("frm").addEventListener("input", () => {
   readForm();
