@@ -70,3 +70,7 @@ const inp=d.getElementById('impFile'),kept=w.localStorage.getItem('camcalc3');d.
 Object.defineProperty(inp,'files',{value:[{text:()=>Promise.reject(new Error('NotReadableError'))}]});
 inp.dispatchEvent(new w.Event('change'));
 setTimeout(()=>{assert.strictEqual(T('toast'),'Не удалось прочитать файл');assert.strictEqual(w.localStorage.getItem('camcalc3'),kept);console.log('unreadable file: ok')},0);
+// invalid select values on load
+const w4=page(JSON.stringify({...ex,gl:{...ex.gl,gcnt:'8',gpu:'nope'}}));
+assert.deepStrictEqual([w4.document.getElementById('gcnt').value,w4.document.getElementById('gpu').value],['auto','auto'],'недопустимое значение списка после загрузки');
+console.log('invalid select on load: ok');

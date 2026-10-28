@@ -981,7 +981,7 @@ function load(){try{const st=JSON.parse(localStorage.getItem("camcalc3")||"null"
   if(Array.isArray(st.types)&&st.types.length){
     TYPES=st.types.map(t=>({id:t.id||uid(),name:t.name,count:t.count,v:{...DEF_V,...t.v},objs:(t.objs||[]).map(o=>({...mkObj([o.name,o.w,o.d,o.z,o.req,modelById(o.model)?o.model:"y26s",o.feed,o.inp]),ov:o.ov??20}))}));
     ACT=TYPES.some(t=>t.id===st.act)?st.act:TYPES[0].id}
-  if(st.gl)GL_IDS.forEach(id=>{if(st.gl[id]!=null)$(id).value=st.gl[id]});if(![...$("gpu").options].some(o=>o.value===$("gpu").value))$("gpu").value="auto";
+  if(st.gl)GL_IDS.forEach(id=>{const el=$(id);if(st.gl[id]!=null)el.value=st.gl[id];if(el.tagName==="SELECT"&&el.selectedIndex<0)el.value="auto"});
 }catch(e){}}
 
 // ---------- события
