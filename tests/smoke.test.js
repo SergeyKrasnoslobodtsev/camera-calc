@@ -74,3 +74,10 @@ setTimeout(()=>{assert.strictEqual(T('toast'),'Не удалось прочит�
 const w4=page(JSON.stringify({...ex,gl:{...ex.gl,gcnt:'8',gpu:'nope'}}));
 assert.deepStrictEqual([w4.document.getElementById('gcnt').value,w4.document.getElementById('gpu').value],['auto','auto'],'недопустимое значение списка после загрузки');
 console.log('invalid select on load: ok');
+// data changed in another tab
+const w5=page(exp),d5=w5.document,other=JSON.stringify({...ex,types:[{...ex.types[0],name:'Из другой вкладки'}]});
+w5.localStorage.setItem('camcalc3',other);w5.dispatchEvent(new w5.StorageEvent('storage',{key:'camcalc3'}));
+d5.getElementById('kr').value='0.5';d5.getElementById('kr').dispatchEvent(new w5.Event('input',{bubbles:true}));
+assert.strictEqual(w5.localStorage.getItem('camcalc3'),other,'вкладка затёрла данные другой вкладки');
+assert.strictEqual(d5.getElementById('toast').textContent,'Данные изменены в другой вкладке. Обновите страницу');
+console.log('stale tab: ok');

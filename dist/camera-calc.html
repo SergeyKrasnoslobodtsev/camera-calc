@@ -970,7 +970,9 @@ function calcAll(){
 }
 const GL_IDS=["kr","resv","days","gpu","gcnt"];
 const snap=()=>({types:TYPES,act:ACT,gl:Object.fromEntries(GL_IDS.map(id=>[id,$(id).value])),price:PRICE,on:ON,custom:CUSTOM,cams:CAMS_C,dets:DETS,light:document.documentElement.classList.contains("light")});
-function save(){try{localStorage.setItem("camcalc3",JSON.stringify(snap()))}catch(e){}}
+let stale=false;const STALE_MSG="Данные изменены в другой вкладке. Обновите страницу";
+addEventListener("storage",e=>{if(e.key==="camcalc3"){stale=true;toast(STALE_MSG)}});
+function save(){if(stale){toast(STALE_MSG);return}try{localStorage.setItem("camcalc3",JSON.stringify(snap()))}catch(e){}}
 function load(){try{const st=JSON.parse(localStorage.getItem("camcalc3")||"null");if(!st)return;
   if(Array.isArray(st.custom))CUSTOM=st.custom.filter(g=>g&&g.id&&g.name&&g.tf>0).map(g=>({...g,custom:true}));
   if(Array.isArray(st.cams))CAMS_C=st.cams.filter(c=>c&&c.id&&c.Nw>0&&c.Nh>0&&c.sw>0).map(c=>({...c,custom:true}));
