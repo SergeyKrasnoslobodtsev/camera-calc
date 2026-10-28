@@ -1,6 +1,6 @@
 const $=id=>document.getElementById(id);
 const R=Math.PI/180;
-const fmt=(x,d=1)=>isFinite(x)?x.toLocaleString("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−"):"—";
+const fmt=(x,d=1)=>isFinite(x)?x.toLocaleString(LANG==="en"?"en-US":"ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d}).replace("-","−"):"—";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const P=x=>parseFloat(String(x??"").replace(",","."));
 const uid=()=>Math.random().toString(36).slice(2,9);

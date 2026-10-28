@@ -4,7 +4,8 @@ from pathlib import Path
 root = Path(__file__).resolve().parent
 src = root / "src"
 layout = (src / "layout.html").read_text(encoding="utf-8")
-formulas = (src / "formulas.html").read_text(encoding="utf-8").rstrip("\n")
+formulas = "".join(f'<div lang="{lang}">' + (src / name).read_text(encoding="utf-8").rstrip("\n") + '</div>'
+                   for lang, name in [("ru", "formulas.html"), ("en", "formulas.en.html")])
 slot = '<div class="formulas" id="formulas"></div>'
 assert slot in layout, "в layout.html нет места под формулы"
 layout = layout.replace(slot, '<div class="formulas" id="formulas">' + formulas + '</div>')
