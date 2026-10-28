@@ -1810,24 +1810,6 @@ function readForm() {
   T.v.pos =
     (document.querySelector('input[name="pos"]:checked') || {}).value || "side";
 }
-function syncFormUI(T, Rt) {
-  const v = T.v;
-  $("fBox").hidden = v.mode !== "f";
-  $("aBox").hidden = v.mode !== "a";
-  $("L0box").hidden = v.pos === "top";
-  const sv = (SENS[+v.sens] || SENS[3])[1];
-  $("ppBox").hidden = sv !== "pp";
-  $("sw").readOnly = sv !== null;
-  if (sv !== null && Rt && isFinite(Rt.s)) $("sw").value = +Rt.s.toFixed(2);
-  $("sumGeo").textContent =
-    `${v.pos === "top" ? "сверху" : "сбоку"}, ${v.H} м, ${v.Wz}×${v.Dz} м`;
-  $("sumCam").textContent =
-    (RES[+v.res] || RES[1])[0].split(" · ")[0] +
-    (Rt && !Rt.err ? `, f ${fmt(Rt.f, 1)} мм` : "");
-  $("sumObj").textContent = `${T.objs.length} шт.`;
-  $("sumStr").textContent =
-    `${v.fps} к/с, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
-}
 // ---------- шаблоны камер и детекторов
 const CAM_BUILTIN = [
   {
@@ -2405,21 +2387,19 @@ function computeSystem(Rs) {
   };
   const evalGPU = (g, n) => {
     const mods = groups.map((o) => {
-      let base, srcTxt;
+      let base;
       const m = modelById(o.model);
       if (!m) return { ...o, bad: true };
       if (MODELS.includes(m)) {
         const inScale = (640 / o.fi.inp) ** 2;
         base = ((1000 / m.ms) * inScale * g.tf) / T4TF;
-        srcTxt = `T4 ${fmt(1000 / m.ms, 0)} к/с${inScale !== 1 ? ` × (640/${o.fi.inp})²` : ""} × ${fmt(g.tf / T4TF, 2)}`;
       } else {
         const rg = gpuById(m.ref) || CATALOG[0],
           inScale = (m.inp / o.fi.inp) ** 2;
         base = (m.fps * inScale * g.tf) / rg.tf;
-        srcTxt = `замер ${fmt(m.fps, 0)} к/с на ${rg.name}${inScale !== 1 ? ` × (${m.inp}/${o.fi.inp})²` : ""}${rg.id !== g.id ? ` × ${fmt(g.tf / rg.tf, 2)}` : ""}`;
       }
       const cap = base * kr;
-      return { ...o, cap, gpu: o.load / cap, srcTxt };
+      return { ...o, cap, gpu: o.load / cap };
     });
     const inf = mods.filter((o) => !o.bad).reduce((s, o) => s + o.gpu, 0);
     const dec = live.reduce(

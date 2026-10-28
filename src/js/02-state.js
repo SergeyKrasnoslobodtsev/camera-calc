@@ -150,21 +150,3 @@ function readForm() {
   T.v.pos =
     (document.querySelector('input[name="pos"]:checked') || {}).value || "side";
 }
-function syncFormUI(T, Rt) {
-  const v = T.v;
-  $("fBox").hidden = v.mode !== "f";
-  $("aBox").hidden = v.mode !== "a";
-  $("L0box").hidden = v.pos === "top";
-  const sv = (SENS[+v.sens] || SENS[3])[1];
-  $("ppBox").hidden = sv !== "pp";
-  $("sw").readOnly = sv !== null;
-  if (sv !== null && Rt && isFinite(Rt.s)) $("sw").value = +Rt.s.toFixed(2);
-  $("sumGeo").textContent =
-    `${v.pos === "top" ? "сверху" : "сбоку"}, ${v.H} м, ${v.Wz}×${v.Dz} м`;
-  $("sumCam").textContent =
-    (RES[+v.res] || RES[1])[0].split(" · ")[0] +
-    (Rt && !Rt.err ? `, f ${fmt(Rt.f, 1)} мм` : "");
-  $("sumObj").textContent = `${T.objs.length} шт.`;
-  $("sumStr").textContent =
-    `${v.fps} к/с, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
-}

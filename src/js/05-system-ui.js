@@ -22,21 +22,19 @@ function computeSystem(Rs) {
   };
   const evalGPU = (g, n) => {
     const mods = groups.map((o) => {
-      let base, srcTxt;
+      let base;
       const m = modelById(o.model);
       if (!m) return { ...o, bad: true };
       if (MODELS.includes(m)) {
         const inScale = (640 / o.fi.inp) ** 2;
         base = ((1000 / m.ms) * inScale * g.tf) / T4TF;
-        srcTxt = `T4 ${fmt(1000 / m.ms, 0)} к/с${inScale !== 1 ? ` × (640/${o.fi.inp})²` : ""} × ${fmt(g.tf / T4TF, 2)}`;
       } else {
         const rg = gpuById(m.ref) || CATALOG[0],
           inScale = (m.inp / o.fi.inp) ** 2;
         base = (m.fps * inScale * g.tf) / rg.tf;
-        srcTxt = `замер ${fmt(m.fps, 0)} к/с на ${rg.name}${inScale !== 1 ? ` × (${m.inp}/${o.fi.inp})²` : ""}${rg.id !== g.id ? ` × ${fmt(g.tf / rg.tf, 2)}` : ""}`;
       }
       const cap = base * kr;
-      return { ...o, cap, gpu: o.load / cap, srcTxt };
+      return { ...o, cap, gpu: o.load / cap };
     });
     const inf = mods.filter((o) => !o.bad).reduce((s, o) => s + o.gpu, 0);
     const dec = live.reduce(
