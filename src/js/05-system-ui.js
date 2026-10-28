@@ -6,8 +6,8 @@ const gfOf = (id) => {
 };
 function computeSystem(Rs) {
   const live = Rs.filter((r) => !r.err && r.count > 0);
-  const kr = parseNum(byId("kr").value),
-    resv = Math.max(0, parseNum(byId("resv").value) || 0) / 100,
+  const kr = parseNum(byId("efficiency").value),
+    resv = Math.max(0, parseNum(byId("reserve").value) || 0) / 100,
     uMax = 1 / (1 + resv),
     BATCH = 16;
   const groups = live.flatMap((r) =>
@@ -83,7 +83,7 @@ function computeSystem(Rs) {
     .sort((a, b) => a.cost - b.cost || a.n * a.g.tdp - b.n * b.g.tdp);
   const best = okAll[0],
     gSel = byId("gpu").value,
-    cSel = byId("gcnt").value;
+    cSel = byId("gpuCount").value;
   const minWorst = (arr) =>
     arr.length
       ? arr.reduce((a, b) => (a.worst < b.worst ? a : b))
@@ -293,7 +293,7 @@ function renderSystem(Rs, S) {
     : null;
   const mbTot = live.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
   const camCost = Rs.reduce((s, r) => {
-    const c = camById(r.type.v.cam);
+    const c = camById(r.type.inputs.camera);
     return s + (c && c.price > 0 ? c.price * r.count : 0);
   }, 0);
   const port =
@@ -411,7 +411,7 @@ function renderSystem(Rs, S) {
       : "";
   byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
-  const days = parseNum(byId("days").value) || 0,
+  const days = parseNum(byId("archiveDays").value) || 0,
     tb = (((mbTot * 1e6) / 8) * 86400 * days) / 1e12;
   byId("netTbl").innerHTML =
     `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((k) => `<th>${t(k)}</th>`).join("")}</tr>` +
@@ -548,7 +548,7 @@ byId("newForm").addEventListener("submit", (e) => {
 // ---------- шаблоны: камеры
 function renderCamView() {
   const used = (id) =>
-    TYPES.filter((t) => t.v.cam === id).reduce(
+    TYPES.filter((t) => t.inputs.camera === id).reduce(
       (s, t) => s + (Math.round(parseNum(t.count)) || 0),
       0,
     );
@@ -566,7 +566,7 @@ function renderCamView() {
       const id = b.dataset.delc;
       CAMS_C = CAMS_C.filter((c) => c.id !== id);
       TYPES.forEach((t) => {
-        if (t.v.cam === id) t.v.cam = "";
+        if (t.inputs.camera === id) t.inputs.camera = "";
       });
       buildCamSelect();
       writeForm(act());
@@ -632,7 +632,10 @@ byId("camForm").addEventListener("submit", (e) => {
 function renderDetView() {
   byId("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
   const used = (id) =>
-    TYPES.reduce((s, t) => s + t.objs.filter((o) => o.model === id).length, 0);
+    TYPES.reduce(
+      (s, t) => s + t.objects.filter((o) => o.model === id).length,
+      0,
+    );
   byId("detTbl").innerHTML =
     `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
     (DETS.length
@@ -650,7 +653,7 @@ function renderDetView() {
       const id = b.dataset.deld;
       DETS = DETS.filter((d) => d.id !== id);
       TYPES.forEach((t) =>
-        t.objs.forEach((o) => {
+        t.objects.forEach((o) => {
           if (o.model === id) o.model = "y26s";
         }),
       );
@@ -774,11 +777,11 @@ function calcAll() {
   ].join("\n");
   save();
 }
-const GL_IDS = ["kr", "resv", "days", "gpu", "gcnt"];
+const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
 const snap = () => ({
   types: TYPES,
-  act: ACT,
-  gl: Object.fromEntries(GL_IDS.map((id) => [id, byId(id).value])),
+  activeTypeId: ACT,
+  system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
   price: gpuPrices,
   on: gpuEnabled,
   custom: customGpus,
@@ -789,7 +792,7 @@ const snap = () => ({
 let stale = false;
 const STALE_MSG = t("stale");
 addEventListener("storage", (e) => {
-  if (e.key === "camcalc3") {
+  if (e.key === "camcalc4") {
     stale = true;
     toast(STALE_MSG);
   }
@@ -800,12 +803,12 @@ function save() {
     return;
   }
   try {
-    localStorage.setItem("camcalc3", JSON.stringify(snap()));
+    localStorage.setItem("camcalc4", JSON.stringify(snap()));
   } catch (e) {}
 }
 function load() {
   try {
-    const st = JSON.parse(localStorage.getItem("camcalc3") || "null");
+    const st = JSON.parse(localStorage.getItem("camcalc4") || "null");
     if (!st) return;
     // старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
     const dot = (x) => (typeof x === "string" ? x.replace(",", ".") : x);
@@ -835,28 +838,30 @@ function load() {
         name: shownName(t),
         nameKey: t.nameKey,
         count: dot(t.count),
-        v: dotAll({ ...DEF_V, ...t.v }),
-        objs: (t.objs || []).map((o) => ({
+        inputs: dotAll({ ...DEF_V, ...t.inputs }),
+        objects: (t.objects || []).map((o) => ({
           ...mkObj([
             shownName(o),
-            dot(o.w),
-            dot(o.d),
-            dot(o.z),
-            dot(o.req),
+            dot(o.width),
+            dot(o.length),
+            dot(o.height),
+            dot(o.requiredPx),
             modelById(o.model) ? o.model : "y26s",
             o.feed,
-            o.inp,
+            o.inputSize,
             o.nameKey,
           ]),
-          ov: dot(o.ov ?? 20),
+          overlap: dot(o.overlap ?? 20),
         })),
       }));
-      ACT = TYPES.some((t) => t.id === st.act) ? st.act : TYPES[0].id;
+      ACT = TYPES.some((t) => t.id === st.activeTypeId)
+        ? st.activeTypeId
+        : TYPES[0].id;
     }
-    if (st.gl)
-      GL_IDS.forEach((id) => {
+    if (st.system)
+      SYSTEM_IDS.forEach((id) => {
         const el = byId(id);
-        if (st.gl[id] != null) el.value = dot(st.gl[id]);
+        if (st.system[id] != null) el.value = dot(st.system[id]);
         if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = "auto";
       });
   } catch (e) {}
@@ -888,7 +893,7 @@ PRESETS.forEach((pr) => {
   b.className = "chip";
   b.textContent = pr[0];
   b.addEventListener("click", () => {
-    act().objs.push(mkObj(pr));
+    act().objects.push(mkObj(pr));
     renderObjs();
     calcAll();
   });
@@ -896,12 +901,12 @@ PRESETS.forEach((pr) => {
 });
 byId("addObj").addEventListener("click", () => {
   const T = act();
-  T.objs.push(
+  T.objects.push(
     mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
   );
   renderObjs();
   calcAll();
-  const i = T.objs.length - 1;
+  const i = T.objects.length - 1;
   byId(`on-${i}`).focus();
   byId(`on-${i}`).select();
 });
@@ -914,7 +919,7 @@ byId("frm").addEventListener("change", () => {
   calcAll();
 });
 byId("frm").addEventListener("submit", (e) => e.preventDefault());
-GL_IDS.forEach((id) => {
+SYSTEM_IDS.forEach((id) => {
   byId(id).addEventListener("input", calcAll);
   byId(id).addEventListener("change", calcAll);
 });
@@ -966,10 +971,10 @@ function toast(t) {
 byId("resetBtn").addEventListener("click", () => {
   TYPES = defTypes();
   ACT = TYPES[0].id;
-  byId("kr").value = "0.6";
-  byId("resv").value = "20";
-  byId("days").value = "0";
-  byId("gcnt").value = "auto";
+  byId("efficiency").value = "0.6";
+  byId("reserve").value = "20";
+  byId("archiveDays").value = "0";
+  byId("gpuCount").value = "auto";
   gpuPrices = {};
   gpuEnabled = {};
   buildGpuSelect();
@@ -1009,7 +1014,8 @@ function importText(s) {
       (t) =>
         isObj(t) &&
         typeof t.name === "string" &&
-        (t.objs == null || (Array.isArray(t.objs) && t.objs.every(isObj))),
+        (t.objects == null ||
+          (Array.isArray(t.objects) && t.objects.every(isObj))),
     ) ||
     !["custom", "cams", "dets"].every((k) => Array.isArray(st[k])) ||
     !isObj(st.price) ||
@@ -1019,7 +1025,7 @@ function importText(s) {
     return;
   }
   try {
-    localStorage.setItem("camcalc3", JSON.stringify(st));
+    localStorage.setItem("camcalc4", JSON.stringify(st));
   } catch (e) {
     toast(t("saveFail"));
     return;

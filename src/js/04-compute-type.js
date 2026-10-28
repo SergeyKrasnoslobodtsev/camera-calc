@@ -6,38 +6,38 @@
 //   fpx — фокусное расстояние в пикселях; φ (phi) — угол луча к плоскости; D — расстояние до точки, м;
 //   δ (delta) — угол луча к оптической оси; z — глубина по оптической оси, м; k — поправка объектива.
 function computeType(type) {
-  const inputs = type.v,
-    mode = inputs.mode,
-    placement = inputs.pos,
+  const inputs = type.inputs,
+    mode = inputs.lensMode,
+    placement = inputs.placement,
     count = Math.max(0, Math.round(parseNum(type.count)) || 0);
-  const camera = camById(inputs.cam);
-  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.res] || RESOLUTIONS[1];
-  const sensorPreset = (SENSORS[+inputs.sens] || SENSORS[3])[1];
+  const camera = camById(inputs.camera);
+  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1];
+  const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   let s =
     typeof sensorPreset === "number"
       ? sensorPreset
       : sensorPreset === "pp"
-        ? (parseNum(inputs.pp) * Nw) / 1000
-        : parseNum(inputs.sw);
+        ? (parseNum(inputs.pixelPitch) * Nw) / 1000
+        : parseNum(inputs.sensorWidth);
   if (camera) {
     cameraLabel = camera.name;
     Nw = camera.Nw;
     Nh = camera.Nh;
     s = camera.sw;
   }
-  const H = parseNum(inputs.H),
-    h = parseNum(inputs.h),
-    zoneStart = parseNum(inputs.L0),
-    zoneDepth = parseNum(inputs.Dz),
-    zoneWidth = parseNum(inputs.Wz),
-    margin = (parseNum(inputs.mg) || 0) / 100,
-    k = parseNum(inputs.k),
-    speed = parseNum(inputs.v),
-    blurPx = parseNum(inputs.blur);
+  const H = parseNum(inputs.cameraHeight),
+    h = parseNum(inputs.planeHeight),
+    zoneStart = parseNum(inputs.zoneStart),
+    zoneDepth = parseNum(inputs.zoneDepth),
+    zoneWidth = parseNum(inputs.zoneWidth),
+    margin = (parseNum(inputs.margin) || 0) / 100,
+    k = parseNum(inputs.lensFactor),
+    speed = parseNum(inputs.speed),
+    blurPx = parseNum(inputs.blurPx);
   const fps = parseNum(inputs.fps),
     bpp = +inputs.codec,
     sceneFactor = +inputs.scene,
-    analyticsFpsSet = parseNum(inputs.afps),
+    analyticsFpsSet = parseNum(inputs.analyticsFps),
     analyticsFps = Math.min(analyticsFpsSet, fps),
     codec = bpp < 0.055 ? "h265" : "h264";
   const Hc = H - h;
@@ -98,8 +98,8 @@ function computeType(type) {
           hfov = 2 * Math.atan(sensorWidth / (2 * f));
         }
       }
-    } else if (mode === "f") {
-      f = parseNum(inputs.fmm);
+    } else if (mode === "focal") {
+      f = parseNum(inputs.focalLength);
       hfov = 2 * Math.atan(sensorWidth / (2 * f));
     } else {
       hfov = parseNum(inputs.hfov) * DEG;
@@ -120,8 +120,8 @@ function computeType(type) {
     };
   };
   let fit;
-  if (inputs.orient === "land") fit = fitOrientation(false);
-  else if (inputs.orient === "port") fit = fitOrientation(true);
+  if (inputs.orientation === "landscape") fit = fitOrientation(false);
+  else if (inputs.orientation === "portrait") fit = fitOrientation(true);
   else {
     const landscape = fitOrientation(false),
       portrait = fitOrientation(true);
@@ -241,13 +241,13 @@ function computeType(type) {
             : t("feedFull", frameWidthPx, frameHeightPx, inputSize),
     };
   };
-  const objs = type.objs.map((obj) => {
-    const width = parseNum(obj.w) / 100,
-      length = parseNum(obj.d) / 100,
-      height = parseNum(obj.z) / 100,
-      requiredPx = parseNum(obj.req),
-      inputSize = parseNum(obj.inp) || 640;
-    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.ov));
+  const objs = type.objects.map((obj) => {
+    const width = parseNum(obj.width) / 100,
+      length = parseNum(obj.length) / 100,
+      height = parseNum(obj.height) / 100,
+      requiredPx = parseNum(obj.requiredPx),
+      inputSize = parseNum(obj.inputSize) || 640;
+    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.overlap));
     if (
       ![width, length, height].every((x) => isFinite(x) && x >= 0) ||
       Math.max(width, length, height) <= 0 ||
@@ -448,7 +448,7 @@ function computeType(type) {
         obj.model,
         obj.feed,
         obj.feedInfo.inputSize,
-        obj.feed === "tiles" ? obj.ov : "",
+        obj.feed === "tiles" ? obj.overlap : "",
         obj.model === "custom" ? obj.fps + "@" + obj.ref : "",
       ].join("|");
       let group = groups.find((existing) => existing.key === key);

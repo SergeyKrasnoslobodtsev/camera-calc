@@ -26,7 +26,7 @@ const camById = (id) => allCams().find((c) => c.id === id);
 const modelById = (id) =>
   MODELS.find((x) => x.id === id) || DETS.find((x) => x.id === id);
 function buildCamSelect() {
-  const sel = byId("cam"),
+  const sel = byId("camera"),
     cur = sel.value;
   sel.innerHTML =
     `<option value="">${t("camManual")}</option>` +
@@ -41,7 +41,7 @@ function renderObjs() {
   const T = act(),
     L = byId("objList");
   L.innerHTML = "";
-  T.objs.forEach((o, i) => {
+  T.objects.forEach((o, i) => {
     if (!modelById(o.model)) o.model = "y26s";
     const r = document.createElement("article");
     r.className = "ocard";
@@ -72,11 +72,11 @@ function renderObjs() {
     };
     [
       ["on", "name"],
-      ["ow", "w"],
-      ["od", "d"],
-      ["oz", "z"],
-      ["oq", "req"],
-      ["ov", "ov"],
+      ["ow", "width"],
+      ["od", "length"],
+      ["oz", "height"],
+      ["oq", "requiredPx"],
+      ["ov", "overlap"],
     ].forEach(([p, f]) => {
       const el = byId(`${p}-${i}`);
       el.value = o[f] ?? "";
@@ -90,7 +90,7 @@ function renderObjs() {
     [
       ["om", "model"],
       ["of", "feed"],
-      ["oi", "inp"],
+      ["oi", "inputSize"],
     ].forEach(([p, f]) => {
       const el = byId(`${p}-${i}`);
       el.value = String(o[f]);
@@ -103,7 +103,7 @@ function renderObjs() {
       });
     });
     r.querySelector(".odel").addEventListener("click", () => {
-      T.objs.splice(i, 1);
+      T.objects.splice(i, 1);
       renderObjs();
       calcAll();
     });
@@ -111,25 +111,27 @@ function renderObjs() {
   });
 }
 function syncFormUI(T, result) {
-  const v = T.v,
-    cam = camById(v.cam);
-  byId("fBox").hidden = v.mode !== "f";
-  byId("aBox").hidden = v.mode !== "a";
-  byId("L0box").hidden = v.pos === "top";
-  const sv = (SENSORS[+v.sens] || SENSORS[3])[1];
-  byId("res").disabled = !!cam;
-  byId("sens").disabled = !!cam;
+  const inputs = T.inputs,
+    cam = camById(inputs.camera);
+  byId("fBox").hidden = inputs.lensMode !== "focal";
+  byId("aBox").hidden = inputs.lensMode !== "angle";
+  byId("L0box").hidden = inputs.placement === "top";
+  const sv = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
+  byId("resolution").disabled = !!cam;
+  byId("sensor").disabled = !!cam;
   byId("ppBox").hidden = !!cam || sv !== "pp";
-  byId("sw").readOnly = !!cam || sv !== null;
+  byId("sensorWidth").readOnly = !!cam || sv !== null;
   if (result && isFinite(result.s) && (cam || sv !== null))
-    byId("sw").value = +result.s.toFixed(2);
+    byId("sensorWidth").value = +result.s.toFixed(2);
   byId("sumGeo").textContent =
-    `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(v.H), 1), "m")}, ${formatNumber(parseNum(v.Wz), 1)} × ${U(formatNumber(parseNum(v.Dz), 1), "m")}`;
+    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${U(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("sumCam").textContent =
     (cam
       ? `${cam.Nw} × ${cam.Nh}`
-      : (RESOLUTIONS[+v.res] || RESOLUTIONS[1])[0].split(" · ")[0]) +
+      : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
+          " · ",
+        )[0]) +
     (result && !result.err ? `, f ${U(formatNumber(result.f, 1), "mm")}` : "");
   byId("sumStr").textContent =
-    `${U(formatNumber(parseNum(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
+    `${U(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }

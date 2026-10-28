@@ -16,7 +16,7 @@ function openPage(savedState) {
       window.scrollTo = () => {};
       window.localStorage.setItem("camcalc-lang", "ru");
       if (savedState)
-        window.localStorage.setItem("camcalc3", JSON.stringify(savedState));
+        window.localStorage.setItem("camcalc4", JSON.stringify(savedState));
     },
   }).window;
 }
@@ -54,14 +54,14 @@ const example = JSON.parse(openPage().eval("JSON.stringify(snap())"));
 const [sideType, topType] = example.types;
 const withType = (type, changes) => ({
   ...type,
-  v: { ...type.v, ...changes.v },
-  objs: changes.objs || type.objs,
+  inputs: { ...type.inputs, ...changes.inputs },
+  objects: changes.objects || type.objects,
 });
 
 const configs = {
   "Пример, вид сбоку": example,
 
-  "Пример, вид сверху": { ...example, act: topType.id },
+  "Пример, вид сверху": { ...example, activeTypeId: topType.id },
 
   "Своя камера и свой детектор": {
     ...example,
@@ -89,8 +89,11 @@ const configs = {
     ],
     types: [
       withType(sideType, {
-        v: { cam: "mtest" },
-        objs: [sideType.objs[0], { ...sideType.objs[1], model: "dtest" }],
+        inputs: { camera: "mtest" },
+        objects: [
+          sideType.objects[0],
+          { ...sideType.objects[1], model: "dtest" },
+        ],
       }),
       topType,
     ],
@@ -98,22 +101,32 @@ const configs = {
 
   "Ручной объектив, H.264, запись видео": {
     ...example,
-    gl: { ...example.gl, kr: "0.5", resv: "30", days: "30" },
+    system: {
+      ...example.system,
+      efficiency: "0.5",
+      reserve: "30",
+      archiveDays: "30",
+    },
     types: [
       withType(sideType, {
-        v: {
-          mode: "f",
-          fmm: "8",
-          orient: "port",
-          res: "5",
-          sens: "7",
-          pp: "2.0",
+        inputs: {
+          lensMode: "focal",
+          focalLength: "8",
+          orientation: "portrait",
+          resolution: "5",
+          sensor: "7",
+          pixelPitch: "2.0",
           codec: "0.07",
           scene: "1.5",
         },
-        objs: [
-          { ...sideType.objs[0], model: "y11m", feed: "full", inp: 1280 },
-          sideType.objs[1],
+        objects: [
+          {
+            ...sideType.objects[0],
+            model: "y11m",
+            feed: "full",
+            inputSize: 1280,
+          },
+          sideType.objects[1],
         ],
       }),
       topType,
@@ -122,8 +135,8 @@ const configs = {
 
   "Свои GPU, угол обзора вручную": {
     ...example,
-    act: topType.id,
-    gl: { ...example.gl, gpu: "cgpu", gcnt: "2" },
+    activeTypeId: topType.id,
+    system: { ...example.system, gpu: "cgpu", gpuCount: "2" },
     custom: [
       {
         id: "cgpu",
@@ -149,13 +162,16 @@ const configs = {
     ],
     price: { l40s: "7000" },
     on: { 5090: false, cjet: true },
-    types: [sideType, withType(topType, { v: { mode: "a", hfov: "70" } })],
+    types: [
+      sideType,
+      withType(topType, { inputs: { lensMode: "angle", hfov: "70" } }),
+    ],
   },
 
   // высота камеры ниже высоты объекта: расчёт типа невозможен
   "Ошибка ввода": {
     ...example,
-    types: [withType(sideType, { v: { H: "0.5" } }), topType],
+    types: [withType(sideType, { inputs: { cameraHeight: "0.5" } }), topType],
   },
 };
 

@@ -288,7 +288,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   </div>
   <div class="dsel">
     <div class="f"><label for="gpu" data-t="gpu"></label><select id="gpu"></select></div>
-    <div class="f"><label for="gcnt" data-t="gcnt"></label><select id="gcnt"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+    <div class="f"><label for="gpuCount" data-t="gcnt"></label><select id="gpuCount"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
   </div>
   <div class="dsum" id="dsum"></div>
   <div class="donutbox">
@@ -330,16 +330,16 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     <details class="sec" open>
       <summary><span data-t="secGeo"></span> <span class="sumv" id="sumGeo"></span></summary>
       <div class="fs">
-        <div class="f"><label for="H" data-t="H"></label><input id="H" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="h" data-t="h"></label><input id="h" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="L0box"><label for="L0" data-t="L0"></label><input id="L0" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="mg" data-t="mg"></label><input id="mg" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="Dz" data-t="Dz"></label><input id="Dz" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="Wz" data-t="Wz"></label><input id="Wz" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="cameraHeight" data-t="H"></label><input id="cameraHeight" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="planeHeight" data-t="h"></label><input id="planeHeight" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="L0box"><label for="zoneStart" data-t="L0"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="margin" data-t="mg"></label><input id="margin" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneDepth" data-t="Dz"></label><input id="zoneDepth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneWidth" data-t="Wz"></label><input id="zoneWidth" type="number" step="any" inputmode="decimal"></div>
         <div class="f full"><span data-tip="pos" data-t="pos"></span>
           <div class="seg" role="radiogroup" data-ta="pos">
-            <label><input type="radio" name="pos" id="pSide" value="side"><span data-t="pSide"></span></label>
-            <label><input type="radio" name="pos" id="pTop" value="top"><span data-t="pTop"></span></label>
+            <label><input type="radio" name="placement" id="pSide" value="side"><span data-t="pSide"></span></label>
+            <label><input type="radio" name="placement" id="pTop" value="top"><span data-t="pTop"></span></label>
           </div>
         </div>
       </div>
@@ -347,20 +347,20 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     <details class="sec" open>
       <summary><span data-t="secCam"></span> <span class="sumv" id="sumCam"></span></summary>
       <div class="fs">
-        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="cam" data-t="cam"></label><a class="inlink" href="#tpl-cams" data-t="addCamLink"></a></div><select id="cam"></select></div>
-        <div class="f full"><label for="res" data-t="res"></label><select id="res"></select></div>
-        <div class="f"><label for="sens" data-t="sens"></label><select id="sens"></select></div>
-        <div class="f"><label for="sw" data-t="sw"></label><input id="sw" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full" id="ppBox" hidden><label for="pp" data-t="pp"></label><input id="pp" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full"><label for="orient" data-t="orient"></label><select id="orient"><option value="auto" data-t="auto"></option><option value="land" data-t="orLand"></option><option value="port" data-t="orPort"></option></select></div>
+        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cam"></label><a class="inlink" href="#tpl-cams" data-t="addCamLink"></a></div><select id="camera"></select></div>
+        <div class="f full"><label for="resolution" data-t="res"></label><select id="resolution"></select></div>
+        <div class="f"><label for="sensor" data-t="sens"></label><select id="sensor"></select></div>
+        <div class="f"><label for="sensorWidth" data-t="sw"></label><input id="sensorWidth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full" id="ppBox" hidden><label for="pixelPitch" data-t="pp"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full"><label for="orientation" data-t="orient"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orLand"></option><option value="portrait" data-t="orPort"></option></select></div>
         <div class="f full"><span data-tip="mode" data-t="mode"></span>
           <div class="seg three" role="radiogroup" data-ta="modeAria">
-            <label><input type="radio" name="mode" id="mAuto" value="auto"><span data-t="mAuto"></span></label>
-            <label><input type="radio" name="mode" id="mF" value="f"><span data-t="mF"></span></label>
-            <label><input type="radio" name="mode" id="mA" value="a"><span data-t="mA"></span></label>
+            <label><input type="radio" name="lensMode" id="mAuto" value="auto"><span data-t="mAuto"></span></label>
+            <label><input type="radio" name="lensMode" id="mF" value="focal"><span data-t="mF"></span></label>
+            <label><input type="radio" name="lensMode" id="mA" value="angle"><span data-t="mA"></span></label>
           </div>
         </div>
-        <div class="f" id="fBox" hidden><label for="fmm" data-t="fmm"></label><input id="fmm" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="fBox" hidden><label for="focalLength" data-t="fmm"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
         <div class="f" id="aBox" hidden><label for="hfov">HFOV, °</label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
@@ -368,12 +368,12 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <summary><span data-t="secStr"></span> <span class="sumv" id="sumStr"></span></summary>
       <div class="fs">
         <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="afps" data-t="afps"></label><input id="afps" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="analyticsFps" data-t="afps"></label><input id="analyticsFps" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
         <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="scLow"></option><option value="1" data-t="scMid"></option><option value="1.5" data-t="scHigh"></option></select></div>
-        <div class="f"><label for="k" data-t="k"></label><input id="k" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="v" data-t="v"></label><input id="v" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="blur" data-t="blur"></label><input id="blur" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="lensFactor" data-t="k"></label><input id="lensFactor" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="speed" data-t="v"></label><input id="speed" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="blurPx" data-t="blur"></label><input id="blurPx" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <div class="colfoot"><button type="button" class="sm" id="dupBtn" data-t="dupBtn"></button><button type="button" class="sm danger" id="delBtn" data-t="delBtn"></button></div>
@@ -396,7 +396,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <div class="bottom">
   <section class="panel net" aria-labelledby="netTitle">
     <div class="rowhead"><h2 id="netTitle" data-t="netTitle"></h2>
-      <div class="f"><label for="days" data-t="days"></label><input id="days" type="number" step="1" inputmode="numeric" value="0"></div></div>
+      <div class="f"><label for="archiveDays" data-t="days"></label><input id="archiveDays" type="number" step="1" inputmode="numeric" value="0"></div></div>
     <div class="tbl"><table id="netTbl"></table></div>
   </section>
   <section class="panel assum" aria-labelledby="assTitle">
@@ -465,8 +465,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="tbl" style="padding:4px 8px 8px"><table id="catTbl"></table></div>
       <div class="mine" id="mine"></div>
       <div class="params">
-        <div class="f"><label for="kr" data-t="kr"></label><input id="kr" type="number" step="any" inputmode="decimal" value="0.6"></div>
-        <div class="f"><label for="resv" data-t="resv"></label><input id="resv" type="number" step="any" inputmode="decimal" value="20"></div>
+        <div class="f"><label for="efficiency" data-t="kr"></label><input id="efficiency" type="number" step="any" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="reserve" data-t="resv"></label><input id="reserve" type="number" step="any" inputmode="decimal" value="20"></div>
       </div>
     </section>
     <section class="panel newc" aria-labelledby="newTitle">
@@ -1679,75 +1679,85 @@ const builtinName = (key) => {
     .reduce((v, k) => v?.[k], STR);
   return typeof v === "string" ? v : undefined;
 };
-const mkObj = ([name, w, d, z, req, model, feed, inp, nameKey]) => ({
+const mkObj = ([
   name,
-  nameKey,
-  w,
-  d,
-  z,
-  req,
+  width,
+  length,
+  height,
+  requiredPx,
   model,
   feed,
-  inp,
-  ov: 20,
+  inputSize,
+  nameKey,
+]) => ({
+  name,
+  nameKey,
+  width,
+  length,
+  height,
+  requiredPx,
+  model,
+  feed,
+  inputSize,
+  overlap: 20,
   fps: 300,
   ref: "5090",
 });
 const FIELDS = [
-  "cam",
-  "H",
-  "h",
-  "L0",
-  "Dz",
-  "Wz",
-  "mg",
-  "res",
-  "sens",
-  "sw",
-  "pp",
-  "orient",
-  "fmm",
+  "camera",
+  "cameraHeight",
+  "planeHeight",
+  "zoneStart",
+  "zoneDepth",
+  "zoneWidth",
+  "margin",
+  "resolution",
+  "sensor",
+  "sensorWidth",
+  "pixelPitch",
+  "orientation",
+  "focalLength",
   "hfov",
   "fps",
-  "afps",
+  "analyticsFps",
   "codec",
   "scene",
-  "k",
-  "v",
-  "blur",
+  "lensFactor",
+  "speed",
+  "blurPx",
 ];
 const DEF_V = {
-  cam: "",
-  H: "4",
-  h: "0.9",
-  L0: "1.5",
-  Dz: "3",
-  Wz: "3",
-  mg: "10",
-  res: "1",
-  sens: "3",
-  sw: "5.4",
-  pp: "2.0",
-  orient: "auto",
-  fmm: "6",
+  camera: "",
+  cameraHeight: "4",
+  planeHeight: "0.9",
+  zoneStart: "1.5",
+  zoneDepth: "3",
+  zoneWidth: "3",
+  margin: "10",
+  resolution: "1",
+  sensor: "3",
+  sensorWidth: "5.4",
+  pixelPitch: "2.0",
+  orientation: "auto",
+  focalLength: "6",
   hfov: "50",
   fps: "12",
-  afps: "5",
+  analyticsFps: "5",
   codec: "0.04",
   scene: "1",
-  k: "0.6",
-  v: "1",
-  blur: "2",
-  mode: "auto",
-  pos: "side",
+  lensFactor: "0.6",
+  speed: "1",
+  blurPx: "2",
+  lensMode: "auto",
+  placement: "side",
 };
-const mkType = (name, count, over, objs, nameKey) => ({
+const mkType = (name, count, over, objects, nameKey) => ({
   id: uid(),
   name,
   nameKey,
   count: String(count),
-  v: { ...DEF_V, ...over },
-  objs: objs.map(mkObj),
+  inputs: { ...DEF_V, ...over },
+  objects: objects.map(mkObj),
 });
 const defTypes = () => [
   mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]], "typeNames.0"),
@@ -1755,12 +1765,12 @@ const defTypes = () => [
     STR.typeNames[1],
     10,
     {
-      pos: "top",
-      H: "2.6",
-      h: "1.1",
-      Dz: "0.8",
-      Wz: "1.4",
-      afps: "2",
+      placement: "top",
+      cameraHeight: "2.6",
+      planeHeight: "1.1",
+      zoneDepth: "0.8",
+      zoneWidth: "1.4",
+      analyticsFps: "2",
       fps: "10",
     },
     [PRESETS[2]],
@@ -1772,9 +1782,9 @@ let TYPES = defTypes(),
 const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
 
 // ---------- форма ↔ тип
-RESOLUTIONS.forEach((r, i) => byId("res").add(new Option(r[0], i)));
+RESOLUTIONS.forEach((r, i) => byId("resolution").add(new Option(r[0], i)));
 SENSORS.forEach((s, i) =>
-  byId("sens").add(
+  byId("sensor").add(
     new Option(
       typeof s[1] === "number"
         ? t("sensMm", s[0], formatNumber(s[1], 1))
@@ -1789,15 +1799,17 @@ function writeForm(T) {
   byId("tName").value = T.name;
   byId("tCount").value = T.count;
   FIELDS.forEach((id) => {
-    byId(id).value = T.v[id] ?? DEF_V[id];
+    byId(id).value = T.inputs[id] ?? DEF_V[id];
   });
   const md =
-    document.querySelector(`input[name="mode"][value="${T.v.mode}"]`) ||
-    byId("mAuto");
+    document.querySelector(
+      `input[name="lensMode"][value="${T.inputs.lensMode}"]`,
+    ) || byId("mAuto");
   md.checked = true;
   const ps =
-    document.querySelector(`input[name="pos"][value="${T.v.pos}"]`) ||
-    byId("pSide");
+    document.querySelector(
+      `input[name="placement"][value="${T.inputs.placement}"]`,
+    ) || byId("pSide");
   ps.checked = true;
   renderObjs();
 }
@@ -1807,13 +1819,14 @@ function readForm() {
   T.name = byId("tName").value;
   T.count = byId("tCount").value;
   FIELDS.forEach((id) => {
-    T.v[id] = byId(id).value;
+    T.inputs[id] = byId(id).value;
   });
-  T.v.mode =
-    (document.querySelector('input[name="mode"]:checked') || {}).value ||
+  T.inputs.lensMode =
+    (document.querySelector('input[name="lensMode"]:checked') || {}).value ||
     "auto";
-  T.v.pos =
-    (document.querySelector('input[name="pos"]:checked') || {}).value || "side";
+  T.inputs.placement =
+    (document.querySelector('input[name="placement"]:checked') || {}).value ||
+    "side";
 }
 // ---------- шаблоны камер и детекторов
 const CAM_BUILTIN = [
@@ -1843,7 +1856,7 @@ const camById = (id) => allCams().find((c) => c.id === id);
 const modelById = (id) =>
   MODELS.find((x) => x.id === id) || DETS.find((x) => x.id === id);
 function buildCamSelect() {
-  const sel = byId("cam"),
+  const sel = byId("camera"),
     cur = sel.value;
   sel.innerHTML =
     `<option value="">${t("camManual")}</option>` +
@@ -1858,7 +1871,7 @@ function renderObjs() {
   const T = act(),
     L = byId("objList");
   L.innerHTML = "";
-  T.objs.forEach((o, i) => {
+  T.objects.forEach((o, i) => {
     if (!modelById(o.model)) o.model = "y26s";
     const r = document.createElement("article");
     r.className = "ocard";
@@ -1889,11 +1902,11 @@ function renderObjs() {
     };
     [
       ["on", "name"],
-      ["ow", "w"],
-      ["od", "d"],
-      ["oz", "z"],
-      ["oq", "req"],
-      ["ov", "ov"],
+      ["ow", "width"],
+      ["od", "length"],
+      ["oz", "height"],
+      ["oq", "requiredPx"],
+      ["ov", "overlap"],
     ].forEach(([p, f]) => {
       const el = byId(`${p}-${i}`);
       el.value = o[f] ?? "";
@@ -1907,7 +1920,7 @@ function renderObjs() {
     [
       ["om", "model"],
       ["of", "feed"],
-      ["oi", "inp"],
+      ["oi", "inputSize"],
     ].forEach(([p, f]) => {
       const el = byId(`${p}-${i}`);
       el.value = String(o[f]);
@@ -1920,7 +1933,7 @@ function renderObjs() {
       });
     });
     r.querySelector(".odel").addEventListener("click", () => {
-      T.objs.splice(i, 1);
+      T.objects.splice(i, 1);
       renderObjs();
       calcAll();
     });
@@ -1928,27 +1941,29 @@ function renderObjs() {
   });
 }
 function syncFormUI(T, result) {
-  const v = T.v,
-    cam = camById(v.cam);
-  byId("fBox").hidden = v.mode !== "f";
-  byId("aBox").hidden = v.mode !== "a";
-  byId("L0box").hidden = v.pos === "top";
-  const sv = (SENSORS[+v.sens] || SENSORS[3])[1];
-  byId("res").disabled = !!cam;
-  byId("sens").disabled = !!cam;
+  const inputs = T.inputs,
+    cam = camById(inputs.camera);
+  byId("fBox").hidden = inputs.lensMode !== "focal";
+  byId("aBox").hidden = inputs.lensMode !== "angle";
+  byId("L0box").hidden = inputs.placement === "top";
+  const sv = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
+  byId("resolution").disabled = !!cam;
+  byId("sensor").disabled = !!cam;
   byId("ppBox").hidden = !!cam || sv !== "pp";
-  byId("sw").readOnly = !!cam || sv !== null;
+  byId("sensorWidth").readOnly = !!cam || sv !== null;
   if (result && isFinite(result.s) && (cam || sv !== null))
-    byId("sw").value = +result.s.toFixed(2);
+    byId("sensorWidth").value = +result.s.toFixed(2);
   byId("sumGeo").textContent =
-    `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(v.H), 1), "m")}, ${formatNumber(parseNum(v.Wz), 1)} × ${U(formatNumber(parseNum(v.Dz), 1), "m")}`;
+    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${U(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("sumCam").textContent =
     (cam
       ? `${cam.Nw} × ${cam.Nh}`
-      : (RESOLUTIONS[+v.res] || RESOLUTIONS[1])[0].split(" · ")[0]) +
+      : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
+          " · ",
+        )[0]) +
     (result && !result.err ? `, f ${U(formatNumber(result.f, 1), "mm")}` : "");
   byId("sumStr").textContent =
-    `${U(formatNumber(parseNum(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
+    `${U(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }
 // ---------- расчёт одного типа камер (без DOM)
 // Обозначения из формул (src/formulas.html):
@@ -1958,38 +1973,38 @@ function syncFormUI(T, result) {
 //   fpx — фокусное расстояние в пикселях; φ (phi) — угол луча к плоскости; D — расстояние до точки, м;
 //   δ (delta) — угол луча к оптической оси; z — глубина по оптической оси, м; k — поправка объектива.
 function computeType(type) {
-  const inputs = type.v,
-    mode = inputs.mode,
-    placement = inputs.pos,
+  const inputs = type.inputs,
+    mode = inputs.lensMode,
+    placement = inputs.placement,
     count = Math.max(0, Math.round(parseNum(type.count)) || 0);
-  const camera = camById(inputs.cam);
-  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.res] || RESOLUTIONS[1];
-  const sensorPreset = (SENSORS[+inputs.sens] || SENSORS[3])[1];
+  const camera = camById(inputs.camera);
+  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1];
+  const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   let s =
     typeof sensorPreset === "number"
       ? sensorPreset
       : sensorPreset === "pp"
-        ? (parseNum(inputs.pp) * Nw) / 1000
-        : parseNum(inputs.sw);
+        ? (parseNum(inputs.pixelPitch) * Nw) / 1000
+        : parseNum(inputs.sensorWidth);
   if (camera) {
     cameraLabel = camera.name;
     Nw = camera.Nw;
     Nh = camera.Nh;
     s = camera.sw;
   }
-  const H = parseNum(inputs.H),
-    h = parseNum(inputs.h),
-    zoneStart = parseNum(inputs.L0),
-    zoneDepth = parseNum(inputs.Dz),
-    zoneWidth = parseNum(inputs.Wz),
-    margin = (parseNum(inputs.mg) || 0) / 100,
-    k = parseNum(inputs.k),
-    speed = parseNum(inputs.v),
-    blurPx = parseNum(inputs.blur);
+  const H = parseNum(inputs.cameraHeight),
+    h = parseNum(inputs.planeHeight),
+    zoneStart = parseNum(inputs.zoneStart),
+    zoneDepth = parseNum(inputs.zoneDepth),
+    zoneWidth = parseNum(inputs.zoneWidth),
+    margin = (parseNum(inputs.margin) || 0) / 100,
+    k = parseNum(inputs.lensFactor),
+    speed = parseNum(inputs.speed),
+    blurPx = parseNum(inputs.blurPx);
   const fps = parseNum(inputs.fps),
     bpp = +inputs.codec,
     sceneFactor = +inputs.scene,
-    analyticsFpsSet = parseNum(inputs.afps),
+    analyticsFpsSet = parseNum(inputs.analyticsFps),
     analyticsFps = Math.min(analyticsFpsSet, fps),
     codec = bpp < 0.055 ? "h265" : "h264";
   const Hc = H - h;
@@ -2050,8 +2065,8 @@ function computeType(type) {
           hfov = 2 * Math.atan(sensorWidth / (2 * f));
         }
       }
-    } else if (mode === "f") {
-      f = parseNum(inputs.fmm);
+    } else if (mode === "focal") {
+      f = parseNum(inputs.focalLength);
       hfov = 2 * Math.atan(sensorWidth / (2 * f));
     } else {
       hfov = parseNum(inputs.hfov) * DEG;
@@ -2072,8 +2087,8 @@ function computeType(type) {
     };
   };
   let fit;
-  if (inputs.orient === "land") fit = fitOrientation(false);
-  else if (inputs.orient === "port") fit = fitOrientation(true);
+  if (inputs.orientation === "landscape") fit = fitOrientation(false);
+  else if (inputs.orientation === "portrait") fit = fitOrientation(true);
   else {
     const landscape = fitOrientation(false),
       portrait = fitOrientation(true);
@@ -2193,13 +2208,13 @@ function computeType(type) {
             : t("feedFull", frameWidthPx, frameHeightPx, inputSize),
     };
   };
-  const objs = type.objs.map((obj) => {
-    const width = parseNum(obj.w) / 100,
-      length = parseNum(obj.d) / 100,
-      height = parseNum(obj.z) / 100,
-      requiredPx = parseNum(obj.req),
-      inputSize = parseNum(obj.inp) || 640;
-    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.ov));
+  const objs = type.objects.map((obj) => {
+    const width = parseNum(obj.width) / 100,
+      length = parseNum(obj.length) / 100,
+      height = parseNum(obj.height) / 100,
+      requiredPx = parseNum(obj.requiredPx),
+      inputSize = parseNum(obj.inputSize) || 640;
+    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.overlap));
     if (
       ![width, length, height].every((x) => isFinite(x) && x >= 0) ||
       Math.max(width, length, height) <= 0 ||
@@ -2400,7 +2415,7 @@ function computeType(type) {
         obj.model,
         obj.feed,
         obj.feedInfo.inputSize,
-        obj.feed === "tiles" ? obj.ov : "",
+        obj.feed === "tiles" ? obj.overlap : "",
         obj.model === "custom" ? obj.fps + "@" + obj.ref : "",
       ].join("|");
       let group = groups.find((existing) => existing.key === key);
@@ -2481,8 +2496,8 @@ const gfOf = (id) => {
 };
 function computeSystem(Rs) {
   const live = Rs.filter((r) => !r.err && r.count > 0);
-  const kr = parseNum(byId("kr").value),
-    resv = Math.max(0, parseNum(byId("resv").value) || 0) / 100,
+  const kr = parseNum(byId("efficiency").value),
+    resv = Math.max(0, parseNum(byId("reserve").value) || 0) / 100,
     uMax = 1 / (1 + resv),
     BATCH = 16;
   const groups = live.flatMap((r) =>
@@ -2558,7 +2573,7 @@ function computeSystem(Rs) {
     .sort((a, b) => a.cost - b.cost || a.n * a.g.tdp - b.n * b.g.tdp);
   const best = okAll[0],
     gSel = byId("gpu").value,
-    cSel = byId("gcnt").value;
+    cSel = byId("gpuCount").value;
   const minWorst = (arr) =>
     arr.length
       ? arr.reduce((a, b) => (a.worst < b.worst ? a : b))
@@ -2768,7 +2783,7 @@ function renderSystem(Rs, S) {
     : null;
   const mbTot = live.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
   const camCost = Rs.reduce((s, r) => {
-    const c = camById(r.type.v.cam);
+    const c = camById(r.type.inputs.camera);
     return s + (c && c.price > 0 ? c.price * r.count : 0);
   }, 0);
   const port =
@@ -2886,7 +2901,7 @@ function renderSystem(Rs, S) {
       : "";
   byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
-  const days = parseNum(byId("days").value) || 0,
+  const days = parseNum(byId("archiveDays").value) || 0,
     tb = (((mbTot * 1e6) / 8) * 86400 * days) / 1e12;
   byId("netTbl").innerHTML =
     `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((k) => `<th>${t(k)}</th>`).join("")}</tr>` +
@@ -3023,7 +3038,7 @@ byId("newForm").addEventListener("submit", (e) => {
 // ---------- шаблоны: камеры
 function renderCamView() {
   const used = (id) =>
-    TYPES.filter((t) => t.v.cam === id).reduce(
+    TYPES.filter((t) => t.inputs.camera === id).reduce(
       (s, t) => s + (Math.round(parseNum(t.count)) || 0),
       0,
     );
@@ -3041,7 +3056,7 @@ function renderCamView() {
       const id = b.dataset.delc;
       CAMS_C = CAMS_C.filter((c) => c.id !== id);
       TYPES.forEach((t) => {
-        if (t.v.cam === id) t.v.cam = "";
+        if (t.inputs.camera === id) t.inputs.camera = "";
       });
       buildCamSelect();
       writeForm(act());
@@ -3107,7 +3122,10 @@ byId("camForm").addEventListener("submit", (e) => {
 function renderDetView() {
   byId("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
   const used = (id) =>
-    TYPES.reduce((s, t) => s + t.objs.filter((o) => o.model === id).length, 0);
+    TYPES.reduce(
+      (s, t) => s + t.objects.filter((o) => o.model === id).length,
+      0,
+    );
   byId("detTbl").innerHTML =
     `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
     (DETS.length
@@ -3125,7 +3143,7 @@ function renderDetView() {
       const id = b.dataset.deld;
       DETS = DETS.filter((d) => d.id !== id);
       TYPES.forEach((t) =>
-        t.objs.forEach((o) => {
+        t.objects.forEach((o) => {
           if (o.model === id) o.model = "y26s";
         }),
       );
@@ -3249,11 +3267,11 @@ function calcAll() {
   ].join("\n");
   save();
 }
-const GL_IDS = ["kr", "resv", "days", "gpu", "gcnt"];
+const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
 const snap = () => ({
   types: TYPES,
-  act: ACT,
-  gl: Object.fromEntries(GL_IDS.map((id) => [id, byId(id).value])),
+  activeTypeId: ACT,
+  system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
   price: gpuPrices,
   on: gpuEnabled,
   custom: customGpus,
@@ -3264,7 +3282,7 @@ const snap = () => ({
 let stale = false;
 const STALE_MSG = t("stale");
 addEventListener("storage", (e) => {
-  if (e.key === "camcalc3") {
+  if (e.key === "camcalc4") {
     stale = true;
     toast(STALE_MSG);
   }
@@ -3275,12 +3293,12 @@ function save() {
     return;
   }
   try {
-    localStorage.setItem("camcalc3", JSON.stringify(snap()));
+    localStorage.setItem("camcalc4", JSON.stringify(snap()));
   } catch (e) {}
 }
 function load() {
   try {
-    const st = JSON.parse(localStorage.getItem("camcalc3") || "null");
+    const st = JSON.parse(localStorage.getItem("camcalc4") || "null");
     if (!st) return;
     // старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
     const dot = (x) => (typeof x === "string" ? x.replace(",", ".") : x);
@@ -3310,28 +3328,30 @@ function load() {
         name: shownName(t),
         nameKey: t.nameKey,
         count: dot(t.count),
-        v: dotAll({ ...DEF_V, ...t.v }),
-        objs: (t.objs || []).map((o) => ({
+        inputs: dotAll({ ...DEF_V, ...t.inputs }),
+        objects: (t.objects || []).map((o) => ({
           ...mkObj([
             shownName(o),
-            dot(o.w),
-            dot(o.d),
-            dot(o.z),
-            dot(o.req),
+            dot(o.width),
+            dot(o.length),
+            dot(o.height),
+            dot(o.requiredPx),
             modelById(o.model) ? o.model : "y26s",
             o.feed,
-            o.inp,
+            o.inputSize,
             o.nameKey,
           ]),
-          ov: dot(o.ov ?? 20),
+          overlap: dot(o.overlap ?? 20),
         })),
       }));
-      ACT = TYPES.some((t) => t.id === st.act) ? st.act : TYPES[0].id;
+      ACT = TYPES.some((t) => t.id === st.activeTypeId)
+        ? st.activeTypeId
+        : TYPES[0].id;
     }
-    if (st.gl)
-      GL_IDS.forEach((id) => {
+    if (st.system)
+      SYSTEM_IDS.forEach((id) => {
         const el = byId(id);
-        if (st.gl[id] != null) el.value = dot(st.gl[id]);
+        if (st.system[id] != null) el.value = dot(st.system[id]);
         if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = "auto";
       });
   } catch (e) {}
@@ -3363,7 +3383,7 @@ PRESETS.forEach((pr) => {
   b.className = "chip";
   b.textContent = pr[0];
   b.addEventListener("click", () => {
-    act().objs.push(mkObj(pr));
+    act().objects.push(mkObj(pr));
     renderObjs();
     calcAll();
   });
@@ -3371,12 +3391,12 @@ PRESETS.forEach((pr) => {
 });
 byId("addObj").addEventListener("click", () => {
   const T = act();
-  T.objs.push(
+  T.objects.push(
     mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
   );
   renderObjs();
   calcAll();
-  const i = T.objs.length - 1;
+  const i = T.objects.length - 1;
   byId(`on-${i}`).focus();
   byId(`on-${i}`).select();
 });
@@ -3389,7 +3409,7 @@ byId("frm").addEventListener("change", () => {
   calcAll();
 });
 byId("frm").addEventListener("submit", (e) => e.preventDefault());
-GL_IDS.forEach((id) => {
+SYSTEM_IDS.forEach((id) => {
   byId(id).addEventListener("input", calcAll);
   byId(id).addEventListener("change", calcAll);
 });
@@ -3441,10 +3461,10 @@ function toast(t) {
 byId("resetBtn").addEventListener("click", () => {
   TYPES = defTypes();
   ACT = TYPES[0].id;
-  byId("kr").value = "0.6";
-  byId("resv").value = "20";
-  byId("days").value = "0";
-  byId("gcnt").value = "auto";
+  byId("efficiency").value = "0.6";
+  byId("reserve").value = "20";
+  byId("archiveDays").value = "0";
+  byId("gpuCount").value = "auto";
   gpuPrices = {};
   gpuEnabled = {};
   buildGpuSelect();
@@ -3484,7 +3504,8 @@ function importText(s) {
       (t) =>
         isObj(t) &&
         typeof t.name === "string" &&
-        (t.objs == null || (Array.isArray(t.objs) && t.objs.every(isObj))),
+        (t.objects == null ||
+          (Array.isArray(t.objects) && t.objects.every(isObj))),
     ) ||
     !["custom", "cams", "dets"].every((k) => Array.isArray(st[k])) ||
     !isObj(st.price) ||
@@ -3494,7 +3515,7 @@ function importText(s) {
     return;
   }
   try {
-    localStorage.setItem("camcalc3", JSON.stringify(st));
+    localStorage.setItem("camcalc4", JSON.stringify(st));
   } catch (e) {
     toast(t("saveFail"));
     return;

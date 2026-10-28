@@ -14,75 +14,85 @@ const builtinName = (key) => {
     .reduce((v, k) => v?.[k], STR);
   return typeof v === "string" ? v : undefined;
 };
-const mkObj = ([name, w, d, z, req, model, feed, inp, nameKey]) => ({
+const mkObj = ([
   name,
-  nameKey,
-  w,
-  d,
-  z,
-  req,
+  width,
+  length,
+  height,
+  requiredPx,
   model,
   feed,
-  inp,
-  ov: 20,
+  inputSize,
+  nameKey,
+]) => ({
+  name,
+  nameKey,
+  width,
+  length,
+  height,
+  requiredPx,
+  model,
+  feed,
+  inputSize,
+  overlap: 20,
   fps: 300,
   ref: "5090",
 });
 const FIELDS = [
-  "cam",
-  "H",
-  "h",
-  "L0",
-  "Dz",
-  "Wz",
-  "mg",
-  "res",
-  "sens",
-  "sw",
-  "pp",
-  "orient",
-  "fmm",
+  "camera",
+  "cameraHeight",
+  "planeHeight",
+  "zoneStart",
+  "zoneDepth",
+  "zoneWidth",
+  "margin",
+  "resolution",
+  "sensor",
+  "sensorWidth",
+  "pixelPitch",
+  "orientation",
+  "focalLength",
   "hfov",
   "fps",
-  "afps",
+  "analyticsFps",
   "codec",
   "scene",
-  "k",
-  "v",
-  "blur",
+  "lensFactor",
+  "speed",
+  "blurPx",
 ];
 const DEF_V = {
-  cam: "",
-  H: "4",
-  h: "0.9",
-  L0: "1.5",
-  Dz: "3",
-  Wz: "3",
-  mg: "10",
-  res: "1",
-  sens: "3",
-  sw: "5.4",
-  pp: "2.0",
-  orient: "auto",
-  fmm: "6",
+  camera: "",
+  cameraHeight: "4",
+  planeHeight: "0.9",
+  zoneStart: "1.5",
+  zoneDepth: "3",
+  zoneWidth: "3",
+  margin: "10",
+  resolution: "1",
+  sensor: "3",
+  sensorWidth: "5.4",
+  pixelPitch: "2.0",
+  orientation: "auto",
+  focalLength: "6",
   hfov: "50",
   fps: "12",
-  afps: "5",
+  analyticsFps: "5",
   codec: "0.04",
   scene: "1",
-  k: "0.6",
-  v: "1",
-  blur: "2",
-  mode: "auto",
-  pos: "side",
+  lensFactor: "0.6",
+  speed: "1",
+  blurPx: "2",
+  lensMode: "auto",
+  placement: "side",
 };
-const mkType = (name, count, over, objs, nameKey) => ({
+const mkType = (name, count, over, objects, nameKey) => ({
   id: uid(),
   name,
   nameKey,
   count: String(count),
-  v: { ...DEF_V, ...over },
-  objs: objs.map(mkObj),
+  inputs: { ...DEF_V, ...over },
+  objects: objects.map(mkObj),
 });
 const defTypes = () => [
   mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]], "typeNames.0"),
@@ -90,12 +100,12 @@ const defTypes = () => [
     STR.typeNames[1],
     10,
     {
-      pos: "top",
-      H: "2.6",
-      h: "1.1",
-      Dz: "0.8",
-      Wz: "1.4",
-      afps: "2",
+      placement: "top",
+      cameraHeight: "2.6",
+      planeHeight: "1.1",
+      zoneDepth: "0.8",
+      zoneWidth: "1.4",
+      analyticsFps: "2",
       fps: "10",
     },
     [PRESETS[2]],
@@ -107,9 +117,9 @@ let TYPES = defTypes(),
 const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
 
 // ---------- форма ↔ тип
-RESOLUTIONS.forEach((r, i) => byId("res").add(new Option(r[0], i)));
+RESOLUTIONS.forEach((r, i) => byId("resolution").add(new Option(r[0], i)));
 SENSORS.forEach((s, i) =>
-  byId("sens").add(
+  byId("sensor").add(
     new Option(
       typeof s[1] === "number"
         ? t("sensMm", s[0], formatNumber(s[1], 1))
@@ -124,15 +134,17 @@ function writeForm(T) {
   byId("tName").value = T.name;
   byId("tCount").value = T.count;
   FIELDS.forEach((id) => {
-    byId(id).value = T.v[id] ?? DEF_V[id];
+    byId(id).value = T.inputs[id] ?? DEF_V[id];
   });
   const md =
-    document.querySelector(`input[name="mode"][value="${T.v.mode}"]`) ||
-    byId("mAuto");
+    document.querySelector(
+      `input[name="lensMode"][value="${T.inputs.lensMode}"]`,
+    ) || byId("mAuto");
   md.checked = true;
   const ps =
-    document.querySelector(`input[name="pos"][value="${T.v.pos}"]`) ||
-    byId("pSide");
+    document.querySelector(
+      `input[name="placement"][value="${T.inputs.placement}"]`,
+    ) || byId("pSide");
   ps.checked = true;
   renderObjs();
 }
@@ -142,11 +154,12 @@ function readForm() {
   T.name = byId("tName").value;
   T.count = byId("tCount").value;
   FIELDS.forEach((id) => {
-    T.v[id] = byId(id).value;
+    T.inputs[id] = byId(id).value;
   });
-  T.v.mode =
-    (document.querySelector('input[name="mode"]:checked') || {}).value ||
+  T.inputs.lensMode =
+    (document.querySelector('input[name="lensMode"]:checked') || {}).value ||
     "auto";
-  T.v.pos =
-    (document.querySelector('input[name="pos"]:checked') || {}).value || "side";
+  T.inputs.placement =
+    (document.querySelector('input[name="placement"]:checked') || {}).value ||
+    "side";
 }
