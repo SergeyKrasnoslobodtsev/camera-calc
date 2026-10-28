@@ -1,4 +1,4 @@
-import { STR, t } from "./i18n.js";
+import { STR, t } from "../i18n/index.ts";
 const popover = document.createElement("div");
 popover.className = "pop";
 popover.id = "popover";

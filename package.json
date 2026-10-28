@@ -6,8 +6,8 @@
   "description": "Калькулятор подбора камер, объективов и вычислителя (GPU) для видеоаналитики",
   "scripts": {
     "build": "node build.ts",
-    "test": "tsc && node tests/smoke.test.js && node tests/golden.test.js",
-    "format": "prettier --write src/js tests"
+    "test": "tsc && node --test tests/domain/ && node tests/smoke.test.js && node tests/golden.test.js",
+    "format": "prettier --write src/js src/domain src/i18n tests"
   },
   "devDependencies": {
     "@types/node": "26.6.6",

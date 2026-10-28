@@ -1,21 +1,43 @@
-import { LANG, LANG_KEY, STR, t, withUnit } from "./i18n.js";
+import {
+  LANG,
+  LANG_KEY,
+  STR,
+  formatNumber,
+  t,
+  withUnit,
+} from "../i18n/index.ts";
+import {
+  feedText,
+  modelPxText,
+  noteText,
+  objectName,
+  resolutionLabel,
+  sensorPxText,
+  verdictHeadline,
+  verdictPill,
+} from "../i18n/domain-text.ts";
+import { DEG } from "../domain/angles.ts";
+import { computeType } from "../domain/compute-type/index.ts";
+import { parseNum } from "../domain/parse-num.ts";
+import {
+  GPU_CATALOG,
+  decodableStreams,
+} from "../domain/references/gpu-catalog.ts";
+import { MODELS, T4_TFLOPS } from "../domain/references/models.ts";
+import {
+  DEFAULT_RESOLUTION,
+  RESOLUTIONS,
+} from "../domain/references/resolutions.ts";
 import { store } from "./store.js";
 import {
-  DEG,
   FEED_SHORT,
-  GPU_CATALOG,
   INPUTS,
-  MODELS,
-  T4_TFLOPS,
   allGpus,
   byId,
-  decStreams,
   decText,
   escapeHtml,
-  formatNumber,
   gpuById,
   isOn,
-  parseNum,
   priceOf,
   uid,
 } from "./data.js";
@@ -38,41 +60,47 @@ import {
   renderObjects,
   syncFormUI,
 } from "./objects.js";
-import { computeType } from "./compute-type.js";
 import { drawSide } from "./draw-side.js";
 // ---------- расчёт системы
 const modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
+// камера типа: из шаблона или разрешение, заданное вручную
+const cameraLabel = ({ type }) => {
+  const camera = cameraById(type.inputs.camera);
+  return camera
+    ? camera.name
+    : resolutionLabel(
+        RESOLUTIONS[+type.inputs.resolution] ?? DEFAULT_RESOLUTION,
+      );
+};
 const modelGflops = (id) => {
   const model = modelById(id);
   return model && model.gflops > 0 ? model.gflops : 0;
 };
 // Подбор GPU. Загрузка (load) — доля ресурса GPU, 1 = 100%.
 function computeSystem(results) {
-  const liveResults = results.filter(
-    (result) => !result.err && result.count > 0,
-  );
+  const liveResults = results.filter((result) => result.ok && result.count > 0);
   const efficiency = parseNum(byId("efficiency").value),
     reserve = Math.max(0, parseNum(byId("reserve").value) || 0) / 100,
     maxLoad = 1 / (1 + reserve),
     BATCH_SIZE = 16;
   const groups = liveResults.flatMap((result) =>
-    result.groups.map((group) => ({ ...group, typeName: result.type.name })),
+    result.runGroups.map((group) => ({
+      ...group,
+      typeName: result.type.name,
+      names: group.objects.map(objectName),
+    })),
   );
   // движок — модель с конкретным входом; в памяти GPU каждый движок один раз
   const engines = [
     ...new Map(
-      groups.map((group) => [
-        `${group.model}|${group.feedInfo.inputSize}`,
-        group,
-      ]),
+      groups.map((group) => [`${group.model}|${group.feed.inputSize}`, group]),
     ).values(),
   ];
   const engineMemoryGB = (engine) => {
     const gflops = modelGflops(engine.model);
     return gflops
       ? 0.15 +
-          (BATCH_SIZE * engine.feedInfo.inputSize ** 2 * 3 * 2 * (gflops / 4)) /
-            1e9
+          (BATCH_SIZE * engine.feed.inputSize ** 2 * 3 * 2 * (gflops / 4)) / 1e9
       : 0.5;
   };
   const evaluateGpu = (gpu, count) => {
@@ -81,12 +109,12 @@ function computeSystem(results) {
       const model = modelById(group.model);
       if (!model) return { ...group, bad: true };
       if (MODELS.includes(model)) {
-        const inputScale = (640 / group.feedInfo.inputSize) ** 2;
+        const inputScale = (640 / group.feed.inputSize) ** 2;
         framesPerSecond =
           ((1000 / model.latencyMs) * inputScale * gpu.tflops) / T4_TFLOPS;
       } else {
         const refGpu = gpuById(model.refGpu) || GPU_CATALOG[0],
-          inputScale = (model.inputSize / group.feedInfo.inputSize) ** 2;
+          inputScale = (model.inputSize / group.feed.inputSize) ** 2;
         framesPerSecond = (model.fps * inputScale * gpu.tflops) / refGpu.tflops;
       }
       const capacity = framesPerSecond * efficiency;
@@ -97,7 +125,9 @@ function computeSystem(results) {
       .reduce((sum, run) => sum + run.gpusNeeded, 0);
     const decodeGpus = liveResults.reduce(
       (sum, result) =>
-        sum + result.decUnits / (decStreams(gpu, result.codec) * efficiency),
+        sum +
+        result.stream.decodeUnits /
+          (decodableStreams(gpu, result.stream.codec) * efficiency),
       0,
     );
     const memoryUseGB =
@@ -105,7 +135,7 @@ function computeSystem(results) {
         engines.reduce((sum, engine) => sum + engineMemoryGB(engine), 0) +
         liveResults.reduce(
           (sum, result) =>
-            sum + Math.ceil(result.count / count) * 20 * result.frameGB,
+            sum + Math.ceil(result.count / count) * 20 * result.stream.frameGB,
           0,
         ),
       memoryCapGB = gpu.memoryGB * (gpu.jetson ? 0.6 : 0.9);
@@ -175,7 +205,7 @@ function computeSystem(results) {
     } else chosen = evaluateGpu(gpu, +countChoice);
   }
   const decodeUnitsTotal = liveResults.reduce(
-    (sum, result) => sum + result.decUnits,
+    (sum, result) => sum + result.stream.decodeUnits,
     0,
   );
   return {
@@ -202,7 +232,7 @@ function renderType(result) {
     "resultTitleOf",
     result.type.name || t("untitled"),
   );
-  if (result.err) {
+  if (!result.ok) {
     verdict.className = "verdict bad";
     verdict.innerHTML = `<span class="pill">${t("pillError")}</span><div>${t("inputError")}</div>`;
     ["kpis", "densityTable", "facts", "side"].forEach(
@@ -211,17 +241,17 @@ function renderType(result) {
     return;
   }
   verdict.className = "verdict " + result.status;
-  verdict.innerHTML = `<span class="pill">${result.pill}</span><div>${escapeHtml(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((note) => "<li>" + escapeHtml(note) + "</li>").join("") + "</ul>" : ""}</div>`;
-  const { hfov, vfov, f, rotated, tilt, frameWidthAt, depthAt, x1, x2 } =
-    result;
+  verdict.innerHTML = `<span class="pill">${verdictPill(result.verdict, result.notes)}</span><div>${escapeHtml(verdictHeadline(result.verdict))}${result.notes.length ? "<ul>" + result.notes.map((note) => "<li>" + escapeHtml(noteText(note)) + "</li>").join("") + "</ul>" : ""}</div>`;
+  const { hfov, vfov, f, rotated } = result.lens,
+    { tilt, frameWidthNear, frameWidthFar } = result.geometry;
   byId("kpis").innerHTML = [
     [
       t("kpiFocal"),
       withUnit(formatNumber(f, 1), "mm"),
       t(
-        result.clamped
+        result.lens.clamped
           ? "kpiFocalLimit"
-          : result.mode === "auto"
+          : result.lens.mode === "auto"
             ? "kpiFocalAuto"
             : "kpiFocalSet",
       ) + (rotated ? t("kpiRotated") : ""),
@@ -239,9 +269,7 @@ function renderType(result) {
     [
       t("kpiFrame"),
       withUnit(
-        formatNumber(frameWidthAt(depthAt(x1)), 1) +
-          "–" +
-          formatNumber(frameWidthAt(depthAt(x2)), 1),
+        formatNumber(frameWidthNear, 1) + "–" + formatNumber(frameWidthFar, 1),
         "m",
       ),
       t("kpiFrameSubtitle"),
@@ -252,45 +280,47 @@ function renderType(result) {
         `<div class="kpi"><span>${label}</span><strong>${value}</strong><em>${extra}</em></div>`,
     )
     .join("");
-  result.objs.forEach((obj, i) => {
+  result.objects.forEach((item, i) => {
     const resultEl = byId(`objectResult-${i}`),
       dotEl = byId(`objectDot-${i}`);
     if (!resultEl) return;
-    if (obj.bad) {
+    if (!item.valid) {
       resultEl.className = "ores";
       resultEl.textContent = t("objectInvalid");
       if (dotEl) dotEl.className = "dot";
       return;
     }
-    resultEl.className = "ores " + obj.status;
-    if (dotEl) dotEl.className = "dot " + obj.status;
-    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objectAtModel", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
+    resultEl.className = "ores " + item.status;
+    if (dotEl) dotEl.className = "dot " + item.status;
+    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
   });
-  const top = result.placement === "top";
+  const top = result.placement === "top",
+    { near, far, minAcross } = result.density;
   byId("densityTable").innerHTML =
     `<tr><th>${t("densityHeader")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
-    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
+    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(near.D, 1), "m")}</td><td>${formatNumber(near.across, 0)}</td><td>${formatNumber(near.depth, 0)}</td></tr>
+    <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(far.D, 1), "m")}</td><td>${formatNumber(far.across, 0)}</td><td>${formatNumber(far.depth, 0)}</td></tr>`;
   const doriLevels = [25, 62, 125, 250],
     doriNames = STR.dori;
   let doriLevel = -1;
   doriLevels.forEach((level, i) => {
-    if (result.minAcross >= level) doriLevel = i;
+    if (minAcross >= level) doriLevel = i;
   });
   const shutter = result.shutterDenominator;
   byId("facts").innerHTML =
-    `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
+    `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(cameraLabel(result))}</b></span>`;
+  const { H, h, Hc, x1, x2 } = result.geometry;
   drawSide({
-    H: result.H,
-    h: result.h,
-    x1: result.x1,
-    x2: result.x2,
-    tilt: result.tilt,
-    vfov: result.vfov,
-    Hc: result.Hc,
+    H,
+    h,
+    x1,
+    x2,
+    tilt,
+    vfov,
+    Hc,
     placement: result.placement,
-    frameWidthNear: frameWidthAt(depthAt(x1)),
-    frameWidthFar: frameWidthAt(depthAt(x2)),
+    frameWidthNear,
+    frameWidthFar,
   });
 }
 
@@ -308,10 +338,10 @@ function renderTabs(results) {
       String(result.type.id === store.activeTypeId),
     );
     tab.setAttribute("aria-controls", "typeResult");
-    tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
-    tab.title = result.err
-      ? t("tabError")
-      : t("tabObjects", STATUS_TEXT[result.status] || result.pill);
+    tab.innerHTML = `<span class="dot ${result.ok ? result.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
+    tab.title = result.ok
+      ? t("tabObjects", STATUS_TEXT[result.status])
+      : t("tabError");
     tab.addEventListener("click", () => {
       if (store.activeTypeId === result.type.id) return;
       store.activeTypeId = result.type.id;
@@ -366,10 +396,12 @@ function renderSystem(results, system) {
   const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
   const percent = (share) => formatNumber(share * 100, 0) + "%";
   const cameraCount = results.reduce((sum, result) => sum + result.count, 0);
-  const allObjects = results.flatMap((result) => result.valid || []),
+  const allObjects = results.flatMap((result) =>
+      result.ok ? result.objects.filter((item) => item.valid) : [],
+    ),
     okObjects = allObjects.filter((obj) => obj.status === "ok").length;
   const worstStatus = results.some(
-    (result) => result.err || result.status === "bad",
+    (result) => !result.ok || result.status === "bad",
   )
     ? "bad"
     : results.some((result) => result.status === "warn")
@@ -379,7 +411,7 @@ function renderSystem(results, system) {
     ? allObjects.reduce((a, b) => (a.modelPx < b.modelPx ? a : b))
     : null;
   const totalMbps = liveResults.reduce(
-    (sum, result) => sum + result.bitrateMbps * result.count,
+    (sum, result) => sum + result.stream.bitrateMbps * result.count,
     0,
   );
   const cameraCost = results.reduce((sum, result) => {
@@ -411,10 +443,10 @@ function renderSystem(results, system) {
       smallest
         ? t(
             "systemSmallest",
-            smallest.name,
+            smallest.object.name,
             formatNumber(
               Math.min(smallest.widthPx, smallest.heightPx) *
-                smallest.feedInfo.modelScale,
+                smallest.feed.modelScale,
               1,
             ),
           )
@@ -476,7 +508,7 @@ function renderSystem(results, system) {
     ? shown
         .map(
           (run, i) =>
-            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed]} ${run.feedInfo.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
+            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
         )
         .join("") +
       (rest.length
@@ -530,9 +562,9 @@ function renderSystem(results, system) {
     `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
     results
       .map((result) =>
-        result.err
+        !result.ok
           ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>`
-          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.Nw} × ${result.Nh}</td><td>${formatNumber(result.fps, 0)}</td><td>${withUnit(formatNumber(result.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
+          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.frame.width} × ${result.frame.height}</td><td>${formatNumber(result.stream.fps, 0)}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
       )
       .join("") +
     `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
@@ -848,7 +880,9 @@ byId("detectorForm").addEventListener("submit", (event) => {
 // ---------- главный цикл
 let report = "";
 export function calcAll() {
-  const results = store.cameraTypes.map(computeType);
+  const results = store.cameraTypes.map((type) =>
+    computeType(type, cameraById(type.inputs.camera)),
+  );
   const activeIndex = Math.max(
     0,
     store.cameraTypes.findIndex((type) => type.id === store.activeTypeId),
@@ -862,37 +896,39 @@ export function calcAll() {
   report = [
     t("appTitle"),
     ...results.flatMap((result) =>
-      result.err
+      !result.ok
         ? ["\n" + t("reportError", result.type.name, result.count)]
         : [
             `\n${result.type.name} × ${result.count}`,
             t("reportCamera", {
-              cameraLabel: result.cameraLabel,
-              rotated: result.rotated,
-              sensorWidth: formatNumber(result.s, 2),
-              focal: formatNumber(result.f, 1),
-              hfov: formatNumber(result.hfov / DEG, 0),
-              tilt: formatNumber(result.tilt / DEG, 0),
+              cameraLabel: cameraLabel(result),
+              rotated: result.lens.rotated,
+              sensorWidth: formatNumber(result.frame.sensorWidth, 2),
+              focal: formatNumber(result.lens.f, 1),
+              hfov: formatNumber(result.lens.hfov / DEG, 0),
+              tilt: formatNumber(result.geometry.tilt / DEG, 0),
               overCenter: result.placement === "top",
-              zoneStart: formatNumber(result.zoneStart, 2),
-              cameraHeight: formatNumber(result.H, 2),
-              zoneWidth: formatNumber(result.zoneWidth, 2),
-              zoneDepth: formatNumber(result.zoneDepth, 2),
+              zoneStart: formatNumber(result.geometry.zoneStart, 2),
+              cameraHeight: formatNumber(result.geometry.H, 2),
+              zoneWidth: formatNumber(result.geometry.zoneWidth, 2),
+              zoneDepth: formatNumber(result.geometry.zoneDepth, 2),
             }),
-            ...result.valid.map((obj) =>
-              t("reportObject", {
-                name: obj.name,
-                model: modelName(obj),
-                feed: obj.feedInfo.text,
-                sensorPx: result.sensorPxText(obj),
-                modelPx: result.modelPxText(obj),
-                requiredPx: formatNumber(obj.requiredPx, 0),
-                status: STATUS_TEXT[obj.status],
-              }),
-            ),
+            ...result.objects
+              .filter((item) => item.valid)
+              .map((item) =>
+                t("reportObject", {
+                  name: item.object.name,
+                  model: modelName(item.object),
+                  feed: feedText(item.feed),
+                  sensorPx: sensorPxText(item),
+                  modelPx: modelPxText(item),
+                  requiredPx: formatNumber(item.requiredPx, 0),
+                  status: STATUS_TEXT[item.status],
+                }),
+              ),
             t(
               "reportStream",
-              formatNumber(result.bitrateMbps, 1),
+              formatNumber(result.stream.bitrateMbps, 1),
               Math.ceil(result.shutterDenominator),
             ),
           ],
