@@ -1,5 +1,5 @@
 const {JSDOM,VirtualConsole}=require('jsdom');const fs=require('fs');
-const dom=new JSDOM(fs.readFileSync(__dirname+'/../dist/camera-calc.html','utf8'),{runScripts:'dangerously',url:'https://x.test/',pretendToBeVisual:true,beforeParse(w){w.scrollTo=()=>{}}});
+const dom=new JSDOM(fs.readFileSync(__dirname+'/../dist/camera-calc.html','utf8'),{runScripts:'dangerously',url:'https://x.test/',pretendToBeVisual:true,beforeParse(w){w.scrollTo=()=>{};w.localStorage.setItem('camcalc-lang','ru')}});
 const d=dom.window.document,w=dom.window;
 w.scrollTo=()=>{};
 w.addEventListener('error',e=>console.log('ERR',e.message));
@@ -40,8 +40,8 @@ console.log('SYS:',T('sysKpis'));
 console.log('tips',d.querySelectorAll('.tipbtn').length);
 // export → import
 const assert=require('assert');let reloads=0;
-const page=seed=>{const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(/navigation/.test(e.message))reloads++;else console.error(e)});
-  return new JSDOM(fs.readFileSync(__dirname+'/../dist/camera-calc.html','utf8'),{runScripts:'dangerously',url:'https://x.test/',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.scrollTo=()=>{};if(seed)w.localStorage.setItem('camcalc3',seed)}}).window};
+const page=(seed,lang='ru',nav)=>{const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(/navigation/.test(e.message))reloads++;else console.error(e)});
+  return new JSDOM(fs.readFileSync(__dirname+'/../dist/camera-calc.html','utf8'),{runScripts:'dangerously',url:'https://x.test/',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.scrollTo=()=>{};if(seed)w.localStorage.setItem('camcalc3',seed);if(lang)w.localStorage.setItem('camcalc-lang',lang);if(nav)Object.defineProperty(w.navigator,'language',{value:nav})}}).window};
 let blob=null,href='',attached=false,revoked=[];w.URL.createObjectURL=b=>{blob=b;return 'blob:x.test/1'};w.URL.revokeObjectURL=u=>revoked.push(u);
 w.HTMLAnchorElement.prototype.click=function(){href=this.href;attached=this.isConnected};
 d.getElementById('expBtn').click();
@@ -86,3 +86,29 @@ d5.getElementById('kr').value='0.5';d5.getElementById('kr').dispatchEvent(new w5
 assert.strictEqual(w5.localStorage.getItem('camcalc3'),other,'вкладка затёрла данные другой вкладки');
 assert.strictEqual(d5.getElementById('toast').textContent,'Данные изменены в другой вкладке. Обновите страницу.');
 console.log('stale tab: ok');
+// language: en dictionary covers ru
+const sameKeys=(a,b,p)=>Object.keys(a).forEach(k=>{assert.ok(k in b,'нет ключа в EN: '+p+k);
+  if(Array.isArray(a[k]))assert.strictEqual(b[k].length,a[k].length,'длина в EN: '+p+k);else if(a[k]&&typeof a[k]==='object')sameKeys(a[k],b[k],p+k+'.')});
+sameKeys(w.eval('RU'),w.eval('EN'),'');
+console.log('en keys: ok');
+// language: EN report has no Cyrillic except user names, numbers match RU
+const w6=page(exp,'en'),d6=w6.document;
+assert.strictEqual(d6.documentElement.lang,'en');
+assert.ok(!d6.querySelector('#formulas>[lang=en]').hidden&&d6.querySelector('#formulas>[lang=ru]').hidden,'EN: не тот блок формул');
+const userNames=[...ex.types.flatMap(T=>[T.name,...T.objs.map(o=>o.name)]),...ex.cams.map(c=>c.name),...ex.dets.map(x=>x.name),...ex.custom.map(g=>g.name)].sort((a,b)=>b.length-a.length);
+const rEn=w6.eval('report'),rRu=w.eval('report');
+const cyr=userNames.reduce((s,n)=>s.split(n).join(''),rEn).match(/.*[А-Яа-яЁё].*/g);
+assert.strictEqual(cyr,null,'кириллица в EN-отчёте: '+cyr);
+const nums=(s,ru)=>(ru?s.replace(/(\d)[  ](?=\d)/g,'$1').replace(/(\d),(?=\d)/g,'$1.'):s.replace(/(\d),(?=\d)/g,'$1')).match(/\d+(?:\.\d+)?/g);
+assert.deepStrictEqual(nums(rEn,false),nums(rRu,true),'числа EN-отчёта не совпадают с RU');
+console.log('en report: ok');
+// language: first open follows browser, choice survives reload
+assert.strictEqual(page(null,null,'ru-RU').document.documentElement.lang,'ru','язык браузера ru не учтён');
+const w7=page(null,null),r0=reloads;
+assert.strictEqual(w7.document.documentElement.lang,'en');assert.strictEqual(w7.document.getElementById('langBtn').textContent,'RU');
+w7.document.getElementById('langBtn').click();
+assert.strictEqual(reloads,r0+1,'переключение языка не перезагрузило страницу');
+const w8=page(null,w7.localStorage.getItem('camcalc-lang'),'en-US');
+assert.strictEqual(w8.document.documentElement.lang,'ru','выбор языка не сохранился');
+assert.strictEqual(w8.document.getElementById('tplBtn').textContent,'Шаблоны');
+console.log('lang persists: ok');

@@ -253,6 +253,8 @@ function load(){try{const st=JSON.parse(localStorage.getItem("camcalc3")||"null"
 // ---------- события
 function setTheme(light){document.documentElement.classList.toggle("light",light);$("themeBtn").textContent=t(light?"themeDark":"themeLight");$("themeBtn").setAttribute("aria-pressed",String(light))}
 $("themeBtn").addEventListener("click",()=>{setTheme(!document.documentElement.classList.contains("light"));save()});
+$("langBtn").lang=LANG==="en"?"ru":"en";
+$("langBtn").addEventListener("click",()=>{try{localStorage.setItem(LANG_KEY,$("langBtn").lang)}catch(e){toast(t("saveFail"));return}location.reload()});
 PRESETS.forEach(pr=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=pr[0];
   b.addEventListener("click",()=>{act().objs.push(mkObj(pr));renderObjs();calcAll()});$("presets").append(b)});
 $("addObj").addEventListener("click",()=>{const T=act();T.objs.push(mkObj([t("objDefault"),10,10,10,20,"y26s","roi",640]));renderObjs();calcAll();const i=T.objs.length-1;$(`on-${i}`).focus();$(`on-${i}`).select()});

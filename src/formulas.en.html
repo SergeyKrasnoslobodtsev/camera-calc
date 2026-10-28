@@ -1,0 +1,22 @@
+<p>Hc = H − h is the camera height above the plane. x is the floor distance from the point below the camera (negative means behind it). The camera is tilted to the middle of the zone: t = (φ(x₁) + φ(x₂)) / 2.</p>
+        HFOV = 2·arctan(s / 2f), &nbsp;VFOV = 2·arctan(tan(HFOV/2) · Nh/Nw)<br>
+        f<sub>px</sub> = Nw / (2·tan(HFOV/2)) — focal length in pixels<br>
+        φ(x) = arctan(Hc / x), &nbsp;D = √(Hc² + x²), &nbsp;δ = φ − t<br>
+        z(x) = x·cos t + Hc·sin t — depth along the optical axis<br>
+        frame width at line x: W = 2·z·tan(HFOV/2)<br>
+        ρ<sub>across</sub> = f<sub>px</sub> / z<br>
+        ρ<sub>depth</sub> = f<sub>px</sub> · sin φ / (D · cos²δ)<br>
+        object, px = size · ρ · k<br>
+        t<sub>max</sub> = blur / (v · ρ<sub>max</sub>)<br>
+        object box — projection of the 8 corners of a W × L × H box standing on the plane, at the worst point of the zone, × k<br>
+        bitrate = Nw · Nh · fps · bpp · scene factor<br>
+        scale to model input: full frame min(1, input / max(Nw, Nh)); crop min(1, input / max(ROI)); tiles 1<br>
+        tiles = ⌈(ROI<sub>w</sub> − input) / step⌉ + 1 per axis, step = input · (1 − overlap)<br>
+        model load = cameras · analytics fps · calls per frame · (tiles)<br>
+        model capacity = fps on T4 · (640 / input)² · FP16<sub>GPU</sub> / 65 · k<sub>derating</sub> (or custom benchmark · FP16<sub>GPU</sub> / FP16<sub>benchmark GPU</sub>)<br>
+        GPUs per model = load / capacity<br>
+        decoding = cameras · Nw · Nh · fps / (1920 · 1080 · 30) / (NVDEC · fps per NVDEC / 30 · k<sub>derating</sub>)<br>
+        GPU memory per GPU ≈ 0.8 GB + Σ models (0.15 GB + 16 · input² · 6 B · GFLOPs/4) + streams per GPU · 20 · Nw · Nh · 1.5 B<br>
+        best price: minimum price n · GPU price for n = 1…4 where inference and decoder ≤ 1/(1 + headroom), memory ≤ 90% (Jetson 60%)
+        <p style="margin-top:8px">The model is an ideal rectilinear lens (pinhole camera) and a horizontal plane. The density formulas are checked against a numerical projection of pixels onto the plane. Account for the distortion of real wide-angle lenses with the quality factor k.</p>
+<p style="margin-top:8px">Several camera types: inference load is the sum over all inference runs of all types. One model with the same input size takes memory once. Decoding is the sum over types, accounting for their codec. Custom detector: benchmark × (benchmark input / input)² × FP16 GPU / FP16 benchmark GPU.</p>
