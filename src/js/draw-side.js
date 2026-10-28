@@ -1,8 +1,10 @@
-// Обозначения как в 04-compute-type:
+import { t } from "./i18n.js";
+import { DEG, byId, formatNumber } from "./data.js";
+// Обозначения как в compute-type.js:
 //   H — высота камеры, h — высота плоскости объектов, Hc = H − h — высота камеры над плоскостью, м;
 //   x1 и x2 — края зоны по полу от точки под камерой, м.
 // Переменные с окончанием X/Y — координаты на схеме, px.
-function drawSide({
+export function drawSide({
   H,
   h,
   x1,

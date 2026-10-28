@@ -1,3 +1,6 @@
+import { t } from "./i18n.js";
+import { DEG, RESOLUTIONS, SENSORS, formatNumber, parseNum } from "./data.js";
+import { cameraById } from "./objects.js";
 // ---------- расчёт одного типа камер (без DOM)
 // Обозначения из формул (src/formulas.html):
 //   H — высота камеры, h — высота плоскости объектов, Hc = H − h — высота камеры над плоскостью, м;
@@ -5,7 +8,7 @@
 //   s — ширина матрицы, мм; f — фокусное расстояние, мм; Nw × Nh — разрешение кадра, px;
 //   fpx — фокусное расстояние в пикселях; φ (phi) — угол луча к плоскости; D — расстояние до точки, м;
 //   δ (delta) — угол луча к оптической оси; z — глубина по оптической оси, м; k — поправка объектива.
-function computeType(type) {
+export function computeType(type) {
   const inputs = type.inputs,
     mode = inputs.lensMode,
     placement = inputs.placement,

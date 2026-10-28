@@ -1,5 +1,9 @@
+import { STR, t } from "./i18n.js";
+import { store } from "./store.js";
+import { RESOLUTIONS, SENSORS, byId, formatNumber, uid } from "./data.js";
+import { renderObjects } from "./objects.js";
 // ---------- состояние
-const OBJECT_PRESETS = [
+export const OBJECT_PRESETS = [
   [50, 30, 170, 32, "y26s", "roi", 640],
   [9, 18, 4, 20, "y26s", "tiles", 640],
   [8, 8, 2, 20, "y26s", "roi", 640],
@@ -8,13 +12,13 @@ const OBJECT_PRESETS = [
 ].map((preset, i) => [STR.presetNames[i], ...preset, `presetNames.${i}`]);
 // встроенное название на текущем языке по ключу словаря, например "presetNames.0";
 // ключ есть, пока пользователь не изменил название
-const builtinName = (key) => {
+export const builtinName = (key) => {
   const value = String(key)
     .split(".")
     .reduce((node, part) => node?.[part], STR);
   return typeof value === "string" ? value : undefined;
 };
-const makeObject = ([
+export const makeObject = ([
   name,
   width,
   length,
@@ -61,7 +65,7 @@ const INPUT_IDS = [
   "speed",
   "blurPx",
 ];
-const DEFAULT_INPUTS = {
+export const DEFAULT_INPUTS = {
   camera: "",
   cameraHeight: "4",
   planeHeight: "0.9",
@@ -86,7 +90,7 @@ const DEFAULT_INPUTS = {
   lensMode: "auto",
   placement: "side",
 };
-const makeType = (name, count, overrides, objects, nameKey) => ({
+export const makeType = (name, count, overrides, objects, nameKey) => ({
   id: uid(),
   name,
   nameKey,
@@ -94,7 +98,7 @@ const makeType = (name, count, overrides, objects, nameKey) => ({
   inputs: { ...DEFAULT_INPUTS, ...overrides },
   objects: objects.map(makeObject),
 });
-const exampleTypes = () => [
+export const exampleTypes = () => [
   makeType(
     STR.typeNames[0],
     10,
@@ -118,10 +122,11 @@ const exampleTypes = () => [
     "typeNames.1",
   ),
 ];
-let cameraTypes = exampleTypes(),
-  activeTypeId = cameraTypes[0].id;
-const activeType = () =>
-  cameraTypes.find((type) => type.id === activeTypeId) || cameraTypes[0];
+store.cameraTypes = exampleTypes();
+store.activeTypeId = store.cameraTypes[0].id;
+export const activeType = () =>
+  store.cameraTypes.find((type) => type.id === store.activeTypeId) ||
+  store.cameraTypes[0];
 
 // ---------- форма ↔ тип
 RESOLUTIONS.forEach(([label], i) =>
@@ -139,7 +144,7 @@ SENSORS.forEach(([label, width], i) =>
     ),
   ),
 );
-function writeForm(type) {
+export function writeForm(type) {
   byId("typeName").value = type.name;
   byId("typeCount").value = type.count;
   INPUT_IDS.forEach((id) => {
@@ -157,7 +162,7 @@ function writeForm(type) {
   placementRadio.checked = true;
   renderObjects();
 }
-function readForm() {
+export function readForm() {
   const type = activeType();
   if (type.name !== byId("typeName").value) delete type.nameKey;
   type.name = byId("typeName").value;

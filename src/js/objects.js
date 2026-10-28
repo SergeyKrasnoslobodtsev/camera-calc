@@ -1,3 +1,18 @@
+import { STR, t, withUnit } from "./i18n.js";
+import { store } from "./store.js";
+import {
+  FEEDS,
+  INPUTS,
+  MODELS,
+  RESOLUTIONS,
+  SENSORS,
+  byId,
+  escapeHtml,
+  formatNumber,
+  parseNum,
+} from "./data.js";
+import { activeType } from "./state.js";
+import { calcAll } from "./system-ui.js";
 // ---------- шаблоны камер и детекторов
 const BUILTIN_CAMERAS = [
   {
@@ -19,14 +34,13 @@ const BUILTIN_CAMERAS = [
     focalMax: 12,
   },
 ];
-let customCameras = [],
-  customDetectors = [];
-const allCameras = () => [...BUILTIN_CAMERAS, ...customCameras];
-const cameraById = (id) => allCameras().find((camera) => camera.id === id);
-const modelById = (id) =>
+export const allCameras = () => [...BUILTIN_CAMERAS, ...store.customCameras];
+export const cameraById = (id) =>
+  allCameras().find((camera) => camera.id === id);
+export const modelById = (id) =>
   MODELS.find((model) => model.id === id) ||
-  customDetectors.find((detector) => detector.id === id);
-function buildCameraSelect() {
+  store.customDetectors.find((detector) => detector.id === id);
+export function buildCameraSelect() {
   const select = byId("camera"),
     current = select.value;
   select.innerHTML =
@@ -41,7 +55,7 @@ function buildCameraSelect() {
 }
 
 // ---------- карточки объектов
-function renderObjects() {
+export function renderObjects() {
   const type = activeType(),
     list = byId("objectList");
   list.innerHTML = "";
@@ -51,8 +65,8 @@ function renderObjects() {
     card.className = "ocard";
     const modelOptions =
       `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` +
-      (customDetectors.length
-        ? `<optgroup label="${t("customDetectors")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
+      (store.customDetectors.length
+        ? `<optgroup label="${t("customDetectors")}">${store.customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
     card.innerHTML = `<div class="ohdr"><span class="dot" id="objectDot-${i}" aria-hidden="true"></span><input id="objectName-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
@@ -115,7 +129,7 @@ function renderObjects() {
     syncOverlapBox();
   });
 }
-function syncFormUI(type, result) {
+export function syncFormUI(type, result) {
   const inputs = type.inputs,
     camera = cameraById(inputs.camera);
   byId("focalLengthBox").hidden = inputs.lensMode !== "focal";

@@ -2,13 +2,15 @@
   "name": "camera-calc",
   "version": "0.15.0",
   "private": true,
+  "type": "module",
   "description": "Калькулятор подбора камер, объективов и вычислителя (GPU) для видеоаналитики",
   "scripts": {
-    "build": "python3 build.py",
+    "build": "node build.ts",
     "test": "node tests/smoke.test.js && node tests/golden.test.js",
     "format": "prettier --write src/js tests"
   },
   "devDependencies": {
+    "esbuild": "0.28.2",
     "jsdom": "^24.1.3",
     "prettier": "3.9.10"
   }
