@@ -53,15 +53,15 @@ const exp=w.eval('JSON.stringify(snap(),null,1)'),ex=JSON.parse(exp);
 const fr=new w.FileReader();fr.readAsText(blob);fr.onload=()=>{assert.strictEqual(fr.result,exp,'экспорт: содержимое файла');console.log('export content: ok')};
 assert.deepStrictEqual([ex.cams.map(c=>c.name),ex.dets.map(x=>x.name)],[['Тест-камера 8 Мп'],['Детектор деталей']],'экспорт: нет своих шаблонов');
 const before=w.localStorage.getItem('camcalc3');w.importText('{битый');
-assert.strictEqual(T('toast'),'Файл не похож на сохранение калькулятора');
+assert.strictEqual(T('toast'),'Файл не является сохранением калькулятора.');
 assert.strictEqual(w.localStorage.getItem('camcalc3'),before,'битый файл изменил данные');
 ['{"types":[null]}','{"types":[]}','{}',JSON.stringify({...ex,types:[{name:'Тип',objs:'x'}]}),JSON.stringify({types:ex.types})].forEach(s=>{
   d.getElementById('toast').textContent='';w.importText(s);
-  assert.strictEqual(T('toast'),'Файл не похож на сохранение калькулятора',s);
+  assert.strictEqual(T('toast'),'Файл не является сохранением калькулятора.',s);
   assert.strictEqual(w.localStorage.getItem('camcalc3'),before,'файл изменил данные: '+s)});
 let picks=0;d.getElementById('impFile').click=()=>picks++;
 d.getElementById('impBtn').click();
-assert.strictEqual(T('impBtn'),'Заменит всё. Ещё раз');assert.strictEqual(picks,0,'выбор файла без подтверждения');
+assert.strictEqual(T('impBtn'),'Заменить все данные');assert.strictEqual(picks,0,'выбор файла без подтверждения');
 d.getElementById('impBtn').click();
 assert.strictEqual(picks,1,'второе нажатие не открыло выбор файла');assert.strictEqual(T('impBtn'),'Импорт');
 const w2=page();w2.importText(exp);assert.strictEqual(reloads,1,'импорт не перезагрузил страницу');
@@ -74,7 +74,7 @@ console.log('export/import: ok');
 const inp=d.getElementById('impFile'),kept=w.localStorage.getItem('camcalc3');d.getElementById('toast').textContent='';
 Object.defineProperty(inp,'files',{value:[{text:()=>Promise.reject(new Error('NotReadableError'))}]});
 inp.dispatchEvent(new w.Event('change'));
-setTimeout(()=>{assert.strictEqual(T('toast'),'Не удалось прочитать файл');assert.strictEqual(w.localStorage.getItem('camcalc3'),kept);console.log('unreadable file: ok')},0);
+setTimeout(()=>{assert.strictEqual(T('toast'),'Не удалось прочитать файл.');assert.strictEqual(w.localStorage.getItem('camcalc3'),kept);console.log('unreadable file: ok')},0);
 // invalid select values on load
 const w4=page(JSON.stringify({...ex,gl:{...ex.gl,gcnt:'8',gpu:'nope'}}));
 assert.deepStrictEqual([w4.document.getElementById('gcnt').value,w4.document.getElementById('gpu').value],['auto','auto'],'недопустимое значение списка после загрузки');
@@ -84,5 +84,5 @@ const w5=page(exp),d5=w5.document,other=JSON.stringify({...ex,types:[{...ex.type
 w5.localStorage.setItem('camcalc3',other);w5.dispatchEvent(new w5.StorageEvent('storage',{key:'camcalc3'}));
 d5.getElementById('kr').value='0.5';d5.getElementById('kr').dispatchEvent(new w5.Event('input',{bubbles:true}));
 assert.strictEqual(w5.localStorage.getItem('camcalc3'),other,'вкладка затёрла данные другой вкладки');
-assert.strictEqual(d5.getElementById('toast').textContent,'Данные изменены в другой вкладке. Обновите страницу');
+assert.strictEqual(d5.getElementById('toast').textContent,'Данные изменены в другой вкладке. Обновите страницу.');
 console.log('stale tab: ok');
