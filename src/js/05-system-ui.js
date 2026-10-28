@@ -500,61 +500,63 @@ function renderSystem(results, system) {
 
 // ---------- шаблоны: видеокарты
 function buildGpuSelect() {
-  const sel = byId("gpu"),
-    cur = sel.value || "auto";
-  sel.innerHTML =
+  const select = byId("gpu"),
+    current = select.value || "auto";
+  select.innerHTML =
     `<option value="auto">${t("gpuAuto")}</option>` +
     allGpus()
       .map(
-        (g) =>
-          `<option value="${g.id}">${escapeHtml(g.name)}${g.custom ? t("gpuCustomMark") : ""}</option>`,
+        (gpu) =>
+          `<option value="${gpu.id}">${escapeHtml(gpu.name)}${gpu.custom ? t("gpuCustomMark") : ""}</option>`,
       )
       .join("");
-  sel.value = allGpus().some((g) => g.id === cur) ? cur : "auto";
-  const ref = byId("ndRef");
-  if (ref) {
-    const c = ref.value;
-    ref.innerHTML = allGpus()
-      .map((g) => `<option value="${g.id}">${escapeHtml(g.name)}</option>`)
+  select.value = allGpus().some((gpu) => gpu.id === current) ? current : "auto";
+  const refSelect = byId("ndRef");
+  if (refSelect) {
+    const refCurrent = refSelect.value;
+    refSelect.innerHTML = allGpus()
+      .map(
+        (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}</option>`,
+      )
       .join("");
-    ref.value = gpuById(c) ? c : "5090";
+    refSelect.value = gpuById(refCurrent) ? refCurrent : "5090";
   }
 }
 function renderGpuView() {
   const row = (
-    g,
-  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(g.name)}</b><span class="sub">${g.jetson ? t("gJet") : escapeHtml(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(g.tflops, 1)}</td><td>${decText(g)}</td><td>${U(formatNumber(g.memoryGB, 0), "gb")}</td><td>${g.tdpW ? U(formatNumber(g.tdpW, 0), "w") : "—"}</td>
-    <td><input id="pr-${g.id}" value="${escapeHtml(gpuPrices[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", g.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", g.name))}"></td>
-    ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${escapeHtml(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
-  const gh = STR.gHead,
-    head = `<tr>${gh
+    gpu,
+  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gJet") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${U(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? U(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
+    <td><input id="pr-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", gpu.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gon-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", gpu.name))}"></td>
+    ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("delAria", gpu.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
+  const headers = STR.gHead,
+    head = `<tr>${headers
       .slice(0, 6)
-      .map((x) => `<th>${x}</th>`)
-      .join("")}<th style="text-align:center">${gh[6]}</th><th></th></tr>`;
+      .map((header) => `<th>${header}</th>`)
+      .join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
   byId("catTitle").textContent = t("catTitle", GPU_CATALOG.length);
   byId("catTbl").innerHTML = head + GPU_CATALOG.map(row).join("");
   byId("mine").innerHTML = customGpus.length
     ? `<strong style="font-weight:600">${t("mineN", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("mine0")}</strong><span class="note" style="font-size:13px">${t("mineEmpty")}</span>`;
-  allGpus().forEach((g) => {
-    byId(`pr-${g.id}`).addEventListener("input", (e) => {
-      gpuPrices[g.id] = e.target.value;
+  allGpus().forEach((gpu) => {
+    byId(`pr-${gpu.id}`).addEventListener("input", (event) => {
+      gpuPrices[gpu.id] = event.target.value;
       calcAll();
     });
-    byId(`gon-${g.id}`).addEventListener("change", (e) => {
-      gpuEnabled[g.id] = e.target.checked;
+    byId(`gon-${gpu.id}`).addEventListener("change", (event) => {
+      gpuEnabled[gpu.id] = event.target.checked;
       calcAll();
     });
   });
-  document.querySelectorAll("[data-delg]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = b.dataset.delg;
-      customGpus = customGpus.filter((g) => g.id !== id);
+  document.querySelectorAll("[data-delg]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const id = button.dataset.delg;
+      customGpus = customGpus.filter((gpu) => gpu.id !== id);
       delete gpuPrices[id];
       delete gpuEnabled[id];
-      customDetectors.forEach((d) => {
-        if (d.refGpu === id) d.refGpu = "5090";
+      customDetectors.forEach((detector) => {
+        if (detector.refGpu === id) detector.refGpu = "5090";
       });
       buildGpuSelect();
       renderGpuView();
@@ -564,33 +566,34 @@ function renderGpuView() {
   );
 }
 byId("ngArch").addEventListener("change", () => {
-  const j = byId("ngArch").value === "jet";
-  byId("ngDecL").textContent = t(j ? "ngDecJet" : "ngDec");
-  byId("ngDec").placeholder = j ? "22" : "2";
+  const isJetson = byId("ngArch").value === "jet";
+  byId("ngDecL").textContent = t(isJetson ? "ngDecJet" : "ngDec");
+  byId("ngDec").placeholder = isJetson ? "22" : "2";
 });
-byId("newForm").addEventListener("submit", (e) => {
-  e.preventDefault();
+byId("newForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  // decode — число NVDEC, у Jetson — потоков 1080p30 H.265
   const name = byId("ngName").value.trim(),
     arch = byId("ngArch").value,
     tflops = parseNum(byId("ngTf").value),
-    dec = parseNum(byId("ngDec").value),
+    decode = parseNum(byId("ngDec").value),
     memoryGB = parseNum(byId("ngMem").value),
     tdpW = parseNum(byId("ngTdp").value),
     price = parseNum(byId("ngPrice").value);
-  const errs = [];
-  if (!name) errs.push(t("eName"));
-  if (!(tflops > 0)) errs.push(t("eTf"));
-  if (!(dec > 0)) errs.push(t(arch === "jet" ? "eDecJet" : "eDec"));
-  if (!(memoryGB > 0)) errs.push(t("eMem"));
-  if (!(price > 0)) errs.push(t("ePrice"));
-  const er = byId("ngErr");
-  if (errs.length) {
-    er.hidden = false;
-    er.textContent = t("ngErr", errs.join(", "));
+  const errors = [];
+  if (!name) errors.push(t("eName"));
+  if (!(tflops > 0)) errors.push(t("eTf"));
+  if (!(decode > 0)) errors.push(t(arch === "jet" ? "eDecJet" : "eDec"));
+  if (!(memoryGB > 0)) errors.push(t("eMem"));
+  if (!(price > 0)) errors.push(t("ePrice"));
+  const errorEl = byId("ngErr");
+  if (errors.length) {
+    errorEl.hidden = false;
+    errorEl.textContent = t("ngErr", errors.join(", "));
     return;
   }
-  er.hidden = true;
-  const g = {
+  errorEl.hidden = true;
+  const gpu = {
     id: "c" + uid(),
     name,
     arch: arch === "jet" ? "Ampere" : arch,
@@ -601,11 +604,14 @@ byId("newForm").addEventListener("submit", (e) => {
     custom: true,
   };
   if (arch === "jet") {
-    g.jetson = true;
-    g.decodeStreams = { h265: dec, h264: +((dec * 748) / 1415).toFixed(1) };
-  } else g.nvdec = Math.round(dec);
-  customGpus.push(g);
-  gpuEnabled[g.id] = byId("ngOn").checked;
+    gpu.jetson = true;
+    gpu.decodeStreams = {
+      h265: decode,
+      h264: +((decode * 748) / 1415).toFixed(1),
+    };
+  } else gpu.nvdec = Math.round(decode);
+  customGpus.push(gpu);
+  gpuEnabled[gpu.id] = byId("ngOn").checked;
   ["ngName", "ngTf", "ngDec", "ngMem", "ngTdp", "ngPrice"].forEach(
     (id) => (byId(id).value = ""),
   );
@@ -619,23 +625,23 @@ byId("newForm").addEventListener("submit", (e) => {
 function renderCamView() {
   const used = (id) =>
     cameraTypes
-      .filter((t) => t.inputs.camera === id)
-      .reduce((s, t) => s + (Math.round(parseNum(t.count)) || 0), 0);
+      .filter((type) => type.inputs.camera === id)
+      .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
   byId("camTitle").textContent = t("camTitle", allCameras().length);
   byId("camTbl").innerHTML =
-    `<tr>${STR.cHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
+    `<tr>${STR.cHead.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     allCameras()
       .map(
-        (c) =>
-          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(formatNumber(c.sensorWidth, 2), "mm")}</td><td>${c.focalMin > 0 ? (c.focalMin === c.focalMax ? U(formatNumber(c.focalMin, 1), "mm") : U(formatNumber(c.focalMin, 1) + "–" + formatNumber(c.focalMax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + formatNumber(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${escapeHtml(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
+        (camera) =>
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cOwn" : "cBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${U(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? U(formatNumber(camera.focalMin, 1), "mm") : U(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cAny")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("delAria", camera.name))}">${t("del")}</button>` : ""}</td></tr>`,
       )
       .join("");
-  document.querySelectorAll("[data-delc]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = b.dataset.delc;
-      customCameras = customCameras.filter((c) => c.id !== id);
-      cameraTypes.forEach((t) => {
-        if (t.inputs.camera === id) t.inputs.camera = "";
+  document.querySelectorAll("[data-delc]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const id = button.dataset.delc;
+      customCameras = customCameras.filter((camera) => camera.id !== id);
+      cameraTypes.forEach((type) => {
+        if (type.inputs.camera === id) type.inputs.camera = "";
       });
       buildCameraSelect();
       writeForm(activeType());
@@ -645,33 +651,33 @@ function renderCamView() {
     }),
   );
 }
-byId("camForm").addEventListener("submit", (e) => {
-  e.preventDefault();
+byId("camForm").addEventListener("submit", (event) => {
+  event.preventDefault();
   const name = byId("ncName").value.trim(),
     Nw = Math.round(parseNum(byId("ncW").value)),
     Nh = Math.round(parseNum(byId("ncH").value)),
-    pp = parseNum(byId("ncPp").value);
+    pixelPitchUm = parseNum(byId("ncPp").value);
   let sensorWidth = parseNum(byId("ncSw").value);
   let focalMin = parseNum(byId("ncFmin").value),
     focalMax = parseNum(byId("ncFmax").value);
   const price = parseNum(byId("ncPrice").value);
-  if (!(sensorWidth > 0) && pp > 0 && Nw > 0)
-    sensorWidth = +((pp * Nw) / 1000).toFixed(3);
+  if (!(sensorWidth > 0) && pixelPitchUm > 0 && Nw > 0)
+    sensorWidth = +((pixelPitchUm * Nw) / 1000).toFixed(3);
   if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
   if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
-  const errs = [];
-  if (!name) errs.push(t("eName"));
-  if (!(Nw > 0 && Nh > 0)) errs.push(t("eFrame"));
-  if (!(sensorWidth > 0)) errs.push(t("eSw"));
+  const errors = [];
+  if (!name) errors.push(t("eName"));
+  if (!(Nw > 0 && Nh > 0)) errors.push(t("eFrame"));
+  if (!(sensorWidth > 0)) errors.push(t("eSw"));
   if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
-    errs.push(t("eFRange"));
-  const er = byId("ncErr");
-  if (errs.length) {
-    er.hidden = false;
-    er.textContent = t("ncErr", errs.join(", "));
+    errors.push(t("eFRange"));
+  const errorEl = byId("ncErr");
+  if (errors.length) {
+    errorEl.hidden = false;
+    errorEl.textContent = t("ncErr", errors.join(", "));
     return;
   }
-  er.hidden = true;
+  errorEl.hidden = true;
   customCameras.push({
     id: "m" + uid(),
     name,
@@ -707,30 +713,33 @@ function renderDetView() {
   );
   const used = (id) =>
     cameraTypes.reduce(
-      (s, t) => s + t.objects.filter((o) => o.model === id).length,
+      (sum, type) =>
+        sum + type.objects.filter((obj) => obj.model === id).length,
       0,
     );
   byId("detTbl").innerHTML =
-    `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
+    `<tr>${STR.dHead.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     (customDetectors.length
       ? customDetectors
-          .map((d) => {
-            const rg = gpuById(d.refGpu);
-            return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inputSize}</td><td>${d.gflops > 0 ? formatNumber(d.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
+          .map((detector) => {
+            const refGpu = gpuById(detector.refGpu);
+            return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(detector.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${detector.inputSize}</td><td>${detector.gflops > 0 ? formatNumber(detector.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(detector.fps, 0), escapeHtml(refGpu ? refGpu.name : "?"))}</td><td>${used(detector.id)}</td><td><button type="button" class="sm" data-deld="${detector.id}" aria-label="${escapeHtml(t("delAria", detector.name))}">${t("del")}</button></td></tr>`;
           })
           .join("")
       : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
     MODELS.map(
-      (m) =>
-        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(m.gflops, 1)}</td><td>${t("dSpeed", formatNumber(1000 / m.latencyMs, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
+      (model) =>
+        `<tr><td class="txt">${model.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(model.gflops, 1)}</td><td>${t("dSpeed", formatNumber(1000 / model.latencyMs, 0), "T4")}</td><td>${used(model.id)}</td><td></td></tr>`,
     ).join("");
-  document.querySelectorAll("[data-deld]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = b.dataset.deld;
-      customDetectors = customDetectors.filter((d) => d.id !== id);
-      cameraTypes.forEach((t) =>
-        t.objects.forEach((o) => {
-          if (o.model === id) o.model = "y26s";
+  document.querySelectorAll("[data-deld]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const id = button.dataset.deld;
+      customDetectors = customDetectors.filter(
+        (detector) => detector.id !== id,
+      );
+      cameraTypes.forEach((type) =>
+        type.objects.forEach((obj) => {
+          if (obj.model === id) obj.model = "y26s";
         }),
       );
       renderObjects();
@@ -741,25 +750,25 @@ function renderDetView() {
   );
 }
 byId("ndInp").innerHTML = INPUTS.map(
-  (x) => `<option${x === 640 ? " selected" : ""}>${x}</option>`,
+  (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`,
 ).join("");
-byId("detForm").addEventListener("submit", (e) => {
-  e.preventDefault();
+byId("detForm").addEventListener("submit", (event) => {
+  event.preventDefault();
   const name = byId("ndName").value.trim(),
     fps = parseNum(byId("ndFps").value),
     inputSize = +byId("ndInp").value,
     refGpu = byId("ndRef").value,
     gflops = parseNum(byId("ndGf").value);
-  const errs = [];
-  if (!name) errs.push(t("eName"));
-  if (!(fps > 0)) errs.push(t("eFps"));
-  const er = byId("ndErr");
-  if (errs.length) {
-    er.hidden = false;
-    er.textContent = t("ncErr", errs.join(", "));
+  const errors = [];
+  if (!name) errors.push(t("eName"));
+  if (!(fps > 0)) errors.push(t("eFps"));
+  const errorEl = byId("ndErr");
+  if (errors.length) {
+    errorEl.hidden = false;
+    errorEl.textContent = t("ncErr", errors.join(", "));
     return;
   }
-  er.hidden = true;
+  errorEl.hidden = true;
   customDetectors.push({
     id: "d" + uid(),
     name,
