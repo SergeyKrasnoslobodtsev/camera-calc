@@ -788,52 +788,52 @@ byId("detForm").addEventListener("submit", (event) => {
 // ---------- главный цикл
 let report = "";
 function calcAll() {
-  const Rs = cameraTypes.map(computeType);
-  const i = Math.max(
+  const results = cameraTypes.map(computeType);
+  const activeIndex = Math.max(
     0,
-    cameraTypes.findIndex((t) => t.id === activeTypeId),
+    cameraTypes.findIndex((type) => type.id === activeTypeId),
   );
-  syncFormUI(cameraTypes[i], Rs[i]);
-  renderType(Rs[i]);
-  renderTabs(Rs);
-  const system = computeSystem(Rs);
-  const systemTotals = renderSystem(Rs, system);
+  syncFormUI(cameraTypes[activeIndex], results[activeIndex]);
+  renderType(results[activeIndex]);
+  renderTabs(results);
+  const system = computeSystem(results);
+  const systemTotals = renderSystem(results, system);
   const chosen = system.chosen;
   report = [
     t("appTitle"),
-    ...Rs.flatMap((r) =>
-      r.err
-        ? ["\n" + t("rErr", r.type.name, r.count)]
+    ...results.flatMap((result) =>
+      result.err
+        ? ["\n" + t("rErr", result.type.name, result.count)]
         : [
-            `\n${r.type.name} × ${r.count}`,
+            `\n${result.type.name} × ${result.count}`,
             t("rCam", {
-              rl: r.cameraLabel,
-              rot: r.rotated,
-              s: formatNumber(r.s, 2),
-              f: formatNumber(r.f, 1),
-              hf: formatNumber(r.hfov / DEG, 0),
-              tilt: formatNumber(r.tilt / DEG, 0),
-              top: r.placement === "top",
-              L0: formatNumber(r.zoneStart, 2),
-              H: formatNumber(r.H, 2),
-              Wz: formatNumber(r.zoneWidth, 2),
-              Dz: formatNumber(r.zoneDepth, 2),
+              rl: result.cameraLabel,
+              rot: result.rotated,
+              s: formatNumber(result.s, 2),
+              f: formatNumber(result.f, 1),
+              hf: formatNumber(result.hfov / DEG, 0),
+              tilt: formatNumber(result.tilt / DEG, 0),
+              top: result.placement === "top",
+              L0: formatNumber(result.zoneStart, 2),
+              H: formatNumber(result.H, 2),
+              Wz: formatNumber(result.zoneWidth, 2),
+              Dz: formatNumber(result.zoneDepth, 2),
             }),
-            ...r.valid.map((o) =>
+            ...result.valid.map((obj) =>
               t("rObj", {
-                name: o.name,
-                model: modelName(o),
-                feed: o.feedInfo.text,
-                pxs: r.sensorPxText(o),
-                pxm: r.modelPxText(o),
-                req: formatNumber(o.requiredPx, 0),
-                st: STATUS_TEXT[o.status],
+                name: obj.name,
+                model: modelName(obj),
+                feed: obj.feedInfo.text,
+                pxs: result.sensorPxText(obj),
+                pxm: result.modelPxText(obj),
+                req: formatNumber(obj.requiredPx, 0),
+                st: STATUS_TEXT[obj.status],
               }),
             ),
             t(
               "rStream",
-              formatNumber(r.bitrateMbps, 1),
-              Math.ceil(r.shutterDenominator),
+              formatNumber(result.bitrateMbps, 1),
+              Math.ceil(result.shutterDenominator),
             ),
           ],
     ),
@@ -865,7 +865,7 @@ function calcAll() {
   save();
 }
 const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
-const snap = () => ({
+const snapshot = () => ({
   types: cameraTypes,
   activeTypeId,
   system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
@@ -878,8 +878,8 @@ const snap = () => ({
 });
 let stale = false;
 const STALE_MSG = t("stale");
-addEventListener("storage", (e) => {
-  if (e.key === "camcalc4") {
+addEventListener("storage", (event) => {
+  if (event.key === "camcalc4") {
     stale = true;
     toast(STALE_MSG);
   }
@@ -890,70 +890,82 @@ function save() {
     return;
   }
   try {
-    localStorage.setItem("camcalc4", JSON.stringify(snap()));
-  } catch (e) {}
+    localStorage.setItem("camcalc4", JSON.stringify(snapshot()));
+  } catch (error) {}
 }
 function load() {
   try {
-    const st = JSON.parse(localStorage.getItem("camcalc4") || "null");
-    if (!st) return;
+    const saved = JSON.parse(localStorage.getItem("camcalc4") || "null");
+    if (!saved) return;
     // старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
-    const dot = (x) => (typeof x === "string" ? x.replace(",", ".") : x);
-    const dotAll = (obj) =>
-      Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
-    const shownName = (x) => (x.nameKey && builtinName(x.nameKey)) || x.name;
-    if (Array.isArray(st.customGpus))
-      customGpus = st.customGpus
-        .filter((g) => g && g.id && g.name && g.tflops > 0)
-        .map((g) => ({ ...g, custom: true }));
-    if (Array.isArray(st.customCameras))
-      customCameras = st.customCameras
-        .filter((c) => c && c.id && c.Nw > 0 && c.Nh > 0 && c.sensorWidth > 0)
-        .map((c) => ({ ...c, custom: true }));
-    if (Array.isArray(st.customDetectors))
-      customDetectors = st.customDetectors
-        .filter((d) => d && d.id && d.fps > 0)
-        .map((d) => ({ ...d, custom: true }));
-    if (st.gpuPrices && typeof st.gpuPrices === "object")
-      gpuPrices = dotAll(st.gpuPrices);
-    if (st.gpuEnabled && typeof st.gpuEnabled === "object")
-      gpuEnabled = st.gpuEnabled;
-    if (st.light) setTheme(true);
+    const withDot = (value) =>
+      typeof value === "string" ? value.replace(",", ".") : value;
+    const allWithDot = (values) =>
+      Object.fromEntries(
+        Object.entries(values).map(([key, value]) => [key, withDot(value)]),
+      );
+    const shownName = (item) =>
+      (item.nameKey && builtinName(item.nameKey)) || item.name;
+    if (Array.isArray(saved.customGpus))
+      customGpus = saved.customGpus
+        .filter((gpu) => gpu && gpu.id && gpu.name && gpu.tflops > 0)
+        .map((gpu) => ({ ...gpu, custom: true }));
+    if (Array.isArray(saved.customCameras))
+      customCameras = saved.customCameras
+        .filter(
+          (camera) =>
+            camera &&
+            camera.id &&
+            camera.Nw > 0 &&
+            camera.Nh > 0 &&
+            camera.sensorWidth > 0,
+        )
+        .map((camera) => ({ ...camera, custom: true }));
+    if (Array.isArray(saved.customDetectors))
+      customDetectors = saved.customDetectors
+        .filter((detector) => detector && detector.id && detector.fps > 0)
+        .map((detector) => ({ ...detector, custom: true }));
+    if (saved.gpuPrices && typeof saved.gpuPrices === "object")
+      gpuPrices = allWithDot(saved.gpuPrices);
+    if (saved.gpuEnabled && typeof saved.gpuEnabled === "object")
+      gpuEnabled = saved.gpuEnabled;
+    if (saved.light) setTheme(true);
     buildGpuSelect();
     buildCameraSelect();
-    if (Array.isArray(st.types) && st.types.length) {
-      cameraTypes = st.types.map((t) => ({
-        id: t.id || uid(),
-        name: shownName(t),
-        nameKey: t.nameKey,
-        count: dot(t.count),
-        inputs: dotAll({ ...DEFAULT_INPUTS, ...t.inputs }),
-        objects: (t.objects || []).map((o) => ({
+    if (Array.isArray(saved.types) && saved.types.length) {
+      cameraTypes = saved.types.map((type) => ({
+        id: type.id || uid(),
+        name: shownName(type),
+        nameKey: type.nameKey,
+        count: withDot(type.count),
+        inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
+        objects: (type.objects || []).map((obj) => ({
           ...makeObject([
-            shownName(o),
-            dot(o.width),
-            dot(o.length),
-            dot(o.height),
-            dot(o.requiredPx),
-            modelById(o.model) ? o.model : "y26s",
-            o.feed,
-            o.inputSize,
-            o.nameKey,
+            shownName(obj),
+            withDot(obj.width),
+            withDot(obj.length),
+            withDot(obj.height),
+            withDot(obj.requiredPx),
+            modelById(obj.model) ? obj.model : "y26s",
+            obj.feed,
+            obj.inputSize,
+            obj.nameKey,
           ]),
-          overlap: dot(o.overlap ?? 20),
+          overlap: withDot(obj.overlap ?? 20),
         })),
       }));
-      activeTypeId = cameraTypes.some((t) => t.id === st.activeTypeId)
-        ? st.activeTypeId
+      activeTypeId = cameraTypes.some((type) => type.id === saved.activeTypeId)
+        ? saved.activeTypeId
         : cameraTypes[0].id;
     }
-    if (st.system)
+    if (saved.system)
       SYSTEM_IDS.forEach((id) => {
-        const el = byId(id);
-        if (st.system[id] != null) el.value = dot(st.system[id]);
-        if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = "auto";
+        const field = byId(id);
+        if (saved.system[id] != null) field.value = withDot(saved.system[id]);
+        if (field.tagName === "SELECT" && field.selectedIndex < 0)
+          field.value = "auto";
       });
-  } catch (e) {}
+  } catch (error) {}
 }
 
 // ---------- события
@@ -970,27 +982,27 @@ byId("langBtn").lang = LANG === "en" ? "ru" : "en";
 byId("langBtn").addEventListener("click", () => {
   try {
     localStorage.setItem(LANG_KEY, byId("langBtn").lang);
-  } catch (e) {
+  } catch (error) {
     toast(t("saveFail"));
     return;
   }
   location.reload();
 });
-OBJECT_PRESETS.forEach((pr) => {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "chip";
-  b.textContent = pr[0];
-  b.addEventListener("click", () => {
-    activeType().objects.push(makeObject(pr));
+OBJECT_PRESETS.forEach((preset) => {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip";
+  chip.textContent = preset[0];
+  chip.addEventListener("click", () => {
+    activeType().objects.push(makeObject(preset));
     renderObjects();
     calcAll();
   });
-  byId("presets").append(b);
+  byId("presets").append(chip);
 });
 byId("addObj").addEventListener("click", () => {
-  const T = activeType();
-  T.objects.push(
+  const type = activeType();
+  type.objects.push(
     makeObject([
       t("objDefault"),
       10,
@@ -1005,9 +1017,9 @@ byId("addObj").addEventListener("click", () => {
   );
   renderObjects();
   calcAll();
-  const i = T.objects.length - 1;
-  byId(`obj-name-${i}`).focus();
-  byId(`obj-name-${i}`).select();
+  const lastIndex = type.objects.length - 1;
+  byId(`obj-name-${lastIndex}`).focus();
+  byId(`obj-name-${lastIndex}`).select();
 });
 byId("frm").addEventListener("input", () => {
   readForm();
@@ -1017,55 +1029,55 @@ byId("frm").addEventListener("change", () => {
   readForm();
   calcAll();
 });
-byId("frm").addEventListener("submit", (e) => e.preventDefault());
+byId("frm").addEventListener("submit", (event) => event.preventDefault());
 SYSTEM_IDS.forEach((id) => {
   byId(id).addEventListener("input", calcAll);
   byId(id).addEventListener("change", calcAll);
 });
 byId("dupBtn").addEventListener("click", () => {
   readForm();
-  const src = activeType(),
-    T = JSON.parse(JSON.stringify(src));
-  T.id = uid();
-  T.name = src.name + t("copySuffix");
-  delete T.nameKey;
-  cameraTypes.splice(cameraTypes.indexOf(src) + 1, 0, T);
-  activeTypeId = T.id;
-  writeForm(T);
+  const source = activeType(),
+    copy = JSON.parse(JSON.stringify(source));
+  copy.id = uid();
+  copy.name = source.name + t("copySuffix");
+  delete copy.nameKey;
+  cameraTypes.splice(cameraTypes.indexOf(source) + 1, 0, copy);
+  activeTypeId = copy.id;
+  writeForm(copy);
   calcAll();
   toast(t("typeCopied"));
 });
-let delArm = null;
+let deleteTimer = null;
 byId("delBtn").addEventListener("click", () => {
-  const b = byId("delBtn");
+  const button = byId("delBtn");
   if (cameraTypes.length < 2) {
     toast(t("lastType"));
     return;
   }
-  if (!delArm) {
-    b.textContent = t("delConfirm");
-    delArm = setTimeout(() => {
-      b.textContent = t("delBtn");
-      delArm = null;
+  if (!deleteTimer) {
+    button.textContent = t("delConfirm");
+    deleteTimer = setTimeout(() => {
+      button.textContent = t("delBtn");
+      deleteTimer = null;
     }, 3000);
     return;
   }
-  clearTimeout(delArm);
-  delArm = null;
-  b.textContent = t("delBtn");
-  const i = cameraTypes.findIndex((t) => t.id === activeTypeId);
-  cameraTypes.splice(i, 1);
-  activeTypeId = cameraTypes[Math.max(0, i - 1)].id;
+  clearTimeout(deleteTimer);
+  deleteTimer = null;
+  button.textContent = t("delBtn");
+  const index = cameraTypes.findIndex((type) => type.id === activeTypeId);
+  cameraTypes.splice(index, 1);
+  activeTypeId = cameraTypes[Math.max(0, index - 1)].id;
   writeForm(activeType());
   calcAll();
   toast(t("typeDeleted"));
 });
-function toast(t) {
-  const el = byId("toast");
-  el.textContent = t;
-  el.hidden = false;
-  clearTimeout(toast.t);
-  toast.t = setTimeout(() => (el.hidden = true), 1800);
+function toast(message) {
+  const toastEl = byId("toast");
+  toastEl.textContent = message;
+  toastEl.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => (toastEl.hidden = true), 1800);
 }
 byId("resetBtn").addEventListener("click", () => {
   cameraTypes = exampleTypes();
@@ -1089,94 +1101,96 @@ byId("copyBtn").addEventListener("click", () => {
   );
 });
 byId("expBtn").addEventListener("click", () => {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(
-    new Blob([JSON.stringify(snap(), null, 1)], { type: "application/json" }),
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(
+    new Blob([JSON.stringify(snapshot(), null, 1)], {
+      type: "application/json",
+    }),
   );
-  a.download = "camera-calc.json";
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 0);
+  link.download = "camera-calc.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 0);
 });
-function importText(s) {
-  let st;
+function importText(text) {
+  let saved;
   try {
-    st = JSON.parse(s);
-  } catch (e) {}
-  const isObj = (x) => x && typeof x === "object";
+    saved = JSON.parse(text);
+  } catch (error) {}
+  const isObject = (value) => value && typeof value === "object";
   if (
-    !isObj(st) ||
-    !Array.isArray(st.types) ||
-    !st.types.length ||
-    !st.types.every(
-      (t) =>
-        isObj(t) &&
-        typeof t.name === "string" &&
-        (t.objects == null ||
-          (Array.isArray(t.objects) && t.objects.every(isObj))),
+    !isObject(saved) ||
+    !Array.isArray(saved.types) ||
+    !saved.types.length ||
+    !saved.types.every(
+      (type) =>
+        isObject(type) &&
+        typeof type.name === "string" &&
+        (type.objects == null ||
+          (Array.isArray(type.objects) && type.objects.every(isObject))),
     ) ||
-    !["customGpus", "customCameras", "customDetectors"].every((k) =>
-      Array.isArray(st[k]),
+    !["customGpus", "customCameras", "customDetectors"].every((key) =>
+      Array.isArray(saved[key]),
     ) ||
-    !isObj(st.gpuPrices) ||
-    !isObj(st.gpuEnabled)
+    !isObject(saved.gpuPrices) ||
+    !isObject(saved.gpuEnabled)
   ) {
     toast(t("badFile"));
     return;
   }
   try {
-    localStorage.setItem("camcalc4", JSON.stringify(st));
-  } catch (e) {
+    localStorage.setItem("camcalc4", JSON.stringify(saved));
+  } catch (error) {
     toast(t("saveFail"));
     return;
   }
   location.reload();
 }
-let impArm = null;
+let importTimer = null;
 byId("impBtn").addEventListener("click", () => {
-  const b = byId("impBtn");
-  if (!impArm) {
-    b.textContent = t("impConfirm");
-    impArm = setTimeout(() => {
-      b.textContent = t("impBtn");
-      impArm = null;
+  const button = byId("impBtn");
+  if (!importTimer) {
+    button.textContent = t("impConfirm");
+    importTimer = setTimeout(() => {
+      button.textContent = t("impBtn");
+      importTimer = null;
     }, 3000);
     return;
   }
-  clearTimeout(impArm);
-  impArm = null;
-  b.textContent = t("impBtn");
+  clearTimeout(importTimer);
+  importTimer = null;
+  button.textContent = t("impBtn");
   byId("impFile").click();
 });
-byId("impFile").addEventListener("change", (e) => {
-  const f = e.target.files[0];
-  e.target.value = "";
-  if (f) f.text().then(importText, () => toast(t("readFail")));
+byId("impFile").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (file) file.text().then(importText, () => toast(t("readFail")));
 });
-const TPL = {
+const TEMPLATE_VIEWS = {
   "tpl-gpus": renderGpuView,
   "tpl-cams": renderCamView,
   "tpl-dets": renderDetView,
 };
 function route() {
-  const h = location.hash.slice(1),
-    isTpl = h in TPL;
-  byId("viewMain").style.display = isTpl ? "none" : "flex";
-  byId("viewTpl").hidden = !isTpl;
-  byId("viewTpl").style.display = isTpl ? "flex" : "none";
-  if (isTpl) {
-    Object.keys(TPL).forEach((k) => {
-      byId(k + "-v").hidden = k !== h;
-      byId(k + "-v").style.display = k === h ? "flex" : "none";
-      const a = byId("tt-" + k.slice(4));
-      if (k === h) a.setAttribute("aria-current", "page");
-      else a.removeAttribute("aria-current");
+  const hash = location.hash.slice(1),
+    isTemplate = hash in TEMPLATE_VIEWS;
+  byId("viewMain").style.display = isTemplate ? "none" : "flex";
+  byId("viewTpl").hidden = !isTemplate;
+  byId("viewTpl").style.display = isTemplate ? "flex" : "none";
+  if (isTemplate) {
+    Object.keys(TEMPLATE_VIEWS).forEach((view) => {
+      byId(view + "-v").hidden = view !== hash;
+      byId(view + "-v").style.display = view === hash ? "flex" : "none";
+      const link = byId("tt-" + view.slice(4));
+      if (view === hash) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
     });
-    TPL[h]();
-  } else if (h === "") (writeForm(activeType()), calcAll());
+    TEMPLATE_VIEWS[hash]();
+  } else if (hash === "") (writeForm(activeType()), calcAll());
   try {
     window.scrollTo(0, 0);
-  } catch (e) {}
+  } catch (error) {}
 }
 window.addEventListener("hashchange", route);

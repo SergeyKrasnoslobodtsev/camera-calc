@@ -50,7 +50,7 @@ function results(window) {
 }
 
 // Состояние встроенного примера, от него строятся остальные конфигурации.
-const example = JSON.parse(openPage().eval("JSON.stringify(snap())"));
+const example = JSON.parse(openPage().eval("JSON.stringify(snapshot())"));
 const [sideType, topType] = example.types;
 const withType = (type, changes) => ({
   ...type,

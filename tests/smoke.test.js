@@ -177,7 +177,7 @@ setTimeout(() => {
   );
   console.log("export revoke: ok");
 }, 0);
-const exp = w.eval("JSON.stringify(snap(),null,1)"),
+const exp = w.eval("JSON.stringify(snapshot(),null,1)"),
   ex = JSON.parse(exp);
 const fr = new w.FileReader();
 fr.readAsText(blob);
