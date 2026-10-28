@@ -83,6 +83,7 @@ function renderObjs() {
       el.addEventListener("input", (e) => {
         e.stopPropagation();
         o[f] = e.target.value;
+        if (f === "name") delete o.nameKey;
         calcAll();
       });
     });
