@@ -161,9 +161,11 @@ function computeType(type) {
     samples = [];
   for (let i = 0; i <= 40; i++)
     samples.push(densityAt(x1 + ((x2 - x1) * i) / 40));
-  const minAcross = Math.min(...samples.map((p) => p.across)),
-    minDepthDensity = Math.min(...samples.map((p) => p.depth)),
-    maxDensity = Math.max(...samples.map((p) => Math.max(p.across, p.depth)));
+  const minAcross = Math.min(...samples.map((sample) => sample.across)),
+    minDepthDensity = Math.min(...samples.map((sample) => sample.depth)),
+    maxDensity = Math.max(
+      ...samples.map((sample) => Math.max(sample.across, sample.depth)),
+    );
   // точная проекция коробки Ш×Д×В, стоящей на плоскости по центру кадра
   const cosTilt = Math.cos(tilt),
     sinTilt = Math.sin(tilt);
@@ -252,7 +254,7 @@ function computeType(type) {
       inputSize = parseNum(obj.inputSize) || 640;
     const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.overlap));
     if (
-      ![width, length, height].every((x) => isFinite(x) && x >= 0) ||
+      ![width, length, height].every((size) => isFinite(size) && size >= 0) ||
       Math.max(width, length, height) <= 0 ||
       !(requiredPx > 0)
     )
