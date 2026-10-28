@@ -34,6 +34,26 @@ const go = (h) => {
 const set = (id, v) => (d.getElementById(id).value = v);
 const fire = (id, ev = "input") =>
   d.getElementById(id).dispatchEvent(new w.Event(ev, { bubbles: true }));
+// отчёт так, как его получает пользователь: кнопка «Копировать отчёт» пишет его в буфер обмена;
+// запись не завершается, чтобы уведомление «Отчёт скопирован» не заменило другие
+const reportOf = (win) => {
+  let copied;
+  Object.defineProperty(win.navigator, "clipboard", {
+    value: { writeText: (text) => ((copied = text), new Promise(() => {})) },
+    configurable: true,
+  });
+  win.document.getElementById("copyBtn").click();
+  return copied;
+};
+// импорт через поле выбора файла; then вызывается сразу, чтобы проверки шли без ожидания
+const importFile = (win, text) => {
+  const input = win.document.getElementById("importFile");
+  Object.defineProperty(input, "files", {
+    value: [{ text: () => ({ then: (onRead) => onRead(text) }) }],
+    configurable: true,
+  });
+  input.dispatchEvent(new win.Event("change"));
+};
 console.log("SYS:", T("systemKpis"));
 console.log("DSUM:", T("loadSummary"));
 console.log(
@@ -177,8 +197,8 @@ setTimeout(() => {
   );
   console.log("export revoke: ok");
 }, 0);
-const exp = w.eval("JSON.stringify(snapshot(),null,1)"),
-  ex = JSON.parse(exp);
+const ex = JSON.parse(w.localStorage.getItem("camcalc4")),
+  exp = JSON.stringify(ex, null, 1);
 const fr = new w.FileReader();
 fr.readAsText(blob);
 fr.onload = () => {
@@ -191,7 +211,7 @@ assert.deepStrictEqual(
   "экспорт: нет своих шаблонов",
 );
 const before = w.localStorage.getItem("camcalc4");
-w.importText("{битый");
+importFile(w, "{битый");
 assert.strictEqual(T("toast"), "Файл не является сохранением калькулятора.");
 assert.strictEqual(
   w.localStorage.getItem("camcalc4"),
@@ -206,7 +226,7 @@ assert.strictEqual(
   JSON.stringify({ types: ex.types }),
 ].forEach((s) => {
   d.getElementById("toast").textContent = "";
-  w.importText(s);
+  importFile(w, s);
   assert.strictEqual(
     T("toast"),
     "Файл не является сохранением калькулятора.",
@@ -227,7 +247,7 @@ d.getElementById("importBtn").click();
 assert.strictEqual(picks, 1, "второе нажатие не открыло выбор файла");
 assert.strictEqual(T("importBtn"), "Импорт");
 const w2 = page();
-w2.importText(exp);
+importFile(w2, exp);
 assert.strictEqual(reloads, 1, "импорт не перезагрузил страницу");
 const w3 = page(w2.localStorage.getItem("camcalc4")),
   T3 = (id) =>
@@ -243,11 +263,7 @@ assert.strictEqual(
   T("systemKpis"),
   "после импорта другие итоги",
 );
-assert.strictEqual(
-  w3.eval("report"),
-  w.eval("report"),
-  "после импорта другой отчёт",
-);
+assert.strictEqual(reportOf(w3), reportOf(w), "после импорта другой отчёт");
 console.log("export/import: ok");
 // unreadable file
 const inp = d.getElementById("importFile"),
@@ -417,8 +433,8 @@ const userNames = [
   ...ex.customDetectors.map((x) => x.name),
   ...ex.customGpus.map((g) => g.name),
 ].sort((a, b) => b.length - a.length);
-const rEn = w6.eval("report"),
-  rRu = w.eval("report");
+const rEn = reportOf(w6),
+  rRu = reportOf(w);
 const cyr = userNames
   .reduce((s, n) => s.split(n).join(""), rEn)
   .match(/.*[А-Яа-яЁё].*/g);
@@ -465,7 +481,7 @@ console.log("lang persists: ok");
 const w10 = page(page(null, "ru").localStorage.getItem("camcalc4"), "en"),
   d10 = w10.document;
 const shown = [
-  w10.eval("report"),
+  reportOf(w10),
   d10.getElementById("tabs").textContent,
   d10.getElementById("typeName").value,
   ...[...d10.querySelectorAll("[id^=objectName-]")].map((el) => el.value),
@@ -502,9 +518,10 @@ d9.getElementById("gpuPrice-l40s").value = "1,999";
 d9.getElementById("gpuPrice-l40s").dispatchEvent(
   new w9.Event("input", { bubbles: true }),
 );
+// при цене 1.999 L40S стала бы самой дешёвой и попала бы в отчёт за $2
 assert.notStrictEqual(
-  w9.eval('priceOf(gpuById("l40s"))'),
-  1.999,
+  reportOf(w9).match(/× L40S, (\$[\d,]+);/)?.[1],
+  "$2",
   "EN: «1,999» прочитано как 1.999",
 );
 const textNumbers = [...d9.querySelectorAll("input[inputmode]")].filter(
@@ -538,8 +555,8 @@ const withNumbers = (H, w, kr) => {
     lang,
   );
   assert.strictEqual(
-    comma.eval("report"),
-    dot.eval("report"),
+    reportOf(comma),
+    reportOf(dot),
     "сохранение с запятой: другой отчёт, " + lang,
   );
 });
