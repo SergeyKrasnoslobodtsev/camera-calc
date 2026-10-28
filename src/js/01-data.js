@@ -42,71 +42,71 @@ const SENSORS = [
   ["pp", "pp"],
   ["own", null],
 ];
-// Каталог: tf — FP16 Tensor dense, TFLOPS (GeForce — с FP32-накоплением). price — ориентир, $, октябрь 2026
+// Каталог: tflops — FP16 Tensor dense, TFLOPS (GeForce — с FP32-накоплением). price — ориентир, $, октябрь 2026
 const GPU_CATALOG = [
   {
     id: "5090",
     name: "GeForce RTX 5090",
     arch: "Blackwell",
-    tf: 209.5,
+    tflops: 209.5,
     nvdec: 2,
-    mem: 32,
-    tdp: 575,
+    memoryGB: 32,
+    tdpW: 575,
     price: 5000,
   },
   {
     id: "pro6000",
     name: "RTX PRO 6000 Blackwell",
     arch: "Blackwell",
-    tf: 500,
+    tflops: 500,
     nvdec: 4,
-    mem: 96,
-    tdp: 600,
+    memoryGB: 96,
+    tdpW: 600,
     price: 13250,
   },
   {
     id: "l40s",
     name: "L40S",
     arch: "Ada",
-    tf: 362,
+    tflops: 362,
     nvdec: 3,
-    mem: 48,
-    tdp: 350,
+    memoryGB: 48,
+    tdpW: 350,
     price: 9000,
   },
   {
     id: "h100nvl",
     name: "H100 NVL",
     arch: "Hopper",
-    tf: 835.5,
+    tflops: 835.5,
     nvdec: 7,
-    mem: 94,
-    tdp: 400,
+    memoryGB: 94,
+    tdpW: 400,
     price: 27500,
   },
   {
     id: "h200nvl",
     name: "H200 NVL",
     arch: "Hopper",
-    tf: 835.5,
+    tflops: 835.5,
     nvdec: 7,
-    mem: 141,
-    tdp: 600,
+    memoryGB: 141,
+    tdpW: 600,
     price: 32000,
   },
   {
     id: "agx",
     name: "Jetson AGX Orin 64GB",
     arch: "Ampere",
-    tf: 42.6,
-    st: { h265: 22, h264: 11.6 },
-    mem: 64,
-    tdp: 60,
+    tflops: 42.6,
+    decodeStreams: { h265: 22, h264: 11.6 },
+    memoryGB: 64,
+    tdpW: 60,
     price: 3499,
-    jet: true,
+    jetson: true,
   },
 ];
-let customGpus = []; // свои карты: {id,name,arch,tf,nvdec|st,mem,tdp,price,jet,custom:true}
+let customGpus = []; // свои карты: {id,name,arch,tflops,nvdec|decodeStreams,memoryGB,tdpW,price,jetson,custom:true}
 let gpuPrices = {},
   gpuEnabled = {}; // правки цен и участие в подборе по id
 const allGpus = () => [...GPU_CATALOG, ...customGpus];
@@ -126,9 +126,13 @@ const NVDEC_FPS = {
 };
 // потоков 1080p@30, которые GPU декодирует: st — замер для Jetson, иначе по числу NVDEC
 const decStreams = (gpu, codec) =>
-  gpu.st ? gpu.st[codec] : (gpu.nvdec * NVDEC_FPS[gpu.arch][codec]) / 30;
+  gpu.decodeStreams
+    ? gpu.decodeStreams[codec]
+    : (gpu.nvdec * NVDEC_FPS[gpu.arch][codec]) / 30;
 const decText = (gpu) =>
-  gpu.st ? t("decStreams", formatNumber(gpu.st.h265, 0)) : `${gpu.nvdec} NVDEC`;
+  gpu.decodeStreams
+    ? t("decStreams", formatNumber(gpu.decodeStreams.h265, 0))
+    : `${gpu.nvdec} NVDEC`;
 // Модели: GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
 const MODELS = [
   ["y26n", "YOLO26n", 5.5, 1.7],
@@ -146,7 +150,7 @@ const MODELS = [
   ["y11m", "YOLO11m", 68.1, 4.7],
   ["y11l", "YOLO11l", 87.2, 6.2],
   ["y11x", "YOLO11x", 195.3, 11.3],
-].map(([id, name, gf, ms]) => ({ id, name, gf, ms }));
+].map(([id, name, gflops, latencyMs]) => ({ id, name, gflops, latencyMs }));
 const T4_TFLOPS = 65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
 const FEEDS = STR.feeds,
   FEED_SHORT = STR.feedsShort;

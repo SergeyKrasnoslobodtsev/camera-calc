@@ -186,7 +186,7 @@ fr.onload = () => {
   console.log("export content: ok");
 };
 assert.deepStrictEqual(
-  [ex.cams.map((c) => c.name), ex.dets.map((x) => x.name)],
+  [ex.customCameras.map((c) => c.name), ex.customDetectors.map((x) => x.name)],
   [["Тест-камера 8 Мп"], ["Детектор деталей"]],
   "экспорт: нет своих шаблонов",
 );
@@ -324,9 +324,9 @@ const userNames = [
   ...ex.types
     .flatMap((T) => [T.name, ...T.objects.map((o) => o.name)])
     .filter((n) => !builtinRu.includes(n)),
-  ...ex.cams.map((c) => c.name),
-  ...ex.dets.map((x) => x.name),
-  ...ex.custom.map((g) => g.name),
+  ...ex.customCameras.map((c) => c.name),
+  ...ex.customDetectors.map((x) => x.name),
+  ...ex.customGpus.map((g) => g.name),
 ].sort((a, b) => b.length - a.length);
 const rEn = w6.eval("report"),
   rRu = w.eval("report");

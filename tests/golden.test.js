@@ -65,26 +65,26 @@ const configs = {
 
   "Своя камера и свой детектор": {
     ...example,
-    cams: [
+    customCameras: [
       {
         id: "mtest",
         name: "Тест-камера 8 Мп",
         Nw: 3840,
         Nh: 2160,
-        sw: 7.68,
-        fmin: 6,
-        fmax: 6,
+        sensorWidth: 7.68,
+        focalMin: 6,
+        focalMax: 6,
         price: 300,
       },
     ],
-    dets: [
+    customDetectors: [
       {
         id: "dtest",
         name: "Детектор деталей",
         fps: 900,
-        inp: 640,
-        ref: "l40s",
-        gf: 0,
+        inputSize: 640,
+        refGpu: "l40s",
+        gflops: 0,
       },
     ],
     types: [
@@ -137,31 +137,31 @@ const configs = {
     ...example,
     activeTypeId: topType.id,
     system: { ...example.system, gpu: "cgpu", gpuCount: "2" },
-    custom: [
+    customGpus: [
       {
         id: "cgpu",
         name: "Своя карта",
         arch: "Ada",
-        tf: 150,
+        tflops: 150,
         nvdec: 2,
-        mem: 24,
-        tdp: 300,
+        memoryGB: 24,
+        tdpW: 300,
         price: 2500,
       },
       {
         id: "cjet",
         name: "Свой Jetson",
         arch: "Ampere",
-        tf: 20,
-        mem: 16,
-        tdp: 40,
+        tflops: 20,
+        memoryGB: 16,
+        tdpW: 40,
         price: 900,
-        jet: true,
-        st: { h265: 10, h264: 5.3 },
+        jetson: true,
+        decodeStreams: { h265: 10, h264: 5.3 },
       },
     ],
-    price: { l40s: "7000" },
-    on: { 5090: false, cjet: true },
+    gpuPrices: { l40s: "7000" },
+    gpuEnabled: { 5090: false, cjet: true },
     types: [
       sideType,
       withType(topType, { inputs: { lensMode: "angle", hfov: "70" } }),

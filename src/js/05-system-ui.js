@@ -2,7 +2,7 @@
 const mName = (o) => (modelById(o.model) || { name: "?" }).name;
 const gfOf = (id) => {
   const m = modelById(id);
-  return m && m.gf > 0 ? m.gf : 0;
+  return m && m.gflops > 0 ? m.gflops : 0;
 };
 function computeSystem(Rs) {
   const live = Rs.filter((r) => !r.err && r.count > 0);
@@ -31,11 +31,11 @@ function computeSystem(Rs) {
       if (!m) return { ...o, bad: true };
       if (MODELS.includes(m)) {
         const inScale = (640 / o.feedInfo.inputSize) ** 2;
-        base = ((1000 / m.ms) * inScale * g.tf) / T4_TFLOPS;
+        base = ((1000 / m.latencyMs) * inScale * g.tflops) / T4_TFLOPS;
       } else {
-        const rg = gpuById(m.ref) || GPU_CATALOG[0],
-          inScale = (m.inp / o.feedInfo.inputSize) ** 2;
-        base = (m.fps * inScale * g.tf) / rg.tf;
+        const rg = gpuById(m.refGpu) || GPU_CATALOG[0],
+          inScale = (m.inputSize / o.feedInfo.inputSize) ** 2;
+        base = (m.fps * inScale * g.tflops) / rg.tflops;
       }
       const cap = base * kr;
       return { ...o, cap, gpu: o.load / cap };
@@ -49,7 +49,7 @@ function computeSystem(Rs) {
         0.8 +
         engines.reduce((s, e) => s + modMemGB(e), 0) +
         live.reduce((s, r) => s + Math.ceil(r.count / n) * 20 * r.frameGB, 0),
-      memCap = g.mem * (g.jet ? 0.6 : 0.9);
+      memCap = g.memoryGB * (g.jetson ? 0.6 : 0.9);
     const uI = inf / n,
       uD = dec / n,
       uM = memUse / memCap,
@@ -80,7 +80,7 @@ function computeSystem(Rs) {
   });
   const okAll = all
     .filter((e) => e.ok)
-    .sort((a, b) => a.cost - b.cost || a.n * a.g.tdp - b.n * b.g.tdp);
+    .sort((a, b) => a.cost - b.cost || a.n * a.g.tdpW - b.n * b.g.tdpW);
   const best = okAll[0],
     gSel = byId("gpu").value,
     cSel = byId("gpuCount").value;
@@ -453,7 +453,7 @@ function buildGpuSelect() {
 function renderGpuView() {
   const row = (
     g,
-  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(g.name)}</b><span class="sub">${g.jet ? t("gJet") : escapeHtml(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(g.tf, 1)}</td><td>${decText(g)}</td><td>${U(formatNumber(g.mem, 0), "gb")}</td><td>${g.tdp ? U(formatNumber(g.tdp, 0), "w") : "—"}</td>
+  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(g.name)}</b><span class="sub">${g.jetson ? t("gJet") : escapeHtml(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(g.tflops, 1)}</td><td>${decText(g)}</td><td>${U(formatNumber(g.memoryGB, 0), "gb")}</td><td>${g.tdpW ? U(formatNumber(g.tdpW, 0), "w") : "—"}</td>
     <td><input id="pr-${g.id}" value="${escapeHtml(gpuPrices[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", g.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", g.name))}"></td>
     ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${escapeHtml(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
@@ -484,7 +484,7 @@ function renderGpuView() {
       delete gpuPrices[id];
       delete gpuEnabled[id];
       DETS.forEach((d) => {
-        if (d.ref === id) d.ref = "5090";
+        if (d.refGpu === id) d.refGpu = "5090";
       });
       buildGpuSelect();
       renderGpuView();
@@ -502,16 +502,16 @@ byId("newForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const name = byId("ngName").value.trim(),
     arch = byId("ngArch").value,
-    tf = parseNum(byId("ngTf").value),
+    tflops = parseNum(byId("ngTf").value),
     dec = parseNum(byId("ngDec").value),
-    mem = parseNum(byId("ngMem").value),
-    tdp = parseNum(byId("ngTdp").value),
+    memoryGB = parseNum(byId("ngMem").value),
+    tdpW = parseNum(byId("ngTdp").value),
     price = parseNum(byId("ngPrice").value);
   const errs = [];
   if (!name) errs.push(t("eName"));
-  if (!(tf > 0)) errs.push(t("eTf"));
+  if (!(tflops > 0)) errs.push(t("eTf"));
   if (!(dec > 0)) errs.push(t(arch === "jet" ? "eDecJet" : "eDec"));
-  if (!(mem > 0)) errs.push(t("eMem"));
+  if (!(memoryGB > 0)) errs.push(t("eMem"));
   if (!(price > 0)) errs.push(t("ePrice"));
   const er = byId("ngErr");
   if (errs.length) {
@@ -524,15 +524,15 @@ byId("newForm").addEventListener("submit", (e) => {
     id: "c" + uid(),
     name,
     arch: arch === "jet" ? "Ampere" : arch,
-    tf,
-    mem,
-    tdp: tdp > 0 ? tdp : 0,
+    tflops,
+    memoryGB,
+    tdpW: tdpW > 0 ? tdpW : 0,
     price,
     custom: true,
   };
   if (arch === "jet") {
-    g.jet = true;
-    g.st = { h265: dec, h264: +((dec * 748) / 1415).toFixed(1) };
+    g.jetson = true;
+    g.decodeStreams = { h265: dec, h264: +((dec * 748) / 1415).toFixed(1) };
   } else g.nvdec = Math.round(dec);
   customGpus.push(g);
   gpuEnabled[g.id] = byId("ngOn").checked;
@@ -558,7 +558,7 @@ function renderCamView() {
     allCams()
       .map(
         (c) =>
-          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(formatNumber(c.sw, 2), "mm")}</td><td>${c.fmin > 0 ? (c.fmin === c.fmax ? U(formatNumber(c.fmin, 1), "mm") : U(formatNumber(c.fmin, 1) + "–" + formatNumber(c.fmax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + formatNumber(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${escapeHtml(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(formatNumber(c.sensorWidth, 2), "mm")}</td><td>${c.focalMin > 0 ? (c.focalMin === c.focalMax ? U(formatNumber(c.focalMin, 1), "mm") : U(formatNumber(c.focalMin, 1) + "–" + formatNumber(c.focalMax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + formatNumber(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${escapeHtml(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
       )
       .join("");
   document.querySelectorAll("[data-delc]").forEach((b) =>
@@ -582,18 +582,20 @@ byId("camForm").addEventListener("submit", (e) => {
     Nw = Math.round(parseNum(byId("ncW").value)),
     Nh = Math.round(parseNum(byId("ncH").value)),
     pp = parseNum(byId("ncPp").value);
-  let sw = parseNum(byId("ncSw").value);
-  let fmin = parseNum(byId("ncFmin").value),
-    fmax = parseNum(byId("ncFmax").value);
+  let sensorWidth = parseNum(byId("ncSw").value);
+  let focalMin = parseNum(byId("ncFmin").value),
+    focalMax = parseNum(byId("ncFmax").value);
   const price = parseNum(byId("ncPrice").value);
-  if (!(sw > 0) && pp > 0 && Nw > 0) sw = +((pp * Nw) / 1000).toFixed(3);
-  if (fmin > 0 && !(fmax > 0)) fmax = fmin;
-  if (fmax > 0 && !(fmin > 0)) fmin = fmax;
+  if (!(sensorWidth > 0) && pp > 0 && Nw > 0)
+    sensorWidth = +((pp * Nw) / 1000).toFixed(3);
+  if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
+  if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
   const errs = [];
   if (!name) errs.push(t("eName"));
   if (!(Nw > 0 && Nh > 0)) errs.push(t("eFrame"));
-  if (!(sw > 0)) errs.push(t("eSw"));
-  if (fmin > 0 && fmax > 0 && fmin > fmax) errs.push(t("eFRange"));
+  if (!(sensorWidth > 0)) errs.push(t("eSw"));
+  if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
+    errs.push(t("eFRange"));
   const er = byId("ncErr");
   if (errs.length) {
     er.hidden = false;
@@ -606,9 +608,9 @@ byId("camForm").addEventListener("submit", (e) => {
     name,
     Nw,
     Nh,
-    sw,
-    fmin: fmin > 0 ? fmin : 0,
-    fmax: fmax > 0 ? fmax : 0,
+    sensorWidth,
+    focalMin: focalMin > 0 ? focalMin : 0,
+    focalMax: focalMax > 0 ? focalMax : 0,
     price: price > 0 ? price : 0,
     custom: true,
   });
@@ -640,13 +642,13 @@ function renderDetView() {
     `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
     (DETS.length
       ? DETS.map((d) => {
-          const rg = gpuById(d.ref);
-          return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inp}</td><td>${d.gf > 0 ? formatNumber(d.gf, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
+          const rg = gpuById(d.refGpu);
+          return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inputSize}</td><td>${d.gflops > 0 ? formatNumber(d.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
         }).join("")
       : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
     MODELS.map(
       (m) =>
-        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(m.gf, 1)}</td><td>${t("dSpeed", formatNumber(1000 / m.ms, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
+        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(m.gflops, 1)}</td><td>${t("dSpeed", formatNumber(1000 / m.latencyMs, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
     ).join("");
   document.querySelectorAll("[data-deld]").forEach((b) =>
     b.addEventListener("click", () => {
@@ -671,9 +673,9 @@ byId("detForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const name = byId("ndName").value.trim(),
     fps = parseNum(byId("ndFps").value),
-    inp = +byId("ndInp").value,
-    ref = byId("ndRef").value,
-    gf = parseNum(byId("ndGf").value);
+    inputSize = +byId("ndInp").value,
+    refGpu = byId("ndRef").value,
+    gflops = parseNum(byId("ndGf").value);
   const errs = [];
   if (!name) errs.push(t("eName"));
   if (!(fps > 0)) errs.push(t("eFps"));
@@ -688,9 +690,9 @@ byId("detForm").addEventListener("submit", (e) => {
     id: "d" + uid(),
     name,
     fps,
-    inp,
-    ref,
-    gf: gf > 0 ? gf : 0,
+    inputSize,
+    refGpu,
+    gflops: gflops > 0 ? gflops : 0,
     custom: true,
   });
   ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
@@ -782,11 +784,11 @@ const snap = () => ({
   types: TYPES,
   activeTypeId: ACT,
   system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
-  price: gpuPrices,
-  on: gpuEnabled,
-  custom: customGpus,
-  cams: CAMS_C,
-  dets: DETS,
+  gpuPrices,
+  gpuEnabled,
+  customGpus,
+  customCameras: CAMS_C,
+  customDetectors: DETS,
   light: document.documentElement.classList.contains("light"),
 });
 let stale = false;
@@ -815,20 +817,22 @@ function load() {
     const dotAll = (obj) =>
       Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
     const shownName = (x) => (x.nameKey && builtinName(x.nameKey)) || x.name;
-    if (Array.isArray(st.custom))
-      customGpus = st.custom
-        .filter((g) => g && g.id && g.name && g.tf > 0)
+    if (Array.isArray(st.customGpus))
+      customGpus = st.customGpus
+        .filter((g) => g && g.id && g.name && g.tflops > 0)
         .map((g) => ({ ...g, custom: true }));
-    if (Array.isArray(st.cams))
-      CAMS_C = st.cams
-        .filter((c) => c && c.id && c.Nw > 0 && c.Nh > 0 && c.sw > 0)
+    if (Array.isArray(st.customCameras))
+      CAMS_C = st.customCameras
+        .filter((c) => c && c.id && c.Nw > 0 && c.Nh > 0 && c.sensorWidth > 0)
         .map((c) => ({ ...c, custom: true }));
-    if (Array.isArray(st.dets))
-      DETS = st.dets
+    if (Array.isArray(st.customDetectors))
+      DETS = st.customDetectors
         .filter((d) => d && d.id && d.fps > 0)
         .map((d) => ({ ...d, custom: true }));
-    if (st.price && typeof st.price === "object") gpuPrices = dotAll(st.price);
-    if (st.on && typeof st.on === "object") gpuEnabled = st.on;
+    if (st.gpuPrices && typeof st.gpuPrices === "object")
+      gpuPrices = dotAll(st.gpuPrices);
+    if (st.gpuEnabled && typeof st.gpuEnabled === "object")
+      gpuEnabled = st.gpuEnabled;
     if (st.light) setTheme(true);
     buildGpuSelect();
     buildCamSelect();
@@ -1017,9 +1021,11 @@ function importText(s) {
         (t.objects == null ||
           (Array.isArray(t.objects) && t.objects.every(isObj))),
     ) ||
-    !["custom", "cams", "dets"].every((k) => Array.isArray(st[k])) ||
-    !isObj(st.price) ||
-    !isObj(st.on)
+    !["customGpus", "customCameras", "customDetectors"].every((k) =>
+      Array.isArray(st[k]),
+    ) ||
+    !isObj(st.gpuPrices) ||
+    !isObj(st.gpuEnabled)
   ) {
     toast(t("badFile"));
     return;

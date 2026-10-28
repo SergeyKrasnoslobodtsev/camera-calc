@@ -23,7 +23,7 @@ function computeType(type) {
     cameraLabel = camera.name;
     Nw = camera.Nw;
     Nh = camera.Nh;
-    s = camera.sw;
+    s = camera.sensorWidth;
   }
   const H = parseNum(inputs.cameraHeight),
     h = parseNum(inputs.planeHeight),
@@ -91,8 +91,11 @@ function computeType(type) {
       );
       f = sensorWidth / (2 * Math.tan(hfov / 2));
       fNeeded = f;
-      if (camera && camera.fmin > 0) {
-        const fClamped = Math.min(camera.fmax, Math.max(camera.fmin, f));
+      if (camera && camera.focalMin > 0) {
+        const fClamped = Math.min(
+          camera.focalMax,
+          Math.max(camera.focalMin, f),
+        );
         if (Math.abs(fClamped - f) > 1e-6) {
           f = fClamped;
           hfov = 2 * Math.atan(sensorWidth / (2 * f));
@@ -316,16 +319,18 @@ function computeType(type) {
   else if (
     mode !== "auto" &&
     camera &&
-    camera.fmin > 0 &&
-    (f < camera.fmin * 0.98 || f > camera.fmax * 1.02)
+    camera.focalMin > 0 &&
+    (f < camera.focalMin * 0.98 || f > camera.focalMax * 1.02)
   )
     notes.push(
       t(
         "nFOut",
         formatNumber(f, 1),
-        camera.fmin === camera.fmax
-          ? formatNumber(camera.fmin, 1)
-          : formatNumber(camera.fmin, 1) + "–" + formatNumber(camera.fmax, 1),
+        camera.focalMin === camera.focalMax
+          ? formatNumber(camera.focalMin, 1)
+          : formatNumber(camera.focalMin, 1) +
+              "–" +
+              formatNumber(camera.focalMax, 1),
       ),
     );
   if (hfov / DEG > 100) notes.push(t("nWide", formatNumber(hfov / DEG, 0)));
