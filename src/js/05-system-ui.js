@@ -151,24 +151,25 @@ function computeSystem(results) {
 }
 
 // ---------- отрисовка типа
-const stTxt = STR.st;
-const cap1 = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+const STATUS_TEXT = STR.st;
+const capitalize = (text) =>
+  text ? text[0].toUpperCase() + text.slice(1) : text;
 function renderType(result) {
-  const vd = byId("verdict");
+  const verdict = byId("verdict");
   byId("resTitle").textContent = t(
     "resTitleOf",
     result.type.name || t("untitled"),
   );
   if (result.err) {
-    vd.className = "verdict bad";
-    vd.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
+    verdict.className = "verdict bad";
+    verdict.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
     ["kpis", "dens", "facts", "side"].forEach(
       (id) => (byId(id).innerHTML = ""),
     );
     return;
   }
-  vd.className = "verdict " + result.status;
-  vd.innerHTML = `<span class="pill">${result.pill}</span><div>${escapeHtml(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((n) => "<li>" + escapeHtml(n) + "</li>").join("") + "</ul>" : ""}</div>`;
+  verdict.className = "verdict " + result.status;
+  verdict.innerHTML = `<span class="pill">${result.pill}</span><div>${escapeHtml(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((note) => "<li>" + escapeHtml(note) + "</li>").join("") + "</ul>" : ""}</div>`;
   const { hfov, vfov, f, rotated, tilt, frameWidthAt, depthAt, x1, x2 } =
     result;
   byId("kpis").innerHTML = [
@@ -205,38 +206,38 @@ function renderType(result) {
     ],
   ]
     .map(
-      ([l, v, e]) =>
-        `<div class="kpi"><span>${l}</span><strong>${v}</strong><em>${e}</em></div>`,
+      ([label, value, extra]) =>
+        `<div class="kpi"><span>${label}</span><strong>${value}</strong><em>${extra}</em></div>`,
     )
     .join("");
-  result.objs.forEach((o, i) => {
-    const el = byId(`obj-result-${i}`),
-      dt = byId(`obj-dot-${i}`);
-    if (!el) return;
-    if (o.bad) {
-      el.className = "ores";
-      el.textContent = t("objBad");
-      if (dt) dt.className = "dot";
+  result.objs.forEach((obj, i) => {
+    const resultEl = byId(`obj-result-${i}`),
+      dotEl = byId(`obj-dot-${i}`);
+    if (!resultEl) return;
+    if (obj.bad) {
+      resultEl.className = "ores";
+      resultEl.textContent = t("objBad");
+      if (dotEl) dotEl.className = "dot";
       return;
     }
-    el.className = "ores " + o.status;
-    if (dt) dt.className = "dot " + o.status;
-    el.innerHTML = `<b>${cap1(stTxt[o.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(o)}</span>`, formatNumber(o.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(o), escapeHtml(o.feedInfo.text))}</span>`;
+    resultEl.className = "ores " + obj.status;
+    if (dotEl) dotEl.className = "dot " + obj.status;
+    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
   });
   const top = result.placement === "top";
   byId("dens").innerHTML =
     `<tr><th>${t("densHead")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
     <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
     <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
-  const lv = [25, 62, 125, 250],
-    names = STR.dori;
-  let li = -1;
-  lv.forEach((l, i) => {
-    if (result.minAcross >= l) li = i;
+  const doriLevels = [25, 62, 125, 250],
+    doriNames = STR.dori;
+  let doriLevel = -1;
+  doriLevels.forEach((level, i) => {
+    if (result.minAcross >= level) doriLevel = i;
   });
   const shutter = result.shutterDenominator;
   byId("facts").innerHTML =
-    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
+    `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${U(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
   drawSide({
     H: result.H,
     h: result.h,
@@ -252,100 +253,116 @@ function renderType(result) {
 }
 
 // ---------- вкладки
-function renderTabs(Rs) {
+function renderTabs(results) {
   const nav = byId("tabs");
   nav.innerHTML = "";
-  Rs.forEach((r) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "tab";
-    b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(r.type.id === activeTypeId));
-    b.setAttribute("aria-controls", "typeOut");
-    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.status}" aria-hidden="true"></span><b>${escapeHtml(r.type.name || t("untitled"))}</b><small>× ${r.count}</small>`;
-    b.title = r.err ? t("tabErr") : t("tabObjs", stTxt[r.status] || r.pill);
-    b.addEventListener("click", () => {
-      if (activeTypeId === r.type.id) return;
-      activeTypeId = r.type.id;
+  results.forEach((result) => {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "tab";
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", String(result.type.id === activeTypeId));
+    tab.setAttribute("aria-controls", "typeOut");
+    tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
+    tab.title = result.err
+      ? t("tabErr")
+      : t("tabObjs", STATUS_TEXT[result.status] || result.pill);
+    tab.addEventListener("click", () => {
+      if (activeTypeId === result.type.id) return;
+      activeTypeId = result.type.id;
       writeForm(activeType());
       calcAll();
     });
-    nav.append(b);
+    nav.append(tab);
   });
-  const add = document.createElement("button");
-  add.type = "button";
-  add.className = "tab ghost";
-  add.textContent = t("addType");
-  add.addEventListener("click", () => {
-    const T = makeType(t("newType", cameraTypes.length + 1), 1, {}, [
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "tab ghost";
+  addButton.textContent = t("addType");
+  addButton.addEventListener("click", () => {
+    const type = makeType(t("newType", cameraTypes.length + 1), 1, {}, [
       OBJECT_PRESETS[0],
     ]);
-    cameraTypes.push(T);
-    activeTypeId = T.id;
-    writeForm(T);
+    cameraTypes.push(type);
+    activeTypeId = type.id;
+    writeForm(type);
     calcAll();
   });
-  nav.append(add);
+  nav.append(addButton);
 }
 
 // ---------- кольца
-function ring(cx, cy, r, w, segs, mark) {
-  const C = 2 * Math.PI * r;
-  let off = 0,
-    s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${w}"/>`;
-  segs.forEach((sg) => {
-    const full = Math.max(0, Math.min(1 - off / C, sg.f)) * C;
-    if (full <= 0) return;
-    const len = segs.length > 1 && full > 2 ? full - 1 : full;
-    s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${sg.color}" stroke-width="${w}" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
-    off += full;
+// кольцо радиуса r и толщины width из дуг segments (fraction — доля круга); mark — риска на доле круга
+function ring(cx, cy, r, width, segments, mark) {
+  const circumference = 2 * Math.PI * r;
+  let offset = 0,
+    svg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${width}"/>`;
+  segments.forEach((segment) => {
+    const arc =
+      Math.max(0, Math.min(1 - offset / circumference, segment.fraction)) *
+      circumference;
+    if (arc <= 0) return;
+    // зазор 1 px между соседними дугами
+    const dash = segments.length > 1 && arc > 2 ? arc - 1 : arc;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${segment.color}" stroke-width="${width}" stroke-dasharray="${dash.toFixed(2)} ${(circumference - dash).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += arc;
   });
   if (mark != null) {
-    const a = -Math.PI / 2 + 2 * Math.PI * mark,
-      r1 = r - w / 2 - 2,
-      r2 = r + w / 2 + 2;
-    s += `<line x1="${(cx + r1 * Math.cos(a)).toFixed(2)}" y1="${(cy + r1 * Math.sin(a)).toFixed(2)}" x2="${(cx + r2 * Math.cos(a)).toFixed(2)}" y2="${(cy + r2 * Math.sin(a)).toFixed(2)}" stroke="var(--fg2)" stroke-width="1.5"/>`;
+    const angle = -Math.PI / 2 + 2 * Math.PI * mark,
+      innerR = r - width / 2 - 2,
+      outerR = r + width / 2 + 2;
+    svg += `<line x1="${(cx + innerR * Math.cos(angle)).toFixed(2)}" y1="${(cy + innerR * Math.sin(angle)).toFixed(2)}" x2="${(cx + outerR * Math.cos(angle)).toFixed(2)}" y2="${(cy + outerR * Math.sin(angle)).toFixed(2)}" stroke="var(--fg2)" stroke-width="1.5"/>`;
   }
-  return s;
+  return svg;
 }
 
 // ---------- система
-function renderSystem(Rs, system) {
+function renderSystem(results, system) {
   const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
-  const pc = (u) => formatNumber(u * 100, 0) + "%";
-  const cams = Rs.reduce((s, r) => s + r.count, 0);
-  const vAll = Rs.flatMap((r) => r.valid || []),
-    objOk = vAll.filter((o) => o.status === "ok").length;
-  const worstCls = Rs.some((r) => r.err || r.status === "bad")
+  const percent = (share) => formatNumber(share * 100, 0) + "%";
+  const cameraCount = results.reduce((sum, result) => sum + result.count, 0);
+  const allObjects = results.flatMap((result) => result.valid || []),
+    okObjects = allObjects.filter((obj) => obj.status === "ok").length;
+  const worstStatus = results.some(
+    (result) => result.err || result.status === "bad",
+  )
     ? "bad"
-    : Rs.some((r) => r.status === "warn")
+    : results.some((result) => result.status === "warn")
       ? "warn"
       : "ok";
-  const smallest = vAll.length
-    ? vAll.reduce((a, b) => (a.modelPx < b.modelPx ? a : b))
+  const smallest = allObjects.length
+    ? allObjects.reduce((a, b) => (a.modelPx < b.modelPx ? a : b))
     : null;
-  const mbTot = liveResults.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
-  const camCost = Rs.reduce((s, r) => {
-    const c = cameraById(r.type.inputs.camera);
-    return s + (c && c.price > 0 ? c.price * r.count : 0);
+  const totalMbps = liveResults.reduce(
+    (sum, result) => sum + result.bitrateMbps * result.count,
+    0,
+  );
+  const cameraCost = results.reduce((sum, result) => {
+    const camera = cameraById(result.type.inputs.camera);
+    return sum + (camera && camera.price > 0 ? camera.price * result.count : 0);
   }, 0);
   const port =
-    mbTot * 1.3 < 900
+    totalMbps * 1.3 < 900
       ? U(1, "gbps")
-      : mbTot * 1.3 < 9000
+      : totalMbps * 1.3 < 9000
         ? U(10, "gbps")
         : "> " + U(10, "gbps");
   byId("sysKpis").innerHTML = [
     [
       t("sCams"),
-      `${cams}`,
-      camCost
-        ? t("sTypes", Rs.length) + t("sCamCost", "$" + formatNumber(camCost, 0))
-        : t("sTypes", Rs.length, Rs.map((r) => r.type.name).join(", ")),
+      `${cameraCount}`,
+      cameraCost
+        ? t("sTypes", results.length) +
+          t("sCamCost", "$" + formatNumber(cameraCost, 0))
+        : t(
+            "sTypes",
+            results.length,
+            results.map((result) => result.type.name).join(", "),
+          ),
     ],
     [
       t("sObjs"),
-      `<span class="dot ${worstCls}" aria-hidden="true"></span>${t("sOfN", objOk, vAll.length)}`,
+      `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("sOfN", okObjects, allObjects.length)}`,
       smallest
         ? t(
             "sSmallest",
@@ -364,30 +381,30 @@ function renderSystem(Rs, system) {
         ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}`
         : "—",
       liveResults.length
-        ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}`
+        ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}`
         : t("sNoCams"),
     ],
     [
       t("sNet"),
-      `${U(formatNumber(mbTot, 0), "mbps")}`,
-      t("sPort", port, formatNumber(cams * 15.4, 0)),
+      `${U(formatNumber(totalMbps, 0), "mbps")}`,
+      t("sPort", port, formatNumber(cameraCount * 15.4, 0)),
     ],
   ]
     .map(
-      ([l, v, e]) =>
-        `<div class="sk"><span>${l}</span><strong>${v}</strong><em>${escapeHtml(e)}</em></div>`,
+      ([label, value, extra]) =>
+        `<div class="sk"><span>${label}</span><strong>${value}</strong><em>${escapeHtml(extra)}</em></div>`,
     )
     .join("");
   // дашборд
-  const hot = chosen.inferenceLoad > maxLoad;
+  const overloaded = chosen.inferenceLoad > maxLoad;
   byId("dsum").innerHTML = liveResults.length
-    ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", chosen.bottleneck)}`
+    ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", chosen.bottleneck)}`
     : "";
   const runs = chosen.runs
-    .filter((o) => !o.bad)
-    .map((o) => ({ ...o, u: o.gpusNeeded / chosen.count }))
-    .sort((a, b) => b.u - a.u);
-  const COLS = [
+    .filter((run) => !run.bad)
+    .map((run) => ({ ...run, share: run.gpusNeeded / chosen.count }))
+    .sort((a, b) => b.share - a.share);
+  const RUN_COLORS = [
     "var(--c1)",
     "var(--c2)",
     "var(--c3)",
@@ -396,50 +413,53 @@ function renderSystem(Rs, system) {
   ];
   const shown = runs.slice(0, 5),
     rest = runs.slice(5),
-    restU = rest.reduce((s, o) => s + o.u, 0);
-  const segs = shown.map((o, i) => ({ f: o.u, color: COLS[i] }));
-  if (restU > 0) segs.push({ f: restU, color: "var(--c6)" });
+    restShare = rest.reduce((sum, run) => sum + run.share, 0);
+  const segments = shown.map((run, i) => ({
+    fraction: run.share,
+    color: RUN_COLORS[i],
+  }));
+  if (restShare > 0) segments.push({ fraction: restShare, color: "var(--c6)" });
   byId("donut").innerHTML = liveResults.length
-    ? ring(60, 60, 48, 14, segs, maxLoad) +
-      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${hot ? "var(--bad)" : "var(--fg)"}">${pc(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
+    ? ring(60, 60, 48, 14, segments, maxLoad) +
+      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${overloaded ? "var(--bad)" : "var(--fg)"}">${percent(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
     : "";
   byId("donut").setAttribute(
     "aria-label",
-    t("donutAriaVal", pc(chosen.inferenceLoad), pc(maxLoad)),
+    t("donutAriaVal", percent(chosen.inferenceLoad), percent(maxLoad)),
   );
   byId("legend").innerHTML = liveResults.length
     ? shown
         .map(
-          (o, i) =>
-            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${escapeHtml(modelName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${escapeHtml(o.typeName)}: ${escapeHtml(o.names.join(", "))} · ${U(formatNumber(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
+          (run, i) =>
+            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed]} ${run.feedInfo.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${U(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
         )
         .join("") +
       (rest.length
-        ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${pc(restU)}</span></li>`
+        ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${percent(restShare)}</span></li>`
         : "") +
-      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSub", pc(maxLoad))}</span></span><span class="pc">${pc(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>`
+      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSub", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>`
     : `<li class="note">${t("noLoad")}</li>`;
-  const decCapN =
+  const decodeCapacity =
     (chosen.count * system.decodeUnitsTotal) / (chosen.decodeGpus || 1);
-  const gauge = (label, u, lim, center, sub) =>
-    `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ f: u, color: u > lim ? "var(--bad)" : "var(--meter)" }], lim < 1 ? lim : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
+  const gauge = (label, load, limit, center, sub) =>
+    `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load, color: load > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
   byId("gauges").innerHTML = liveResults.length
     ? gauge(
         t("gDec"),
         chosen.decodeLoad,
         maxLoad,
-        pc(chosen.decodeLoad),
+        percent(chosen.decodeLoad),
         t(
           "gDecSub",
           formatNumber(system.decodeUnitsTotal, 1),
-          formatNumber(decCapN, 0),
+          formatNumber(decodeCapacity, 0),
         ),
       ) +
       gauge(
         t("gMem"),
         chosen.memoryLoad,
         1,
-        pc(chosen.memoryLoad),
+        percent(chosen.memoryLoad),
         t(
           "gMemSub",
           formatNumber(chosen.memoryUseGB, 1),
@@ -447,33 +467,35 @@ function renderSystem(Rs, system) {
         ),
       )
     : "";
-  const warn = system.noCandidates
+  const warning = system.noCandidates
     ? t("noCand")
     : !optimum && liveResults.length
       ? t("noFit")
       : "";
-  byId("loadNote").innerHTML = warn
-    ? `<span style="color:var(--bad)">${escapeHtml(warn)}</span>`
+  byId("loadNote").innerHTML = warning
+    ? `<span style="color:var(--bad)">${escapeHtml(warning)}</span>`
     : liveResults.length && STR.gpuNotes[chosen.gpu.id]
       ? escapeHtml(STR.gpuNotes[chosen.gpu.id])
       : "";
   byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
-  const days = parseNum(byId("archiveDays").value) || 0,
-    tb = (((mbTot * 1e6) / 8) * 86400 * days) / 1e12;
+  const archiveDays = parseNum(byId("archiveDays").value) || 0,
+    archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
   byId("netTbl").innerHTML =
-    `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((k) => `<th>${t(k)}</th>`).join("")}</tr>` +
-    Rs.map((r) =>
-      r.err
-        ? `<tr><td class="txt">${escapeHtml(r.type.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
-        : `<tr><td class="txt">${escapeHtml(r.type.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${formatNumber(r.fps, 0)}</td><td>${U(formatNumber(r.bitrateMbps, 1), "mbps")}</td><td>${U(formatNumber(r.bitrateMbps * r.count, 0), "mbps")}</td></tr>`,
-    ).join("") +
-    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(formatNumber(mbTot, 0), "mbps")}</td></tr>` +
-    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", formatNumber(tb, 1), formatNumber(days, 0)) : t("nArchOff")}</td></tr>`;
+    `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
+    results
+      .map((result) =>
+        result.err
+          ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
+          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.Nw} × ${result.Nh}</td><td>${formatNumber(result.fps, 0)}</td><td>${U(formatNumber(result.bitrateMbps, 1), "mbps")}</td><td>${U(formatNumber(result.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
+      )
+      .join("") +
+    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${U(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
+    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("nArchVal", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("nArchOff")}</td></tr>`;
   byId("assList").innerHTML = t("ass", formatNumber(efficiency, 2))
-    .map((x) => `<li>${escapeHtml(x)}</li>`)
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
-  return { cams, mbTot, camCost };
+  return { cameraCount, totalMbps, cameraCost };
 }
 
 // ---------- шаблоны: видеокарты
@@ -766,7 +788,7 @@ function calcAll() {
   renderType(Rs[i]);
   renderTabs(Rs);
   const system = computeSystem(Rs);
-  const sysTot = renderSystem(Rs, system);
+  const systemTotals = renderSystem(Rs, system);
   const chosen = system.chosen;
   report = [
     t("appTitle"),
@@ -796,7 +818,7 @@ function calcAll() {
                 pxs: r.sensorPxText(o),
                 pxm: r.modelPxText(o),
                 req: formatNumber(o.requiredPx, 0),
-                st: stTxt[o.status],
+                st: STATUS_TEXT[o.status],
               }),
             ),
             t(
@@ -809,9 +831,11 @@ function calcAll() {
     "\n" +
       t(
         "rSys",
-        sysTot.cams,
-        formatNumber(sysTot.mbTot, 0),
-        sysTot.camCost ? "$" + formatNumber(sysTot.camCost, 0) : "",
+        systemTotals.cameraCount,
+        formatNumber(systemTotals.totalMbps, 0),
+        systemTotals.cameraCost
+          ? "$" + formatNumber(systemTotals.cameraCost, 0)
+          : "",
       ),
     system.liveResults.length
       ? t("rCompute", {
