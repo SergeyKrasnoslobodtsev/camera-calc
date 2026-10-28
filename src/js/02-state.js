@@ -5,9 +5,18 @@ const PRESETS = [
   [8, 8, 2, 20, "y26s", "roi", 640],
   [25, 6, 6, 20, "y26s", "roi", 640],
   [1.3, 1.3, 0.7, 10, "y26s", "tiles", 640],
-].map((p, i) => [STR.presetNames[i], ...p]);
-const mkObj = ([name, w, d, z, req, model, feed, inp]) => ({
+].map((p, i) => [STR.presetNames[i], ...p, `presetNames.${i}`]);
+// встроенное название на текущем языке по ключу словаря, например "presetNames.0";
+// ключ есть, пока пользователь не изменил название
+const builtinName = (key) => {
+  const v = String(key)
+    .split(".")
+    .reduce((v, k) => v?.[k], STR);
+  return typeof v === "string" ? v : undefined;
+};
+const mkObj = ([name, w, d, z, req, model, feed, inp, nameKey]) => ({
   name,
+  nameKey,
   w,
   d,
   z,
@@ -67,15 +76,16 @@ const DEF_V = {
   mode: "auto",
   pos: "side",
 };
-const mkType = (name, count, over, objs) => ({
+const mkType = (name, count, over, objs, nameKey) => ({
   id: uid(),
   name,
+  nameKey,
   count: String(count),
   v: { ...DEF_V, ...over },
   objs: objs.map(mkObj),
 });
 const defTypes = () => [
-  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]]),
+  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]], "typeNames.0"),
   mkType(
     STR.typeNames[1],
     10,
@@ -89,6 +99,7 @@ const defTypes = () => [
       fps: "10",
     },
     [PRESETS[2]],
+    "typeNames.1",
   ),
 ];
 let TYPES = defTypes(),
@@ -127,6 +138,7 @@ function writeForm(T) {
 }
 function readForm() {
   const T = act();
+  if (T.name !== $("tName").value) delete T.nameKey;
   T.name = $("tName").value;
   T.count = $("tCount").value;
   FIELDS.forEach((id) => {

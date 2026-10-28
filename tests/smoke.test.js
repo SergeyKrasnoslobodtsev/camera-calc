@@ -383,6 +383,19 @@ assert.ok(
   "EN: нет встроенных названий на английском",
 );
 console.log("example names follow lang: ok");
+// language: a name typed by the user is kept as is, even if it matches a built-in one
+const w11 = page(null, "ru");
+w11.document.getElementById("tName").value = "Тележка";
+w11.document
+  .getElementById("tName")
+  .dispatchEvent(new w11.Event("input", { bubbles: true }));
+const d12 = page(w11.localStorage.getItem("camcalc3"), "en").document;
+assert.strictEqual(
+  d12.getElementById("tName").value,
+  "Тележка",
+  "EN: название пользователя переведено",
+);
+console.log("user names kept: ok");
 // numbers: EN price "1,999" is not read as 1.999
 const w9 = page(null, "en"),
   d9 = w9.document;

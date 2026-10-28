@@ -782,18 +782,7 @@ function load() {
     const dot = (x) => (typeof x === "string" ? x.replace(",", ".") : x);
     const dotAll = (obj) =>
       Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
-    // встроенные названия из примера сохранены на прежнем языке → на текущий
-    const builtinNames = (D) => [
-      ...D.typeNames,
-      ...D.presetNames,
-      D.objDefault,
-    ];
-    const builtin = new Map(
-      [RU, EN].flatMap((D) =>
-        builtinNames(D).map((n, i) => [n, builtinNames(STR)[i]]),
-      ),
-    );
-    const toLang = (name) => builtin.get(name) ?? name;
+    const shownName = (x) => (x.nameKey && builtinName(x.nameKey)) || x.name;
     if (Array.isArray(st.custom))
       CUSTOM = st.custom
         .filter((g) => g && g.id && g.name && g.tf > 0)
@@ -814,12 +803,13 @@ function load() {
     if (Array.isArray(st.types) && st.types.length) {
       TYPES = st.types.map((t) => ({
         id: t.id || uid(),
-        name: toLang(t.name),
+        name: shownName(t),
+        nameKey: t.nameKey,
         count: dot(t.count),
         v: dotAll({ ...DEF_V, ...t.v }),
         objs: (t.objs || []).map((o) => ({
           ...mkObj([
-            toLang(o.name),
+            shownName(o),
             dot(o.w),
             dot(o.d),
             dot(o.z),
@@ -827,6 +817,7 @@ function load() {
             modelById(o.model) ? o.model : "y26s",
             o.feed,
             o.inp,
+            o.nameKey,
           ]),
           ov: dot(o.ov ?? 20),
         })),
@@ -876,7 +867,9 @@ PRESETS.forEach((pr) => {
 });
 $("addObj").addEventListener("click", () => {
   const T = act();
-  T.objs.push(mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640]));
+  T.objs.push(
+    mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
+  );
   renderObjs();
   calcAll();
   const i = T.objs.length - 1;
@@ -902,6 +895,7 @@ $("dupBtn").addEventListener("click", () => {
     T = JSON.parse(JSON.stringify(src));
   T.id = uid();
   T.name = src.name + t("copySuffix");
+  delete T.nameKey;
   TYPES.splice(TYPES.indexOf(src) + 1, 0, T);
   ACT = T.id;
   writeForm(T);

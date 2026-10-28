@@ -1665,9 +1665,18 @@ const PRESETS = [
   [8, 8, 2, 20, "y26s", "roi", 640],
   [25, 6, 6, 20, "y26s", "roi", 640],
   [1.3, 1.3, 0.7, 10, "y26s", "tiles", 640],
-].map((p, i) => [STR.presetNames[i], ...p]);
-const mkObj = ([name, w, d, z, req, model, feed, inp]) => ({
+].map((p, i) => [STR.presetNames[i], ...p, `presetNames.${i}`]);
+// встроенное название на текущем языке по ключу словаря, например "presetNames.0";
+// ключ есть, пока пользователь не изменил название
+const builtinName = (key) => {
+  const v = String(key)
+    .split(".")
+    .reduce((v, k) => v?.[k], STR);
+  return typeof v === "string" ? v : undefined;
+};
+const mkObj = ([name, w, d, z, req, model, feed, inp, nameKey]) => ({
   name,
+  nameKey,
   w,
   d,
   z,
@@ -1727,15 +1736,16 @@ const DEF_V = {
   mode: "auto",
   pos: "side",
 };
-const mkType = (name, count, over, objs) => ({
+const mkType = (name, count, over, objs, nameKey) => ({
   id: uid(),
   name,
+  nameKey,
   count: String(count),
   v: { ...DEF_V, ...over },
   objs: objs.map(mkObj),
 });
 const defTypes = () => [
-  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]]),
+  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]], "typeNames.0"),
   mkType(
     STR.typeNames[1],
     10,
@@ -1749,6 +1759,7 @@ const defTypes = () => [
       fps: "10",
     },
     [PRESETS[2]],
+    "typeNames.1",
   ),
 ];
 let TYPES = defTypes(),
@@ -1787,6 +1798,7 @@ function writeForm(T) {
 }
 function readForm() {
   const T = act();
+  if (T.name !== $("tName").value) delete T.nameKey;
   T.name = $("tName").value;
   T.count = $("tCount").value;
   FIELDS.forEach((id) => {
@@ -1901,6 +1913,7 @@ function renderObjs() {
       el.addEventListener("input", (e) => {
         e.stopPropagation();
         o[f] = e.target.value;
+        if (f === "name") delete o.nameKey;
         calcAll();
       });
     });
@@ -3152,18 +3165,7 @@ function load() {
     const dot = (x) => (typeof x === "string" ? x.replace(",", ".") : x);
     const dotAll = (obj) =>
       Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
-    // встроенные названия из примера сохранены на прежнем языке → на текущий
-    const builtinNames = (D) => [
-      ...D.typeNames,
-      ...D.presetNames,
-      D.objDefault,
-    ];
-    const builtin = new Map(
-      [RU, EN].flatMap((D) =>
-        builtinNames(D).map((n, i) => [n, builtinNames(STR)[i]]),
-      ),
-    );
-    const toLang = (name) => builtin.get(name) ?? name;
+    const shownName = (x) => (x.nameKey && builtinName(x.nameKey)) || x.name;
     if (Array.isArray(st.custom))
       CUSTOM = st.custom
         .filter((g) => g && g.id && g.name && g.tf > 0)
@@ -3184,12 +3186,13 @@ function load() {
     if (Array.isArray(st.types) && st.types.length) {
       TYPES = st.types.map((t) => ({
         id: t.id || uid(),
-        name: toLang(t.name),
+        name: shownName(t),
+        nameKey: t.nameKey,
         count: dot(t.count),
         v: dotAll({ ...DEF_V, ...t.v }),
         objs: (t.objs || []).map((o) => ({
           ...mkObj([
-            toLang(o.name),
+            shownName(o),
             dot(o.w),
             dot(o.d),
             dot(o.z),
@@ -3197,6 +3200,7 @@ function load() {
             modelById(o.model) ? o.model : "y26s",
             o.feed,
             o.inp,
+            o.nameKey,
           ]),
           ov: dot(o.ov ?? 20),
         })),
@@ -3246,7 +3250,9 @@ PRESETS.forEach((pr) => {
 });
 $("addObj").addEventListener("click", () => {
   const T = act();
-  T.objs.push(mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640]));
+  T.objs.push(
+    mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
+  );
   renderObjs();
   calcAll();
   const i = T.objs.length - 1;
@@ -3272,6 +3278,7 @@ $("dupBtn").addEventListener("click", () => {
     T = JSON.parse(JSON.stringify(src));
   T.id = uid();
   T.name = src.name + t("copySuffix");
+  delete T.nameKey;
   TYPES.splice(TYPES.indexOf(src) + 1, 0, T);
   ACT = T.id;
   writeForm(T);
