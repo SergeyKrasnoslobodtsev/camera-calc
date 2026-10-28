@@ -2,7 +2,7 @@
 const BUILTIN_CAMERAS = [
   {
     id: "k4",
-    name: STR.camBuiltin.k4,
+    name: STR.builtinCameraNames.k4,
     Nw: 2560,
     Nh: 1440,
     sensorWidth: 5.4,
@@ -11,7 +11,7 @@ const BUILTIN_CAMERAS = [
   },
   {
     id: "k8",
-    name: STR.camBuiltin.k8,
+    name: STR.builtinCameraNames.k8,
     Nw: 3840,
     Nh: 2160,
     sensorWidth: 7.68,
@@ -30,7 +30,7 @@ function buildCameraSelect() {
   const select = byId("camera"),
     current = select.value;
   select.innerHTML =
-    `<option value="">${t("camManual")}</option>` +
+    `<option value="">${t("cameraManual")}</option>` +
     allCameras()
       .map(
         (camera) =>
@@ -43,7 +43,7 @@ function buildCameraSelect() {
 // ---------- карточки объектов
 function renderObjects() {
   const type = activeType(),
-    list = byId("objList");
+    list = byId("objectList");
   list.innerHTML = "";
   type.objects.forEach((obj, i) => {
     if (!modelById(obj.model)) obj.model = "y26s";
@@ -52,36 +52,36 @@ function renderObjects() {
     const modelOptions =
       `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` +
       (customDetectors.length
-        ? `<optgroup label="${t("ownDets")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
+        ? `<optgroup label="${t("customDetectors")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
-    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
+    card.innerHTML = `<div class="ohdr"><span class="dot" id="objectDot-${i}" aria-hidden="true"></span><input id="objectName-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="obj-width-${i}">${t("ow")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-length-${i}">${t("od")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-height-${i}">${t("oz")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-required-${i}">${t("oq")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f c2"><label for="obj-model-${i}">${t("om")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
-        <div class="f"><label for="obj-feed-${i}">${t("of")}</label><select id="obj-feed-${i}">${Object.entries(
+        <div class="f"><label for="objectWidth-${i}">${t("objectWidth")}</label><input id="objectWidth-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectLength-${i}">${t("objectLength")}</label><input id="objectLength-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectHeight-${i}">${t("objectHeight")}</label><input id="objectHeight-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f c2"><label for="objectModel-${i}">${t("objectModel")}</label><select id="objectModel-${i}">${modelOptions}</select></div>
+        <div class="f"><label for="objectFeed-${i}">${t("objectFeed")}</label><select id="objectFeed-${i}">${Object.entries(
           FEEDS,
         )
           .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
-        <div class="f"><label for="obj-input-${i}">${t("oi")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
-        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("ov")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectInput-${i}">${t("objectInput")}</label><select id="objectInput-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
+        <div class="f" id="objectOverlapBox-${i}"><label for="objectOverlap-${i}">${t("objectOverlap")}</label><input id="objectOverlap-${i}" type="number" step="any" inputmode="decimal"></div>
       </div>
-      <div class="ores" id="obj-result-${i}" aria-live="polite"></div>`;
+      <div class="ores" id="objectResult-${i}" aria-live="polite"></div>`;
     list.append(card);
     // перекрытие задаётся только для тайлов
     const syncOverlapBox = () => {
-      byId(`obj-overlap-box-${i}`).hidden = obj.feed !== "tiles";
+      byId(`objectOverlapBox-${i}`).hidden = obj.feed !== "tiles";
     };
     [
-      ["obj-name", "name"],
-      ["obj-width", "width"],
-      ["obj-length", "length"],
-      ["obj-height", "height"],
-      ["obj-required", "requiredPx"],
-      ["obj-overlap", "overlap"],
+      ["objectName", "name"],
+      ["objectWidth", "width"],
+      ["objectLength", "length"],
+      ["objectHeight", "height"],
+      ["objectRequired", "requiredPx"],
+      ["objectOverlap", "overlap"],
     ].forEach(([idPrefix, field]) => {
       const input = byId(`${idPrefix}-${i}`);
       input.value = obj[field] ?? "";
@@ -93,9 +93,9 @@ function renderObjects() {
       });
     });
     [
-      ["obj-model", "model"],
-      ["obj-feed", "feed"],
-      ["obj-input", "inputSize"],
+      ["objectModel", "model"],
+      ["objectFeed", "feed"],
+      ["objectInput", "inputSize"],
     ].forEach(([idPrefix, field]) => {
       const select = byId(`${idPrefix}-${i}`);
       select.value = String(obj[field]);
@@ -118,19 +118,19 @@ function renderObjects() {
 function syncFormUI(type, result) {
   const inputs = type.inputs,
     camera = cameraById(inputs.camera);
-  byId("fBox").hidden = inputs.lensMode !== "focal";
-  byId("aBox").hidden = inputs.lensMode !== "angle";
-  byId("L0box").hidden = inputs.placement === "top";
+  byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
+  byId("hfovBox").hidden = inputs.lensMode !== "angle";
+  byId("zoneStartBox").hidden = inputs.placement === "top";
   const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   byId("resolution").disabled = !!camera;
   byId("sensor").disabled = !!camera;
-  byId("ppBox").hidden = !!camera || sensorPreset !== "pp";
+  byId("pixelPitchBox").hidden = !!camera || sensorPreset !== "pp";
   byId("sensorWidth").readOnly = !!camera || sensorPreset !== null;
   if (result && isFinite(result.s) && (camera || sensorPreset !== null))
     byId("sensorWidth").value = +result.s.toFixed(2);
-  byId("sumGeo").textContent =
-    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
-  byId("sumCam").textContent =
+  byId("summaryGeometry").textContent =
+    `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
+  byId("summaryCamera").textContent =
     (camera
       ? `${camera.Nw} × ${camera.Nh}`
       : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
@@ -139,6 +139,6 @@ function syncFormUI(type, result) {
     (result && !result.err
       ? `, f ${withUnit(formatNumber(result.f, 1), "mm")}`
       : "");
-  byId("sumStr").textContent =
+  byId("summaryStream").textContent =
     `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }

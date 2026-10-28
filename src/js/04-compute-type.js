@@ -296,7 +296,7 @@ function computeType(type) {
     if (frameWidthAt(minDepth) < zoneWidth)
       notes.push(
         t(
-          "nZoneW",
+          "noteZoneWidth",
           formatNumber(frameWidthAt(minDepth), 2),
           formatNumber(zoneWidth, 2),
         ),
@@ -304,7 +304,7 @@ function computeType(type) {
     if (vfov < zoneAngle)
       notes.push(
         t(
-          "nZoneD",
+          "noteZoneDepth",
           formatNumber(zoneAngle / DEG, 1),
           formatNumber(vfov / DEG, 1),
         ),
@@ -313,7 +313,7 @@ function computeType(type) {
   if (clamped)
     notes.unshift(
       t(
-        fNeeded > f ? "nFMax" : "nFMin",
+        fNeeded > f ? "noteFocalMax" : "noteFocalMin",
         formatNumber(fNeeded, 1),
         formatNumber(f, 1),
       ),
@@ -326,7 +326,7 @@ function computeType(type) {
   )
     notes.push(
       t(
-        "nFOut",
+        "noteFocalOutOfRange",
         formatNumber(f, 1),
         camera.focalMin === camera.focalMax
           ? formatNumber(camera.focalMin, 1)
@@ -335,14 +335,19 @@ function computeType(type) {
               formatNumber(camera.focalMax, 1),
       ),
     );
-  if (hfov / DEG > 100) notes.push(t("nWide", formatNumber(hfov / DEG, 0)));
-  if (tilt / DEG > 75 && x1 < 0) notes.push(t("nTop"));
+  if (hfov / DEG > 100)
+    notes.push(t("noteWideAngle", formatNumber(hfov / DEG, 0)));
+  if (tilt / DEG > 75 && x1 < 0) notes.push(t("noteTopView"));
   const lowestRayAngle = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
   if (lowestRayAngle / DEG < 15)
-    notes.push(t("nLowRay", formatNumber(lowestRayAngle / DEG, 0)));
+    notes.push(t("noteLowRay", formatNumber(lowestRayAngle / DEG, 0)));
   if (analyticsFpsSet > fps)
     notes.push(
-      t("nAfps", formatNumber(analyticsFpsSet, 0), formatNumber(fps, 0)),
+      t(
+        "noteAnalyticsFps",
+        formatNumber(analyticsFpsSet, 0),
+        formatNumber(fps, 0),
+      ),
     );
   // размер объекта на матрице и на входе модели
   const sensorPxText = (obj) =>
@@ -355,17 +360,17 @@ function computeType(type) {
   let status, pill, headline;
   if (!valid.length) {
     status = "warn";
-    pill = t("pNoObj");
-    headline = t("hNoObj");
+    pill = t("pillNoObjects");
+    headline = t("verdictNoObjects");
   } else if (failing.length) {
     status = "bad";
-    pill = t("pBad");
+    pill = t("pillBad");
     headline = t(
-      "hBad",
+      "verdictBad",
       failing
         .map((obj) =>
           t(
-            "hItem",
+            "verdictItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
             formatNumber(obj.requiredPx, 0),
@@ -382,16 +387,16 @@ function computeType(type) {
           ) * 32;
         notes.push(
           t(
-            "nScale",
+            "noteDownscale",
             obj.name,
             sensorPxText(obj),
             obj.feedInfo.inputSize,
             t(
               obj.feed === "full"
-                ? "advFull"
+                ? "adviceFull"
                 : obj.feed === "roi"
-                  ? "advRoi"
-                  : "advTiles",
+                  ? "adviceRoi"
+                  : "adviceTiles",
             ),
             formatNumber(neededInput, 0),
           ),
@@ -408,13 +413,13 @@ function computeType(type) {
       notes.unshift(
         recommended
           ? t(
-              "nRes",
+              "noteResolution",
               worstObj.name,
               formatNumber(worstObj.minSensorWidthPx, 0),
               recommended[0],
             )
           : t(
-              "nResNone",
+              "noteResolutionNone",
               worstObj.name,
               formatNumber(worstObj.minSensorWidthPx, 0),
             ),
@@ -422,13 +427,13 @@ function computeType(type) {
     }
   } else if (marginal.length) {
     status = "warn";
-    pill = t("pWarn");
+    pill = t("pillWarn");
     headline = t(
-      "hWarn",
+      "verdictWarn",
       marginal
         .map((obj) =>
           t(
-            "hItem",
+            "verdictItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
             formatNumber(obj.requiredPx, 0),
@@ -439,12 +444,12 @@ function computeType(type) {
   } else {
     const smallest = valid.reduce((a, b) => (a.modelPx < b.modelPx ? a : b));
     status = "ok";
-    pill = t("pOk");
-    headline = t("hOk", smallest.name, modelPxText(smallest));
+    pill = t("pillOk");
+    headline = t("verdictOk", smallest.name, modelPxText(smallest));
   }
   if (notes.length && status === "ok") {
     status = "warn";
-    pill = t("pCheck");
+    pill = t("pillCheck");
   }
   // группы запусков: одна модель с одинаковой подачей обслуживает свои объекты одним проходом
   const groups = [];
