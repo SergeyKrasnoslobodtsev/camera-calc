@@ -279,7 +279,7 @@ let impArm=null;
 $("impBtn").addEventListener("click",()=>{const b=$("impBtn");
   if(!impArm){b.textContent="Заменит всё. Ещё раз";impArm=setTimeout(()=>{b.textContent="Импорт";impArm=null},3000);return}
   clearTimeout(impArm);impArm=null;b.textContent="Импорт";$("impFile").click()});
-$("impFile").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)f.text().then(importText)});
+$("impFile").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)f.text().then(importText,()=>toast("Не удалось прочитать файл"))});
 const TPL={"tpl-gpus":renderGpuView,"tpl-cams":renderCamView,"tpl-dets":renderDetView};
 function route(){
   const h=location.hash.slice(1),isTpl=h in TPL;
