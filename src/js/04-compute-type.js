@@ -45,7 +45,7 @@ function computeType(T){
     if(feed==="full")msc=Math.min(1,inp/Math.max(Nu,Nv));
     else if(feed==="roi")msc=Math.min(1,inp/Math.max(roiW,roiH));
     else{const step=inp*(1-ov);nx=roiW>inp?Math.ceil((roiW-inp)/step)+1:1;ny=roiH>inp?Math.ceil((roiH-inp)/step)+1:1;tiles=nx*ny}
-    return {feed,inp,msc,tiles,nx,ny,txt:feed==="tiles"?`${tiles} тайлов ${nx}×${ny} по ${inp} px`:feed==="roi"?`вырез ${fmt(roiW,0)}×${fmt(roiH,0)} → ${inp} px`:`кадр ${Nu}×${Nv} → ${inp} px`}};
+    return {feed,inp,msc,tiles,nx,ny,txt:feed==="tiles"?t("feedTiles",tiles,nx,ny,inp):feed==="roi"?t("feedRoi",Math.round(roiW),Math.round(roiH),inp):t("feedFull",Nu,Nv,inp)}};
   const objs=T.objs.map(o=>{
     const w=P(o.w)/100,d=P(o.d)/100,zh=P(o.z)/100,req=P(o.req),inp=P(o.inp)||640;
     const fi=feedInfo(o.feed,inp,P(o.ov));
@@ -59,33 +59,33 @@ function computeType(T){
   // вердикт
   const notes=[];const clamped=fWant!=null&&Math.abs(fWant-f)>0.05;
   if(m!=="auto"||clamped){
-    if(W(zMin)<Wz)notes.push(`Зона не влезает по ширине: на ближнем краю кадр ${fmt(W(zMin),2)} м при зоне ${fmt(Wz,2)} м.`);
-    if(vf<span)notes.push(`Зона не влезает по глубине: нужно ${fmt(span/R,1)}° по вертикали, есть ${fmt(vf/R,1)}°.`);
+    if(W(zMin)<Wz)notes.push(t("nZoneW",fmt(W(zMin),2),fmt(Wz,2)));
+    if(vf<span)notes.push(t("nZoneD",fmt(span/R,1),fmt(vf/R,1)));
   }
-  if(clamped)notes.unshift(fWant>f?`Для зоны нужно фокусное ≈ ${fmt(fWant,1)} мм, а объектив камеры — не больше ${fmt(f,1)} мм. Расчёт сделан для ${fmt(f,1)} мм: кадр шире зоны, пикселей на объекте меньше.`:`Для зоны нужно фокусное ≈ ${fmt(fWant,1)} мм, а объектив камеры — не меньше ${fmt(f,1)} мм. Расчёт сделан для ${fmt(f,1)} мм: зона не помещается в кадр целиком — поднимите камеру, сузьте зону или возьмите объектив шире.`);
-  else if(m!=="auto"&&cam&&cam.fmin>0&&(f<cam.fmin*0.98||f>cam.fmax*1.02))notes.push(`Заданное фокусное ${fmt(f,1)} мм вне диапазона объектива камеры (${cam.fmin===cam.fmax?fmt(cam.fmin,1):fmt(cam.fmin,1)+"–"+fmt(cam.fmax,1)} мм).`);
-  if(hf/R>100)notes.push(`HFOV ${fmt(hf/R,0)}°: объективы с таким углом заметно сжимают края кадра (бочка), расчёт этого не учитывает. Уменьшите коэффициент качества или поднимите камеру.`);
-  if(tilt/R>75&&x1<0)notes.push("Вид сверху: детали в ячейках видны торцами, это хорошо для подсчёта. Человек виден как голова и плечи, действия рук различаются хуже.");
+  if(clamped)notes.unshift(t(fWant>f?"nFMax":"nFMin",fmt(fWant,1),fmt(f,1)));
+  else if(m!=="auto"&&cam&&cam.fmin>0&&(f<cam.fmin*0.98||f>cam.fmax*1.02))notes.push(t("nFOut",fmt(f,1),cam.fmin===cam.fmax?fmt(cam.fmin,1):fmt(cam.fmin,1)+"–"+fmt(cam.fmax,1)));
+  if(hf/R>100)notes.push(t("nWide",fmt(hf/R,0)));
+  if(tilt/R>75&&x1<0)notes.push(t("nTop"));
   const thLow=Math.atan2(Hc,Math.max(Math.abs(x1),Math.abs(x2)));
-  if(thLow/R<15)notes.push(`Луч на дальний край идёт под ${fmt(thLow/R,0)}° к плоскости: объекты будут заслонять друг друга. Поднимите камеру или сократите вынос.`);
-  if(afps0>fps)notes.push(`Кадров на аналитику (${fmt(afps0,0)}) больше, чем в потоке (${fmt(fps,0)}): в расчёте взято ${fmt(fps,0)}.`);
-  const pxs=o=>`${fmt(o.bw,1)}×${fmt(o.bh,1)} px`,pxm=o=>`${fmt(o.bw*o.fi.msc,1)}×${fmt(o.bh*o.fi.msc,1)} px`;
+  if(thLow/R<15)notes.push(t("nLowRay",fmt(thLow/R,0)));
+  if(afps0>fps)notes.push(t("nAfps",fmt(afps0,0),fmt(fps,0)));
+  const pxs=o=>`${fmt(o.bw,1)} × ${fmt(o.bh,1)}\u00a0px`,pxm=o=>`${fmt(o.bw*o.fi.msc,1)} × ${fmt(o.bh*o.fi.msc,1)}\u00a0px`;
   const valid=objs.filter(o=>!o.bad),fails=valid.filter(o=>o.st==="bad"),edge=valid.filter(o=>o.st==="warn");
   let cls,pill,head;
-  if(!valid.length){cls="warn";pill="Нет объектов";head="Добавьте объект с габаритами и моделью, чтобы проверить, различим ли он."}
-  else if(fails.length){cls="bad";pill="Мало";
-    head=`Не различимы на входе модели: ${fails.map(o=>`${o.name||"объект"} — ${pxm(o)} при нужных ${fmt(o.reqN,0)}`).join("; ")}.`;
+  if(!valid.length){cls="warn";pill=t("pNoObj");head=t("hNoObj")}
+  else if(fails.length){cls="bad";pill=t("pBad");
+    head=t("hBad",fails.map(o=>t("hItem",o.name||t("objDefault"),pxm(o),fmt(o.reqN,0))).join("; "));
     fails.filter(o=>o.sensorOk).forEach(o=>{const need=Math.ceil(o.fi.inp*o.reqN/o.mm/32)*32;
-      notes.push(`«${o.name}»: камера даёт ${pxs(o)}, пиксели теряются при уменьшении до входа ${o.fi.inp} px. ${o.feed==="full"?"Подавайте вырез зоны или тайлы":o.feed==="roi"?"Включите тайлы":"Проверьте размер входа"} или увеличьте вход до ≈ ${fmt(need,0)} px.`)});
+      notes.push(t("nScale",o.name,pxs(o),o.fi.inp,t(o.feed==="full"?"advFull":o.feed==="roi"?"advRoi":"advTiles"),fmt(need,0)))});
     const short=fails.filter(o=>!o.sensorOk);
     if(short.length){const worst=short.reduce((a,b)=>a.NwMin>b.NwMin?a:b),rec=RES.find(r=>r[1]>=worst.NwMin);
-      notes.unshift(rec?`Для «${worst.name}» нужно не меньше ${fmt(worst.NwMin,0)} px по горизонтали (${rec[0]}) при том же угле.`:`Для «${worst.name}» нужно ${fmt(worst.NwMin,0)} px по горизонтали — больше, чем даёт любая камера из списка. Нужна отдельная камера ближе к объекту или объектив уже.`)}}
-  else if(edge.length){cls="warn";pill="На грани";head=`На грани на входе модели: ${edge.map(o=>`${o.name||"объект"} — ${pxm(o)} при нужных ${fmt(o.reqN,0)}`).join("; ")}.`}
-  else{const sm=valid.reduce((a,b)=>a.mm<b.mm?a:b);cls="ok";pill="Хватает";head=`Все объекты различимы на входе модели. Самый мелкий: ${sm.name} — ${pxm(sm)}.`}
-  if(notes.length&&cls==="ok"){cls="warn";pill="Проверить"}
+      notes.unshift(rec?t("nRes",worst.name,fmt(worst.NwMin,0),rec[0]):t("nResNone",worst.name,fmt(worst.NwMin,0)))}}
+  else if(edge.length){cls="warn";pill=t("pWarn");head=t("hWarn",edge.map(o=>t("hItem",o.name||t("objDefault"),pxm(o),fmt(o.reqN,0))).join("; "))}
+  else{const sm=valid.reduce((a,b)=>a.mm<b.mm?a:b);cls="ok";pill=t("pOk");head=t("hOk",sm.name,pxm(sm))}
+  if(notes.length&&cls==="ok"){cls="warn";pill=t("pCheck")}
   // группы запусков: одна модель с одинаковой подачей обслуживает свои объекты одним проходом
   const groups=[];objs.filter(o=>o.fi).forEach(o=>{const key=[o.model,o.feed,o.fi.inp,o.feed==="tiles"?o.ov:"",o.model==="custom"?o.fps+"@"+o.ref:""].join("|");
-    let g=groups.find(x=>x.key===key);if(!g){g={key,model:o.model,feed:o.feed,fi:o.fi,fps:o.fps,ref:o.ref,names:[],type:T.name,load:count*afps*o.fi.tiles};groups.push(g)}g.names.push(o.name||"объект")});
+    let g=groups.find(x=>x.key===key);if(!g){g={key,model:o.model,feed:o.feed,fi:o.fi,fps:o.fps,ref:o.ref,names:[],type:T.name,load:count*afps*o.fi.tiles};groups.push(g)}g.names.push(o.name||t("objDefault"))});
   const X=vel*maxR/bl;
   const mb=Nw*Nh*fps*bpp*sc/1e6;
   return {...base,err:false,clamped,fWant,cam,pos,m,H,h,Hc,L0,Dz,Wz,x1,x2,tilt,span,hf,vf,f,rot,Nu,Nv,fpx,W,zOf,P1,P2,minA,minD,maxR,objs,valid,notes,cls,pill,head,pxs,pxm,groups,X,vel,bl,mb,k,

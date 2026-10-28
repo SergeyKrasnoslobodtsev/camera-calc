@@ -1,4 +1,4 @@
-<title>Калькулятор камер</title>
+<title></title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
@@ -261,36 +261,36 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 
 <div class="wrap">
 <header>
-  <h1>Калькулятор камер и вычислителя</h1>
+  <h1 data-t="appTitle"></h1>
   <div class="acts">
-    <button type="button" id="themeBtn" aria-pressed="false">Светлая тема</button>
-    <a class="btn" href="#tpl-gpus" id="tplBtn">Шаблоны</a>
-    <button type="button" id="resetBtn">Пример</button>
-    <button type="button" id="copyBtn" class="primary">Копировать отчёт</button>
+    <button type="button" id="themeBtn" aria-pressed="false" data-t="themeLight"></button>
+    <a class="btn" href="#tpl-gpus" id="tplBtn" data-t="tplBtn"></a>
+    <button type="button" id="resetBtn" data-t="resetBtn"></button>
+    <button type="button" id="copyBtn" class="primary" data-t="copyBtn"></button>
   </div>
 </header>
 
 <div id="viewMain" style="display:flex;flex-direction:column;gap:14px">
-<nav class="tabs" role="tablist" aria-label="Типы камер" id="tabs"></nav>
+<nav class="tabs" role="tablist" data-ta="tabsAria" id="tabs"></nav>
 
 <div class="first">
 <section class="syswrap" aria-labelledby="sysTitle">
-  <h2 id="sysTitle">Система</h2>
+  <h2 id="sysTitle" data-t="sysTitle"></h2>
   <div class="sys" id="sysKpis"></div>
 </section>
 
 <section class="panel dash" aria-labelledby="loadTitle">
   <div class="dhead">
-    <h2 id="loadTitle">Что нагружается</h2>
-    <a class="inlink" href="#tpl-gpus">+ Своя карта</a>
+    <h2 id="loadTitle" data-t="loadTitle"></h2>
+    <a class="inlink" href="#tpl-gpus" data-t="addGpuLink"></a>
   </div>
   <div class="dsel">
-    <div class="f"><label for="gpu">Видеокарта</label><select id="gpu"></select></div>
-    <div class="f"><label for="gcnt">Кол-во</label><select id="gcnt"><option value="auto">Авто</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+    <div class="f"><label for="gpu" data-t="gpu"></label><select id="gpu"></select></div>
+    <div class="f"><label for="gcnt" data-t="gcnt"></label><select id="gcnt"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
   </div>
   <div class="dsum" id="dsum"></div>
   <div class="donutbox">
-    <svg id="donut" viewBox="0 0 120 120" role="img" aria-label="Загрузка инференса"></svg>
+    <svg id="donut" viewBox="0 0 120 120" role="img" data-ta="donutAria"></svg>
     <ul class="legend" id="legend"></ul>
   </div>
   <div class="gauges" id="gauges"></div>
@@ -299,15 +299,15 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 
 <section class="panel res" aria-labelledby="resTitle" role="tabpanel" id="typeOut">
   <div class="reshead">
-    <h2 id="resTitle">Результат</h2>
+    <h2 id="resTitle" data-t="resTitle"></h2>
     <div class="verdict" id="verdict"></div>
   </div>
   <div class="resbody">
     <figure class="sidefig">
-      <figcaption><span class="figt">Вид сбоку</span>
-        <span class="figl"><span><i class="lg-fov" aria-hidden="true"></i>поле зрения</span><span><i class="lg-ax" aria-hidden="true"></i>ось</span><span><i class="lg-zone" aria-hidden="true"></i>зона</span></span>
+      <figcaption><span class="figt" data-t="sideFig"></span>
+        <span class="figl"><span><i class="lg-fov" aria-hidden="true"></i><span data-t="lgFov"></span></span><span><i class="lg-ax" aria-hidden="true"></i><span data-t="lgAx"></span></span><span><i class="lg-zone" aria-hidden="true"></i><span data-t="lgZone"></span></span></span>
       </figcaption>
-      <svg id="side" viewBox="0 0 680 510" role="img" aria-label="Схема: камера, поле зрения и зона контроля, вид сбоку"></svg>
+      <svg id="side" viewBox="0 0 680 510" role="img" data-ta="sideAria"></svg>
     </figure>
     <div class="rcol">
       <div class="kpis" id="kpis"></div>
@@ -321,166 +321,166 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <div class="work">
   <form class="panel col" id="frm" autocomplete="off" aria-labelledby="parTitle">
     <div class="colhead typehead">
-      <h2 id="parTitle">Параметры типа</h2>
-      <div class="f"><label for="tName">Название</label><input id="tName"></div>
-      <div class="f"><label for="tCount">Камер</label><input id="tCount" inputmode="numeric"></div>
+      <h2 id="parTitle" data-t="parTitle"></h2>
+      <div class="f"><label for="tName" data-t="tName"></label><input id="tName"></div>
+      <div class="f"><label for="tCount" data-t="tCount"></label><input id="tCount" inputmode="numeric"></div>
     </div>
     <details class="sec" open>
-      <summary>Геометрия <span class="sumv" id="sumGeo"></span></summary>
+      <summary><span data-t="secGeo"></span> <span class="sumv" id="sumGeo"></span></summary>
       <div class="fs">
-        <div class="f"><label for="H">Высота камеры, м</label><input id="H" inputmode="decimal"></div>
-        <div class="f"><label for="h">Плоскость интереса, м</label><input id="h" inputmode="decimal"></div>
-        <div class="f" id="L0box"><label for="L0">Вынос до зоны, м</label><input id="L0" inputmode="decimal"></div>
-        <div class="f"><label for="mg">Запас кадра, %</label><input id="mg" inputmode="decimal"></div>
-        <div class="f"><label for="Dz">Глубина зоны, м</label><input id="Dz" inputmode="decimal"></div>
-        <div class="f"><label for="Wz">Ширина зоны, м</label><input id="Wz" inputmode="decimal"></div>
-        <div class="f full"><span data-tip="pos">Положение камеры</span>
-          <div class="seg" role="radiogroup" aria-label="Положение камеры">
-            <label><input type="radio" name="pos" id="pSide" value="side">Сбоку, под углом</label>
-            <label><input type="radio" name="pos" id="pTop" value="top">Над центром</label>
+        <div class="f"><label for="H" data-t="H"></label><input id="H" inputmode="decimal"></div>
+        <div class="f"><label for="h" data-t="h"></label><input id="h" inputmode="decimal"></div>
+        <div class="f" id="L0box"><label for="L0" data-t="L0"></label><input id="L0" inputmode="decimal"></div>
+        <div class="f"><label for="mg" data-t="mg"></label><input id="mg" inputmode="decimal"></div>
+        <div class="f"><label for="Dz" data-t="Dz"></label><input id="Dz" inputmode="decimal"></div>
+        <div class="f"><label for="Wz" data-t="Wz"></label><input id="Wz" inputmode="decimal"></div>
+        <div class="f full"><span data-tip="pos" data-t="pos"></span>
+          <div class="seg" role="radiogroup" data-ta="pos">
+            <label><input type="radio" name="pos" id="pSide" value="side"><span data-t="pSide"></span></label>
+            <label><input type="radio" name="pos" id="pTop" value="top"><span data-t="pTop"></span></label>
           </div>
         </div>
       </div>
     </details>
     <details class="sec" open>
-      <summary>Матрица и объектив <span class="sumv" id="sumCam"></span></summary>
+      <summary><span data-t="secCam"></span> <span class="sumv" id="sumCam"></span></summary>
       <div class="fs">
-        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="cam">Камера</label><a class="inlink" href="#tpl-cams">+ Своя камера</a></div><select id="cam"></select></div>
-        <div class="f full"><label for="res">Разрешение</label><select id="res"></select></div>
-        <div class="f"><label for="sens">Формат матрицы</label><select id="sens"></select></div>
-        <div class="f"><label for="sw">Ширина матрицы, мм</label><input id="sw" inputmode="decimal"></div>
-        <div class="f full" id="ppBox" hidden><label for="pp">Размер пикселя, мкм</label><input id="pp" inputmode="decimal"></div>
-        <div class="f full"><label for="orient">Ориентация кадра</label><select id="orient"><option value="auto">Авто — как выгоднее</option><option value="land">Длинная сторона поперёк взгляда</option><option value="port">Повернуть на 90°</option></select></div>
-        <div class="f full"><span data-tip="mode">Объектив</span>
-          <div class="seg three" role="radiogroup" aria-label="Режим объектива">
-            <label><input type="radio" name="mode" id="mAuto" value="auto">Подобрать</label>
-            <label><input type="radio" name="mode" id="mF" value="f">Фокусное</label>
-            <label><input type="radio" name="mode" id="mA" value="a">Угол HFOV</label>
+        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="cam" data-t="cam"></label><a class="inlink" href="#tpl-cams" data-t="addCamLink"></a></div><select id="cam"></select></div>
+        <div class="f full"><label for="res" data-t="res"></label><select id="res"></select></div>
+        <div class="f"><label for="sens" data-t="sens"></label><select id="sens"></select></div>
+        <div class="f"><label for="sw" data-t="sw"></label><input id="sw" inputmode="decimal"></div>
+        <div class="f full" id="ppBox" hidden><label for="pp" data-t="pp"></label><input id="pp" inputmode="decimal"></div>
+        <div class="f full"><label for="orient" data-t="orient"></label><select id="orient"><option value="auto" data-t="auto"></option><option value="land" data-t="orLand"></option><option value="port" data-t="orPort"></option></select></div>
+        <div class="f full"><span data-tip="mode" data-t="mode"></span>
+          <div class="seg three" role="radiogroup" data-ta="modeAria">
+            <label><input type="radio" name="mode" id="mAuto" value="auto"><span data-t="mAuto"></span></label>
+            <label><input type="radio" name="mode" id="mF" value="f"><span data-t="mF"></span></label>
+            <label><input type="radio" name="mode" id="mA" value="a"><span data-t="mA"></span></label>
           </div>
         </div>
-        <div class="f" id="fBox" hidden><label for="fmm">Фокусное, мм</label><input id="fmm" inputmode="decimal"></div>
+        <div class="f" id="fBox" hidden><label for="fmm" data-t="fmm"></label><input id="fmm" inputmode="decimal"></div>
         <div class="f" id="aBox" hidden><label for="hfov">HFOV, °</label><input id="hfov" inputmode="decimal"></div>
       </div>
     </details>
     <details class="sec">
-      <summary>Поток и качество <span class="sumv" id="sumStr"></span></summary>
+      <summary><span data-t="secStr"></span> <span class="sumv" id="sumStr"></span></summary>
       <div class="fs">
-        <div class="f"><label for="fps">Кадров/с в потоке</label><input id="fps" inputmode="decimal"></div>
-        <div class="f"><label for="afps">На аналитику, к/с</label><input id="afps" inputmode="decimal"></div>
-        <div class="f"><label for="codec">Кодек</label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
-        <div class="f"><label for="scene">Движение в сцене</label><select id="scene"><option value="0.6">Спокойное</option><option value="1">Обычное</option><option value="1.5">Активное</option></select></div>
-        <div class="f"><label for="k">Коэфф. качества</label><input id="k" inputmode="decimal"></div>
-        <div class="f"><label for="v">Скорость движения, м/с</label><input id="v" inputmode="decimal"></div>
-        <div class="f"><label for="blur">Допустимый смаз, px</label><input id="blur" inputmode="decimal"></div>
+        <div class="f"><label for="fps" data-t="fps"></label><input id="fps" inputmode="decimal"></div>
+        <div class="f"><label for="afps" data-t="afps"></label><input id="afps" inputmode="decimal"></div>
+        <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
+        <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="scLow"></option><option value="1" data-t="scMid"></option><option value="1.5" data-t="scHigh"></option></select></div>
+        <div class="f"><label for="k" data-t="k"></label><input id="k" inputmode="decimal"></div>
+        <div class="f"><label for="v" data-t="v"></label><input id="v" inputmode="decimal"></div>
+        <div class="f"><label for="blur" data-t="blur"></label><input id="blur" inputmode="decimal"></div>
       </div>
     </details>
-    <div class="colfoot"><button type="button" class="sm" id="dupBtn">Дублировать тип</button><button type="button" class="sm danger" id="delBtn">Удалить тип</button></div>
+    <div class="colfoot"><button type="button" class="sm" id="dupBtn" data-t="dupBtn"></button><button type="button" class="sm danger" id="delBtn" data-t="delBtn"></button></div>
   </form>
 
   <section class="panel col" aria-labelledby="objTitle">
     <div class="colhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <h2 id="objTitle"><span data-tip="objs">Что ищем и чем</span></h2>
-      <button type="button" class="primary sm" id="addObj">+ Объект</button>
+      <h2 id="objTitle"><span data-tip="objs" data-t="objTitle"></span></h2>
+      <button type="button" class="primary sm" id="addObj" data-t="addObj"></button>
     </div>
     <div class="olist">
       <div id="objList" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="presets"><span>Шаблоны:</span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto">+ Свой детектор</a></div>
+      <div class="presets"><span data-t="presets"></span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto" data-t="addDetLink"></a></div>
     </div>
-    <div class="colfoot">Список прокручивается внутри блока. Объекты с одной моделью и подачей считаются одним запуском.</div>
+    <div class="colfoot" data-t="objFoot"></div>
   </section>
 
 </div>
 
 <div class="bottom">
   <section class="panel net" aria-labelledby="netTitle">
-    <div class="rowhead"><h2 id="netTitle">Сеть и хранение</h2>
-      <div class="f"><label for="days">Архив, суток</label><input id="days" inputmode="numeric" value="0"></div></div>
+    <div class="rowhead"><h2 id="netTitle" data-t="netTitle"></h2>
+      <div class="f"><label for="days" data-t="days"></label><input id="days" inputmode="numeric" value="0"></div></div>
     <div class="tbl"><table id="netTbl"></table></div>
   </section>
   <section class="panel assum" aria-labelledby="assTitle">
-    <h2 id="assTitle">Допущения</h2>
+    <h2 id="assTitle" data-t="assTitle"></h2>
     <ul id="assList"></ul>
-    <details class="how" style="margin-top:auto"><summary>Все формулы</summary><div class="formulas" id="formulas"></div></details>
+    <details class="how" style="margin-top:auto"><summary data-t="formulas"></summary><div class="formulas" id="formulas"></div></details>
   </section>
 </div>
 </div>
 
 <div id="viewTpl" hidden style="flex-direction:column;gap:14px">
   <div class="tplhead">
-    <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none">← К расчёту</a><h2 class="h2big" style="font-size:22px">Шаблоны</h2></div>
+    <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none" data-t="back"></a><h2 class="h2big" style="font-size:22px" data-t="tplTitle"></h2></div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      <nav class="tpltabs" aria-label="Разделы шаблонов"><a href="#tpl-gpus" id="tt-gpus">Видеокарты</a><a href="#tpl-cams" id="tt-cams">Камеры</a><a href="#tpl-dets" id="tt-dets">Детекторы</a></nav>
-      <button type="button" id="expBtn" title="Скачать шаблоны, цены и расчёт файлом">Экспорт</button>
-      <button type="button" id="impBtn" title="Заменить все данные сохранёнными в файле">Импорт</button>
+      <nav class="tpltabs" data-ta="tplNav"><a href="#tpl-gpus" id="tt-gpus" data-t="ttGpus"></a><a href="#tpl-cams" id="tt-cams" data-t="ttCams"></a><a href="#tpl-dets" id="tt-dets" data-t="ttDets"></a></nav>
+      <button type="button" id="expBtn" data-tt="expTitle" data-t="expBtn"></button>
+      <button type="button" id="impBtn" data-tt="impTitle" data-t="impBtn"></button>
       <input type="file" id="impFile" accept=".json,application/json" hidden>
     </div>
   </div>
   <div class="gpage" id="tpl-gpus-v">
     <section class="panel cat" aria-labelledby="catTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catTitle">Каталог</h2><span class="note">характеристики — даташиты NVIDIA</span></div>
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catTitle" data-t="catTitle0"></h2><span class="note" data-t="catNote"></span></div>
       <div class="tbl" style="padding:4px 8px 8px"><table id="catTbl"></table></div>
       <div class="mine" id="mine"></div>
       <div class="params">
-        <div class="f"><label for="kr">Коэфф. реальности</label><input id="kr" inputmode="decimal" value="0.6"></div>
-        <div class="f"><label for="resv">Запас под рост, %</label><input id="resv" inputmode="decimal" value="20"></div>
+        <div class="f"><label for="kr" data-t="kr"></label><input id="kr" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="resv" data-t="resv"></label><input id="resv" inputmode="decimal" value="20"></div>
       </div>
     </section>
     <section class="panel newc" aria-labelledby="newTitle">
-      <div class="colhead"><h2 id="newTitle">Новая карта</h2></div>
+      <div class="colhead"><h2 id="newTitle" data-t="newTitle"></h2></div>
       <form id="newForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ngName">Название</label><input id="ngName" placeholder="Например, RTX 6000 Ada" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ngArch">Архитектура</label><select id="ngArch"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet">Jetson / свой декодер</option></select></div>
-        <div class="f"><label for="ngTf">FP16 Tensor, TFLOPS</label><input id="ngTf" inputmode="decimal" placeholder="без sparsity"></div>
-        <div class="f"><label for="ngDec" id="ngDecL">NVDEC, шт.</label><input id="ngDec" inputmode="decimal" placeholder="2"></div>
-        <div class="f"><label for="ngMem">Память, ГБ</label><input id="ngMem" inputmode="decimal" placeholder="48"></div>
-        <div class="f"><label for="ngTdp">TDP, Вт</label><input id="ngTdp" inputmode="numeric" placeholder="300"></div>
-        <div class="f"><label for="ngPrice">Цена, $</label><input id="ngPrice" inputmode="numeric" placeholder="цена поставщика"></div>
-        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="ngOn" checked>Участвует в автоподборе</label>
-        <div class="hint"><b>Где взять цифры</b><span>FP16 Tensor — из даташита NVIDIA без sparsity: значение со звёздочкой делите на 2. Для GeForce берите FP16 с FP32-накоплением.</span><span>NVDEC — число аппаратных декодеров. Для Jetson укажите потоки 1080p30 H.265 из спецификации.</span></div>
+        <div class="f full"><label for="ngName" data-t="ngName"></label><input id="ngName" data-tp="ngNamePh" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ngArch" data-t="ngArch"></label><select id="ngArch"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="ngJet"></option></select></div>
+        <div class="f"><label for="ngTf">FP16 Tensor, TFLOPS</label><input id="ngTf" inputmode="decimal" data-tp="ngTfPh"></div>
+        <div class="f"><label for="ngDec" id="ngDecL" data-t="ngDec"></label><input id="ngDec" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="ngMem" data-t="ngMem"></label><input id="ngMem" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="ngTdp" data-t="ngTdp"></label><input id="ngTdp" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="ngPrice" data-t="ngPrice"></label><input id="ngPrice" inputmode="numeric" data-tp="ngPricePh"></div>
+        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="ngOn" checked><span data-t="ngOn"></span></label>
+        <div class="hint"><b data-t="hintWhere"></b><span data-t="ngHint1"></span><span data-t="ngHint2"></span></div>
         <div class="err" id="ngErr" hidden></div>
-        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить карту</button><a class="btn" href="#">К расчёту</a></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addGpuBtn"></button><a class="btn" href="#" data-t="toCalc"></a></div>
       </form>
     </section>
   </div>
 
   <div class="gpage" id="tpl-cams-v" hidden>
     <section class="panel cat" aria-labelledby="camTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camTitle">Камеры</h2><span class="note">выбираются в типе камеры, раздел «Матрица и объектив»</span></div>
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camTitle" data-t="camTitle0"></h2><span class="note" data-t="camNote"></span></div>
       <div class="tbl" style="padding:4px 8px 12px"><table id="camTbl"></table></div>
     </section>
     <section class="panel newc" aria-labelledby="ncTitle">
-      <div class="colhead"><h2 id="ncTitle">Новая камера</h2></div>
+      <div class="colhead"><h2 id="ncTitle" data-t="ncTitle"></h2></div>
       <form id="camForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ncName">Название</label><input id="ncName" placeholder="Модель из каталога производителя" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ncW">Ширина кадра, px</label><input id="ncW" inputmode="numeric" placeholder="2560"></div>
-        <div class="f"><label for="ncH">Высота кадра, px</label><input id="ncH" inputmode="numeric" placeholder="1440"></div>
-        <div class="f"><label for="ncSw">Ширина матрицы, мм</label><input id="ncSw" inputmode="decimal" placeholder="5,4"></div>
-        <div class="f"><label for="ncPp">или пиксель, мкм</label><input id="ncPp" inputmode="decimal" placeholder="2,0"></div>
-        <div class="f"><label for="ncFmin">Фокусное от, мм</label><input id="ncFmin" inputmode="decimal" placeholder="2,8"></div>
-        <div class="f"><label for="ncFmax">Фокусное до, мм</label><input id="ncFmax" inputmode="decimal" placeholder="12"></div>
-        <div class="f"><label for="ncPrice">Цена, $</label><input id="ncPrice" inputmode="numeric" placeholder="необязательно"></div>
-        <div class="hint"><b>Где взять цифры</b><span>Ширина матрицы — активная область сенсора из даташита. Если её нет, укажите размер пикселя: ширина посчитается как пиксель × ширина кадра.</span><span>Фокусное для фиксированного объектива — одно число в обоих полях. Пустые поля — объектив подбирается без ограничений.</span></div>
+        <div class="f full"><label for="ncName" data-t="tName"></label><input id="ncName" data-tp="ncNamePh" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ncW" data-t="ncW"></label><input id="ncW" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="ncH" data-t="ncH"></label><input id="ncH" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="ncSw" data-t="ncSw"></label><input id="ncSw" inputmode="decimal" placeholder="5,4"></div>
+        <div class="f"><label for="ncPp" data-t="ncPp"></label><input id="ncPp" inputmode="decimal" placeholder="2,0"></div>
+        <div class="f"><label for="ncFmin" data-t="ncFmin"></label><input id="ncFmin" inputmode="decimal" placeholder="2,8"></div>
+        <div class="f"><label for="ncFmax" data-t="ncFmax"></label><input id="ncFmax" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="ncPrice" data-t="ncPrice"></label><input id="ncPrice" inputmode="numeric" data-tp="optional"></div>
+        <div class="hint"><b data-t="hintWhere"></b><span data-t="ncHint1"></span><span data-t="ncHint2"></span></div>
         <div class="err" id="ncErr" hidden></div>
-        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить камеру</button><a class="btn" href="#">К расчёту</a></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addCamBtn"></button><a class="btn" href="#" data-t="toCalc"></a></div>
       </form>
     </section>
   </div>
   <div class="gpage" id="tpl-dets-v" hidden>
     <section class="panel cat" aria-labelledby="detTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detTitle">Детекторы</h2><span class="note">выбираются в карточке объекта, поле «Модель»</span></div>
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detTitle" data-t="detTitle0"></h2><span class="note" data-t="detNote"></span></div>
       <div class="tbl" style="padding:4px 8px 12px"><table id="detTbl"></table></div>
     </section>
     <section class="panel newc" aria-labelledby="ndTitle">
-      <div class="colhead"><h2 id="ndTitle">Новый детектор</h2></div>
+      <div class="colhead"><h2 id="ndTitle" data-t="ndTitle"></h2></div>
       <form id="detForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ndName">Название</label><input id="ndName" placeholder="Например, детектор деталей v2" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ndFps">Замер, к/с</label><input id="ndFps" inputmode="decimal" placeholder="на одной карте"></div>
-        <div class="f"><label for="ndInp">При входе, px</label><select id="ndInp" style="font-family:var(--mono)"></select></div>
-        <div class="f full"><label for="ndRef">Замерено на карте</label><select id="ndRef"></select></div>
-        <div class="f full"><label for="ndGf">GFLOPs на кадр</label><input id="ndGf" inputmode="decimal" placeholder="необязательно, для оценки памяти"></div>
-        <div class="hint"><b>Как замерить</b><span>Кадров в секунду на одной карте в TensorRT, с той точностью и batch, что будут в работе (trtexec, DeepStream perf или свой бенчмарк).</span><span>На другие карты замер пересчитывается по FP16, на другой вход — по квадрату его стороны.</span></div>
+        <div class="f full"><label for="ndName" data-t="tName"></label><input id="ndName" data-tp="ndNamePh" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ndFps" data-t="ndFps"></label><input id="ndFps" inputmode="decimal" data-tp="ndFpsPh"></div>
+        <div class="f"><label for="ndInp" data-t="ndInp"></label><select id="ndInp" style="font-family:var(--mono)"></select></div>
+        <div class="f full"><label for="ndRef" data-t="ndRef"></label><select id="ndRef"></select></div>
+        <div class="f full"><label for="ndGf" data-t="ndGf"></label><input id="ndGf" inputmode="decimal" data-tp="ndGfPh"></div>
+        <div class="hint"><b data-t="hintHow"></b><span data-t="ndHint1"></span><span data-t="ndHint2"></span></div>
         <div class="err" id="ndErr" hidden></div>
-        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary">Добавить детектор</button><a class="btn" href="#">К расчёту</a></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addDetBtn"></button><a class="btn" href="#" data-t="toCalc"></a></div>
       </form>
     </section>
   </div>
