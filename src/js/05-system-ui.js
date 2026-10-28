@@ -234,7 +234,8 @@ function calcAll(){
   save();
 }
 const GL_IDS=["kr","resv","days","gpu","gcnt"];
-function save(){try{localStorage.setItem("camcalc3",JSON.stringify({types:TYPES,act:ACT,gl:Object.fromEntries(GL_IDS.map(id=>[id,$(id).value])),price:PRICE,on:ON,custom:CUSTOM,cams:CAMS_C,dets:DETS,light:document.documentElement.classList.contains("light")}))}catch(e){}}
+const snap=()=>({types:TYPES,act:ACT,gl:Object.fromEntries(GL_IDS.map(id=>[id,$(id).value])),price:PRICE,on:ON,custom:CUSTOM,cams:CAMS_C,dets:DETS,light:document.documentElement.classList.contains("light")});
+function save(){try{localStorage.setItem("camcalc3",JSON.stringify(snap()))}catch(e){}}
 function load(){try{const st=JSON.parse(localStorage.getItem("camcalc3")||"null");if(!st)return;
   if(Array.isArray(st.custom))CUSTOM=st.custom.filter(g=>g&&g.id&&g.name&&g.tf>0).map(g=>({...g,custom:true}));
   if(Array.isArray(st.cams))CAMS_C=st.cams.filter(c=>c&&c.id&&c.Nw>0&&c.Nh>0&&c.sw>0).map(c=>({...c,custom:true}));
@@ -267,6 +268,16 @@ $("delBtn").addEventListener("click",()=>{const b=$("delBtn");
 function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,1800)}
 $("resetBtn").addEventListener("click",()=>{TYPES=defTypes();ACT=TYPES[0].id;$("kr").value="0.6";$("resv").value="20";$("days").value="0";$("gcnt").value="auto";PRICE={};ON={};buildGpuSelect();$("gpu").value="auto";writeForm(act());calcAll();toast("Загружен пример. Свои шаблоны сохранены")});
 $("copyBtn").addEventListener("click",()=>{navigator.clipboard.writeText(report).then(()=>toast("Отчёт скопирован"),()=>toast("Не удалось скопировать: браузер запретил доступ к буферу"))});
+$("expBtn").addEventListener("click",()=>{const a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(snap(),null,1));a.download="camera-calc.json";a.click()});
+function importText(s){let st;try{st=JSON.parse(s)}catch(e){}
+  if(!st||typeof st!=="object"||!Array.isArray(st.types)){toast("Файл не похож на сохранение калькулятора");return}
+  try{localStorage.setItem("camcalc3",JSON.stringify(st))}catch(e){toast("Браузер не дал сохранить данные");return}
+  location.reload()}
+let impArm=null;
+$("impBtn").addEventListener("click",()=>{const b=$("impBtn");
+  if(!impArm){b.textContent="Заменит всё. Ещё раз";impArm=setTimeout(()=>{b.textContent="Импорт";impArm=null},3000);return}
+  clearTimeout(impArm);impArm=null;b.textContent="Импорт";$("impFile").click()});
+$("impFile").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)f.text().then(importText)});
 const TPL={"tpl-gpus":renderGpuView,"tpl-cams":renderCamView,"tpl-dets":renderDetView};
 function route(){
   const h=location.hash.slice(1),isTpl=h in TPL;

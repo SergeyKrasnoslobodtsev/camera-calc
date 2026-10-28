@@ -38,3 +38,15 @@ const om=d.getElementById('om-1');const det=[...om.options].find(o=>o.text==='Д
 console.log('LEGEND det:',[...d.querySelectorAll('#legend li')].map(l=>l.textContent.replace(/\s+/g,' ').trim()).join(' || '));
 console.log('SYS:',T('sysKpis'));
 console.log('tips',d.querySelectorAll('.tipbtn').length);
+// export → import
+const page=seed=>new JSDOM(fs.readFileSync(__dirname+'/../dist/camera-calc.html','utf8'),{runScripts:'dangerously',url:'https://x.test/',pretendToBeVisual:true,beforeParse(w){w.scrollTo=()=>{};if(seed)w.localStorage.setItem('camcalc3',seed)}}).window;
+let href='';w.HTMLAnchorElement.prototype.click=function(){href=this.href};
+d.getElementById('expBtn').click();
+const exp=decodeURIComponent(href.split(',').slice(1).join(','));
+console.log('export:',href.startsWith('data:application/json'),'cams',JSON.parse(exp).cams.length,'dets',JSON.parse(exp).dets.length);
+const before=w.localStorage.getItem('camcalc3');w.importText('{битый');
+console.log('bad file:',T('toast'),'| data kept',w.localStorage.getItem('camcalc3')===before);
+d.getElementById('impBtn').click();console.log('imp armed:',T('impBtn'));
+const w2=page();w2.importText(exp);console.log('imported stored',w2.localStorage.getItem('camcalc3')===JSON.stringify(JSON.parse(exp)));
+const w3=page(w2.localStorage.getItem('camcalc3')),T3=id=>w3.document.getElementById(id).textContent.replace(/\s+/g,' ').trim();
+console.log('reopened: cam',[...w3.document.getElementById('cam').options].some(o=>o.text.startsWith('Тест-камера')),'| SYS same',T3('sysKpis')===T('sysKpis'),'| report same',w3.eval('report')===w.eval('report'));

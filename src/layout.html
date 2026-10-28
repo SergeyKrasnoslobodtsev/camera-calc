@@ -408,7 +408,12 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <div id="viewTpl" hidden style="flex-direction:column;gap:14px">
   <div class="tplhead">
     <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none">← К расчёту</a><h2 class="h2big" style="font-size:22px">Шаблоны</h2></div>
-    <nav class="tpltabs" aria-label="Разделы шаблонов"><a href="#tpl-gpus" id="tt-gpus">Видеокарты</a><a href="#tpl-cams" id="tt-cams">Камеры</a><a href="#tpl-dets" id="tt-dets">Детекторы</a></nav>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <nav class="tpltabs" aria-label="Разделы шаблонов"><a href="#tpl-gpus" id="tt-gpus">Видеокарты</a><a href="#tpl-cams" id="tt-cams">Камеры</a><a href="#tpl-dets" id="tt-dets">Детекторы</a></nav>
+      <button type="button" id="expBtn" title="Скачать шаблоны, цены и расчёт файлом">Экспорт</button>
+      <button type="button" id="impBtn" title="Заменить все данные сохранёнными в файле">Импорт</button>
+      <input type="file" id="impFile" accept=".json,application/json" hidden>
+    </div>
   </div>
   <div class="gpage" id="tpl-gpus-v">
     <section class="panel cat" aria-labelledby="catTitle">
