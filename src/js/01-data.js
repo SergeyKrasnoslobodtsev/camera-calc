@@ -27,7 +27,7 @@ const RESOLUTIONS = [
   [8, 3840, 2160],
   [12, 4000, 3000],
 ].map(([mp, width, height]) => [
-  `${t("mp", mp)} · ${width} × ${height}`,
+  `${t("megapixels", mp)} · ${width} × ${height}`,
   width,
   height,
 ]);
@@ -131,7 +131,7 @@ const decStreams = (gpu, codec) =>
     : (gpu.nvdec * NVDEC_FPS[gpu.arch][codec]) / 30;
 const decText = (gpu) =>
   gpu.decodeStreams
-    ? t("decStreams", formatNumber(gpu.decodeStreams.h265, 0))
+    ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0))
     : `${gpu.nvdec} NVDEC`;
 // Модели: GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
 const MODELS = [

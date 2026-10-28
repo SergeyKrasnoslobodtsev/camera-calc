@@ -266,7 +266,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   <div class="acts">
     <button type="button" id="themeBtn" aria-pressed="false" data-t="themeLight"></button>
     <button type="button" id="langBtn" data-t="langBtn" data-ta="langAria"></button>
-    <a class="btn" href="#tpl-gpus" id="tplBtn" data-t="tplBtn"></a>
+    <a class="btn" href="#tpl-gpus" id="tplBtn" data-t="templatesBtn"></a>
     <button type="button" id="resetBtn" data-t="resetBtn"></button>
     <button type="button" id="copyBtn" class="primary" data-t="copyBtn"></button>
   </div>
@@ -277,7 +277,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 
 <div class="first">
 <section class="syswrap" aria-labelledby="sysTitle">
-  <h2 id="sysTitle" data-t="sysTitle"></h2>
+  <h2 id="sysTitle" data-t="systemTitle"></h2>
   <div class="sys" id="sysKpis"></div>
 </section>
 
@@ -288,7 +288,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   </div>
   <div class="dsel">
     <div class="f"><label for="gpu" data-t="gpu"></label><select id="gpu"></select></div>
-    <div class="f"><label for="gpuCount" data-t="gcnt"></label><select id="gpuCount"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+    <div class="f"><label for="gpuCount" data-t="gpuCount"></label><select id="gpuCount"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
   </div>
   <div class="dsum" id="dsum"></div>
   <div class="donutbox">
@@ -301,13 +301,13 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 
 <section class="panel res" aria-labelledby="resTitle" role="tabpanel" id="typeOut">
   <div class="reshead">
-    <h2 id="resTitle" data-t="resTitle"></h2>
+    <h2 id="resTitle" data-t="resultTitle"></h2>
     <div class="verdict" id="verdict"></div>
   </div>
   <div class="resbody">
     <figure class="sidefig">
-      <figcaption><span class="figt" data-t="sideFig"></span>
-        <span class="figl"><span><i class="lg-fov" aria-hidden="true"></i><span data-t="lgFov"></span></span><span><i class="lg-ax" aria-hidden="true"></i><span data-t="lgAx"></span></span><span><i class="lg-zone" aria-hidden="true"></i><span data-t="lgZone"></span></span></span>
+      <figcaption><span class="figt" data-t="sideFigure"></span>
+        <span class="figl"><span><i class="lg-fov" aria-hidden="true"></i><span data-t="legendFov"></span></span><span><i class="lg-ax" aria-hidden="true"></i><span data-t="legendAxis"></span></span><span><i class="lg-zone" aria-hidden="true"></i><span data-t="legendZone"></span></span></span>
       </figcaption>
       <svg id="side" viewBox="0 0 680 510" role="img" data-ta="sideAria"></svg>
     </figure>
@@ -323,84 +323,84 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <div class="work">
   <form class="panel col" id="frm" autocomplete="off" aria-labelledby="parTitle">
     <div class="colhead typehead">
-      <h2 id="parTitle" data-t="parTitle"></h2>
-      <div class="f"><label for="tName" data-t="tName"></label><input id="tName"></div>
-      <div class="f"><label for="tCount" data-t="tCount"></label><input id="tCount" type="number" step="1" inputmode="numeric"></div>
+      <h2 id="parTitle" data-t="parametersTitle"></h2>
+      <div class="f"><label for="tName" data-t="typeName"></label><input id="tName"></div>
+      <div class="f"><label for="tCount" data-t="typeCount"></label><input id="tCount" type="number" step="1" inputmode="numeric"></div>
     </div>
     <details class="sec" open>
-      <summary><span data-t="secGeo"></span> <span class="sumv" id="sumGeo"></span></summary>
+      <summary><span data-t="sectionGeometry"></span> <span class="sumv" id="sumGeo"></span></summary>
       <div class="fs">
-        <div class="f"><label for="cameraHeight" data-t="H"></label><input id="cameraHeight" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="planeHeight" data-t="h"></label><input id="planeHeight" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="L0box"><label for="zoneStart" data-t="L0"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="margin" data-t="mg"></label><input id="margin" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneDepth" data-t="Dz"></label><input id="zoneDepth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneWidth" data-t="Wz"></label><input id="zoneWidth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full"><span data-tip="pos" data-t="pos"></span>
-          <div class="seg" role="radiogroup" data-ta="pos">
-            <label><input type="radio" name="placement" id="pSide" value="side"><span data-t="pSide"></span></label>
-            <label><input type="radio" name="placement" id="pTop" value="top"><span data-t="pTop"></span></label>
+        <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="L0box"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full"><span data-tip="placement" data-t="placement"></span>
+          <div class="seg" role="radiogroup" data-ta="placement">
+            <label><input type="radio" name="placement" id="pSide" value="side"><span data-t="placementSide"></span></label>
+            <label><input type="radio" name="placement" id="pTop" value="top"><span data-t="placementTop"></span></label>
           </div>
         </div>
       </div>
     </details>
     <details class="sec" open>
-      <summary><span data-t="secCam"></span> <span class="sumv" id="sumCam"></span></summary>
+      <summary><span data-t="sectionCamera"></span> <span class="sumv" id="sumCam"></span></summary>
       <div class="fs">
-        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cam"></label><a class="inlink" href="#tpl-cams" data-t="addCamLink"></a></div><select id="camera"></select></div>
-        <div class="f full"><label for="resolution" data-t="res"></label><select id="resolution"></select></div>
-        <div class="f"><label for="sensor" data-t="sens"></label><select id="sensor"></select></div>
-        <div class="f"><label for="sensorWidth" data-t="sw"></label><input id="sensorWidth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full" id="ppBox" hidden><label for="pixelPitch" data-t="pp"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full"><label for="orientation" data-t="orient"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orLand"></option><option value="portrait" data-t="orPort"></option></select></div>
-        <div class="f full"><span data-tip="mode" data-t="mode"></span>
-          <div class="seg three" role="radiogroup" data-ta="modeAria">
-            <label><input type="radio" name="lensMode" id="mAuto" value="auto"><span data-t="mAuto"></span></label>
-            <label><input type="radio" name="lensMode" id="mF" value="focal"><span data-t="mF"></span></label>
-            <label><input type="radio" name="lensMode" id="mA" value="angle"><span data-t="mA"></span></label>
+        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cameraSelect"></label><a class="inlink" href="#tpl-cams" data-t="addCameraLink"></a></div><select id="camera"></select></div>
+        <div class="f full"><label for="resolution" data-t="resolution"></label><select id="resolution"></select></div>
+        <div class="f"><label for="sensor" data-t="sensor"></label><select id="sensor"></select></div>
+        <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full" id="ppBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full"><label for="orientation" data-t="orientation"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orientationLandscape"></option><option value="portrait" data-t="orientationPortrait"></option></select></div>
+        <div class="f full"><span data-tip="lensMode" data-t="lensMode"></span>
+          <div class="seg three" role="radiogroup" data-ta="lensModeAria">
+            <label><input type="radio" name="lensMode" id="mAuto" value="auto"><span data-t="lensModeAuto"></span></label>
+            <label><input type="radio" name="lensMode" id="mF" value="focal"><span data-t="lensModeFocal"></span></label>
+            <label><input type="radio" name="lensMode" id="mA" value="angle"><span data-t="lensModeAngle"></span></label>
           </div>
         </div>
-        <div class="f" id="fBox" hidden><label for="focalLength" data-t="fmm"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="aBox" hidden><label for="hfov">HFOV, °</label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="fBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="aBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <details class="sec">
-      <summary><span data-t="secStr"></span> <span class="sumv" id="sumStr"></span></summary>
+      <summary><span data-t="sectionStream"></span> <span class="sumv" id="sumStr"></span></summary>
       <div class="fs">
         <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="analyticsFps" data-t="afps"></label><input id="analyticsFps" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
-        <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="scLow"></option><option value="1" data-t="scMid"></option><option value="1.5" data-t="scHigh"></option></select></div>
-        <div class="f"><label for="lensFactor" data-t="k"></label><input id="lensFactor" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="speed" data-t="v"></label><input id="speed" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="blurPx" data-t="blur"></label><input id="blurPx" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="sceneLow"></option><option value="1" data-t="sceneMid"></option><option value="1.5" data-t="sceneHigh"></option></select></div>
+        <div class="f"><label for="lensFactor" data-t="lensFactor"></label><input id="lensFactor" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="speed" data-t="speed"></label><input id="speed" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
-    <div class="colfoot"><button type="button" class="sm" id="dupBtn" data-t="dupBtn"></button><button type="button" class="sm danger" id="delBtn" data-t="delBtn"></button></div>
+    <div class="colfoot"><button type="button" class="sm" id="dupBtn" data-t="duplicateTypeBtn"></button><button type="button" class="sm danger" id="delBtn" data-t="deleteTypeBtn"></button></div>
   </form>
 
   <section class="panel col" aria-labelledby="objTitle">
     <div class="colhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <h2 id="objTitle"><span data-tip="objs" data-t="objTitle"></span></h2>
-      <button type="button" class="primary sm" id="addObj" data-t="addObj"></button>
+      <h2 id="objTitle"><span data-tip="objects" data-t="objectsTitle"></span></h2>
+      <button type="button" class="primary sm" id="addObj" data-t="addObject"></button>
     </div>
     <div class="olist">
       <div id="objList" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="presets"><span data-t="presets"></span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto" data-t="addDetLink"></a></div>
+      <div class="presets"><span data-t="presets"></span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto" data-t="addDetectorLink"></a></div>
     </div>
-    <div class="colfoot" data-t="objFoot"></div>
+    <div class="colfoot" data-t="objectsFooter"></div>
   </section>
 
 </div>
 
 <div class="bottom">
   <section class="panel net" aria-labelledby="netTitle">
-    <div class="rowhead"><h2 id="netTitle" data-t="netTitle"></h2>
-      <div class="f"><label for="archiveDays" data-t="days"></label><input id="archiveDays" type="number" step="1" inputmode="numeric" value="0"></div></div>
+    <div class="rowhead"><h2 id="netTitle" data-t="networkTitle"></h2>
+      <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" step="1" inputmode="numeric" value="0"></div></div>
     <div class="tbl"><table id="netTbl"></table></div>
   </section>
   <section class="panel assum" aria-labelledby="assTitle">
-    <h2 id="assTitle" data-t="assTitle"></h2>
+    <h2 id="assTitle" data-t="assumptionsTitle"></h2>
     <ul id="assList"></ul>
     <details class="how" style="margin-top:auto"><summary data-t="formulas"></summary><div class="formulas" id="formulas"><div lang="ru"><p>Hc = H − h — высота камеры над плоскостью. x — расстояние по полу от точки под камерой (отрицательное — позади неё). Камера наклонена на середину зоны: t = (φ(x₁) + φ(x₂)) / 2.</p>
         HFOV = 2·arctg(s / 2f), &nbsp;VFOV = 2·arctg(tg(HFOV/2) · Nh/Nw)<br>
@@ -451,80 +451,80 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 
 <div id="viewTpl" hidden style="flex-direction:column;gap:14px">
   <div class="tplhead">
-    <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none" data-t="back"></a><h2 class="h2big" style="font-size:22px" data-t="tplTitle"></h2></div>
+    <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none" data-t="back"></a><h2 class="h2big" style="font-size:22px" data-t="templatesTitle"></h2></div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      <nav class="tpltabs" data-ta="tplNav"><a href="#tpl-gpus" id="tt-gpus" data-t="ttGpus"></a><a href="#tpl-cams" id="tt-cams" data-t="ttCams"></a><a href="#tpl-dets" id="tt-dets" data-t="ttDets"></a></nav>
-      <button type="button" id="expBtn" data-tt="expTitle" data-t="expBtn"></button>
-      <button type="button" id="impBtn" data-tt="impTitle" data-t="impBtn"></button>
+      <nav class="tpltabs" data-ta="templatesNav"><a href="#tpl-gpus" id="tt-gpus" data-t="templateTabGpus"></a><a href="#tpl-cams" id="tt-cams" data-t="templateTabCameras"></a><a href="#tpl-dets" id="tt-dets" data-t="templateTabDetectors"></a></nav>
+      <button type="button" id="expBtn" data-tt="exportTitle" data-t="exportBtn"></button>
+      <button type="button" id="impBtn" data-tt="importTitle" data-t="importBtn"></button>
       <input type="file" id="impFile" accept=".json,application/json" hidden>
     </div>
   </div>
   <div class="gpage" id="tpl-gpus-v">
     <section class="panel cat" aria-labelledby="catTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catTitle" data-t="catTitle0"></h2><span class="note" data-t="catNote"></span></div>
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catTitle" data-t="catalogTitleNoCount"></h2><span class="note" data-t="catalogNote"></span></div>
       <div class="tbl" style="padding:4px 8px 8px"><table id="catTbl"></table></div>
       <div class="mine" id="mine"></div>
       <div class="params">
-        <div class="f"><label for="efficiency" data-t="kr"></label><input id="efficiency" type="number" step="any" inputmode="decimal" value="0.6"></div>
-        <div class="f"><label for="reserve" data-t="resv"></label><input id="reserve" type="number" step="any" inputmode="decimal" value="20"></div>
+        <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" step="any" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" step="any" inputmode="decimal" value="20"></div>
       </div>
     </section>
     <section class="panel newc" aria-labelledby="newTitle">
-      <div class="colhead"><h2 id="newTitle" data-t="newTitle"></h2></div>
+      <div class="colhead"><h2 id="newTitle" data-t="gpuFormTitle"></h2></div>
       <form id="newForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ngName" data-t="ngName"></label><input id="ngName" data-tp="ngNamePh" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ngArch" data-t="ngArch"></label><select id="ngArch"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="ngJet"></option></select></div>
-        <div class="f"><label for="ngTf">FP16 Tensor, TFLOPS</label><input id="ngTf" type="number" step="any" inputmode="decimal" data-tp="ngTfPh"></div>
-        <div class="f"><label for="ngDec" id="ngDecL" data-t="ngDec"></label><input id="ngDec" type="number" step="any" inputmode="decimal" placeholder="2"></div>
-        <div class="f"><label for="ngMem" data-t="ngMem"></label><input id="ngMem" type="number" step="any" inputmode="decimal" placeholder="48"></div>
-        <div class="f"><label for="ngTdp" data-t="ngTdp"></label><input id="ngTdp" type="number" step="1" inputmode="numeric" placeholder="300"></div>
-        <div class="f"><label for="ngPrice" data-t="ngPrice"></label><input id="ngPrice" type="number" step="1" inputmode="numeric" data-tp="ngPricePh"></div>
-        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="ngOn" checked><span data-t="ngOn"></span></label>
-        <div class="hint"><b data-t="hintWhere"></b><span data-t="ngHint1"></span><span data-t="ngHint2"></span></div>
+        <div class="f full"><label for="ngName" data-t="gpuFormName"></label><input id="ngName" data-tp="gpuFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ngArch" data-t="gpuFormArchitecture"></label><select id="ngArch"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="gpuFormJetson"></option></select></div>
+        <div class="f"><label for="ngTf" data-t="gpuFormTflops"></label><input id="ngTf" type="number" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
+        <div class="f"><label for="ngDec" id="ngDecL" data-t="gpuFormDecoders"></label><input id="ngDec" type="number" step="any" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="ngMem" data-t="gpuFormMemory"></label><input id="ngMem" type="number" step="any" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="ngTdp" data-t="gpuFormTdp"></label><input id="ngTdp" type="number" step="1" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="ngPrice" data-t="gpuFormPrice"></label><input id="ngPrice" type="number" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
+        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="ngOn" checked><span data-t="gpuFormEnabled"></span></label>
+        <div class="hint"><b data-t="hintWhere"></b><span data-t="gpuFormHint1"></span><span data-t="gpuFormHint2"></span></div>
         <div class="err" id="ngErr" hidden></div>
-        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addGpuBtn"></button><a class="btn" href="#" data-t="toCalc"></a></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addGpuBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
       </form>
     </section>
   </div>
 
   <div class="gpage" id="tpl-cams-v" hidden>
     <section class="panel cat" aria-labelledby="camTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camTitle" data-t="camTitle0"></h2><span class="note" data-t="camNote"></span></div>
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camTitle" data-t="camerasTitleNoCount"></h2><span class="note" data-t="camerasNote"></span></div>
       <div class="tbl" style="padding:4px 8px 12px"><table id="camTbl"></table></div>
     </section>
     <section class="panel newc" aria-labelledby="ncTitle">
-      <div class="colhead"><h2 id="ncTitle" data-t="ncTitle"></h2></div>
+      <div class="colhead"><h2 id="ncTitle" data-t="cameraFormTitle"></h2></div>
       <form id="camForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ncName" data-t="tName"></label><input id="ncName" data-tp="ncNamePh" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ncW" data-t="ncW"></label><input id="ncW" type="number" step="1" inputmode="numeric" placeholder="2560"></div>
-        <div class="f"><label for="ncH" data-t="ncH"></label><input id="ncH" type="number" step="1" inputmode="numeric" placeholder="1440"></div>
-        <div class="f"><label for="ncSw" data-t="ncSw"></label><input id="ncSw" type="number" step="any" inputmode="decimal" placeholder="5.4"></div>
-        <div class="f"><label for="ncPp" data-t="ncPp"></label><input id="ncPp" type="number" step="any" inputmode="decimal" placeholder="2.0"></div>
-        <div class="f"><label for="ncFmin" data-t="ncFmin"></label><input id="ncFmin" type="number" step="any" inputmode="decimal" placeholder="2.8"></div>
-        <div class="f"><label for="ncFmax" data-t="ncFmax"></label><input id="ncFmax" type="number" step="any" inputmode="decimal" placeholder="12"></div>
-        <div class="f"><label for="ncPrice" data-t="ncPrice"></label><input id="ncPrice" type="number" step="1" inputmode="numeric" data-tp="optional"></div>
-        <div class="hint"><b data-t="hintWhere"></b><span data-t="ncHint1"></span><span data-t="ncHint2"></span></div>
+        <div class="f full"><label for="ncName" data-t="typeName"></label><input id="ncName" data-tp="cameraFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ncW" data-t="cameraFormWidth"></label><input id="ncW" type="number" step="1" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="ncH" data-t="cameraFormHeight"></label><input id="ncH" type="number" step="1" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="ncSw" data-t="cameraFormSensorWidth"></label><input id="ncSw" type="number" step="any" inputmode="decimal" placeholder="5.4"></div>
+        <div class="f"><label for="ncPp" data-t="cameraFormPixelPitch"></label><input id="ncPp" type="number" step="any" inputmode="decimal" placeholder="2.0"></div>
+        <div class="f"><label for="ncFmin" data-t="cameraFormFocalMin"></label><input id="ncFmin" type="number" step="any" inputmode="decimal" placeholder="2.8"></div>
+        <div class="f"><label for="ncFmax" data-t="cameraFormFocalMax"></label><input id="ncFmax" type="number" step="any" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="ncPrice" data-t="cameraFormPrice"></label><input id="ncPrice" type="number" step="1" inputmode="numeric" data-tp="optional"></div>
+        <div class="hint"><b data-t="hintWhere"></b><span data-t="cameraFormHint1"></span><span data-t="cameraFormHint2"></span></div>
         <div class="err" id="ncErr" hidden></div>
-        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addCamBtn"></button><a class="btn" href="#" data-t="toCalc"></a></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addCameraBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
       </form>
     </section>
   </div>
   <div class="gpage" id="tpl-dets-v" hidden>
     <section class="panel cat" aria-labelledby="detTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detTitle" data-t="detTitle0"></h2><span class="note" data-t="detNote"></span></div>
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detTitle" data-t="detectorsTitleNoCount"></h2><span class="note" data-t="detectorsNote"></span></div>
       <div class="tbl" style="padding:4px 8px 12px"><table id="detTbl"></table></div>
     </section>
     <section class="panel newc" aria-labelledby="ndTitle">
-      <div class="colhead"><h2 id="ndTitle" data-t="ndTitle"></h2></div>
+      <div class="colhead"><h2 id="ndTitle" data-t="detectorFormTitle"></h2></div>
       <form id="detForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ndName" data-t="tName"></label><input id="ndName" data-tp="ndNamePh" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ndFps" data-t="ndFps"></label><input id="ndFps" type="number" step="any" inputmode="decimal" data-tp="ndFpsPh"></div>
-        <div class="f"><label for="ndInp" data-t="ndInp"></label><select id="ndInp" style="font-family:var(--mono)"></select></div>
-        <div class="f full"><label for="ndRef" data-t="ndRef"></label><select id="ndRef"></select></div>
-        <div class="f full"><label for="ndGf" data-t="ndGf"></label><input id="ndGf" type="number" step="any" inputmode="decimal" data-tp="ndGfPh"></div>
-        <div class="hint"><b data-t="hintHow"></b><span data-t="ndHint1"></span><span data-t="ndHint2"></span></div>
+        <div class="f full"><label for="ndName" data-t="typeName"></label><input id="ndName" data-tp="detectorFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="ndFps" data-t="detectorFormFps"></label><input id="ndFps" type="number" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
+        <div class="f"><label for="ndInp" data-t="detectorFormInput"></label><select id="ndInp" style="font-family:var(--mono)"></select></div>
+        <div class="f full"><label for="ndRef" data-t="detectorFormRefGpu"></label><select id="ndRef"></select></div>
+        <div class="f full"><label for="ndGf" data-t="detectorFormGflops"></label><input id="ndGf" type="number" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
+        <div class="hint"><b data-t="hintHow"></b><span data-t="detectorFormHint1"></span><span data-t="detectorFormHint2"></span></div>
         <div class="err" id="ndErr" hidden></div>
-        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addDetBtn"></button><a class="btn" href="#" data-t="toCalc"></a></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addDetectorBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
       </form>
     </section>
   </div>
@@ -543,7 +543,7 @@ const RU = {
   themeDark: "Тёмная тема",
   langBtn: "EN",
   langAria: "English",
-  tplBtn: "Шаблоны",
+  templatesBtn: "Шаблоны",
   resetBtn: "Загрузить пример",
   copyBtn: "Копировать отчёт",
   tabsAria: "Типы камер",
@@ -551,17 +551,17 @@ const RU = {
   loadTitle: "Нагрузка на GPU",
   addGpuLink: "+ Свой GPU",
   gpu: "GPU",
-  gcnt: "Количество",
+  gpuCount: "Количество",
   auto: "Авто",
   gpuAuto: "Авто: минимальная цена",
   gpuCustomMark: " (свой)",
   donutAria: "Загрузка инференса",
-  donutCap: "инференс",
-  donutAriaVal: (load, threshold) =>
+  donutCaption: "инференс",
+  donutAriaValue: (load, threshold) =>
     `Загрузка инференса ${load}, порог ${threshold}`,
-  bottInf: "инференс",
-  bottDec: "декодирование",
-  bottMem: "видеопамять",
+  bottleneckInference: "инференс",
+  bottleneckDecoder: "декодирование",
+  bottleneckMemory: "видеопамять",
   optimum: "оптимум по цене",
   manual: "выбрано вручную",
   insufficient: "недостаточно",
@@ -569,57 +569,58 @@ const RU = {
   bottleneck: (resource) => `узкое место: ${resource}`,
   otherRuns: (count) => `Другие запуски: ${count}`,
   free: "Свободно",
-  freeSub: (threshold) => `Порог ${threshold} отмечен риской на кольце`,
+  freeSubtitle: (threshold) => `Порог ${threshold} отмечен риской на кольце`,
   noLoad: "Добавьте камеры и объекты с моделями.",
-  gDec: "Декодер",
-  gMem: "Видеопамять",
-  gDecSub: (used, capacity) => `${used} из ${capacity} потоков`,
-  gMemSub: (used, capacity) => `${used} из ${capacity} ГБ`,
-  noCand: "Ни один GPU не отмечен для подбора. Отметьте GPU в «Шаблонах».",
+  gaugeDecoder: "Декодер",
+  gaugeMemory: "Видеопамять",
+  gaugeDecoderSubtitle: (used, capacity) => `${used} из ${capacity} потоков`,
+  gaugeMemorySubtitle: (used, capacity) => `${used} из ${capacity} ГБ`,
+  noCandidates:
+    "Ни один GPU не отмечен для подбора. Отметьте GPU в «Шаблонах».",
   noFit:
     "Нагрузку не выдерживает ни один GPU даже в количестве 4. Уменьшите частоту для аналитики, используйте вырез зоны вместо тайлов, выберите модель легче или распределите камеры по нескольким серверам.",
   // результат
-  resTitle: "Результат",
-  resTitleOf: (name) => `Результат · ${name}`,
+  resultTitle: "Результат",
+  resultTitleOf: (name) => `Результат · ${name}`,
   untitled: "Без названия",
-  sideFig: "Вид сбоку",
-  lgFov: "Поле зрения",
-  lgAx: "Ось",
-  lgZone: "Зона",
+  sideFigure: "Вид сбоку",
+  legendFov: "Поле зрения",
+  legendAxis: "Ось",
+  legendZone: "Зона",
   sideAria: "Схема: камера, поле зрения и зона контроля, вид сбоку",
-  pillErr: "Ошибка ввода",
-  errInput:
+  pillError: "Ошибка ввода",
+  inputError:
     "Проверьте исходные данные: высота камеры должна быть больше высоты плоскости интереса, а размеры зоны и матрицы — больше нуля.",
-  kF: "Фокусное расстояние",
-  kFLimit: "предел объектива",
-  kFAuto: "подобрано",
-  kFSet: "задано",
-  kRot: ", кадр повёрнут на 90°",
-  kAngRot: "Угол поперёк × вдоль",
-  kAng: "HFOV × VFOV",
-  kTilt: "Наклон",
-  kTiltDown: "строго вниз",
-  kTiltHor: "вниз от горизонта",
-  kFrame: "Ширина кадра",
-  kFrameSub: "у ближнего и дальнего края",
-  objBad: "Укажите габариты и порог в пикселях.",
-  objSeen: (modelPx, requiredPx) =>
+  kpiFocal: "Фокусное расстояние",
+  kpiFocalLimit: "предел объектива",
+  kpiFocalAuto: "подобрано",
+  kpiFocalSet: "задано",
+  kpiRotated: ", кадр повёрнут на 90°",
+  kpiAngleRotated: "Угол поперёк × вдоль",
+  kpiAngle: "HFOV × VFOV",
+  kpiTilt: "Наклон",
+  kpiTiltDown: "строго вниз",
+  kpiTiltHorizon: "вниз от горизонта",
+  kpiFrame: "Ширина кадра",
+  kpiFrameSubtitle: "у ближнего и дальнего края",
+  objectInvalid: "Укажите габариты и порог в пикселях.",
+  objectAtModel: (modelPx, requiredPx) =>
     `на входе модели ${modelPx}, порог ${requiredPx}`,
-  objSensor: (sensorPx, feed) => `на матрице ${sensorPx} · ${feed}`,
-  densHead: "Плотность, px/м",
+  objectAtSensor: (sensorPx, feed) => `на матрице ${sensorPx} · ${feed}`,
+  densityHeader: "Плотность, px/м",
   across: "Поперёк",
   depth: "Вглубь",
   edgeBack: "Край зоны (назад)",
-  edgeFwd: "Край зоны (вперёд)",
+  edgeForward: "Край зоны (вперёд)",
   edgeNear: "Ближний край",
   edgeFar: "Дальний край",
   dori: ["обнаружение", "наблюдение", "распознавание", "идентификация"],
   doriBelow: "ниже обнаружения",
   exposure: "Выдержка не длиннее",
   camera: "Камера",
-  st: { ok: "достаточно", warn: "на грани", bad: "недостаточно" },
-  tabErr: "Ошибка в исходных данных",
-  tabObjs: (status) => `Объекты: ${status}`,
+  status: { ok: "достаточно", warn: "на грани", bad: "недостаточно" },
+  tabError: "Ошибка в исходных данных",
+  tabObjects: (status) => `Объекты: ${status}`,
   addType: "+ Тип камеры",
   newType: (number) => `Камера ${number}`,
   // вердикт типа
@@ -629,149 +630,151 @@ const RU = {
     `вырез ${width} × ${height} → ${inputSize} px`,
   feedFull: (width, height, inputSize) =>
     `кадр ${width} × ${height} → ${inputSize} px`,
-  nZoneW: (frameWidth, zoneWidth) =>
+  noteZoneWidth: (frameWidth, zoneWidth) =>
     `Зона не помещается по ширине: у ближнего края ширина кадра ${frameWidth} м, ширина зоны ${zoneWidth} м.`,
-  nZoneD: (requiredAngle, availableAngle) =>
+  noteZoneDepth: (requiredAngle, availableAngle) =>
     `Зона не помещается по глубине: требуется ${requiredAngle}° по вертикали, доступно ${availableAngle}°.`,
-  nFMax: (requiredFocal, maxFocal) =>
+  noteFocalMax: (requiredFocal, maxFocal) =>
     `Для зоны требуется фокусное расстояние ≈ ${requiredFocal} мм, максимум объектива — ${maxFocal} мм. Расчёт выполнен для ${maxFocal} мм: кадр шире зоны, пикселей на объекте меньше.`,
-  nFMin: (requiredFocal, minFocal) =>
+  noteFocalMin: (requiredFocal, minFocal) =>
     `Для зоны требуется фокусное расстояние ≈ ${requiredFocal} мм, минимум объектива — ${minFocal} мм. Расчёт выполнен для ${minFocal} мм: зона не помещается в кадр целиком. Поднимите камеру, уменьшите зону или выберите объектив с большим углом обзора.`,
-  nFOut: (focal, range) =>
+  noteFocalOutOfRange: (focal, range) =>
     `Фокусное расстояние ${focal} мм вне диапазона объектива камеры (${range} мм).`,
-  nWide: (hfov) =>
+  noteWideAngle: (hfov) =>
     `HFOV ${hfov}°: такие объективы заметно сжимают края кадра (бочкообразная дисторсия), расчёт этого не учитывает. Уменьшите коэффициент качества или поднимите камеру.`,
-  nTop: "Вид сверху: детали в ячейках видны торцами, это удобно для подсчёта. Человек виден сверху (голова и плечи), действия рук различаются хуже.",
-  nLowRay: (angle) =>
+  noteTopView:
+    "Вид сверху: детали в ячейках видны торцами, это удобно для подсчёта. Человек виден сверху (голова и плечи), действия рук различаются хуже.",
+  noteLowRay: (angle) =>
     `Луч на дальний край зоны идёт под углом ${angle}° к плоскости: объекты будут перекрывать друг друга. Поднимите камеру или уменьшите вынос.`,
-  nAfps: (analyticsFps, streamFps) =>
+  noteAnalyticsFps: (analyticsFps, streamFps) =>
     `Частота для аналитики (${analyticsFps} кадр/с) больше частоты потока (${streamFps} кадр/с). В расчёте использовано ${streamFps} кадр/с.`,
-  pNoObj: "Нет объектов",
-  pBad: "Недостаточно",
-  pWarn: "На грани",
-  pOk: "Достаточно",
-  pCheck: "Есть замечания",
-  hNoObj:
+  pillNoObjects: "Нет объектов",
+  pillBad: "Недостаточно",
+  pillWarn: "На грани",
+  pillOk: "Достаточно",
+  pillCheck: "Есть замечания",
+  verdictNoObjects:
     "Добавьте объект с габаритами и моделью, чтобы проверить его различимость.",
-  hItem: (name, modelPx, requiredPx) =>
+  verdictItem: (name, modelPx, requiredPx) =>
     `${name} — ${modelPx} при пороге ${requiredPx}`,
-  hBad: (list) => `Недостаточно пикселей на входе модели: ${list}.`,
-  hWarn: (list) => `На грани на входе модели: ${list}.`,
-  hOk: (name, modelPx) =>
+  verdictBad: (list) => `Недостаточно пикселей на входе модели: ${list}.`,
+  verdictWarn: (list) => `На грани на входе модели: ${list}.`,
+  verdictOk: (name, modelPx) =>
     `Все объекты различимы на входе модели. Самый мелкий: ${name} — ${modelPx}.`,
-  nScale: (name, sensorPx, inputSize, advice, neededInputSize) =>
+  noteDownscale: (name, sensorPx, inputSize, advice, neededInputSize) =>
     `«${name}»: на матрице ${sensorPx}, пиксели теряются при уменьшении до входа ${inputSize} px. ${advice} или увеличьте вход до ≈ ${neededInputSize} px.`,
-  advFull: "Выберите подачу «Вырез зоны» или «Тайлы»",
-  advRoi: "Выберите подачу «Тайлы»",
-  advTiles: "Проверьте размер входа",
-  nRes: (name, requiredWidthPx, resolution) =>
+  adviceFull: "Выберите подачу «Вырез зоны» или «Тайлы»",
+  adviceRoi: "Выберите подачу «Тайлы»",
+  adviceTiles: "Проверьте размер входа",
+  noteResolution: (name, requiredWidthPx, resolution) =>
     `Для «${name}» требуется не меньше ${requiredWidthPx} px по горизонтали (${resolution}) при том же угле обзора.`,
-  nResNone: (name, requiredWidthPx) =>
+  noteResolutionNone: (name, requiredWidthPx) =>
     `Для «${name}» требуется ${requiredWidthPx} px по горизонтали — больше, чем у любого разрешения из списка. Установите отдельную камеру ближе к объекту или выберите объектив с меньшим углом обзора.`,
   objDefault: "Объект",
   // система
-  sCams: "Камеры",
-  sTypes: (count, names) => `Типов: ${count}${names ? ` (${names})` : ""}`,
-  sCamCost: (cost) => ` · стоимость камер ${cost}`,
-  sObjs: "Объекты различимы",
-  sOfN: (okCount, total) => `${okCount} из ${total}`,
-  sSmallest: (name, modelPx) => `Самый мелкий: ${name}, ${modelPx} px`,
-  sNoObjs: "Нет объектов",
-  sCompute: "Вычислитель",
-  sNoCams: "Нет камер",
-  sNet: "Сетевой поток",
-  sPort: (port, poeWatts) => `Порт ${port} · PoE ≈ ${poeWatts} Вт`,
+  systemCameras: "Камеры",
+  systemTypes: (count, names) => `Типов: ${count}${names ? ` (${names})` : ""}`,
+  systemCameraCost: (cost) => ` · стоимость камер ${cost}`,
+  systemObjects: "Объекты различимы",
+  systemOfTotal: (okCount, total) => `${okCount} из ${total}`,
+  systemSmallest: (name, modelPx) => `Самый мелкий: ${name}, ${modelPx} px`,
+  systemNoObjects: "Нет объектов",
+  systemCompute: "Вычислитель",
+  systemNoCameras: "Нет камер",
+  systemNetwork: "Сетевой поток",
+  systemPort: (port, poeWatts) => `Порт ${port} · PoE ≈ ${poeWatts} Вт`,
   // сеть и допущения
-  netTitle: "Сеть и хранение",
-  days: "Глубина архива, дн.",
-  nType: "Тип камеры",
-  nCams: "Камеры",
-  nResolution: "Разрешение",
-  nFps: "Кадр/с",
-  nPerCam: "На камеру",
-  nAll: "Всего",
-  nTotal: "Итого",
-  nArch: "Архив",
-  nArchVal: (terabytes, days) => `≈ ${terabytes} ТБ за ${days} дн.`,
-  nArchOff: "Не ведётся",
-  assTitle: "Допущения",
-  ass: (efficiency) => [
+  networkTitle: "Сеть и хранение",
+  archiveDays: "Глубина архива, дн.",
+  networkType: "Тип камеры",
+  networkCameras: "Камеры",
+  networkResolution: "Разрешение",
+  networkFps: "Кадр/с",
+  networkPerCamera: "На камеру",
+  networkAll: "Всего",
+  networkTotal: "Итого",
+  networkArchive: "Архив",
+  networkArchiveValue: (terabytes, days) => `≈ ${terabytes} ТБ за ${days} дн.`,
+  networkArchiveOff: "Не ведётся",
+  assumptionsTitle: "Допущения",
+  assumptions: (efficiency) => [
     `Коэффициент реальности ${efficiency} к замеренной скорости`,
     "Модели из каталога: замеры Ultralytics на T4",
     "Декодер: производительность NVDEC по поколению GPU",
     "Стоимость сервера для GPU не учитывается",
   ],
   formulas: "Все формулы",
-  sysTitle: "Система",
+  systemTitle: "Система",
   // параметры типа
-  parTitle: "Параметры типа",
-  tName: "Название",
-  tCount: "Количество камер",
-  secGeo: "Геометрия",
-  H: "Высота камеры, м",
-  h: "Высота плоскости интереса, м",
-  L0: "Вынос до зоны, м",
-  mg: "Запас кадра, %",
-  Dz: "Глубина зоны, м",
-  Wz: "Ширина зоны, м",
-  pos: "Положение камеры",
-  pSide: "Сбоку, под углом",
-  pTop: "Над центром",
-  sumSide: "сбоку",
-  sumTop: "сверху",
-  secCam: "Матрица и объектив",
-  cam: "Камера",
-  addCamLink: "+ Своя камера",
-  camManual: "Ручная настройка матрицы",
-  res: "Разрешение",
-  sens: "Формат матрицы",
-  sw: "Ширина матрицы, мм",
-  pp: "Размер пикселя, мкм",
-  sensPp: "По размеру пикселя",
-  sensOwn: "Своя ширина",
-  orient: "Ориентация кадра",
-  orLand: "Длинная сторона поперёк взгляда",
-  orPort: "Поворот на 90°",
-  mode: "Объектив",
-  modeAria: "Режим объектива",
-  mAuto: "Подбор",
-  mF: "Фокусное расстояние",
-  mA: "Угол HFOV",
-  fmm: "Фокусное расстояние, мм",
+  parametersTitle: "Параметры типа",
+  typeName: "Название",
+  typeCount: "Количество камер",
+  sectionGeometry: "Геометрия",
+  cameraHeight: "Высота камеры, м",
+  planeHeight: "Высота плоскости интереса, м",
+  zoneStart: "Вынос до зоны, м",
+  margin: "Запас кадра, %",
+  zoneDepth: "Глубина зоны, м",
+  zoneWidth: "Ширина зоны, м",
+  placement: "Положение камеры",
+  placementSide: "Сбоку, под углом",
+  placementTop: "Над центром",
+  summarySide: "сбоку",
+  summaryTop: "сверху",
+  sectionCamera: "Матрица и объектив",
+  cameraSelect: "Камера",
+  addCameraLink: "+ Своя камера",
+  cameraManual: "Ручная настройка матрицы",
+  resolution: "Разрешение",
+  sensor: "Формат матрицы",
+  sensorWidth: "Ширина матрицы, мм",
+  pixelPitch: "Размер пикселя, мкм",
+  sensorByPixelPitch: "По размеру пикселя",
+  sensorCustom: "Своя ширина",
+  orientation: "Ориентация кадра",
+  orientationLandscape: "Длинная сторона поперёк взгляда",
+  orientationPortrait: "Поворот на 90°",
+  lensMode: "Объектив",
+  lensModeAria: "Режим объектива",
+  lensModeAuto: "Подбор",
+  lensModeFocal: "Фокусное расстояние",
+  lensModeAngle: "Угол HFOV",
+  focalLength: "Фокусное расстояние, мм",
   hfov: "HFOV, °",
-  secStr: "Поток и качество",
+  sectionStream: "Поток и качество",
   fps: "Частота кадров потока, кадр/с",
-  afps: "Частота для аналитики, кадр/с",
+  analyticsFps: "Частота для аналитики, кадр/с",
   codec: "Кодек",
   scene: "Движение в сцене",
-  scLow: "Спокойное",
-  scMid: "Обычное",
-  scHigh: "Активное",
-  k: "Коэффициент качества",
-  v: "Скорость движения, м/с",
-  blur: "Допустимый смаз, px",
-  dupBtn: "Дублировать тип",
-  delBtn: "Удалить тип",
-  delConfirm: "Подтвердить удаление",
+  sceneLow: "Спокойное",
+  sceneMid: "Обычное",
+  sceneHigh: "Активное",
+  lensFactor: "Коэффициент качества",
+  speed: "Скорость движения, м/с",
+  blurPx: "Допустимый смаз, px",
+  duplicateTypeBtn: "Дублировать тип",
+  deleteTypeBtn: "Удалить тип",
+  deleteTypeConfirm: "Подтвердить удаление",
   copySuffix: " (копия)",
   // объекты
-  objTitle: "Объекты и модели",
-  addObj: "+ Объект",
+  objectsTitle: "Объекты и модели",
+  addObject: "+ Объект",
   presets: "Шаблоны:",
-  addDetLink: "+ Свой детектор",
-  objFoot: "Объекты с одной моделью и одной подачей считаются одним запуском.",
-  objName: "Название объекта",
-  objDel: "Удалить объект",
-  ow: "Ширина, см",
-  od: "Длина, см",
-  oz: "Высота, см",
-  oq: "Порог, px",
-  om: "Модель",
-  of: "Подача",
-  oi: "Вход модели, px",
-  ov: "Перекрытие, %",
+  addDetectorLink: "+ Свой детектор",
+  objectsFooter:
+    "Объекты с одной моделью и одной подачей считаются одним запуском.",
+  objectName: "Название объекта",
+  objectDelete: "Удалить объект",
+  objectWidth: "Ширина, см",
+  objectLength: "Длина, см",
+  objectHeight: "Высота, см",
+  objectRequiredPx: "Порог, px",
+  objectModel: "Модель",
+  objectFeed: "Подача",
+  objectInput: "Вход модели, px",
+  objectOverlap: "Перекрытие, %",
   ultralytics: "Каталог Ultralytics",
-  ownDets: "Свои детекторы",
+  customDetectors: "Свои детекторы",
   feeds: { roi: "Вырез зоны", tiles: "Тайлы", full: "Весь кадр" },
   feedsShort: { roi: "вырез", tiles: "тайлы", full: "весь кадр" },
   presetNames: [
@@ -783,7 +786,7 @@ const RU = {
   ],
   typeNames: ["Рабочее место", "Тележка"],
   // справочники
-  u: {
+  units: {
     m: "м",
     mm: "мм",
     s: "с",
@@ -794,9 +797,9 @@ const RU = {
     gb: "ГБ",
     w: "Вт",
   },
-  mp: (megapixels) => `${megapixels} Мп`,
-  sensMm: (format, widthMm) => `${format} ≈ ${widthMm} мм`,
-  camBuiltin: {
+  megapixels: (megapixels) => `${megapixels} Мп`,
+  sensorFormat: (format, widthMm) => `${format} ≈ ${widthMm} мм`,
+  builtinCameraNames: {
     k4: "Типовая 4 Мп · 1/2.7″ · 2,8–12 мм",
     k8: "Типовая 8 Мп · 1/1.8″ · 2,8–12 мм",
   },
@@ -806,26 +809,26 @@ const RU = {
       "FP16 dense оценён как 4 PFLOPS FP4 / 8 по соотношению у RTX 5090.",
     agx: "Отдельный модуль. Память общая с CPU, для моделей доступно 60%. FP16 оценён как 16 SM × 2048 FLOP/такт × 1,3 ГГц.",
   },
-  decStreams: (count) => `потоков: ${count}`,
+  decoderStreams: (count) => `потоков: ${count}`,
   // шаблоны
   back: "← К расчёту",
-  toCalc: "К расчёту",
-  tplTitle: "Шаблоны",
-  tplNav: "Разделы шаблонов",
-  ttGpus: "GPU",
-  ttCams: "Камеры",
-  ttDets: "Детекторы",
-  expBtn: "Экспорт",
-  expTitle: "Сохранить шаблоны, цены и расчёт в файл",
-  impBtn: "Импорт",
-  impTitle: "Заменить все данные содержимым файла",
-  impConfirm: "Заменить все данные",
-  catTitle: (count) => `Каталог GPU · ${count}`,
-  catTitle0: "Каталог GPU",
-  catNote: "Характеристики из даташитов NVIDIA",
-  kr: "Коэффициент реальности",
-  resv: "Запас под рост, %",
-  gHead: [
+  toCalculation: "К расчёту",
+  templatesTitle: "Шаблоны",
+  templatesNav: "Разделы шаблонов",
+  templateTabGpus: "GPU",
+  templateTabCameras: "Камеры",
+  templateTabDetectors: "Детекторы",
+  exportBtn: "Экспорт",
+  exportTitle: "Сохранить шаблоны, цены и расчёт в файл",
+  importBtn: "Импорт",
+  importTitle: "Заменить все данные содержимым файла",
+  importConfirm: "Заменить все данные",
+  catalogTitle: (count) => `Каталог GPU · ${count}`,
+  catalogTitleNoCount: "Каталог GPU",
+  catalogNote: "Характеристики из даташитов NVIDIA",
+  efficiency: "Коэффициент реальности",
+  reserve: "Запас под рост, %",
+  gpuTableHeader: [
     "GPU",
     "FP16, TFLOPS",
     "Декодер",
@@ -834,111 +837,119 @@ const RU = {
     "Цена, $",
     "В подборе",
   ],
-  gJet: "Модуль Jetson",
-  gOwn: "свой",
-  gPriceAria: (name) => `Цена ${name}, $`,
-  gOnAria: (name) => `${name} участвует в подборе`,
-  del: "Удалить",
-  delAria: (name) => `Удалить ${name}`,
-  mineN: (count) => `Свои GPU · ${count}`,
-  mine0: "Свои GPU",
-  mineEmpty:
+  gpuJetson: "Модуль Jetson",
+  gpuCustom: "свой",
+  gpuPriceAria: (name) => `Цена ${name}, $`,
+  gpuEnabledAria: (name) => `${name} участвует в подборе`,
+  deleteBtn: "Удалить",
+  deleteAria: (name) => `Удалить ${name}`,
+  customGpusTitle: (count) => `Свои GPU · ${count}`,
+  customGpusTitleNoCount: "Свои GPU",
+  customGpusEmpty:
     "Своих GPU нет. Добавленный GPU появится здесь, в списке «GPU» и в автоподборе.",
-  newTitle: "Новый GPU",
-  ngName: "Название",
-  ngNamePh: "Например, RTX 6000 Ada",
-  ngArch: "Архитектура",
-  ngJet: "Jetson или свой декодер",
-  ngTf: "FP16 Tensor, TFLOPS",
-  ngTfPh: "Без sparsity",
-  ngDec: "Число NVDEC",
-  ngDecJet: "Потоки 1080p30 H.265",
-  ngMem: "Память, ГБ",
-  ngTdp: "TDP, Вт",
-  ngPrice: "Цена, $",
-  ngPricePh: "Цена поставщика",
-  ngOn: "Участвует в автоподборе",
+  gpuFormTitle: "Новый GPU",
+  gpuFormName: "Название",
+  gpuFormNamePlaceholder: "Например, RTX 6000 Ada",
+  gpuFormArchitecture: "Архитектура",
+  gpuFormJetson: "Jetson или свой декодер",
+  gpuFormTflops: "FP16 Tensor, TFLOPS",
+  gpuFormTflopsPlaceholder: "Без sparsity",
+  gpuFormDecoders: "Число NVDEC",
+  gpuFormDecoderStreams: "Потоки 1080p30 H.265",
+  gpuFormMemory: "Память, ГБ",
+  gpuFormTdp: "TDP, Вт",
+  gpuFormPrice: "Цена, $",
+  gpuFormPricePlaceholder: "Цена поставщика",
+  gpuFormEnabled: "Участвует в автоподборе",
   hintWhere: "Где взять значения",
-  ngHint1:
+  gpuFormHint1:
     "FP16 Tensor: значение из даташита NVIDIA без sparsity. Значение со звёздочкой (with sparsity) разделите на 2. Для GeForce используйте FP16 с FP32-накоплением.",
-  ngHint2:
+  gpuFormHint2:
     "NVDEC: число аппаратных декодеров. Для Jetson укажите число потоков 1080p30 H.265 из спецификации.",
   addGpuBtn: "Добавить GPU",
-  ngErr: (fields) => `Заполните поля: ${fields}.`,
-  eName: "название",
-  eTf: "FP16 Tensor",
-  eDecJet: "потоки декодера",
-  eDec: "число NVDEC",
-  eMem: "память",
-  ePrice: "цена (нужна для сравнения в подборе)",
-  gAdded: (name) => `«${name}» добавлен`,
-  gDeleted: "GPU удалён",
-  camTitle: (count) => `Камеры · ${count}`,
-  camTitle0: "Камеры",
-  camNote: "Выбираются в параметрах типа, раздел «Матрица и объектив»",
-  cHead: ["Камера", "Кадр", "Матрица", "Объектив", "Цена", "В системе"],
-  cOwn: "Своя",
-  cBuiltin: "Типовая, пример",
-  cAny: "Любой",
-  ncTitle: "Новая камера",
-  ncNamePh: "Модель из каталога производителя",
-  ncW: "Ширина кадра, px",
-  ncH: "Высота кадра, px",
-  ncSw: "Ширина матрицы, мм",
-  ncPp: "Размер пикселя, мкм",
-  ncFmin: "Фокусное расстояние от, мм",
-  ncFmax: "Фокусное расстояние до, мм",
-  ncPrice: "Цена, $",
+  gpuFormError: (fields) => `Заполните поля: ${fields}.`,
+  errorName: "название",
+  errorTflops: "FP16 Tensor",
+  errorDecoderStreams: "потоки декодера",
+  errorDecoders: "число NVDEC",
+  errorMemory: "память",
+  errorPrice: "цена (нужна для сравнения в подборе)",
+  gpuAdded: (name) => `«${name}» добавлен`,
+  gpuDeleted: "GPU удалён",
+  camerasTitle: (count) => `Камеры · ${count}`,
+  camerasTitleNoCount: "Камеры",
+  camerasNote: "Выбираются в параметрах типа, раздел «Матрица и объектив»",
+  cameraTableHeader: [
+    "Камера",
+    "Кадр",
+    "Матрица",
+    "Объектив",
+    "Цена",
+    "В системе",
+  ],
+  cameraCustom: "Своя",
+  cameraBuiltin: "Типовая, пример",
+  cameraAnyLens: "Любой",
+  cameraFormTitle: "Новая камера",
+  cameraFormNamePlaceholder: "Модель из каталога производителя",
+  cameraFormWidth: "Ширина кадра, px",
+  cameraFormHeight: "Высота кадра, px",
+  cameraFormSensorWidth: "Ширина матрицы, мм",
+  cameraFormPixelPitch: "Размер пикселя, мкм",
+  cameraFormFocalMin: "Фокусное расстояние от, мм",
+  cameraFormFocalMax: "Фокусное расстояние до, мм",
+  cameraFormPrice: "Цена, $",
   optional: "Необязательно",
-  ncHint1:
+  cameraFormHint1:
     "Ширина матрицы: ширина активной области сенсора из даташита. Если её нет, укажите размер пикселя — ширина будет рассчитана как размер пикселя × ширина кадра.",
-  ncHint2:
+  cameraFormHint2:
     "Для объектива с фиксированным фокусным расстоянием укажите одно значение в обоих полях. Если поля пустые, фокусное расстояние подбирается без ограничений.",
-  addCamBtn: "Добавить камеру",
-  ncErr: (fields) => `Укажите: ${fields}.`,
-  eFrame: "размер кадра в пикселях",
-  eSw: "ширину матрицы или размер пикселя",
-  eFRange: "фокусное расстояние «от» не больше «до»",
-  cAdded: (name) => `«${name}» добавлена`,
-  cDeleted: "Камера удалена",
-  detTitle: (count) => `Детекторы · ${count}`,
-  detTitle0: "Детекторы",
-  detNote: "Выбираются в карточке объекта, поле «Модель»",
-  dHead: ["Модель", "Вход", "GFLOPs", "Скорость", "Объекты"],
-  dOwn: "Свой",
-  dCatalog: "Каталог Ultralytics",
-  dSpeed: (fps, gpuName) => `${fps} кадр/с на ${gpuName}`,
-  dEmpty: "Своих детекторов нет. Добавьте детектор в форме «Новый детектор».",
-  ndTitle: "Новый детектор",
-  ndNamePh: "Например, детектор деталей v2",
-  ndFps: "Замер, кадр/с",
-  ndFpsPh: "На одном GPU",
-  ndInp: "Вход модели, px",
-  ndRef: "GPU замера",
-  ndGf: "GFLOPs на кадр",
-  ndGfPh: "Необязательно, для оценки памяти",
+  addCameraBtn: "Добавить камеру",
+  cameraFormError: (fields) => `Укажите: ${fields}.`,
+  errorFrame: "размер кадра в пикселях",
+  errorSensorWidth: "ширину матрицы или размер пикселя",
+  errorFocalRange: "фокусное расстояние «от» не больше «до»",
+  cameraAdded: (name) => `«${name}» добавлена`,
+  cameraDeleted: "Камера удалена",
+  detectorsTitle: (count) => `Детекторы · ${count}`,
+  detectorsTitleNoCount: "Детекторы",
+  detectorsNote: "Выбираются в карточке объекта, поле «Модель»",
+  detectorTableHeader: ["Модель", "Вход", "GFLOPs", "Скорость", "Объекты"],
+  detectorCustom: "Свой",
+  detectorCatalog: "Каталог Ultralytics",
+  detectorSpeed: (fps, gpuName) => `${fps} кадр/с на ${gpuName}`,
+  detectorsEmpty:
+    "Своих детекторов нет. Добавьте детектор в форме «Новый детектор».",
+  detectorFormTitle: "Новый детектор",
+  detectorFormNamePlaceholder: "Например, детектор деталей v2",
+  detectorFormFps: "Замер, кадр/с",
+  detectorFormFpsPlaceholder: "На одном GPU",
+  detectorFormInput: "Вход модели, px",
+  detectorFormRefGpu: "GPU замера",
+  detectorFormGflops: "GFLOPs на кадр",
+  detectorFormGflopsPlaceholder: "Необязательно, для оценки памяти",
   hintHow: "Как выполнить замер",
-  ndHint1:
+  detectorFormHint1:
     "Измерьте число кадров в секунду на одном GPU в TensorRT с той же точностью и batch, что и в эксплуатации: trtexec, DeepStream perf или собственный бенчмарк.",
-  ndHint2:
+  detectorFormHint2:
     "Для других GPU замер пересчитывается по FP16, для другого входа — по квадрату его стороны.",
-  addDetBtn: "Добавить детектор",
-  eFps: "замер",
-  dAdded: (name) => `«${name}» добавлен`,
-  dDeleted: "Детектор удалён",
+  addDetectorBtn: "Добавить детектор",
+  errorFps: "замер",
+  detectorAdded: (name) => `«${name}» добавлен`,
+  detectorDeleted: "Детектор удалён",
   // отчёт
-  rErr: (name, count) => `${name} × ${count}: ошибка в исходных данных`,
-  rCam: (params) =>
+  reportError: (name, count) => `${name} × ${count}: ошибка в исходных данных`,
+  reportCamera: (params) =>
     `  Камера: ${params.cameraLabel}${params.rotated ? " (повёрнута на 90°)" : ""}, матрица ${params.sensorWidth} мм, f ${params.focal} мм, HFOV ${params.hfov}°, наклон ${params.tilt}°, ${params.overCenter ? "над центром зоны" : `вынос ${params.zoneStart} м`}, высота ${params.cameraHeight} м, зона ${params.zoneWidth} × ${params.zoneDepth} м`,
-  rObj: (params) =>
+  reportObject: (params) =>
     `  ${params.name}: ${params.model}, ${params.feed}; на матрице ${params.sensorPx}, на входе модели ${params.modelPx}, порог ${params.requiredPx}: ${params.status}`,
-  rStream: (mbps, shutterDenominator) =>
+  reportStream: (mbps, shutterDenominator) =>
     `  Поток ${mbps} Мбит/с на камеру, выдержка не длиннее 1/${shutterDenominator} с`,
-  rSys: (cameraCount, mbps, cost) =>
+  reportSystem: (cameraCount, mbps, cost) =>
     `Система: камер ${cameraCount}, ${mbps} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
-  rCompute: (params) =>
+  reportCompute: (params) =>
     `Вычислитель (оценка): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; инференс ${params.inferenceLoad}%, декодер ${params.decodeLoad}%, видеопамять ${params.memoryUsed}/${params.memoryCap} ГБ${params.optimum ? `; оптимум по цене: ${params.optimum}` : ""}`,
-  rNoCompute: "Вычислитель: нет данных",
+  reportNoCompute: "Вычислитель: нет данных",
   // уведомления
   stale: "Данные изменены в другой вкладке. Обновите страницу.",
   typeCopied: "Тип скопирован",
@@ -953,17 +964,17 @@ const RU = {
   readFail: "Не удалось прочитать файл.",
   tipAria: "Подсказка",
   // схема
-  dZone: (depth) => `Зона контроля ${depth} м`,
-  dFrame: (width) => `Кадр ${width} м`,
-  dTilt: (degrees) => `Наклон ${degrees}°`,
-  dLen: (length) => `${length} м`,
-  dOffset: (offset) => `Вынос ${offset} м`,
-  dDepth: (depth) => `Глубина зоны ${depth} м`,
-  dOverCenter: "Камера над центром зоны",
-  dOverZone: "Камера над зоной",
-  dH: (height) => `H ${height} м`,
-  dh: (height) => `h ${height} м`,
-  dAria: (params) =>
+  diagramZone: (depth) => `Зона контроля ${depth} м`,
+  diagramFrame: (width) => `Кадр ${width} м`,
+  diagramTilt: (degrees) => `Наклон ${degrees}°`,
+  diagramLength: (length) => `${length} м`,
+  diagramOffset: (offset) => `Вынос ${offset} м`,
+  diagramDepth: (depth) => `Глубина зоны ${depth} м`,
+  diagramOverCenter: "Камера над центром зоны",
+  diagramOverZone: "Камера над зоной",
+  diagramCameraHeight: (height) => `H ${height} м`,
+  diagramPlaneHeight: (height) => `h ${height} м`,
+  diagramAria: (params) =>
     `Вид сбоку: камера на высоте ${params.H} м, наклон ${params.tilt}°, VFOV ${params.vfov}°, зона от ${params.x1} до ${params.x2} м на высоте ${params.h} м` +
     (params.frameWidthNear
       ? `, ширина кадра ${params.frameWidthNear}–${params.frameWidthFar} м`
@@ -986,7 +997,8 @@ const RU = {
       "Высота объектива над полом. Измерьте лазерным дальномером от пола до точки крепления. Чем выше камера, тем меньше перекрытий объектов, но ниже плотность пикселей.",
     planeHeight:
       "Высота поверхности, на которой находятся объекты контроля: столешница ≈ 0,85–0,9 м, верх ложемента тележки. Для рук работника — ≈ 1,0–1,2 м. Весь расчёт выполняется для этой плоскости.",
-    pos: "Сбоку — камера направлена под углом, видны и человек, и объекты. Над центром — камера направлена строго вниз: лучший вид на ячейки тележки, но человек виден сверху и действия рук различаются хуже.",
+    placement:
+      "Сбоку — камера направлена под углом, видны и человек, и объекты. Над центром — камера направлена строго вниз: лучший вид на ячейки тележки, но человек виден сверху и действия рук различаются хуже.",
     zoneStart:
       "Расстояние по полу от точки под камерой до ближнего края зоны. Отрицательное значение — камера находится над частью зоны.",
     zoneDepth:
@@ -1004,11 +1016,13 @@ const RU = {
       "Ширина области матрицы, которая формирует видео в выбранном разрешении. В даташите сенсора — effective или active area.",
     pixelPitch:
       "Размер пикселя из даташита сенсора (pixel size, мкм), например 2,0 мкм у IMX334. Ширина матрицы = размер пикселя × число пикселей по горизонтали.",
-    mode: "«Подбор» — калькулятор подбирает угол обзора под зону. «Фокусное расстояние» или «Угол HFOV» — проверка конкретной камеры из каталога.",
+    lensMode:
+      "«Подбор» — калькулятор подбирает угол обзора под зону. «Фокусное расстояние» или «Угол HFOV» — проверка конкретной камеры из каталога.",
     focalLength:
       "Фокусное расстояние объектива из даташита камеры. Для вариофокального объектива проверьте оба конца диапазона.",
     hfov: "Горизонтальный угол обзора из даташита. Не путайте его с диагональным (DFOV): диагональный больше и часто указан крупнее.",
-    objs: "Карточка для каждого объекта: габариты (ширина поперёк взгляда камеры, длина вдоль, высота), модель, которая его обнаруживает, подача кадра в модель, размер входа и порог в пикселях на меньшую сторону объекта. Результат отображается в карточке. Объекты с одной моделью и одной подачей считаются одним запуском: нагрузка не удваивается.",
+    objects:
+      "Карточка для каждого объекта: габариты (ширина поперёк взгляда камеры, длина вдоль, высота), модель, которая его обнаруживает, подача кадра в модель, размер входа и порог в пикселях на меньшую сторону объекта. Результат отображается в карточке. Объекты с одной моделью и одной подачей считаются одним запуском: нагрузка не удваивается.",
     lensFactor:
       "Доля номинального разрешения, которая доходит до модели после сжатия, оптики и дисторсии. 0,7 — качественная камера с высоким битрейтом, 0,6 — типичное значение, 0,5 — широкоугольный объектив или вид сверху.",
     speed:
@@ -1041,7 +1055,7 @@ const EN = {
   themeDark: "Dark theme",
   langBtn: "RU",
   langAria: "Русский",
-  tplBtn: "Templates",
+  templatesBtn: "Templates",
   resetBtn: "Load example",
   copyBtn: "Copy report",
   tabsAria: "Camera types",
@@ -1049,17 +1063,17 @@ const EN = {
   loadTitle: "GPU load",
   addGpuLink: "+ Custom GPU",
   gpu: "GPU",
-  gcnt: "Count",
+  gpuCount: "Count",
   auto: "Auto",
   gpuAuto: "Auto: lowest price",
   gpuCustomMark: " (custom)",
   donutAria: "Inference load",
-  donutCap: "inference",
-  donutAriaVal: (load, threshold) =>
+  donutCaption: "inference",
+  donutAriaValue: (load, threshold) =>
     `Inference load ${load}, threshold ${threshold}`,
-  bottInf: "inference",
-  bottDec: "decoding",
-  bottMem: "GPU memory",
+  bottleneckInference: "inference",
+  bottleneckDecoder: "decoding",
+  bottleneckMemory: "GPU memory",
   optimum: "best price",
   manual: "manual selection",
   insufficient: "insufficient",
@@ -1067,57 +1081,58 @@ const EN = {
   bottleneck: (resource) => `bottleneck: ${resource}`,
   otherRuns: (count) => `Other inference runs: ${count}`,
   free: "Free",
-  freeSub: (threshold) => `Threshold ${threshold} is marked on the ring`,
+  freeSubtitle: (threshold) => `Threshold ${threshold} is marked on the ring`,
   noLoad: "Add cameras and objects with models.",
-  gDec: "Decoder",
-  gMem: "GPU memory",
-  gDecSub: (used, capacity) => `${used} of ${capacity} streams`,
-  gMemSub: (used, capacity) => `${used} of ${capacity} GB`,
-  noCand: 'No GPU is selected for auto-selection. Select GPUs in "Templates".',
+  gaugeDecoder: "Decoder",
+  gaugeMemory: "GPU memory",
+  gaugeDecoderSubtitle: (used, capacity) => `${used} of ${capacity} streams`,
+  gaugeMemorySubtitle: (used, capacity) => `${used} of ${capacity} GB`,
+  noCandidates:
+    'No GPU is selected for auto-selection. Select GPUs in "Templates".',
   noFit:
     "No GPU can handle the load, even 4 of them. Lower the analytics frame rate, use zone crop instead of tiles, choose a lighter model, or split the cameras across several servers.",
   // результат
-  resTitle: "Result",
-  resTitleOf: (name) => `Result · ${name}`,
+  resultTitle: "Result",
+  resultTitleOf: (name) => `Result · ${name}`,
   untitled: "Untitled",
-  sideFig: "Side view",
-  lgFov: "Field of view",
-  lgAx: "Axis",
-  lgZone: "Zone",
+  sideFigure: "Side view",
+  legendFov: "Field of view",
+  legendAxis: "Axis",
+  legendZone: "Zone",
   sideAria: "Diagram: camera, field of view, and monitored zone, side view",
-  pillErr: "Input error",
-  errInput:
+  pillError: "Input error",
+  inputError:
     "Check the input data: the camera height must be greater than the target plane height, and the zone and sensor sizes must be greater than zero.",
-  kF: "Focal length",
-  kFLimit: "lens limit",
-  kFAuto: "selected",
-  kFSet: "set",
-  kRot: ", frame rotated 90°",
-  kAngRot: "Angle across × along",
-  kAng: "HFOV × VFOV",
-  kTilt: "Tilt",
-  kTiltDown: "straight down",
-  kTiltHor: "below horizontal",
-  kFrame: "Frame width",
-  kFrameSub: "at the near and far edge",
-  objBad: "Enter the dimensions and the threshold in pixels.",
-  objSeen: (modelPx, requiredPx) =>
+  kpiFocal: "Focal length",
+  kpiFocalLimit: "lens limit",
+  kpiFocalAuto: "selected",
+  kpiFocalSet: "set",
+  kpiRotated: ", frame rotated 90°",
+  kpiAngleRotated: "Angle across × along",
+  kpiAngle: "HFOV × VFOV",
+  kpiTilt: "Tilt",
+  kpiTiltDown: "straight down",
+  kpiTiltHorizon: "below horizontal",
+  kpiFrame: "Frame width",
+  kpiFrameSubtitle: "at the near and far edge",
+  objectInvalid: "Enter the dimensions and the threshold in pixels.",
+  objectAtModel: (modelPx, requiredPx) =>
     `at model input ${modelPx}, threshold ${requiredPx}`,
-  objSensor: (sensorPx, feed) => `on sensor ${sensorPx} · ${feed}`,
-  densHead: "Density, px/m",
+  objectAtSensor: (sensorPx, feed) => `on sensor ${sensorPx} · ${feed}`,
+  densityHeader: "Density, px/m",
   across: "Across",
   depth: "In depth",
   edgeBack: "Zone edge (back)",
-  edgeFwd: "Zone edge (front)",
+  edgeForward: "Zone edge (front)",
   edgeNear: "Near edge",
   edgeFar: "Far edge",
   dori: ["detection", "observation", "recognition", "identification"],
   doriBelow: "below detection",
   exposure: "Exposure time up to",
   camera: "Camera",
-  st: { ok: "OK", warn: "marginal", bad: "insufficient" },
-  tabErr: "Input data error",
-  tabObjs: (status) => `Objects: ${status}`,
+  status: { ok: "OK", warn: "marginal", bad: "insufficient" },
+  tabError: "Input data error",
+  tabObjects: (status) => `Objects: ${status}`,
   addType: "+ Camera type",
   newType: (number) => `Camera ${number}`,
   // вердикт типа
@@ -1127,156 +1142,158 @@ const EN = {
     `crop ${width} × ${height} → ${inputSize} px`,
   feedFull: (width, height, inputSize) =>
     `frame ${width} × ${height} → ${inputSize} px`,
-  nZoneW: (frameWidth, zoneWidth) =>
+  noteZoneWidth: (frameWidth, zoneWidth) =>
     `Zone doesn't fit horizontally: at the near edge the frame width is ${frameWidth} m, the zone width is ${zoneWidth} m.`,
-  nZoneD: (requiredAngle, availableAngle) =>
+  noteZoneDepth: (requiredAngle, availableAngle) =>
     `Zone doesn't fit in depth: ${requiredAngle}° vertical is required, ${availableAngle}° is available.`,
-  nFMax: (requiredFocal, maxFocal) =>
+  noteFocalMax: (requiredFocal, maxFocal) =>
     `The zone requires a focal length of ≈ ${requiredFocal} mm, the lens maximum is ${maxFocal} mm. Calculated for ${maxFocal} mm: the frame is wider than the zone, and objects get fewer pixels.`,
-  nFMin: (requiredFocal, minFocal) =>
+  noteFocalMin: (requiredFocal, minFocal) =>
     `The zone requires a focal length of ≈ ${requiredFocal} mm, the lens minimum is ${minFocal} mm. Calculated for ${minFocal} mm: the zone doesn't fit in the frame entirely. Raise the camera, reduce the zone, or choose a lens with a wider field of view.`,
-  nFOut: (focal, range) =>
+  noteFocalOutOfRange: (focal, range) =>
     `Focal length ${focal} mm is outside the camera lens range (${range} mm).`,
-  nWide: (hfov) =>
+  noteWideAngle: (hfov) =>
     `HFOV ${hfov}°: such lenses noticeably compress the frame edges (barrel distortion), and the calculation doesn't account for it. Lower the quality factor or raise the camera.`,
-  nTop: "Overhead view: parts in cells are seen end-on, which is convenient for counting. A person is seen from above (head and shoulders), and hand actions are harder to tell apart.",
-  nLowRay: (angle) =>
+  noteTopView:
+    "Overhead view: parts in cells are seen end-on, which is convenient for counting. A person is seen from above (head and shoulders), and hand actions are harder to tell apart.",
+  noteLowRay: (angle) =>
     `The ray to the far zone edge meets the plane at ${angle}°: objects will occlude each other. Raise the camera or reduce the zone offset.`,
-  nAfps: (analyticsFps, streamFps) =>
+  noteAnalyticsFps: (analyticsFps, streamFps) =>
     `Analytics frame rate (${analyticsFps} fps) is higher than the stream frame rate (${streamFps} fps). The calculation uses ${streamFps} fps.`,
-  pNoObj: "No objects",
-  pBad: "Insufficient",
-  pWarn: "Marginal",
-  pOk: "OK",
-  pCheck: "Has warnings",
-  hNoObj:
+  pillNoObjects: "No objects",
+  pillBad: "Insufficient",
+  pillWarn: "Marginal",
+  pillOk: "OK",
+  pillCheck: "Has warnings",
+  verdictNoObjects:
     "Add an object with dimensions and a model to check whether it can be detected.",
-  hItem: (name, modelPx, requiredPx) =>
+  verdictItem: (name, modelPx, requiredPx) =>
     `${name} — ${modelPx} at threshold ${requiredPx}`,
-  hBad: (list) => `Not enough pixels at model input: ${list}.`,
-  hWarn: (list) => `Marginal at model input: ${list}.`,
-  hOk: (name, modelPx) =>
+  verdictBad: (list) => `Not enough pixels at model input: ${list}.`,
+  verdictWarn: (list) => `Marginal at model input: ${list}.`,
+  verdictOk: (name, modelPx) =>
     `All objects are detectable at model input. Smallest: ${name} — ${modelPx}.`,
-  nScale: (name, sensorPx, inputSize, advice, neededInputSize) =>
+  noteDownscale: (name, sensorPx, inputSize, advice, neededInputSize) =>
     `"${name}": ${sensorPx} on the sensor, pixels are lost when downscaling to the ${inputSize} px input. ${advice} or increase the input to ≈ ${neededInputSize} px.`,
-  advFull: 'Choose the "Zone crop" or "Tiles" input mode',
-  advRoi: 'Choose the "Tiles" input mode',
-  advTiles: "Check the input size",
-  nRes: (name, requiredWidthPx, resolution) =>
+  adviceFull: 'Choose the "Zone crop" or "Tiles" input mode',
+  adviceRoi: 'Choose the "Tiles" input mode',
+  adviceTiles: "Check the input size",
+  noteResolution: (name, requiredWidthPx, resolution) =>
     `"${name}" requires at least ${requiredWidthPx} px horizontally (${resolution}) at the same field of view.`,
-  nResNone: (name, requiredWidthPx) =>
+  noteResolutionNone: (name, requiredWidthPx) =>
     `"${name}" requires ${requiredWidthPx} px horizontally, more than any resolution in the list. Install a separate camera closer to the object or choose a lens with a narrower field of view.`,
   objDefault: "Object",
   // система
-  sCams: "Cameras",
-  sTypes: (count, names) => `Types: ${count}${names ? ` (${names})` : ""}`,
-  sCamCost: (cost) => ` · camera cost ${cost}`,
-  sObjs: "Objects detectable",
-  sOfN: (okCount, total) => `${okCount} of ${total}`,
-  sSmallest: (name, modelPx) => `Smallest: ${name}, ${modelPx} px`,
-  sNoObjs: "No objects",
-  sCompute: "Compute node",
-  sNoCams: "No cameras",
-  sNet: "Network traffic",
-  sPort: (port, poeWatts) => `Port ${port} · PoE ≈ ${poeWatts} W`,
+  systemCameras: "Cameras",
+  systemTypes: (count, names) => `Types: ${count}${names ? ` (${names})` : ""}`,
+  systemCameraCost: (cost) => ` · camera cost ${cost}`,
+  systemObjects: "Objects detectable",
+  systemOfTotal: (okCount, total) => `${okCount} of ${total}`,
+  systemSmallest: (name, modelPx) => `Smallest: ${name}, ${modelPx} px`,
+  systemNoObjects: "No objects",
+  systemCompute: "Compute node",
+  systemNoCameras: "No cameras",
+  systemNetwork: "Network traffic",
+  systemPort: (port, poeWatts) => `Port ${port} · PoE ≈ ${poeWatts} W`,
   // сеть и допущения
-  netTitle: "Network and storage",
-  days: "Archive retention, days",
-  nType: "Camera type",
-  nCams: "Cameras",
-  nResolution: "Resolution",
-  nFps: "fps",
-  nPerCam: "Per camera",
-  nAll: "Total",
-  nTotal: "Total",
-  nArch: "Archive",
-  nArchVal: (terabytes, days) => `≈ ${terabytes} TB for ${days} days`,
-  nArchOff: "Not recorded",
-  assTitle: "Assumptions",
-  ass: (efficiency) => [
+  networkTitle: "Network and storage",
+  archiveDays: "Archive retention, days",
+  networkType: "Camera type",
+  networkCameras: "Cameras",
+  networkResolution: "Resolution",
+  networkFps: "fps",
+  networkPerCamera: "Per camera",
+  networkAll: "Total",
+  networkTotal: "Total",
+  networkArchive: "Archive",
+  networkArchiveValue: (terabytes, days) =>
+    `≈ ${terabytes} TB for ${days} days`,
+  networkArchiveOff: "Not recorded",
+  assumptionsTitle: "Assumptions",
+  assumptions: (efficiency) => [
     `Derating factor ${efficiency} applied to the measured speed`,
     "Catalog models: Ultralytics benchmarks on T4",
     "Decoder: NVDEC performance by GPU generation",
     "Server cost for the GPUs isn't included",
   ],
   formulas: "All formulas",
-  sysTitle: "System",
+  systemTitle: "System",
   // параметры типа
-  parTitle: "Type parameters",
-  tName: "Name",
-  tCount: "Number of cameras",
-  secGeo: "Geometry",
-  H: "Camera height, m",
-  h: "Target plane height, m",
-  L0: "Zone offset, m",
-  mg: "Frame margin, %",
-  Dz: "Zone depth, m",
-  Wz: "Zone width, m",
-  pos: "Mounting",
-  pSide: "Side, at an angle",
-  pTop: "Overhead",
-  sumSide: "side",
-  sumTop: "overhead",
-  secCam: "Sensor and lens",
-  cam: "Camera",
-  addCamLink: "+ Custom camera",
-  camManual: "Manual sensor setup",
-  res: "Resolution",
-  sens: "Sensor format",
-  sw: "Sensor width, mm",
-  pp: "Pixel size, µm",
-  sensPp: "From pixel size",
-  sensOwn: "Custom width",
-  orient: "Frame orientation",
-  orLand: "Long side across the view",
-  orPort: "Rotated 90°",
-  mode: "Lens",
-  modeAria: "Lens mode",
-  mAuto: "Auto",
-  mF: "Focal length",
-  mA: "HFOV angle",
-  fmm: "Focal length, mm",
+  parametersTitle: "Type parameters",
+  typeName: "Name",
+  typeCount: "Number of cameras",
+  sectionGeometry: "Geometry",
+  cameraHeight: "Camera height, m",
+  planeHeight: "Target plane height, m",
+  zoneStart: "Zone offset, m",
+  margin: "Frame margin, %",
+  zoneDepth: "Zone depth, m",
+  zoneWidth: "Zone width, m",
+  placement: "Mounting",
+  placementSide: "Side, at an angle",
+  placementTop: "Overhead",
+  summarySide: "side",
+  summaryTop: "overhead",
+  sectionCamera: "Sensor and lens",
+  cameraSelect: "Camera",
+  addCameraLink: "+ Custom camera",
+  cameraManual: "Manual sensor setup",
+  resolution: "Resolution",
+  sensor: "Sensor format",
+  sensorWidth: "Sensor width, mm",
+  pixelPitch: "Pixel size, µm",
+  sensorByPixelPitch: "From pixel size",
+  sensorCustom: "Custom width",
+  orientation: "Frame orientation",
+  orientationLandscape: "Long side across the view",
+  orientationPortrait: "Rotated 90°",
+  lensMode: "Lens",
+  lensModeAria: "Lens mode",
+  lensModeAuto: "Auto",
+  lensModeFocal: "Focal length",
+  lensModeAngle: "HFOV angle",
+  focalLength: "Focal length, mm",
   hfov: "HFOV, °",
-  secStr: "Stream and quality",
+  sectionStream: "Stream and quality",
   fps: "Stream frame rate, fps",
-  afps: "Analytics frame rate, fps",
+  analyticsFps: "Analytics frame rate, fps",
   codec: "Codec",
   scene: "Scene activity",
-  scLow: "Low",
-  scMid: "Normal",
-  scHigh: "High",
-  k: "Quality factor",
-  v: "Motion speed, m/s",
-  blur: "Allowed motion blur, px",
-  dupBtn: "Duplicate type",
-  delBtn: "Delete type",
-  delConfirm: "Confirm deletion",
+  sceneLow: "Low",
+  sceneMid: "Normal",
+  sceneHigh: "High",
+  lensFactor: "Quality factor",
+  speed: "Motion speed, m/s",
+  blurPx: "Allowed motion blur, px",
+  duplicateTypeBtn: "Duplicate type",
+  deleteTypeBtn: "Delete type",
+  deleteTypeConfirm: "Confirm deletion",
   copySuffix: " (copy)",
   // объекты
-  objTitle: "Objects and models",
-  addObj: "+ Object",
+  objectsTitle: "Objects and models",
+  addObject: "+ Object",
   presets: "Templates:",
-  addDetLink: "+ Custom detector",
-  objFoot:
+  addDetectorLink: "+ Custom detector",
+  objectsFooter:
     "Objects with the same model and input mode count as one inference run.",
-  objName: "Object name",
-  objDel: "Delete object",
-  ow: "Width, cm",
-  od: "Length, cm",
-  oz: "Height, cm",
-  oq: "Threshold, px",
-  om: "Model",
-  of: "Input mode",
-  oi: "Model input, px",
-  ov: "Overlap, %",
+  objectName: "Object name",
+  objectDelete: "Delete object",
+  objectWidth: "Width, cm",
+  objectLength: "Length, cm",
+  objectHeight: "Height, cm",
+  objectRequiredPx: "Threshold, px",
+  objectModel: "Model",
+  objectFeed: "Input mode",
+  objectInput: "Model input, px",
+  objectOverlap: "Overlap, %",
   ultralytics: "Ultralytics catalog",
-  ownDets: "Custom detectors",
+  customDetectors: "Custom detectors",
   feeds: { roi: "Zone crop", tiles: "Tiles", full: "Full frame" },
   feedsShort: { roi: "crop", tiles: "tiles", full: "full frame" },
   presetNames: ["Person", "Hand", "Tray cell", "Part", "M8 nut"],
   typeNames: ["Workstation", "Cart"],
   // справочники
-  u: {
+  units: {
     m: "m",
     mm: "mm",
     s: "s",
@@ -1287,9 +1304,9 @@ const EN = {
     gb: "GB",
     w: "W",
   },
-  mp: (megapixels) => `${megapixels} MP`,
-  sensMm: (format, widthMm) => `${format} ≈ ${widthMm} mm`,
-  camBuiltin: {
+  megapixels: (megapixels) => `${megapixels} MP`,
+  sensorFormat: (format, widthMm) => `${format} ≈ ${widthMm} mm`,
+  builtinCameraNames: {
     k4: "Generic 4 MP · 1/2.7″ · 2.8–12 mm",
     k8: "Generic 8 MP · 1/1.8″ · 2.8–12 mm",
   },
@@ -1299,26 +1316,26 @@ const EN = {
       "FP16 dense is estimated as 4 PFLOPS FP4 / 8, based on the RTX 5090 ratio.",
     agx: "Standalone module. Memory is shared with the CPU, 60% is available for models. FP16 is estimated as 16 SM × 2048 FLOP/cycle × 1.3 GHz.",
   },
-  decStreams: (count) => `streams: ${count}`,
+  decoderStreams: (count) => `streams: ${count}`,
   // шаблоны
   back: "← Back to calculator",
-  toCalc: "Back to calculator",
-  tplTitle: "Templates",
-  tplNav: "Template sections",
-  ttGpus: "GPUs",
-  ttCams: "Cameras",
-  ttDets: "Detectors",
-  expBtn: "Export",
-  expTitle: "Save templates, prices, and the calculation to a file",
-  impBtn: "Import",
-  impTitle: "Replace all data with the file contents",
-  impConfirm: "Replace all data",
-  catTitle: (count) => `GPU catalog · ${count}`,
-  catTitle0: "GPU catalog",
-  catNote: "Specs from NVIDIA datasheets",
-  kr: "Derating factor",
-  resv: "Growth headroom, %",
-  gHead: [
+  toCalculation: "Back to calculator",
+  templatesTitle: "Templates",
+  templatesNav: "Template sections",
+  templateTabGpus: "GPUs",
+  templateTabCameras: "Cameras",
+  templateTabDetectors: "Detectors",
+  exportBtn: "Export",
+  exportTitle: "Save templates, prices, and the calculation to a file",
+  importBtn: "Import",
+  importTitle: "Replace all data with the file contents",
+  importConfirm: "Replace all data",
+  catalogTitle: (count) => `GPU catalog · ${count}`,
+  catalogTitleNoCount: "GPU catalog",
+  catalogNote: "Specs from NVIDIA datasheets",
+  efficiency: "Derating factor",
+  reserve: "Growth headroom, %",
+  gpuTableHeader: [
     "GPU",
     "FP16, TFLOPS",
     "Decoder",
@@ -1327,111 +1344,119 @@ const EN = {
     "Price, $",
     "In auto-selection",
   ],
-  gJet: "Jetson module",
-  gOwn: "custom",
-  gPriceAria: (name) => `${name} price, $`,
-  gOnAria: (name) => `${name} is included in auto-selection`,
-  del: "Delete",
-  delAria: (name) => `Delete ${name}`,
-  mineN: (count) => `Custom GPUs · ${count}`,
-  mine0: "Custom GPUs",
-  mineEmpty:
+  gpuJetson: "Jetson module",
+  gpuCustom: "custom",
+  gpuPriceAria: (name) => `${name} price, $`,
+  gpuEnabledAria: (name) => `${name} is included in auto-selection`,
+  deleteBtn: "Delete",
+  deleteAria: (name) => `Delete ${name}`,
+  customGpusTitle: (count) => `Custom GPUs · ${count}`,
+  customGpusTitleNoCount: "Custom GPUs",
+  customGpusEmpty:
     'No custom GPUs. An added GPU appears here, in the "GPU" list, and in auto-selection.',
-  newTitle: "New GPU",
-  ngName: "Name",
-  ngNamePh: "For example, RTX 6000 Ada",
-  ngArch: "Architecture",
-  ngJet: "Jetson or custom decoder",
-  ngTf: "FP16 Tensor, TFLOPS",
-  ngTfPh: "Without sparsity",
-  ngDec: "NVDEC count",
-  ngDecJet: "1080p30 H.265 streams",
-  ngMem: "Memory, GB",
-  ngTdp: "TDP, W",
-  ngPrice: "Price, $",
-  ngPricePh: "Supplier price",
-  ngOn: "Included in auto-selection",
+  gpuFormTitle: "New GPU",
+  gpuFormName: "Name",
+  gpuFormNamePlaceholder: "For example, RTX 6000 Ada",
+  gpuFormArchitecture: "Architecture",
+  gpuFormJetson: "Jetson or custom decoder",
+  gpuFormTflops: "FP16 Tensor, TFLOPS",
+  gpuFormTflopsPlaceholder: "Without sparsity",
+  gpuFormDecoders: "NVDEC count",
+  gpuFormDecoderStreams: "1080p30 H.265 streams",
+  gpuFormMemory: "Memory, GB",
+  gpuFormTdp: "TDP, W",
+  gpuFormPrice: "Price, $",
+  gpuFormPricePlaceholder: "Supplier price",
+  gpuFormEnabled: "Included in auto-selection",
   hintWhere: "Where to find the values",
-  ngHint1:
+  gpuFormHint1:
     "FP16 Tensor: the value from the NVIDIA datasheet without sparsity. Divide a value marked with an asterisk (with sparsity) by 2. For GeForce, use FP16 with FP32 accumulate.",
-  ngHint2:
+  gpuFormHint2:
     "NVDEC: the number of hardware decoders. For Jetson, enter the number of 1080p30 H.265 streams from the specification.",
   addGpuBtn: "Add GPU",
-  ngErr: (fields) => `Fill in the fields: ${fields}.`,
-  eName: "name",
-  eTf: "FP16 Tensor",
-  eDecJet: "decoder streams",
-  eDec: "NVDEC count",
-  eMem: "memory",
-  ePrice: "price (needed for comparison in auto-selection)",
-  gAdded: (name) => `"${name}" added`,
-  gDeleted: "GPU deleted",
-  camTitle: (count) => `Cameras · ${count}`,
-  camTitle0: "Cameras",
-  camNote: 'Selected in the type parameters, "Sensor and lens" section',
-  cHead: ["Camera", "Frame", "Sensor", "Lens", "Price", "In system"],
-  cOwn: "Custom",
-  cBuiltin: "Generic, example",
-  cAny: "Any",
-  ncTitle: "New camera",
-  ncNamePh: "Model from the manufacturer catalog",
-  ncW: "Frame width, px",
-  ncH: "Frame height, px",
-  ncSw: "Sensor width, mm",
-  ncPp: "Pixel size, µm",
-  ncFmin: "Focal length from, mm",
-  ncFmax: "Focal length to, mm",
-  ncPrice: "Price, $",
+  gpuFormError: (fields) => `Fill in the fields: ${fields}.`,
+  errorName: "name",
+  errorTflops: "FP16 Tensor",
+  errorDecoderStreams: "decoder streams",
+  errorDecoders: "NVDEC count",
+  errorMemory: "memory",
+  errorPrice: "price (needed for comparison in auto-selection)",
+  gpuAdded: (name) => `"${name}" added`,
+  gpuDeleted: "GPU deleted",
+  camerasTitle: (count) => `Cameras · ${count}`,
+  camerasTitleNoCount: "Cameras",
+  camerasNote: 'Selected in the type parameters, "Sensor and lens" section',
+  cameraTableHeader: [
+    "Camera",
+    "Frame",
+    "Sensor",
+    "Lens",
+    "Price",
+    "In system",
+  ],
+  cameraCustom: "Custom",
+  cameraBuiltin: "Generic, example",
+  cameraAnyLens: "Any",
+  cameraFormTitle: "New camera",
+  cameraFormNamePlaceholder: "Model from the manufacturer catalog",
+  cameraFormWidth: "Frame width, px",
+  cameraFormHeight: "Frame height, px",
+  cameraFormSensorWidth: "Sensor width, mm",
+  cameraFormPixelPitch: "Pixel size, µm",
+  cameraFormFocalMin: "Focal length from, mm",
+  cameraFormFocalMax: "Focal length to, mm",
+  cameraFormPrice: "Price, $",
   optional: "Optional",
-  ncHint1:
+  cameraFormHint1:
     "Sensor width: the width of the sensor active area from the datasheet. If it isn't listed, enter the pixel size, and the width is calculated as pixel size × frame width.",
-  ncHint2:
+  cameraFormHint2:
     "For a fixed focal length lens, enter the same value in both fields. If the fields are empty, the focal length is selected without limits.",
-  addCamBtn: "Add camera",
-  ncErr: (fields) => `Enter: ${fields}.`,
-  eFrame: "frame size in pixels",
-  eSw: "sensor width or pixel size",
-  eFRange: 'focal length "from" not greater than "to"',
-  cAdded: (name) => `"${name}" added`,
-  cDeleted: "Camera deleted",
-  detTitle: (count) => `Detectors · ${count}`,
-  detTitle0: "Detectors",
-  detNote: 'Selected in the object card, "Model" field',
-  dHead: ["Model", "Input", "GFLOPs", "Speed", "Objects"],
-  dOwn: "Custom",
-  dCatalog: "Ultralytics catalog",
-  dSpeed: (fps, gpuName) => `${fps} fps on ${gpuName}`,
-  dEmpty: 'No custom detectors. Add a detector in the "New detector" form.',
-  ndTitle: "New detector",
-  ndNamePh: "For example, parts detector v2",
-  ndFps: "Benchmark, fps",
-  ndFpsPh: "On one GPU",
-  ndInp: "Model input, px",
-  ndRef: "Benchmark GPU",
-  ndGf: "GFLOPs per frame",
-  ndGfPh: "Optional, for the memory estimate",
+  addCameraBtn: "Add camera",
+  cameraFormError: (fields) => `Enter: ${fields}.`,
+  errorFrame: "frame size in pixels",
+  errorSensorWidth: "sensor width or pixel size",
+  errorFocalRange: 'focal length "from" not greater than "to"',
+  cameraAdded: (name) => `"${name}" added`,
+  cameraDeleted: "Camera deleted",
+  detectorsTitle: (count) => `Detectors · ${count}`,
+  detectorsTitleNoCount: "Detectors",
+  detectorsNote: 'Selected in the object card, "Model" field',
+  detectorTableHeader: ["Model", "Input", "GFLOPs", "Speed", "Objects"],
+  detectorCustom: "Custom",
+  detectorCatalog: "Ultralytics catalog",
+  detectorSpeed: (fps, gpuName) => `${fps} fps on ${gpuName}`,
+  detectorsEmpty:
+    'No custom detectors. Add a detector in the "New detector" form.',
+  detectorFormTitle: "New detector",
+  detectorFormNamePlaceholder: "For example, parts detector v2",
+  detectorFormFps: "Benchmark, fps",
+  detectorFormFpsPlaceholder: "On one GPU",
+  detectorFormInput: "Model input, px",
+  detectorFormRefGpu: "Benchmark GPU",
+  detectorFormGflops: "GFLOPs per frame",
+  detectorFormGflopsPlaceholder: "Optional, for the memory estimate",
   hintHow: "How to benchmark",
-  ndHint1:
+  detectorFormHint1:
     "Measure frames per second on one GPU in TensorRT with the same precision and batch as in production: trtexec, DeepStream perf, or your own benchmark.",
-  ndHint2:
+  detectorFormHint2:
     "For other GPUs the benchmark is scaled by FP16, for another input size by the square of its side.",
-  addDetBtn: "Add detector",
-  eFps: "benchmark",
-  dAdded: (name) => `"${name}" added`,
-  dDeleted: "Detector deleted",
+  addDetectorBtn: "Add detector",
+  errorFps: "benchmark",
+  detectorAdded: (name) => `"${name}" added`,
+  detectorDeleted: "Detector deleted",
   // отчёт
-  rErr: (name, count) => `${name} × ${count}: input data error`,
-  rCam: (params) =>
+  reportError: (name, count) => `${name} × ${count}: input data error`,
+  reportCamera: (params) =>
     `  Camera: ${params.cameraLabel}${params.rotated ? " (rotated 90°)" : ""}, sensor ${params.sensorWidth} mm, f ${params.focal} mm, HFOV ${params.hfov}°, tilt ${params.tilt}°, ${params.overCenter ? "overhead" : `zone offset ${params.zoneStart} m`}, height ${params.cameraHeight} m, zone ${params.zoneWidth} × ${params.zoneDepth} m`,
-  rObj: (params) =>
+  reportObject: (params) =>
     `  ${params.name}: ${params.model}, ${params.feed}; on sensor ${params.sensorPx}, at model input ${params.modelPx}, threshold ${params.requiredPx}: ${params.status}`,
-  rStream: (mbps, shutterDenominator) =>
+  reportStream: (mbps, shutterDenominator) =>
     `  Stream ${mbps} Mbps per camera, exposure time up to 1/${shutterDenominator} s`,
-  rSys: (cameraCount, mbps, cost) =>
+  reportSystem: (cameraCount, mbps, cost) =>
     `System: ${cameraCount} cameras, ${mbps} Mbps${cost ? `, camera cost ${cost}` : ""}`,
-  rCompute: (params) =>
+  reportCompute: (params) =>
     `Compute node (estimate): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; inference ${params.inferenceLoad}%, decoder ${params.decodeLoad}%, GPU memory ${params.memoryUsed}/${params.memoryCap} GB${params.optimum ? `; best price: ${params.optimum}` : ""}`,
-  rNoCompute: "Compute node: no data",
+  reportNoCompute: "Compute node: no data",
   // уведомления
   stale: "The data was changed in another tab. Reload the page.",
   typeCopied: "Type copied",
@@ -1445,17 +1470,17 @@ const EN = {
   readFail: "Couldn't read the file.",
   tipAria: "Hint",
   // схема
-  dZone: (depth) => `Monitored zone ${depth} m`,
-  dFrame: (width) => `Frame ${width} m`,
-  dTilt: (degrees) => `Tilt ${degrees}°`,
-  dLen: (length) => `${length} m`,
-  dOffset: (offset) => `Offset ${offset} m`,
-  dDepth: (depth) => `Zone depth ${depth} m`,
-  dOverCenter: "Camera above the zone center",
-  dOverZone: "Camera above the zone",
-  dH: (height) => `H ${height} m`,
-  dh: (height) => `h ${height} m`,
-  dAria: (params) =>
+  diagramZone: (depth) => `Monitored zone ${depth} m`,
+  diagramFrame: (width) => `Frame ${width} m`,
+  diagramTilt: (degrees) => `Tilt ${degrees}°`,
+  diagramLength: (length) => `${length} m`,
+  diagramOffset: (offset) => `Offset ${offset} m`,
+  diagramDepth: (depth) => `Zone depth ${depth} m`,
+  diagramOverCenter: "Camera above the zone center",
+  diagramOverZone: "Camera above the zone",
+  diagramCameraHeight: (height) => `H ${height} m`,
+  diagramPlaneHeight: (height) => `h ${height} m`,
+  diagramAria: (params) =>
     `Side view: camera at ${params.H} m, tilt ${params.tilt}°, VFOV ${params.vfov}°, zone from ${params.x1} to ${params.x2} m at ${params.h} m height` +
     (params.frameWidthNear
       ? `, frame width ${params.frameWidthNear}–${params.frameWidthFar} m`
@@ -1478,7 +1503,8 @@ const EN = {
       "Height of the lens above the floor. Measure with a laser rangefinder from the floor to the mounting point. The higher the camera, the less objects occlude each other, but the lower the pixel density.",
     planeHeight:
       "Height of the surface the monitored objects are on: tabletop ≈ 0.85–0.9 m, top of a cart tray. For a worker's hands, ≈ 1.0–1.2 m. The whole calculation is done for this plane.",
-    pos: "Side: the camera looks at an angle, and both the person and the objects are visible. Overhead: the camera looks straight down, which gives the best view of cart cells, but the person is seen from above and hand actions are harder to tell apart.",
+    placement:
+      "Side: the camera looks at an angle, and both the person and the objects are visible. Overhead: the camera looks straight down, which gives the best view of cart cells, but the person is seen from above and hand actions are harder to tell apart.",
     zoneStart:
       "Floor distance from the point below the camera to the near edge of the zone. A negative value means the camera is above part of the zone.",
     zoneDepth:
@@ -1496,11 +1522,13 @@ const EN = {
       "Width of the sensor area that forms the video at the selected resolution. In the sensor datasheet, it's the effective or active area.",
     pixelPitch:
       "Pixel size from the sensor datasheet, for example 2.0 µm for IMX334. Sensor width = pixel size × number of horizontal pixels.",
-    mode: '"Auto": the calculator selects the field of view for the zone. "Focal length" or "HFOV angle": checks a specific camera from a catalog.',
+    lensMode:
+      '"Auto": the calculator selects the field of view for the zone. "Focal length" or "HFOV angle": checks a specific camera from a catalog.',
     focalLength:
       "Lens focal length from the camera datasheet. For a varifocal lens, check both ends of the range.",
     hfov: "Horizontal field of view from the datasheet. Don't confuse it with the diagonal one (DFOV): the diagonal one is larger and is often shown more prominently.",
-    objs: "A card for each object: dimensions (width across the camera view, length along it, height), the model that detects it, the input mode, the input size, and the threshold in pixels for the smaller side of the object. The result is shown in the card. Objects with the same model and input mode count as one inference run: the load isn't doubled.",
+    objects:
+      "A card for each object: dimensions (width across the camera view, length along it, height), the model that detects it, the input mode, the input size, and the threshold in pixels for the smaller side of the object. The result is shown in the card. Objects with the same model and input mode count as one inference run: the load isn't doubled.",
     lensFactor:
       "Fraction of the nominal resolution that reaches the model after compression, optics, and distortion. 0.7 is a high-quality camera with a high bitrate, 0.6 is typical, 0.5 is a wide-angle lens or an overhead view.",
     speed:
@@ -1539,8 +1567,8 @@ const LANG = (() => {
       : "en";
 })();
 const STR = LANG === "en" ? EN : RU;
-// \u0447\u0438\u0441\u043b\u043e \u0438 \u0435\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u0435\u0440\u0430\u0437\u0440\u044b\u0432\u043d\u044b\u0439 \u043f\u0440\u043e\u0431\u0435\u043b; unit \u2014 \u043a\u043b\u044e\u0447 \u0441\u043b\u043e\u0432\u0430\u0440\u044f STR.u
-const withUnit = (value, unit) => value + "\u00a0" + STR.u[unit];
+// \u0447\u0438\u0441\u043b\u043e \u0438 \u0435\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u0435\u0440\u0430\u0437\u0440\u044b\u0432\u043d\u044b\u0439 \u043f\u0440\u043e\u0431\u0435\u043b; unit \u2014 \u043a\u043b\u044e\u0447 \u0441\u043b\u043e\u0432\u0430\u0440\u044f STR.units
+const withUnit = (value, unit) => value + "\u00a0" + STR.units[unit];
 // t \u2014 \u0442\u0435\u043a\u0441\u0442 \u043f\u043e \u043a\u043b\u044e\u0447\u0443 \u0441\u043b\u043e\u0432\u0430\u0440\u044f; \u0435\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u2014 \u0444\u0443\u043d\u043a\u0446\u0438\u044f, \u0432\u044b\u0437\u044b\u0432\u0430\u0435\u0442\u0441\u044f \u0441 params
 const t = (key, ...params) => {
   const text = STR[key];
@@ -1597,7 +1625,7 @@ const RESOLUTIONS = [
   [8, 3840, 2160],
   [12, 4000, 3000],
 ].map(([mp, width, height]) => [
-  `${t("mp", mp)} · ${width} × ${height}`,
+  `${t("megapixels", mp)} · ${width} × ${height}`,
   width,
   height,
 ]);
@@ -1701,7 +1729,7 @@ const decStreams = (gpu, codec) =>
     : (gpu.nvdec * NVDEC_FPS[gpu.arch][codec]) / 30;
 const decText = (gpu) =>
   gpu.decodeStreams
-    ? t("decStreams", formatNumber(gpu.decodeStreams.h265, 0))
+    ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0))
     : `${gpu.nvdec} NVDEC`;
 // Модели: GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
 const MODELS = [
@@ -1858,10 +1886,10 @@ SENSORS.forEach(([label, width], i) =>
   byId("sensor").add(
     new Option(
       typeof width === "number"
-        ? t("sensMm", label, formatNumber(width, 1))
+        ? t("sensorFormat", label, formatNumber(width, 1))
         : width === "pp"
-          ? t("sensPp")
-          : t("sensOwn"),
+          ? t("sensorByPixelPitch")
+          : t("sensorCustom"),
       i,
     ),
   ),
@@ -1903,7 +1931,7 @@ function readForm() {
 const BUILTIN_CAMERAS = [
   {
     id: "k4",
-    name: STR.camBuiltin.k4,
+    name: STR.builtinCameraNames.k4,
     Nw: 2560,
     Nh: 1440,
     sensorWidth: 5.4,
@@ -1912,7 +1940,7 @@ const BUILTIN_CAMERAS = [
   },
   {
     id: "k8",
-    name: STR.camBuiltin.k8,
+    name: STR.builtinCameraNames.k8,
     Nw: 3840,
     Nh: 2160,
     sensorWidth: 7.68,
@@ -1931,7 +1959,7 @@ function buildCameraSelect() {
   const select = byId("camera"),
     current = select.value;
   select.innerHTML =
-    `<option value="">${t("camManual")}</option>` +
+    `<option value="">${t("cameraManual")}</option>` +
     allCameras()
       .map(
         (camera) =>
@@ -1953,22 +1981,22 @@ function renderObjects() {
     const modelOptions =
       `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` +
       (customDetectors.length
-        ? `<optgroup label="${t("ownDets")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
+        ? `<optgroup label="${t("customDetectors")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
-    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
+    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="obj-width-${i}">${t("ow")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-length-${i}">${t("od")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-height-${i}">${t("oz")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-required-${i}">${t("oq")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f c2"><label for="obj-model-${i}">${t("om")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
-        <div class="f"><label for="obj-feed-${i}">${t("of")}</label><select id="obj-feed-${i}">${Object.entries(
+        <div class="f"><label for="obj-width-${i}">${t("objectWidth")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-length-${i}">${t("objectLength")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-height-${i}">${t("objectHeight")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-required-${i}">${t("objectRequiredPx")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f c2"><label for="obj-model-${i}">${t("objectModel")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
+        <div class="f"><label for="obj-feed-${i}">${t("objectFeed")}</label><select id="obj-feed-${i}">${Object.entries(
           FEEDS,
         )
           .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
-        <div class="f"><label for="obj-input-${i}">${t("oi")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
-        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("ov")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-input-${i}">${t("objectInput")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
+        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("objectOverlap")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
       </div>
       <div class="ores" id="obj-result-${i}" aria-live="polite"></div>`;
     list.append(card);
@@ -2030,7 +2058,7 @@ function syncFormUI(type, result) {
   if (result && isFinite(result.s) && (camera || sensorPreset !== null))
     byId("sensorWidth").value = +result.s.toFixed(2);
   byId("sumGeo").textContent =
-    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
+    `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("sumCam").textContent =
     (camera
       ? `${camera.Nw} × ${camera.Nh}`
@@ -2341,7 +2369,7 @@ function computeType(type) {
     if (frameWidthAt(minDepth) < zoneWidth)
       notes.push(
         t(
-          "nZoneW",
+          "noteZoneWidth",
           formatNumber(frameWidthAt(minDepth), 2),
           formatNumber(zoneWidth, 2),
         ),
@@ -2349,7 +2377,7 @@ function computeType(type) {
     if (vfov < zoneAngle)
       notes.push(
         t(
-          "nZoneD",
+          "noteZoneDepth",
           formatNumber(zoneAngle / DEG, 1),
           formatNumber(vfov / DEG, 1),
         ),
@@ -2358,7 +2386,7 @@ function computeType(type) {
   if (clamped)
     notes.unshift(
       t(
-        fNeeded > f ? "nFMax" : "nFMin",
+        fNeeded > f ? "noteFocalMax" : "noteFocalMin",
         formatNumber(fNeeded, 1),
         formatNumber(f, 1),
       ),
@@ -2371,7 +2399,7 @@ function computeType(type) {
   )
     notes.push(
       t(
-        "nFOut",
+        "noteFocalOutOfRange",
         formatNumber(f, 1),
         camera.focalMin === camera.focalMax
           ? formatNumber(camera.focalMin, 1)
@@ -2380,14 +2408,19 @@ function computeType(type) {
               formatNumber(camera.focalMax, 1),
       ),
     );
-  if (hfov / DEG > 100) notes.push(t("nWide", formatNumber(hfov / DEG, 0)));
-  if (tilt / DEG > 75 && x1 < 0) notes.push(t("nTop"));
+  if (hfov / DEG > 100)
+    notes.push(t("noteWideAngle", formatNumber(hfov / DEG, 0)));
+  if (tilt / DEG > 75 && x1 < 0) notes.push(t("noteTopView"));
   const lowestRayAngle = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
   if (lowestRayAngle / DEG < 15)
-    notes.push(t("nLowRay", formatNumber(lowestRayAngle / DEG, 0)));
+    notes.push(t("noteLowRay", formatNumber(lowestRayAngle / DEG, 0)));
   if (analyticsFpsSet > fps)
     notes.push(
-      t("nAfps", formatNumber(analyticsFpsSet, 0), formatNumber(fps, 0)),
+      t(
+        "noteAnalyticsFps",
+        formatNumber(analyticsFpsSet, 0),
+        formatNumber(fps, 0),
+      ),
     );
   // размер объекта на матрице и на входе модели
   const sensorPxText = (obj) =>
@@ -2400,17 +2433,17 @@ function computeType(type) {
   let status, pill, headline;
   if (!valid.length) {
     status = "warn";
-    pill = t("pNoObj");
-    headline = t("hNoObj");
+    pill = t("pillNoObjects");
+    headline = t("verdictNoObjects");
   } else if (failing.length) {
     status = "bad";
-    pill = t("pBad");
+    pill = t("pillBad");
     headline = t(
-      "hBad",
+      "verdictBad",
       failing
         .map((obj) =>
           t(
-            "hItem",
+            "verdictItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
             formatNumber(obj.requiredPx, 0),
@@ -2427,16 +2460,16 @@ function computeType(type) {
           ) * 32;
         notes.push(
           t(
-            "nScale",
+            "noteDownscale",
             obj.name,
             sensorPxText(obj),
             obj.feedInfo.inputSize,
             t(
               obj.feed === "full"
-                ? "advFull"
+                ? "adviceFull"
                 : obj.feed === "roi"
-                  ? "advRoi"
-                  : "advTiles",
+                  ? "adviceRoi"
+                  : "adviceTiles",
             ),
             formatNumber(neededInput, 0),
           ),
@@ -2453,13 +2486,13 @@ function computeType(type) {
       notes.unshift(
         recommended
           ? t(
-              "nRes",
+              "noteResolution",
               worstObj.name,
               formatNumber(worstObj.minSensorWidthPx, 0),
               recommended[0],
             )
           : t(
-              "nResNone",
+              "noteResolutionNone",
               worstObj.name,
               formatNumber(worstObj.minSensorWidthPx, 0),
             ),
@@ -2467,13 +2500,13 @@ function computeType(type) {
     }
   } else if (marginal.length) {
     status = "warn";
-    pill = t("pWarn");
+    pill = t("pillWarn");
     headline = t(
-      "hWarn",
+      "verdictWarn",
       marginal
         .map((obj) =>
           t(
-            "hItem",
+            "verdictItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
             formatNumber(obj.requiredPx, 0),
@@ -2484,12 +2517,12 @@ function computeType(type) {
   } else {
     const smallest = valid.reduce((a, b) => (a.modelPx < b.modelPx ? a : b));
     status = "ok";
-    pill = t("pOk");
-    headline = t("hOk", smallest.name, modelPxText(smallest));
+    pill = t("pillOk");
+    headline = t("verdictOk", smallest.name, modelPxText(smallest));
   }
   if (notes.length && status === "ok") {
     status = "warn";
-    pill = t("pCheck");
+    pill = t("pillCheck");
   }
   // группы запусков: одна модель с одинаковой подачей обслуживает свои объекты одним проходом
   const groups = [];
@@ -2662,10 +2695,10 @@ function computeSystem(results) {
       cost: count * priceOf(gpu),
       bottleneck: t(
         inferenceLoad >= decodeLoad && inferenceLoad >= memoryLoad
-          ? "bottInf"
+          ? "bottleneckInference"
           : decodeLoad >= memoryLoad
-            ? "bottDec"
-            : "bottMem",
+            ? "bottleneckDecoder"
+            : "bottleneckMemory",
       ),
     };
   };
@@ -2726,18 +2759,18 @@ function computeSystem(results) {
 }
 
 // ---------- отрисовка типа
-const STATUS_TEXT = STR.st;
+const STATUS_TEXT = STR.status;
 const capitalize = (text) =>
   text ? text[0].toUpperCase() + text.slice(1) : text;
 function renderType(result) {
   const verdict = byId("verdict");
   byId("resTitle").textContent = t(
-    "resTitleOf",
+    "resultTitleOf",
     result.type.name || t("untitled"),
   );
   if (result.err) {
     verdict.className = "verdict bad";
-    verdict.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
+    verdict.innerHTML = `<span class="pill">${t("pillError")}</span><div>${t("inputError")}</div>`;
     ["kpis", "dens", "facts", "side"].forEach(
       (id) => (byId(id).innerHTML = ""),
     );
@@ -2749,35 +2782,35 @@ function renderType(result) {
     result;
   byId("kpis").innerHTML = [
     [
-      t("kF"),
+      t("kpiFocal"),
       withUnit(formatNumber(f, 1), "mm"),
       t(
         result.clamped
-          ? "kFLimit"
+          ? "kpiFocalLimit"
           : result.mode === "auto"
-            ? "kFAuto"
-            : "kFSet",
-      ) + (rotated ? t("kRot") : ""),
+            ? "kpiFocalAuto"
+            : "kpiFocalSet",
+      ) + (rotated ? t("kpiRotated") : ""),
     ],
     [
-      t(rotated ? "kAngRot" : "kAng"),
+      t(rotated ? "kpiAngleRotated" : "kpiAngle"),
       formatNumber(hfov / DEG, 0) + "° × " + formatNumber(vfov / DEG, 0) + "°",
       `DFOV ≈ ${formatNumber((2 * Math.atan(Math.hypot(Math.tan(hfov / 2), Math.tan(vfov / 2)))) / DEG, 0)}°`,
     ],
     [
-      t("kTilt"),
+      t("kpiTilt"),
       formatNumber(tilt / DEG, 0) + "°",
-      t(Math.abs(tilt / DEG - 90) < 1 ? "kTiltDown" : "kTiltHor"),
+      t(Math.abs(tilt / DEG - 90) < 1 ? "kpiTiltDown" : "kpiTiltHorizon"),
     ],
     [
-      t("kFrame"),
+      t("kpiFrame"),
       withUnit(
         formatNumber(frameWidthAt(depthAt(x1)), 1) +
           "–" +
           formatNumber(frameWidthAt(depthAt(x2)), 1),
         "m",
       ),
-      t("kFrameSub"),
+      t("kpiFrameSubtitle"),
     ],
   ]
     .map(
@@ -2791,19 +2824,19 @@ function renderType(result) {
     if (!resultEl) return;
     if (obj.bad) {
       resultEl.className = "ores";
-      resultEl.textContent = t("objBad");
+      resultEl.textContent = t("objectInvalid");
       if (dotEl) dotEl.className = "dot";
       return;
     }
     resultEl.className = "ores " + obj.status;
     if (dotEl) dotEl.className = "dot " + obj.status;
-    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
+    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objectAtModel", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
   });
   const top = result.placement === "top";
   byId("dens").innerHTML =
-    `<tr><th>${t("densHead")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
+    `<tr><th>${t("densityHeader")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
     <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
+    <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
   const doriLevels = [25, 62, 125, 250],
     doriNames = STR.dori;
   let doriLevel = -1;
@@ -2840,8 +2873,8 @@ function renderTabs(results) {
     tab.setAttribute("aria-controls", "typeOut");
     tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
     tab.title = result.err
-      ? t("tabErr")
-      : t("tabObjs", STATUS_TEXT[result.status] || result.pill);
+      ? t("tabError")
+      : t("tabObjects", STATUS_TEXT[result.status] || result.pill);
     tab.addEventListener("click", () => {
       if (activeTypeId === result.type.id) return;
       activeTypeId = result.type.id;
@@ -2924,23 +2957,23 @@ function renderSystem(results, system) {
         : "> " + withUnit(10, "gbps");
   byId("sysKpis").innerHTML = [
     [
-      t("sCams"),
+      t("systemCameras"),
       `${cameraCount}`,
       cameraCost
-        ? t("sTypes", results.length) +
-          t("sCamCost", "$" + formatNumber(cameraCost, 0))
+        ? t("systemTypes", results.length) +
+          t("systemCameraCost", "$" + formatNumber(cameraCost, 0))
         : t(
-            "sTypes",
+            "systemTypes",
             results.length,
             results.map((result) => result.type.name).join(", "),
           ),
     ],
     [
-      t("sObjs"),
-      `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("sOfN", okObjects, allObjects.length)}`,
+      t("systemObjects"),
+      `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("systemOfTotal", okObjects, allObjects.length)}`,
       smallest
         ? t(
-            "sSmallest",
+            "systemSmallest",
             smallest.name,
             formatNumber(
               Math.min(smallest.widthPx, smallest.heightPx) *
@@ -2948,21 +2981,21 @@ function renderSystem(results, system) {
               1,
             ),
           )
-        : t("sNoObjs"),
+        : t("systemNoObjects"),
     ],
     [
-      t("sCompute"),
+      t("systemCompute"),
       liveResults.length
         ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}`
         : "—",
       liveResults.length
         ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}`
-        : t("sNoCams"),
+        : t("systemNoCameras"),
     ],
     [
-      t("sNet"),
+      t("systemNetwork"),
       `${withUnit(formatNumber(totalMbps, 0), "mbps")}`,
-      t("sPort", port, formatNumber(cameraCount * 15.4, 0)),
+      t("systemPort", port, formatNumber(cameraCount * 15.4, 0)),
     ],
   ]
     .map(
@@ -2996,11 +3029,11 @@ function renderSystem(results, system) {
   if (restShare > 0) segments.push({ fraction: restShare, color: "var(--c6)" });
   byId("donut").innerHTML = liveResults.length
     ? ring(60, 60, 48, 14, segments, maxLoad) +
-      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${overloaded ? "var(--bad)" : "var(--fg)"}">${percent(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
+      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${overloaded ? "var(--bad)" : "var(--fg)"}">${percent(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCaption")}</text>`
     : "";
   byId("donut").setAttribute(
     "aria-label",
-    t("donutAriaVal", percent(chosen.inferenceLoad), percent(maxLoad)),
+    t("donutAriaValue", percent(chosen.inferenceLoad), percent(maxLoad)),
   );
   byId("legend").innerHTML = liveResults.length
     ? shown
@@ -3012,7 +3045,7 @@ function renderSystem(results, system) {
       (rest.length
         ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${percent(restShare)}</span></li>`
         : "") +
-      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSub", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>`
+      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSubtitle", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>`
     : `<li class="note">${t("noLoad")}</li>`;
   const decodeCapacity =
     (chosen.count * system.decodeUnitsTotal) / (chosen.decodeGpus || 1);
@@ -3020,30 +3053,30 @@ function renderSystem(results, system) {
     `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load, color: load > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
   byId("gauges").innerHTML = liveResults.length
     ? gauge(
-        t("gDec"),
+        t("gaugeDecoder"),
         chosen.decodeLoad,
         maxLoad,
         percent(chosen.decodeLoad),
         t(
-          "gDecSub",
+          "gaugeDecoderSubtitle",
           formatNumber(system.decodeUnitsTotal, 1),
           formatNumber(decodeCapacity, 0),
         ),
       ) +
       gauge(
-        t("gMem"),
+        t("gaugeMemory"),
         chosen.memoryLoad,
         1,
         percent(chosen.memoryLoad),
         t(
-          "gMemSub",
+          "gaugeMemorySubtitle",
           formatNumber(chosen.memoryUseGB, 1),
           formatNumber(chosen.memoryCapGB, 0),
         ),
       )
     : "";
   const warning = system.noCandidates
-    ? t("noCand")
+    ? t("noCandidates")
     : !optimum && liveResults.length
       ? t("noFit")
       : "";
@@ -3057,17 +3090,17 @@ function renderSystem(results, system) {
   const archiveDays = parseNum(byId("archiveDays").value) || 0,
     archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
   byId("netTbl").innerHTML =
-    `<tr>${["nType", "nCams", "nResolution", "nFps", "nPerCam", "nAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
+    `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
     results
       .map((result) =>
         result.err
-          ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
+          ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>`
           : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.Nw} × ${result.Nh}</td><td>${formatNumber(result.fps, 0)}</td><td>${withUnit(formatNumber(result.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
       )
       .join("") +
-    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
-    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("nArchVal", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("nArchOff")}</td></tr>`;
-  byId("assList").innerHTML = t("ass", formatNumber(efficiency, 2))
+    `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
+    `<tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
+  byId("assList").innerHTML = t("assumptions", formatNumber(efficiency, 2))
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
   return { cameraCount, totalMbps, cameraCost };
@@ -3100,20 +3133,20 @@ function buildGpuSelect() {
 function renderGpuView() {
   const row = (
     gpu,
-  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gJet") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="pr-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", gpu.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gon-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", gpu.name))}"></td>
-    ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("delAria", gpu.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
-  const headers = STR.gHead,
+  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
+    <td><input id="pr-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gon-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
+    ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
+  const headers = STR.gpuTableHeader,
     head = `<tr>${headers
       .slice(0, 6)
       .map((header) => `<th>${header}</th>`)
       .join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
-  byId("catTitle").textContent = t("catTitle", GPU_CATALOG.length);
+  byId("catTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
   byId("catTbl").innerHTML = head + GPU_CATALOG.map(row).join("");
   byId("mine").innerHTML = customGpus.length
-    ? `<strong style="font-weight:600">${t("mineN", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
-    : `<strong style="font-weight:600">${t("mine0")}</strong><span class="note" style="font-size:13px">${t("mineEmpty")}</span>`;
+    ? `<strong style="font-weight:600">${t("customGpusTitle", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
+    : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
   allGpus().forEach((gpu) => {
     byId(`pr-${gpu.id}`).addEventListener("input", (event) => {
       gpuPrices[gpu.id] = event.target.value;
@@ -3136,13 +3169,15 @@ function renderGpuView() {
       buildGpuSelect();
       renderGpuView();
       calcAll();
-      toast(t("gDeleted"));
+      toast(t("gpuDeleted"));
     }),
   );
 }
 byId("ngArch").addEventListener("change", () => {
   const isJetson = byId("ngArch").value === "jet";
-  byId("ngDecL").textContent = t(isJetson ? "ngDecJet" : "ngDec");
+  byId("ngDecL").textContent = t(
+    isJetson ? "gpuFormDecoderStreams" : "gpuFormDecoders",
+  );
   byId("ngDec").placeholder = isJetson ? "22" : "2";
 });
 byId("newForm").addEventListener("submit", (event) => {
@@ -3156,15 +3191,16 @@ byId("newForm").addEventListener("submit", (event) => {
     tdpW = parseNum(byId("ngTdp").value),
     price = parseNum(byId("ngPrice").value);
   const errors = [];
-  if (!name) errors.push(t("eName"));
-  if (!(tflops > 0)) errors.push(t("eTf"));
-  if (!(decode > 0)) errors.push(t(arch === "jet" ? "eDecJet" : "eDec"));
-  if (!(memoryGB > 0)) errors.push(t("eMem"));
-  if (!(price > 0)) errors.push(t("ePrice"));
+  if (!name) errors.push(t("errorName"));
+  if (!(tflops > 0)) errors.push(t("errorTflops"));
+  if (!(decode > 0))
+    errors.push(t(arch === "jet" ? "errorDecoderStreams" : "errorDecoders"));
+  if (!(memoryGB > 0)) errors.push(t("errorMemory"));
+  if (!(price > 0)) errors.push(t("errorPrice"));
   const errorEl = byId("ngErr");
   if (errors.length) {
     errorEl.hidden = false;
-    errorEl.textContent = t("ngErr", errors.join(", "));
+    errorEl.textContent = t("gpuFormError", errors.join(", "));
     return;
   }
   errorEl.hidden = true;
@@ -3193,7 +3229,7 @@ byId("newForm").addEventListener("submit", (event) => {
   buildGpuSelect();
   renderGpuView();
   calcAll();
-  toast(t("gAdded", name));
+  toast(t("gpuAdded", name));
 });
 
 // ---------- шаблоны: камеры
@@ -3202,13 +3238,13 @@ function renderCamView() {
     cameraTypes
       .filter((type) => type.inputs.camera === id)
       .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
-  byId("camTitle").textContent = t("camTitle", allCameras().length);
+  byId("camTitle").textContent = t("camerasTitle", allCameras().length);
   byId("camTbl").innerHTML =
-    `<tr>${STR.cHead.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
+    `<tr>${STR.cameraTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     allCameras()
       .map(
         (camera) =>
-          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cOwn" : "cBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cAny")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("delAria", camera.name))}">${t("del")}</button>` : ""}</td></tr>`,
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cameraCustom" : "cameraBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cameraAnyLens")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("deleteAria", camera.name))}">${t("deleteBtn")}</button>` : ""}</td></tr>`,
       )
       .join("");
   document.querySelectorAll("[data-delc]").forEach((button) =>
@@ -3222,7 +3258,7 @@ function renderCamView() {
       writeForm(activeType());
       renderCamView();
       calcAll();
-      toast(t("cDeleted"));
+      toast(t("cameraDeleted"));
     }),
   );
 }
@@ -3241,15 +3277,15 @@ byId("camForm").addEventListener("submit", (event) => {
   if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
   if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
   const errors = [];
-  if (!name) errors.push(t("eName"));
-  if (!(Nw > 0 && Nh > 0)) errors.push(t("eFrame"));
-  if (!(sensorWidth > 0)) errors.push(t("eSw"));
+  if (!name) errors.push(t("errorName"));
+  if (!(Nw > 0 && Nh > 0)) errors.push(t("errorFrame"));
+  if (!(sensorWidth > 0)) errors.push(t("errorSensorWidth"));
   if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
-    errors.push(t("eFRange"));
+    errors.push(t("errorFocalRange"));
   const errorEl = byId("ncErr");
   if (errors.length) {
     errorEl.hidden = false;
-    errorEl.textContent = t("ncErr", errors.join(", "));
+    errorEl.textContent = t("cameraFormError", errors.join(", "));
     return;
   }
   errorEl.hidden = true;
@@ -3277,13 +3313,13 @@ byId("camForm").addEventListener("submit", (event) => {
   buildCameraSelect();
   renderCamView();
   save();
-  toast(t("cAdded", name));
+  toast(t("cameraAdded", name));
 });
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
   byId("detTitle").textContent = t(
-    "detTitle",
+    "detectorsTitle",
     MODELS.length + customDetectors.length,
   );
   const used = (id) =>
@@ -3293,18 +3329,18 @@ function renderDetView() {
       0,
     );
   byId("detTbl").innerHTML =
-    `<tr>${STR.dHead.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
+    `<tr>${STR.detectorTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     (customDetectors.length
       ? customDetectors
           .map((detector) => {
             const refGpu = gpuById(detector.refGpu);
-            return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(detector.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${detector.inputSize}</td><td>${detector.gflops > 0 ? formatNumber(detector.gflops, 1) : "—"}</td><td>${t("dSpeed", formatNumber(detector.fps, 0), escapeHtml(refGpu ? refGpu.name : "?"))}</td><td>${used(detector.id)}</td><td><button type="button" class="sm" data-deld="${detector.id}" aria-label="${escapeHtml(t("delAria", detector.name))}">${t("del")}</button></td></tr>`;
+            return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(detector.name)}</b><span class="sub">${t("detectorCustom")}</span></td><td>${detector.inputSize}</td><td>${detector.gflops > 0 ? formatNumber(detector.gflops, 1) : "—"}</td><td>${t("detectorSpeed", formatNumber(detector.fps, 0), escapeHtml(refGpu ? refGpu.name : "?"))}</td><td>${used(detector.id)}</td><td><button type="button" class="sm" data-deld="${detector.id}" aria-label="${escapeHtml(t("deleteAria", detector.name))}">${t("deleteBtn")}</button></td></tr>`;
           })
           .join("")
-      : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
+      : `<tr><td class="txt dim" colspan="6">${t("detectorsEmpty")}</td></tr>`) +
     MODELS.map(
       (model) =>
-        `<tr><td class="txt">${model.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(model.gflops, 1)}</td><td>${t("dSpeed", formatNumber(1000 / model.latencyMs, 0), "T4")}</td><td>${used(model.id)}</td><td></td></tr>`,
+        `<tr><td class="txt">${model.name}<span class="sub">${t("detectorCatalog")}</span></td><td>640</td><td>${formatNumber(model.gflops, 1)}</td><td>${t("detectorSpeed", formatNumber(1000 / model.latencyMs, 0), "T4")}</td><td>${used(model.id)}</td><td></td></tr>`,
     ).join("");
   document.querySelectorAll("[data-deld]").forEach((button) =>
     button.addEventListener("click", () => {
@@ -3320,7 +3356,7 @@ function renderDetView() {
       renderObjects();
       renderDetView();
       calcAll();
-      toast(t("dDeleted"));
+      toast(t("detectorDeleted"));
     }),
   );
 }
@@ -3335,12 +3371,12 @@ byId("detForm").addEventListener("submit", (event) => {
     refGpu = byId("ndRef").value,
     gflops = parseNum(byId("ndGf").value);
   const errors = [];
-  if (!name) errors.push(t("eName"));
-  if (!(fps > 0)) errors.push(t("eFps"));
+  if (!name) errors.push(t("errorName"));
+  if (!(fps > 0)) errors.push(t("errorFps"));
   const errorEl = byId("ndErr");
   if (errors.length) {
     errorEl.hidden = false;
-    errorEl.textContent = t("ncErr", errors.join(", "));
+    errorEl.textContent = t("cameraFormError", errors.join(", "));
     return;
   }
   errorEl.hidden = true;
@@ -3357,7 +3393,7 @@ byId("detForm").addEventListener("submit", (event) => {
   renderObjects();
   renderDetView();
   calcAll();
-  toast(t("dAdded", name));
+  toast(t("detectorAdded", name));
 });
 
 // ---------- главный цикл
@@ -3378,10 +3414,10 @@ function calcAll() {
     t("appTitle"),
     ...results.flatMap((result) =>
       result.err
-        ? ["\n" + t("rErr", result.type.name, result.count)]
+        ? ["\n" + t("reportError", result.type.name, result.count)]
         : [
             `\n${result.type.name} × ${result.count}`,
-            t("rCam", {
+            t("reportCamera", {
               cameraLabel: result.cameraLabel,
               rotated: result.rotated,
               sensorWidth: formatNumber(result.s, 2),
@@ -3395,7 +3431,7 @@ function calcAll() {
               zoneDepth: formatNumber(result.zoneDepth, 2),
             }),
             ...result.valid.map((obj) =>
-              t("rObj", {
+              t("reportObject", {
                 name: obj.name,
                 model: modelName(obj),
                 feed: obj.feedInfo.text,
@@ -3406,7 +3442,7 @@ function calcAll() {
               }),
             ),
             t(
-              "rStream",
+              "reportStream",
               formatNumber(result.bitrateMbps, 1),
               Math.ceil(result.shutterDenominator),
             ),
@@ -3414,7 +3450,7 @@ function calcAll() {
     ),
     "\n" +
       t(
-        "rSys",
+        "reportSystem",
         systemTotals.cameraCount,
         formatNumber(systemTotals.totalMbps, 0),
         systemTotals.cameraCost
@@ -3422,7 +3458,7 @@ function calcAll() {
           : "",
       ),
     system.liveResults.length
-      ? t("rCompute", {
+      ? t("reportCompute", {
           gpuCount: chosen.count,
           gpuName: chosen.gpu.name,
           cost: "$" + formatNumber(chosen.cost, 0),
@@ -3435,7 +3471,7 @@ function calcAll() {
               ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}`
               : "",
         })
-      : t("rNoCompute"),
+      : t("reportNoCompute"),
   ].join("\n");
   save();
 }
@@ -3630,16 +3666,16 @@ byId("delBtn").addEventListener("click", () => {
     return;
   }
   if (!deleteTimer) {
-    button.textContent = t("delConfirm");
+    button.textContent = t("deleteTypeConfirm");
     deleteTimer = setTimeout(() => {
-      button.textContent = t("delBtn");
+      button.textContent = t("deleteTypeBtn");
       deleteTimer = null;
     }, 3000);
     return;
   }
   clearTimeout(deleteTimer);
   deleteTimer = null;
-  button.textContent = t("delBtn");
+  button.textContent = t("deleteTypeBtn");
   const index = cameraTypes.findIndex((type) => type.id === activeTypeId);
   cameraTypes.splice(index, 1);
   activeTypeId = cameraTypes[Math.max(0, index - 1)].id;
@@ -3726,16 +3762,16 @@ let importTimer = null;
 byId("impBtn").addEventListener("click", () => {
   const button = byId("impBtn");
   if (!importTimer) {
-    button.textContent = t("impConfirm");
+    button.textContent = t("importConfirm");
     importTimer = setTimeout(() => {
-      button.textContent = t("impBtn");
+      button.textContent = t("importBtn");
       importTimer = null;
     }, 3000);
     return;
   }
   clearTimeout(importTimer);
   importTimer = null;
-  button.textContent = t("impBtn");
+  button.textContent = t("importBtn");
   byId("impFile").click();
 });
 byId("impFile").addEventListener("change", (event) => {
@@ -3865,12 +3901,12 @@ function drawSide({
   const hasRoomBelow = floorY - planeY >= 40;
   const zoneLabelY = hasRoomBelow ? planeY - 16 : planeY - 40,
     frameLabelY = hasRoomBelow ? planeY + 28 : planeY - 18;
-  svg += `<text x="${coord((zoneStartX + zoneEndX) / 2)}" y="${coord(zoneLabelY)}" text-anchor="middle" class="t-z">${t("dZone", formatNumber(x2 - x1, 1))}</text>`;
+  svg += `<text x="${coord((zoneStartX + zoneEndX) / 2)}" y="${coord(zoneLabelY)}" text-anchor="middle" class="t-z">${t("diagramZone", formatNumber(x2 - x1, 1))}</text>`;
   if (isFinite(frameWidthNear) && isFinite(frameWidthFar)) {
     const isNarrow = zoneWidthPx < 240;
     svg += `<line x1="${coord(zoneStartX)}" y1="${coord(planeY + 7)}" x2="${coord(zoneStartX)}" y2="${coord(planeY + 13)}" stroke="var(--accent)" stroke-width="1.5"/><line x1="${coord(zoneEndX)}" y1="${coord(planeY + 7)}" x2="${coord(zoneEndX)}" y2="${coord(planeY + 13)}" stroke="var(--accent)" stroke-width="1.5"/>`;
-    svg += `<text x="${coord(zoneStartX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "end" : "middle"}">${t("dFrame", formatNumber(frameWidthNear, 1))}</text>`;
-    svg += `<text x="${coord(zoneEndX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "start" : "middle"}">${t("dFrame", formatNumber(frameWidthFar, 1))}</text>`;
+    svg += `<text x="${coord(zoneStartX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "end" : "middle"}">${t("diagramFrame", formatNumber(frameWidthNear, 1))}</text>`;
+    svg += `<text x="${coord(zoneEndX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "start" : "middle"}">${t("diagramFrame", formatNumber(frameWidthFar, 1))}</text>`;
   }
   // углы
   const axisLength = (planeY - cameraY) / Math.max(Math.sin(tilt), 0.05);
@@ -3884,7 +3920,7 @@ function drawSide({
   const [tiltArcEndX, tiltArcEndY] = pointAt(tiltArcRadius, tilt);
   svg += `<path d="M${coord(cameraX + tiltArcRadius)},${coord(cameraY)} A${tiltArcRadius},${tiltArcRadius} 0 0 1 ${coord(tiltArcEndX)},${coord(tiltArcEndY)}" fill="none" stroke="var(--fg)" stroke-width="1.5"/>`;
   const [tiltLabelX, tiltLabelY] = pointAt(tiltArcRadius + 10, tilt / 2);
-  svg += `<text x="${coord(tiltLabelX)}" y="${coord(tiltLabelY + 5)}" class="t-b">${t("dTilt", formatNumber(tilt / DEG, 0))}</text>`;
+  svg += `<text x="${coord(tiltLabelX)}" y="${coord(tiltLabelY + 5)}" class="t-b">${t("diagramTilt", formatNumber(tilt / DEG, 0))}</text>`;
   const [fovArcStartX, fovArcStartY] = pointAt(fovArcRadius, farEdgeAngle),
     [fovArcEndX, fovArcEndY] = pointAt(fovArcRadius, nearEdgeAngle);
   svg += `<path d="M${coord(fovArcStartX)},${coord(fovArcStartY)} A${coord(fovArcRadius)},${coord(fovArcRadius)} 0 0 1 ${coord(fovArcEndX)},${coord(fovArcEndY)}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`;
@@ -3896,13 +3932,13 @@ function drawSide({
   // H слева
   const heightDimX = Math.min(cameraX, leftX) - 30;
   svg += `<line x1="${coord(heightDimX)}" y1="${coord(cameraY)}" x2="${coord(heightDimX)}" y2="${coord(floorY)}" stroke="var(--muted)"/><line x1="${coord(heightDimX - 6)}" y1="${coord(cameraY)}" x2="${coord(heightDimX + 6)}" y2="${coord(cameraY)}" stroke="var(--muted)"/><line x1="${coord(heightDimX - 6)}" y1="${coord(floorY)}" x2="${coord(heightDimX + 6)}" y2="${coord(floorY)}" stroke="var(--muted)"/>`;
-  svg += `<text x="${coord(heightDimX - 8)}" y="${coord((cameraY + floorY) / 2)}" transform="rotate(-90 ${coord(heightDimX - 8)} ${coord((cameraY + floorY) / 2)})" text-anchor="middle" class="t-b">${t("dH", formatNumber(H, 1))}</text>`;
+  svg += `<text x="${coord(heightDimX - 8)}" y="${coord((cameraY + floorY) / 2)}" transform="rotate(-90 ${coord(heightDimX - 8)} ${coord((cameraY + floorY) / 2)})" text-anchor="middle" class="t-b">${t("diagramCameraHeight", formatNumber(H, 1))}</text>`;
   // h справа — повернута, не пересекается с подписями кадра
   if (h > 0.01) {
     const planeDimX = rightX + 22,
       planeDimMidY = (planeY + floorY) / 2;
     svg += `<line x1="${coord(planeDimX)}" y1="${coord(planeY)}" x2="${coord(planeDimX)}" y2="${coord(floorY)}" stroke="var(--muted)"/><line x1="${coord(planeDimX - 6)}" y1="${coord(planeY)}" x2="${coord(planeDimX + 6)}" y2="${coord(planeY)}" stroke="var(--muted)"/><line x1="${coord(planeDimX - 6)}" y1="${coord(floorY)}" x2="${coord(planeDimX + 6)}" y2="${coord(floorY)}" stroke="var(--muted)"/>`;
-    svg += `<text x="${coord(planeDimX + 20)}" y="${coord(planeDimMidY)}" transform="rotate(-90 ${coord(planeDimX + 20)} ${coord(planeDimMidY)})" text-anchor="middle">${t("dh", formatNumber(h, 2))}</text>`;
+    svg += `<text x="${coord(planeDimX + 20)}" y="${coord(planeDimMidY)}" transform="rotate(-90 ${coord(planeDimX + 20)} ${coord(planeDimMidY)})" text-anchor="middle">${t("diagramPlaneHeight", formatNumber(h, 2))}</text>`;
   }
   // размеры по полу
   const dimLineY = floorY + 26,
@@ -3916,21 +3952,27 @@ function drawSide({
     addDimension(
       cameraX,
       zoneStartX,
-      t(offsetWidthPx > 110 ? "dOffset" : "dLen", formatNumber(x1, 1)),
+      t(
+        offsetWidthPx > 110 ? "diagramOffset" : "diagramLength",
+        formatNumber(x1, 1),
+      ),
     );
   }
   addDimension(
     zoneStartX,
     zoneEndX,
-    t(zoneWidthPx > 170 ? "dDepth" : "dLen", formatNumber(x2 - x1, 1)),
+    t(
+      zoneWidthPx > 170 ? "diagramDepth" : "diagramLength",
+      formatNumber(x2 - x1, 1),
+    ),
   );
   if (x1 <= 0.05)
-    svg += `<text x="${coord(cameraX)}" y="${coord(dimTextY + 20)}" text-anchor="middle">${t(placement === "top" ? "dOverCenter" : "dOverZone")}</text>`;
+    svg += `<text x="${coord(cameraX)}" y="${coord(dimTextY + 20)}" text-anchor="middle">${t(placement === "top" ? "diagramOverCenter" : "diagramOverZone")}</text>`;
   const side = byId("side");
   side.innerHTML = svg;
   side.setAttribute(
     "aria-label",
-    t("dAria", {
+    t("diagramAria", {
       H: formatNumber(H, 1),
       tilt: formatNumber(tilt / DEG, 0),
       vfov: formatNumber(vfov / DEG, 0),

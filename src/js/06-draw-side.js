@@ -94,12 +94,12 @@ function drawSide({
   const hasRoomBelow = floorY - planeY >= 40;
   const zoneLabelY = hasRoomBelow ? planeY - 16 : planeY - 40,
     frameLabelY = hasRoomBelow ? planeY + 28 : planeY - 18;
-  svg += `<text x="${coord((zoneStartX + zoneEndX) / 2)}" y="${coord(zoneLabelY)}" text-anchor="middle" class="t-z">${t("dZone", formatNumber(x2 - x1, 1))}</text>`;
+  svg += `<text x="${coord((zoneStartX + zoneEndX) / 2)}" y="${coord(zoneLabelY)}" text-anchor="middle" class="t-z">${t("diagramZone", formatNumber(x2 - x1, 1))}</text>`;
   if (isFinite(frameWidthNear) && isFinite(frameWidthFar)) {
     const isNarrow = zoneWidthPx < 240;
     svg += `<line x1="${coord(zoneStartX)}" y1="${coord(planeY + 7)}" x2="${coord(zoneStartX)}" y2="${coord(planeY + 13)}" stroke="var(--accent)" stroke-width="1.5"/><line x1="${coord(zoneEndX)}" y1="${coord(planeY + 7)}" x2="${coord(zoneEndX)}" y2="${coord(planeY + 13)}" stroke="var(--accent)" stroke-width="1.5"/>`;
-    svg += `<text x="${coord(zoneStartX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "end" : "middle"}">${t("dFrame", formatNumber(frameWidthNear, 1))}</text>`;
-    svg += `<text x="${coord(zoneEndX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "start" : "middle"}">${t("dFrame", formatNumber(frameWidthFar, 1))}</text>`;
+    svg += `<text x="${coord(zoneStartX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "end" : "middle"}">${t("diagramFrame", formatNumber(frameWidthNear, 1))}</text>`;
+    svg += `<text x="${coord(zoneEndX)}" y="${coord(frameLabelY)}" text-anchor="${isNarrow ? "start" : "middle"}">${t("diagramFrame", formatNumber(frameWidthFar, 1))}</text>`;
   }
   // углы
   const axisLength = (planeY - cameraY) / Math.max(Math.sin(tilt), 0.05);
@@ -113,7 +113,7 @@ function drawSide({
   const [tiltArcEndX, tiltArcEndY] = pointAt(tiltArcRadius, tilt);
   svg += `<path d="M${coord(cameraX + tiltArcRadius)},${coord(cameraY)} A${tiltArcRadius},${tiltArcRadius} 0 0 1 ${coord(tiltArcEndX)},${coord(tiltArcEndY)}" fill="none" stroke="var(--fg)" stroke-width="1.5"/>`;
   const [tiltLabelX, tiltLabelY] = pointAt(tiltArcRadius + 10, tilt / 2);
-  svg += `<text x="${coord(tiltLabelX)}" y="${coord(tiltLabelY + 5)}" class="t-b">${t("dTilt", formatNumber(tilt / DEG, 0))}</text>`;
+  svg += `<text x="${coord(tiltLabelX)}" y="${coord(tiltLabelY + 5)}" class="t-b">${t("diagramTilt", formatNumber(tilt / DEG, 0))}</text>`;
   const [fovArcStartX, fovArcStartY] = pointAt(fovArcRadius, farEdgeAngle),
     [fovArcEndX, fovArcEndY] = pointAt(fovArcRadius, nearEdgeAngle);
   svg += `<path d="M${coord(fovArcStartX)},${coord(fovArcStartY)} A${coord(fovArcRadius)},${coord(fovArcRadius)} 0 0 1 ${coord(fovArcEndX)},${coord(fovArcEndY)}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`;
@@ -125,13 +125,13 @@ function drawSide({
   // H слева
   const heightDimX = Math.min(cameraX, leftX) - 30;
   svg += `<line x1="${coord(heightDimX)}" y1="${coord(cameraY)}" x2="${coord(heightDimX)}" y2="${coord(floorY)}" stroke="var(--muted)"/><line x1="${coord(heightDimX - 6)}" y1="${coord(cameraY)}" x2="${coord(heightDimX + 6)}" y2="${coord(cameraY)}" stroke="var(--muted)"/><line x1="${coord(heightDimX - 6)}" y1="${coord(floorY)}" x2="${coord(heightDimX + 6)}" y2="${coord(floorY)}" stroke="var(--muted)"/>`;
-  svg += `<text x="${coord(heightDimX - 8)}" y="${coord((cameraY + floorY) / 2)}" transform="rotate(-90 ${coord(heightDimX - 8)} ${coord((cameraY + floorY) / 2)})" text-anchor="middle" class="t-b">${t("dH", formatNumber(H, 1))}</text>`;
+  svg += `<text x="${coord(heightDimX - 8)}" y="${coord((cameraY + floorY) / 2)}" transform="rotate(-90 ${coord(heightDimX - 8)} ${coord((cameraY + floorY) / 2)})" text-anchor="middle" class="t-b">${t("diagramCameraHeight", formatNumber(H, 1))}</text>`;
   // h справа — повернута, не пересекается с подписями кадра
   if (h > 0.01) {
     const planeDimX = rightX + 22,
       planeDimMidY = (planeY + floorY) / 2;
     svg += `<line x1="${coord(planeDimX)}" y1="${coord(planeY)}" x2="${coord(planeDimX)}" y2="${coord(floorY)}" stroke="var(--muted)"/><line x1="${coord(planeDimX - 6)}" y1="${coord(planeY)}" x2="${coord(planeDimX + 6)}" y2="${coord(planeY)}" stroke="var(--muted)"/><line x1="${coord(planeDimX - 6)}" y1="${coord(floorY)}" x2="${coord(planeDimX + 6)}" y2="${coord(floorY)}" stroke="var(--muted)"/>`;
-    svg += `<text x="${coord(planeDimX + 20)}" y="${coord(planeDimMidY)}" transform="rotate(-90 ${coord(planeDimX + 20)} ${coord(planeDimMidY)})" text-anchor="middle">${t("dh", formatNumber(h, 2))}</text>`;
+    svg += `<text x="${coord(planeDimX + 20)}" y="${coord(planeDimMidY)}" transform="rotate(-90 ${coord(planeDimX + 20)} ${coord(planeDimMidY)})" text-anchor="middle">${t("diagramPlaneHeight", formatNumber(h, 2))}</text>`;
   }
   // размеры по полу
   const dimLineY = floorY + 26,
@@ -145,21 +145,27 @@ function drawSide({
     addDimension(
       cameraX,
       zoneStartX,
-      t(offsetWidthPx > 110 ? "dOffset" : "dLen", formatNumber(x1, 1)),
+      t(
+        offsetWidthPx > 110 ? "diagramOffset" : "diagramLength",
+        formatNumber(x1, 1),
+      ),
     );
   }
   addDimension(
     zoneStartX,
     zoneEndX,
-    t(zoneWidthPx > 170 ? "dDepth" : "dLen", formatNumber(x2 - x1, 1)),
+    t(
+      zoneWidthPx > 170 ? "diagramDepth" : "diagramLength",
+      formatNumber(x2 - x1, 1),
+    ),
   );
   if (x1 <= 0.05)
-    svg += `<text x="${coord(cameraX)}" y="${coord(dimTextY + 20)}" text-anchor="middle">${t(placement === "top" ? "dOverCenter" : "dOverZone")}</text>`;
+    svg += `<text x="${coord(cameraX)}" y="${coord(dimTextY + 20)}" text-anchor="middle">${t(placement === "top" ? "diagramOverCenter" : "diagramOverZone")}</text>`;
   const side = byId("side");
   side.innerHTML = svg;
   side.setAttribute(
     "aria-label",
-    t("dAria", {
+    t("diagramAria", {
       H: formatNumber(H, 1),
       tilt: formatNumber(tilt / DEG, 0),
       vfov: formatNumber(vfov / DEG, 0),

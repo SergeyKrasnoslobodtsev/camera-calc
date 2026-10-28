@@ -131,10 +131,10 @@ SENSORS.forEach(([label, width], i) =>
   byId("sensor").add(
     new Option(
       typeof width === "number"
-        ? t("sensMm", label, formatNumber(width, 1))
+        ? t("sensorFormat", label, formatNumber(width, 1))
         : width === "pp"
-          ? t("sensPp")
-          : t("sensOwn"),
+          ? t("sensorByPixelPitch")
+          : t("sensorCustom"),
       i,
     ),
   ),

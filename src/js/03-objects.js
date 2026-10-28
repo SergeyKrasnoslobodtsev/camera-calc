@@ -2,7 +2,7 @@
 const BUILTIN_CAMERAS = [
   {
     id: "k4",
-    name: STR.camBuiltin.k4,
+    name: STR.builtinCameraNames.k4,
     Nw: 2560,
     Nh: 1440,
     sensorWidth: 5.4,
@@ -11,7 +11,7 @@ const BUILTIN_CAMERAS = [
   },
   {
     id: "k8",
-    name: STR.camBuiltin.k8,
+    name: STR.builtinCameraNames.k8,
     Nw: 3840,
     Nh: 2160,
     sensorWidth: 7.68,
@@ -30,7 +30,7 @@ function buildCameraSelect() {
   const select = byId("camera"),
     current = select.value;
   select.innerHTML =
-    `<option value="">${t("camManual")}</option>` +
+    `<option value="">${t("cameraManual")}</option>` +
     allCameras()
       .map(
         (camera) =>
@@ -52,22 +52,22 @@ function renderObjects() {
     const modelOptions =
       `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` +
       (customDetectors.length
-        ? `<optgroup label="${t("ownDets")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
+        ? `<optgroup label="${t("customDetectors")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
-    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
+    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="obj-width-${i}">${t("ow")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-length-${i}">${t("od")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-height-${i}">${t("oz")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-required-${i}">${t("oq")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f c2"><label for="obj-model-${i}">${t("om")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
-        <div class="f"><label for="obj-feed-${i}">${t("of")}</label><select id="obj-feed-${i}">${Object.entries(
+        <div class="f"><label for="obj-width-${i}">${t("objectWidth")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-length-${i}">${t("objectLength")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-height-${i}">${t("objectHeight")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-required-${i}">${t("objectRequiredPx")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f c2"><label for="obj-model-${i}">${t("objectModel")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
+        <div class="f"><label for="obj-feed-${i}">${t("objectFeed")}</label><select id="obj-feed-${i}">${Object.entries(
           FEEDS,
         )
           .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
-        <div class="f"><label for="obj-input-${i}">${t("oi")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
-        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("ov")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="obj-input-${i}">${t("objectInput")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
+        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("objectOverlap")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
       </div>
       <div class="ores" id="obj-result-${i}" aria-live="polite"></div>`;
     list.append(card);
@@ -129,7 +129,7 @@ function syncFormUI(type, result) {
   if (result && isFinite(result.s) && (camera || sensorPreset !== null))
     byId("sensorWidth").value = +result.s.toFixed(2);
   byId("sumGeo").textContent =
-    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
+    `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("sumCam").textContent =
     (camera
       ? `${camera.Nw} × ${camera.Nh}`
