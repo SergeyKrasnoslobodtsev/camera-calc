@@ -9,35 +9,35 @@ function computeType(type) {
   const inputs = type.v,
     mode = inputs.mode,
     placement = inputs.pos,
-    count = Math.max(0, Math.round(P(type.count)) || 0);
+    count = Math.max(0, Math.round(parseNum(type.count)) || 0);
   const camera = camById(inputs.cam);
-  let [cameraLabel, Nw, Nh] = RES[+inputs.res] || RES[1];
-  const sensorPreset = (SENS[+inputs.sens] || SENS[3])[1];
+  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.res] || RESOLUTIONS[1];
+  const sensorPreset = (SENSORS[+inputs.sens] || SENSORS[3])[1];
   let s =
     typeof sensorPreset === "number"
       ? sensorPreset
       : sensorPreset === "pp"
-        ? (P(inputs.pp) * Nw) / 1000
-        : P(inputs.sw);
+        ? (parseNum(inputs.pp) * Nw) / 1000
+        : parseNum(inputs.sw);
   if (camera) {
     cameraLabel = camera.name;
     Nw = camera.Nw;
     Nh = camera.Nh;
     s = camera.sw;
   }
-  const H = P(inputs.H),
-    h = P(inputs.h),
-    zoneStart = P(inputs.L0),
-    zoneDepth = P(inputs.Dz),
-    zoneWidth = P(inputs.Wz),
-    margin = (P(inputs.mg) || 0) / 100,
-    k = P(inputs.k),
-    speed = P(inputs.v),
-    blurPx = P(inputs.blur);
-  const fps = P(inputs.fps),
+  const H = parseNum(inputs.H),
+    h = parseNum(inputs.h),
+    zoneStart = parseNum(inputs.L0),
+    zoneDepth = parseNum(inputs.Dz),
+    zoneWidth = parseNum(inputs.Wz),
+    margin = (parseNum(inputs.mg) || 0) / 100,
+    k = parseNum(inputs.k),
+    speed = parseNum(inputs.v),
+    blurPx = parseNum(inputs.blur);
+  const fps = parseNum(inputs.fps),
     bpp = +inputs.codec,
     sceneFactor = +inputs.scene,
-    analyticsFpsSet = P(inputs.afps),
+    analyticsFpsSet = parseNum(inputs.afps),
     analyticsFps = Math.min(analyticsFpsSet, fps),
     codec = bpp < 0.055 ? "h265" : "h264";
   const Hc = H - h;
@@ -99,10 +99,10 @@ function computeType(type) {
         }
       }
     } else if (mode === "f") {
-      f = P(inputs.fmm);
+      f = parseNum(inputs.fmm);
       hfov = 2 * Math.atan(sensorWidth / (2 * f));
     } else {
-      hfov = P(inputs.hfov) * R;
+      hfov = parseNum(inputs.hfov) * DEG;
       f = sensorWidth / (2 * Math.tan(hfov / 2));
     }
     const vfov = 2 * Math.atan(Math.tan(hfov / 2) / aspect),
@@ -242,12 +242,12 @@ function computeType(type) {
     };
   };
   const objs = type.objs.map((obj) => {
-    const width = P(obj.w) / 100,
-      length = P(obj.d) / 100,
-      height = P(obj.z) / 100,
-      requiredPx = P(obj.req),
-      inputSize = P(obj.inp) || 640;
-    const feedInfo = describeFeed(obj.feed, inputSize, P(obj.ov));
+    const width = parseNum(obj.w) / 100,
+      length = parseNum(obj.d) / 100,
+      height = parseNum(obj.z) / 100,
+      requiredPx = parseNum(obj.req),
+      inputSize = parseNum(obj.inp) || 640;
+    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.ov));
     if (
       ![width, length, height].every((x) => isFinite(x) && x >= 0) ||
       Math.max(width, length, height) <= 0 ||
@@ -290,14 +290,28 @@ function computeType(type) {
   if (mode !== "auto" || clamped) {
     if (frameWidthAt(minDepth) < zoneWidth)
       notes.push(
-        t("nZoneW", fmt(frameWidthAt(minDepth), 2), fmt(zoneWidth, 2)),
+        t(
+          "nZoneW",
+          formatNumber(frameWidthAt(minDepth), 2),
+          formatNumber(zoneWidth, 2),
+        ),
       );
     if (vfov < zoneAngle)
-      notes.push(t("nZoneD", fmt(zoneAngle / R, 1), fmt(vfov / R, 1)));
+      notes.push(
+        t(
+          "nZoneD",
+          formatNumber(zoneAngle / DEG, 1),
+          formatNumber(vfov / DEG, 1),
+        ),
+      );
   }
   if (clamped)
     notes.unshift(
-      t(fNeeded > f ? "nFMax" : "nFMin", fmt(fNeeded, 1), fmt(f, 1)),
+      t(
+        fNeeded > f ? "nFMax" : "nFMin",
+        formatNumber(fNeeded, 1),
+        formatNumber(f, 1),
+      ),
     );
   else if (
     mode !== "auto" &&
@@ -308,24 +322,26 @@ function computeType(type) {
     notes.push(
       t(
         "nFOut",
-        fmt(f, 1),
+        formatNumber(f, 1),
         camera.fmin === camera.fmax
-          ? fmt(camera.fmin, 1)
-          : fmt(camera.fmin, 1) + "–" + fmt(camera.fmax, 1),
+          ? formatNumber(camera.fmin, 1)
+          : formatNumber(camera.fmin, 1) + "–" + formatNumber(camera.fmax, 1),
       ),
     );
-  if (hfov / R > 100) notes.push(t("nWide", fmt(hfov / R, 0)));
-  if (tilt / R > 75 && x1 < 0) notes.push(t("nTop"));
+  if (hfov / DEG > 100) notes.push(t("nWide", formatNumber(hfov / DEG, 0)));
+  if (tilt / DEG > 75 && x1 < 0) notes.push(t("nTop"));
   const lowestRayAngle = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
-  if (lowestRayAngle / R < 15)
-    notes.push(t("nLowRay", fmt(lowestRayAngle / R, 0)));
+  if (lowestRayAngle / DEG < 15)
+    notes.push(t("nLowRay", formatNumber(lowestRayAngle / DEG, 0)));
   if (analyticsFpsSet > fps)
-    notes.push(t("nAfps", fmt(analyticsFpsSet, 0), fmt(fps, 0)));
+    notes.push(
+      t("nAfps", formatNumber(analyticsFpsSet, 0), formatNumber(fps, 0)),
+    );
   // размер объекта на матрице и на входе модели
   const sensorPxText = (obj) =>
-      `${fmt(obj.widthPx, 1)} × ${fmt(obj.heightPx, 1)} px`,
+      `${formatNumber(obj.widthPx, 1)} × ${formatNumber(obj.heightPx, 1)} px`,
     modelPxText = (obj) =>
-      `${fmt(obj.widthPx * obj.feedInfo.modelScale, 1)} × ${fmt(obj.heightPx * obj.feedInfo.modelScale, 1)} px`;
+      `${formatNumber(obj.widthPx * obj.feedInfo.modelScale, 1)} × ${formatNumber(obj.heightPx * obj.feedInfo.modelScale, 1)} px`;
   const valid = objs.filter((obj) => !obj.bad),
     failing = valid.filter((obj) => obj.status === "bad"),
     marginal = valid.filter((obj) => obj.status === "warn");
@@ -345,7 +361,7 @@ function computeType(type) {
             "hItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
-            fmt(obj.requiredPx, 0),
+            formatNumber(obj.requiredPx, 0),
           ),
         )
         .join("; "),
@@ -370,7 +386,7 @@ function computeType(type) {
                   ? "advRoi"
                   : "advTiles",
             ),
-            fmt(neededInput, 0),
+            formatNumber(neededInput, 0),
           ),
         );
       });
@@ -379,16 +395,22 @@ function computeType(type) {
       const worstObj = lowResolution.reduce((a, b) =>
           a.minSensorWidthPx > b.minSensorWidthPx ? a : b,
         ),
-        recommended = RES.find((res) => res[1] >= worstObj.minSensorWidthPx);
+        recommended = RESOLUTIONS.find(
+          (res) => res[1] >= worstObj.minSensorWidthPx,
+        );
       notes.unshift(
         recommended
           ? t(
               "nRes",
               worstObj.name,
-              fmt(worstObj.minSensorWidthPx, 0),
+              formatNumber(worstObj.minSensorWidthPx, 0),
               recommended[0],
             )
-          : t("nResNone", worstObj.name, fmt(worstObj.minSensorWidthPx, 0)),
+          : t(
+              "nResNone",
+              worstObj.name,
+              formatNumber(worstObj.minSensorWidthPx, 0),
+            ),
       );
     }
   } else if (marginal.length) {
@@ -402,7 +424,7 @@ function computeType(type) {
             "hItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
-            fmt(obj.requiredPx, 0),
+            formatNumber(obj.requiredPx, 0),
           ),
         )
         .join("; "),

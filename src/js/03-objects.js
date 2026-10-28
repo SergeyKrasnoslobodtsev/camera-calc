@@ -26,12 +26,12 @@ const camById = (id) => allCams().find((c) => c.id === id);
 const modelById = (id) =>
   MODELS.find((x) => x.id === id) || DETS.find((x) => x.id === id);
 function buildCamSelect() {
-  const sel = $("cam"),
+  const sel = byId("cam"),
     cur = sel.value;
   sel.innerHTML =
     `<option value="">${t("camManual")}</option>` +
     allCams()
-      .map((c) => `<option value="${c.id}">${esc(c.name)}</option>`)
+      .map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
       .join("");
   sel.value = camById(cur) ? cur : "";
 }
@@ -39,7 +39,7 @@ function buildCamSelect() {
 // ---------- карточки объектов
 function renderObjs() {
   const T = act(),
-    L = $("objList");
+    L = byId("objList");
   L.innerHTML = "";
   T.objs.forEach((o, i) => {
     if (!modelById(o.model)) o.model = "y26s";
@@ -48,7 +48,7 @@ function renderObjs() {
     const mopts =
       `<optgroup label="${t("ultralytics")}">${MODELS.map((mm) => `<option value="${mm.id}">${mm.name}</option>`).join("")}</optgroup>` +
       (DETS.length
-        ? `<optgroup label="${t("ownDets")}">${DETS.map((d) => `<option value="${d.id}">${esc(d.name)}</option>`).join("")}</optgroup>`
+        ? `<optgroup label="${t("ownDets")}">${DETS.map((d) => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join("")}</optgroup>`
         : "");
     r.innerHTML = `<div class="ohdr"><span class="dot" id="odot-${i}" aria-hidden="true"></span><input id="on-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
       <div class="ogrid">
@@ -68,7 +68,7 @@ function renderObjs() {
       <div class="ores" id="ores-${i}" aria-live="polite"></div>`;
     L.append(r);
     const sync = () => {
-      $(`ovw-${i}`).hidden = o.feed !== "tiles";
+      byId(`ovw-${i}`).hidden = o.feed !== "tiles";
     };
     [
       ["on", "name"],
@@ -78,7 +78,7 @@ function renderObjs() {
       ["oq", "req"],
       ["ov", "ov"],
     ].forEach(([p, f]) => {
-      const el = $(`${p}-${i}`);
+      const el = byId(`${p}-${i}`);
       el.value = o[f] ?? "";
       el.addEventListener("input", (e) => {
         e.stopPropagation();
@@ -92,7 +92,7 @@ function renderObjs() {
       ["of", "feed"],
       ["oi", "inp"],
     ].forEach(([p, f]) => {
-      const el = $(`${p}-${i}`);
+      const el = byId(`${p}-${i}`);
       el.value = String(o[f]);
       if (el.selectedIndex < 0) el.selectedIndex = 0;
       el.addEventListener("change", (e) => {
@@ -113,23 +113,23 @@ function renderObjs() {
 function syncFormUI(T, result) {
   const v = T.v,
     cam = camById(v.cam);
-  $("fBox").hidden = v.mode !== "f";
-  $("aBox").hidden = v.mode !== "a";
-  $("L0box").hidden = v.pos === "top";
-  const sv = (SENS[+v.sens] || SENS[3])[1];
-  $("res").disabled = !!cam;
-  $("sens").disabled = !!cam;
-  $("ppBox").hidden = !!cam || sv !== "pp";
-  $("sw").readOnly = !!cam || sv !== null;
+  byId("fBox").hidden = v.mode !== "f";
+  byId("aBox").hidden = v.mode !== "a";
+  byId("L0box").hidden = v.pos === "top";
+  const sv = (SENSORS[+v.sens] || SENSORS[3])[1];
+  byId("res").disabled = !!cam;
+  byId("sens").disabled = !!cam;
+  byId("ppBox").hidden = !!cam || sv !== "pp";
+  byId("sw").readOnly = !!cam || sv !== null;
   if (result && isFinite(result.s) && (cam || sv !== null))
-    $("sw").value = +result.s.toFixed(2);
-  $("sumGeo").textContent =
-    `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(fmt(P(v.H), 1), "m")}, ${fmt(P(v.Wz), 1)} × ${U(fmt(P(v.Dz), 1), "m")}`;
-  $("sumCam").textContent =
+    byId("sw").value = +result.s.toFixed(2);
+  byId("sumGeo").textContent =
+    `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(v.H), 1), "m")}, ${formatNumber(parseNum(v.Wz), 1)} × ${U(formatNumber(parseNum(v.Dz), 1), "m")}`;
+  byId("sumCam").textContent =
     (cam
       ? `${cam.Nw} × ${cam.Nh}`
-      : (RES[+v.res] || RES[1])[0].split(" · ")[0]) +
-    (result && !result.err ? `, f ${U(fmt(result.f, 1), "mm")}` : "");
-  $("sumStr").textContent =
-    `${U(fmt(P(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
+      : (RESOLUTIONS[+v.res] || RESOLUTIONS[1])[0].split(" · ")[0]) +
+    (result && !result.err ? `, f ${U(formatNumber(result.f, 1), "mm")}` : "");
+  byId("sumStr").textContent =
+    `${U(formatNumber(parseNum(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
 }

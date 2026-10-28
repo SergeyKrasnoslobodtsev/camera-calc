@@ -107,12 +107,12 @@ let TYPES = defTypes(),
 const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
 
 // ---------- форма ↔ тип
-RES.forEach((r, i) => $("res").add(new Option(r[0], i)));
-SENS.forEach((s, i) =>
-  $("sens").add(
+RESOLUTIONS.forEach((r, i) => byId("res").add(new Option(r[0], i)));
+SENSORS.forEach((s, i) =>
+  byId("sens").add(
     new Option(
       typeof s[1] === "number"
-        ? t("sensMm", s[0], fmt(s[1], 1))
+        ? t("sensMm", s[0], formatNumber(s[1], 1))
         : s[1] === "pp"
           ? t("sensPp")
           : t("sensOwn"),
@@ -121,28 +121,28 @@ SENS.forEach((s, i) =>
   ),
 );
 function writeForm(T) {
-  $("tName").value = T.name;
-  $("tCount").value = T.count;
+  byId("tName").value = T.name;
+  byId("tCount").value = T.count;
   FIELDS.forEach((id) => {
-    $(id).value = T.v[id] ?? DEF_V[id];
+    byId(id).value = T.v[id] ?? DEF_V[id];
   });
   const md =
     document.querySelector(`input[name="mode"][value="${T.v.mode}"]`) ||
-    $("mAuto");
+    byId("mAuto");
   md.checked = true;
   const ps =
     document.querySelector(`input[name="pos"][value="${T.v.pos}"]`) ||
-    $("pSide");
+    byId("pSide");
   ps.checked = true;
   renderObjs();
 }
 function readForm() {
   const T = act();
-  if (T.name !== $("tName").value) delete T.nameKey;
-  T.name = $("tName").value;
-  T.count = $("tCount").value;
+  if (T.name !== byId("tName").value) delete T.nameKey;
+  T.name = byId("tName").value;
+  T.count = byId("tCount").value;
   FIELDS.forEach((id) => {
-    T.v[id] = $(id).value;
+    T.v[id] = byId(id).value;
   });
   T.v.mode =
     (document.querySelector('input[name="mode"]:checked') || {}).value ||

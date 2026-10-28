@@ -1510,27 +1510,27 @@ function applyT() {
   );
 }
 applyT();
-const $ = (id) => document.getElementById(id);
-const R = Math.PI / 180;
-const fmt = (x, d = 1) =>
-  isFinite(x)
-    ? x
+const byId = (id) => document.getElementById(id);
+const DEG = Math.PI / 180;
+const formatNumber = (value, digits = 1) =>
+  isFinite(value)
+    ? value
         .toLocaleString(LANG === "en" ? "en-US" : "ru-RU", {
-          minimumFractionDigits: d,
-          maximumFractionDigits: d,
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits,
         })
         .replace("-", "−")
     : "—";
-const esc = (s) =>
-  String(s ?? "").replace(
+const escapeHtml = (text) =>
+  String(text ?? "").replace(
     /[&<>"]/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char],
   );
-const P = (x) => parseFloat(String(x ?? "").replace(",", "."));
+const parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 // ---------- справочники
-const RES = [
+const RESOLUTIONS = [
   [2, 1920, 1080],
   [4, 2560, 1440],
   [5, 2592, 1944],
@@ -1538,8 +1538,12 @@ const RES = [
   [6, 3072, 2048],
   [8, 3840, 2160],
   [12, 4000, 3000],
-].map(([mp, w, h]) => [`${t("mp", mp)} · ${w} × ${h}`, w, h]);
-const SENS = [
+].map(([mp, width, height]) => [
+  `${t("mp", mp)} · ${width} × ${height}`,
+  width,
+  height,
+]);
+const SENSORS = [
   ['1/3"', 4.8],
   ['1/2.9"', 5.0],
   ['1/2.8"', 5.6],
@@ -1551,7 +1555,7 @@ const SENS = [
   ["own", null],
 ];
 // Каталог: tf — FP16 Tensor dense, TFLOPS (GeForce — с FP32-накоплением). price — ориентир, $, октябрь 2026
-const CATALOG = [
+const GPU_CATALOG = [
   {
     id: "5090",
     name: "GeForce RTX 5090",
@@ -1614,16 +1618,16 @@ const CATALOG = [
     jet: true,
   },
 ];
-let CUSTOM = []; // свои карты: {id,name,arch,tf,nvdec|st,mem,tdp,price,jet,custom:true}
-let PRICE = {},
-  ON = {}; // правки цен и участие в подборе по id
-const allGpus = () => [...CATALOG, ...CUSTOM];
-const gpuById = (id) => allGpus().find((g) => g.id === id);
-const priceOf = (g) => {
-  const x = P(PRICE[g.id]);
-  return x > 0 ? x : g.price;
+let customGpus = []; // свои карты: {id,name,arch,tf,nvdec|st,mem,tdp,price,jet,custom:true}
+let gpuPrices = {},
+  gpuEnabled = {}; // правки цен и участие в подборе по id
+const allGpus = () => [...GPU_CATALOG, ...customGpus];
+const gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
+const priceOf = (gpu) => {
+  const price = parseNum(gpuPrices[gpu.id]);
+  return price > 0 ? price : gpu.price;
 };
-const isOn = (g) => ON[g.id] !== false;
+const isOn = (gpu) => gpuEnabled[gpu.id] !== false;
 // 1080p к/с на один NVDEC (NVIDIA Video Codec SDK 13.0, NVDEC Application Note); Hopper = Turing
 const NVDEC_FPS = {
   Turing: { h264: 771, h265: 1316 },
@@ -1632,10 +1636,11 @@ const NVDEC_FPS = {
   Ada: { h264: 903, h265: 1641 },
   Blackwell: { h264: 2172, h265: 1872 },
 };
-const decStreams = (g, codec) =>
-  g.st ? g.st[codec] : (g.nvdec * NVDEC_FPS[g.arch][codec]) / 30;
-const decText = (g) =>
-  g.st ? t("decStreams", fmt(g.st.h265, 0)) : `${g.nvdec} NVDEC`;
+// потоков 1080p@30, которые GPU декодирует: st — замер для Jetson, иначе по числу NVDEC
+const decStreams = (gpu, codec) =>
+  gpu.st ? gpu.st[codec] : (gpu.nvdec * NVDEC_FPS[gpu.arch][codec]) / 30;
+const decText = (gpu) =>
+  gpu.st ? t("decStreams", formatNumber(gpu.st.h265, 0)) : `${gpu.nvdec} NVDEC`;
 // Модели: GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
 const MODELS = [
   ["y26n", "YOLO26n", 5.5, 1.7],
@@ -1654,7 +1659,7 @@ const MODELS = [
   ["y11l", "YOLO11l", 87.2, 6.2],
   ["y11x", "YOLO11x", 195.3, 11.3],
 ].map(([id, name, gf, ms]) => ({ id, name, gf, ms }));
-const T4TF = 65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
+const T4_TFLOPS = 65; // T4: 65 TFLOPS FP16, на ней сняты замеры Ultralytics
 const FEEDS = STR.feeds,
   FEED_SHORT = STR.feedsShort;
 const INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
@@ -1767,12 +1772,12 @@ let TYPES = defTypes(),
 const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
 
 // ---------- форма ↔ тип
-RES.forEach((r, i) => $("res").add(new Option(r[0], i)));
-SENS.forEach((s, i) =>
-  $("sens").add(
+RESOLUTIONS.forEach((r, i) => byId("res").add(new Option(r[0], i)));
+SENSORS.forEach((s, i) =>
+  byId("sens").add(
     new Option(
       typeof s[1] === "number"
-        ? t("sensMm", s[0], fmt(s[1], 1))
+        ? t("sensMm", s[0], formatNumber(s[1], 1))
         : s[1] === "pp"
           ? t("sensPp")
           : t("sensOwn"),
@@ -1781,28 +1786,28 @@ SENS.forEach((s, i) =>
   ),
 );
 function writeForm(T) {
-  $("tName").value = T.name;
-  $("tCount").value = T.count;
+  byId("tName").value = T.name;
+  byId("tCount").value = T.count;
   FIELDS.forEach((id) => {
-    $(id).value = T.v[id] ?? DEF_V[id];
+    byId(id).value = T.v[id] ?? DEF_V[id];
   });
   const md =
     document.querySelector(`input[name="mode"][value="${T.v.mode}"]`) ||
-    $("mAuto");
+    byId("mAuto");
   md.checked = true;
   const ps =
     document.querySelector(`input[name="pos"][value="${T.v.pos}"]`) ||
-    $("pSide");
+    byId("pSide");
   ps.checked = true;
   renderObjs();
 }
 function readForm() {
   const T = act();
-  if (T.name !== $("tName").value) delete T.nameKey;
-  T.name = $("tName").value;
-  T.count = $("tCount").value;
+  if (T.name !== byId("tName").value) delete T.nameKey;
+  T.name = byId("tName").value;
+  T.count = byId("tCount").value;
   FIELDS.forEach((id) => {
-    T.v[id] = $(id).value;
+    T.v[id] = byId(id).value;
   });
   T.v.mode =
     (document.querySelector('input[name="mode"]:checked') || {}).value ||
@@ -1838,12 +1843,12 @@ const camById = (id) => allCams().find((c) => c.id === id);
 const modelById = (id) =>
   MODELS.find((x) => x.id === id) || DETS.find((x) => x.id === id);
 function buildCamSelect() {
-  const sel = $("cam"),
+  const sel = byId("cam"),
     cur = sel.value;
   sel.innerHTML =
     `<option value="">${t("camManual")}</option>` +
     allCams()
-      .map((c) => `<option value="${c.id}">${esc(c.name)}</option>`)
+      .map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
       .join("");
   sel.value = camById(cur) ? cur : "";
 }
@@ -1851,7 +1856,7 @@ function buildCamSelect() {
 // ---------- карточки объектов
 function renderObjs() {
   const T = act(),
-    L = $("objList");
+    L = byId("objList");
   L.innerHTML = "";
   T.objs.forEach((o, i) => {
     if (!modelById(o.model)) o.model = "y26s";
@@ -1860,7 +1865,7 @@ function renderObjs() {
     const mopts =
       `<optgroup label="${t("ultralytics")}">${MODELS.map((mm) => `<option value="${mm.id}">${mm.name}</option>`).join("")}</optgroup>` +
       (DETS.length
-        ? `<optgroup label="${t("ownDets")}">${DETS.map((d) => `<option value="${d.id}">${esc(d.name)}</option>`).join("")}</optgroup>`
+        ? `<optgroup label="${t("ownDets")}">${DETS.map((d) => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join("")}</optgroup>`
         : "");
     r.innerHTML = `<div class="ohdr"><span class="dot" id="odot-${i}" aria-hidden="true"></span><input id="on-${i}" aria-label="${t("objName")}"><button type="button" class="odel" aria-label="${t("objDel")}">×</button></div>
       <div class="ogrid">
@@ -1880,7 +1885,7 @@ function renderObjs() {
       <div class="ores" id="ores-${i}" aria-live="polite"></div>`;
     L.append(r);
     const sync = () => {
-      $(`ovw-${i}`).hidden = o.feed !== "tiles";
+      byId(`ovw-${i}`).hidden = o.feed !== "tiles";
     };
     [
       ["on", "name"],
@@ -1890,7 +1895,7 @@ function renderObjs() {
       ["oq", "req"],
       ["ov", "ov"],
     ].forEach(([p, f]) => {
-      const el = $(`${p}-${i}`);
+      const el = byId(`${p}-${i}`);
       el.value = o[f] ?? "";
       el.addEventListener("input", (e) => {
         e.stopPropagation();
@@ -1904,7 +1909,7 @@ function renderObjs() {
       ["of", "feed"],
       ["oi", "inp"],
     ].forEach(([p, f]) => {
-      const el = $(`${p}-${i}`);
+      const el = byId(`${p}-${i}`);
       el.value = String(o[f]);
       if (el.selectedIndex < 0) el.selectedIndex = 0;
       el.addEventListener("change", (e) => {
@@ -1925,25 +1930,25 @@ function renderObjs() {
 function syncFormUI(T, result) {
   const v = T.v,
     cam = camById(v.cam);
-  $("fBox").hidden = v.mode !== "f";
-  $("aBox").hidden = v.mode !== "a";
-  $("L0box").hidden = v.pos === "top";
-  const sv = (SENS[+v.sens] || SENS[3])[1];
-  $("res").disabled = !!cam;
-  $("sens").disabled = !!cam;
-  $("ppBox").hidden = !!cam || sv !== "pp";
-  $("sw").readOnly = !!cam || sv !== null;
+  byId("fBox").hidden = v.mode !== "f";
+  byId("aBox").hidden = v.mode !== "a";
+  byId("L0box").hidden = v.pos === "top";
+  const sv = (SENSORS[+v.sens] || SENSORS[3])[1];
+  byId("res").disabled = !!cam;
+  byId("sens").disabled = !!cam;
+  byId("ppBox").hidden = !!cam || sv !== "pp";
+  byId("sw").readOnly = !!cam || sv !== null;
   if (result && isFinite(result.s) && (cam || sv !== null))
-    $("sw").value = +result.s.toFixed(2);
-  $("sumGeo").textContent =
-    `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(fmt(P(v.H), 1), "m")}, ${fmt(P(v.Wz), 1)} × ${U(fmt(P(v.Dz), 1), "m")}`;
-  $("sumCam").textContent =
+    byId("sw").value = +result.s.toFixed(2);
+  byId("sumGeo").textContent =
+    `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(v.H), 1), "m")}, ${formatNumber(parseNum(v.Wz), 1)} × ${U(formatNumber(parseNum(v.Dz), 1), "m")}`;
+  byId("sumCam").textContent =
     (cam
       ? `${cam.Nw} × ${cam.Nh}`
-      : (RES[+v.res] || RES[1])[0].split(" · ")[0]) +
-    (result && !result.err ? `, f ${U(fmt(result.f, 1), "mm")}` : "");
-  $("sumStr").textContent =
-    `${U(fmt(P(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
+      : (RESOLUTIONS[+v.res] || RESOLUTIONS[1])[0].split(" · ")[0]) +
+    (result && !result.err ? `, f ${U(formatNumber(result.f, 1), "mm")}` : "");
+  byId("sumStr").textContent =
+    `${U(formatNumber(parseNum(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
 }
 // ---------- расчёт одного типа камер (без DOM)
 // Обозначения из формул (src/formulas.html):
@@ -1956,35 +1961,35 @@ function computeType(type) {
   const inputs = type.v,
     mode = inputs.mode,
     placement = inputs.pos,
-    count = Math.max(0, Math.round(P(type.count)) || 0);
+    count = Math.max(0, Math.round(parseNum(type.count)) || 0);
   const camera = camById(inputs.cam);
-  let [cameraLabel, Nw, Nh] = RES[+inputs.res] || RES[1];
-  const sensorPreset = (SENS[+inputs.sens] || SENS[3])[1];
+  let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.res] || RESOLUTIONS[1];
+  const sensorPreset = (SENSORS[+inputs.sens] || SENSORS[3])[1];
   let s =
     typeof sensorPreset === "number"
       ? sensorPreset
       : sensorPreset === "pp"
-        ? (P(inputs.pp) * Nw) / 1000
-        : P(inputs.sw);
+        ? (parseNum(inputs.pp) * Nw) / 1000
+        : parseNum(inputs.sw);
   if (camera) {
     cameraLabel = camera.name;
     Nw = camera.Nw;
     Nh = camera.Nh;
     s = camera.sw;
   }
-  const H = P(inputs.H),
-    h = P(inputs.h),
-    zoneStart = P(inputs.L0),
-    zoneDepth = P(inputs.Dz),
-    zoneWidth = P(inputs.Wz),
-    margin = (P(inputs.mg) || 0) / 100,
-    k = P(inputs.k),
-    speed = P(inputs.v),
-    blurPx = P(inputs.blur);
-  const fps = P(inputs.fps),
+  const H = parseNum(inputs.H),
+    h = parseNum(inputs.h),
+    zoneStart = parseNum(inputs.L0),
+    zoneDepth = parseNum(inputs.Dz),
+    zoneWidth = parseNum(inputs.Wz),
+    margin = (parseNum(inputs.mg) || 0) / 100,
+    k = parseNum(inputs.k),
+    speed = parseNum(inputs.v),
+    blurPx = parseNum(inputs.blur);
+  const fps = parseNum(inputs.fps),
     bpp = +inputs.codec,
     sceneFactor = +inputs.scene,
-    analyticsFpsSet = P(inputs.afps),
+    analyticsFpsSet = parseNum(inputs.afps),
     analyticsFps = Math.min(analyticsFpsSet, fps),
     codec = bpp < 0.055 ? "h265" : "h264";
   const Hc = H - h;
@@ -2046,10 +2051,10 @@ function computeType(type) {
         }
       }
     } else if (mode === "f") {
-      f = P(inputs.fmm);
+      f = parseNum(inputs.fmm);
       hfov = 2 * Math.atan(sensorWidth / (2 * f));
     } else {
-      hfov = P(inputs.hfov) * R;
+      hfov = parseNum(inputs.hfov) * DEG;
       f = sensorWidth / (2 * Math.tan(hfov / 2));
     }
     const vfov = 2 * Math.atan(Math.tan(hfov / 2) / aspect),
@@ -2189,12 +2194,12 @@ function computeType(type) {
     };
   };
   const objs = type.objs.map((obj) => {
-    const width = P(obj.w) / 100,
-      length = P(obj.d) / 100,
-      height = P(obj.z) / 100,
-      requiredPx = P(obj.req),
-      inputSize = P(obj.inp) || 640;
-    const feedInfo = describeFeed(obj.feed, inputSize, P(obj.ov));
+    const width = parseNum(obj.w) / 100,
+      length = parseNum(obj.d) / 100,
+      height = parseNum(obj.z) / 100,
+      requiredPx = parseNum(obj.req),
+      inputSize = parseNum(obj.inp) || 640;
+    const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.ov));
     if (
       ![width, length, height].every((x) => isFinite(x) && x >= 0) ||
       Math.max(width, length, height) <= 0 ||
@@ -2237,14 +2242,28 @@ function computeType(type) {
   if (mode !== "auto" || clamped) {
     if (frameWidthAt(minDepth) < zoneWidth)
       notes.push(
-        t("nZoneW", fmt(frameWidthAt(minDepth), 2), fmt(zoneWidth, 2)),
+        t(
+          "nZoneW",
+          formatNumber(frameWidthAt(minDepth), 2),
+          formatNumber(zoneWidth, 2),
+        ),
       );
     if (vfov < zoneAngle)
-      notes.push(t("nZoneD", fmt(zoneAngle / R, 1), fmt(vfov / R, 1)));
+      notes.push(
+        t(
+          "nZoneD",
+          formatNumber(zoneAngle / DEG, 1),
+          formatNumber(vfov / DEG, 1),
+        ),
+      );
   }
   if (clamped)
     notes.unshift(
-      t(fNeeded > f ? "nFMax" : "nFMin", fmt(fNeeded, 1), fmt(f, 1)),
+      t(
+        fNeeded > f ? "nFMax" : "nFMin",
+        formatNumber(fNeeded, 1),
+        formatNumber(f, 1),
+      ),
     );
   else if (
     mode !== "auto" &&
@@ -2255,24 +2274,26 @@ function computeType(type) {
     notes.push(
       t(
         "nFOut",
-        fmt(f, 1),
+        formatNumber(f, 1),
         camera.fmin === camera.fmax
-          ? fmt(camera.fmin, 1)
-          : fmt(camera.fmin, 1) + "–" + fmt(camera.fmax, 1),
+          ? formatNumber(camera.fmin, 1)
+          : formatNumber(camera.fmin, 1) + "–" + formatNumber(camera.fmax, 1),
       ),
     );
-  if (hfov / R > 100) notes.push(t("nWide", fmt(hfov / R, 0)));
-  if (tilt / R > 75 && x1 < 0) notes.push(t("nTop"));
+  if (hfov / DEG > 100) notes.push(t("nWide", formatNumber(hfov / DEG, 0)));
+  if (tilt / DEG > 75 && x1 < 0) notes.push(t("nTop"));
   const lowestRayAngle = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
-  if (lowestRayAngle / R < 15)
-    notes.push(t("nLowRay", fmt(lowestRayAngle / R, 0)));
+  if (lowestRayAngle / DEG < 15)
+    notes.push(t("nLowRay", formatNumber(lowestRayAngle / DEG, 0)));
   if (analyticsFpsSet > fps)
-    notes.push(t("nAfps", fmt(analyticsFpsSet, 0), fmt(fps, 0)));
+    notes.push(
+      t("nAfps", formatNumber(analyticsFpsSet, 0), formatNumber(fps, 0)),
+    );
   // размер объекта на матрице и на входе модели
   const sensorPxText = (obj) =>
-      `${fmt(obj.widthPx, 1)} × ${fmt(obj.heightPx, 1)} px`,
+      `${formatNumber(obj.widthPx, 1)} × ${formatNumber(obj.heightPx, 1)} px`,
     modelPxText = (obj) =>
-      `${fmt(obj.widthPx * obj.feedInfo.modelScale, 1)} × ${fmt(obj.heightPx * obj.feedInfo.modelScale, 1)} px`;
+      `${formatNumber(obj.widthPx * obj.feedInfo.modelScale, 1)} × ${formatNumber(obj.heightPx * obj.feedInfo.modelScale, 1)} px`;
   const valid = objs.filter((obj) => !obj.bad),
     failing = valid.filter((obj) => obj.status === "bad"),
     marginal = valid.filter((obj) => obj.status === "warn");
@@ -2292,7 +2313,7 @@ function computeType(type) {
             "hItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
-            fmt(obj.requiredPx, 0),
+            formatNumber(obj.requiredPx, 0),
           ),
         )
         .join("; "),
@@ -2317,7 +2338,7 @@ function computeType(type) {
                   ? "advRoi"
                   : "advTiles",
             ),
-            fmt(neededInput, 0),
+            formatNumber(neededInput, 0),
           ),
         );
       });
@@ -2326,16 +2347,22 @@ function computeType(type) {
       const worstObj = lowResolution.reduce((a, b) =>
           a.minSensorWidthPx > b.minSensorWidthPx ? a : b,
         ),
-        recommended = RES.find((res) => res[1] >= worstObj.minSensorWidthPx);
+        recommended = RESOLUTIONS.find(
+          (res) => res[1] >= worstObj.minSensorWidthPx,
+        );
       notes.unshift(
         recommended
           ? t(
               "nRes",
               worstObj.name,
-              fmt(worstObj.minSensorWidthPx, 0),
+              formatNumber(worstObj.minSensorWidthPx, 0),
               recommended[0],
             )
-          : t("nResNone", worstObj.name, fmt(worstObj.minSensorWidthPx, 0)),
+          : t(
+              "nResNone",
+              worstObj.name,
+              formatNumber(worstObj.minSensorWidthPx, 0),
+            ),
       );
     }
   } else if (marginal.length) {
@@ -2349,7 +2376,7 @@ function computeType(type) {
             "hItem",
             obj.name || t("objDefault"),
             modelPxText(obj),
-            fmt(obj.requiredPx, 0),
+            formatNumber(obj.requiredPx, 0),
           ),
         )
         .join("; "),
@@ -2454,8 +2481,8 @@ const gfOf = (id) => {
 };
 function computeSystem(Rs) {
   const live = Rs.filter((r) => !r.err && r.count > 0);
-  const kr = P($("kr").value),
-    resv = Math.max(0, P($("resv").value) || 0) / 100,
+  const kr = parseNum(byId("kr").value),
+    resv = Math.max(0, parseNum(byId("resv").value) || 0) / 100,
     uMax = 1 / (1 + resv),
     BATCH = 16;
   const groups = live.flatMap((r) =>
@@ -2479,9 +2506,9 @@ function computeSystem(Rs) {
       if (!m) return { ...o, bad: true };
       if (MODELS.includes(m)) {
         const inScale = (640 / o.feedInfo.inputSize) ** 2;
-        base = ((1000 / m.ms) * inScale * g.tf) / T4TF;
+        base = ((1000 / m.ms) * inScale * g.tf) / T4_TFLOPS;
       } else {
-        const rg = gpuById(m.ref) || CATALOG[0],
+        const rg = gpuById(m.ref) || GPU_CATALOG[0],
           inScale = (m.inp / o.feedInfo.inputSize) ** 2;
         base = (m.fps * inScale * g.tf) / rg.tf;
       }
@@ -2530,8 +2557,8 @@ function computeSystem(Rs) {
     .filter((e) => e.ok)
     .sort((a, b) => a.cost - b.cost || a.n * a.g.tdp - b.n * b.g.tdp);
   const best = okAll[0],
-    gSel = $("gpu").value,
-    cSel = $("gcnt").value;
+    gSel = byId("gpu").value,
+    cSel = byId("gcnt").value;
   const minWorst = (arr) =>
     arr.length
       ? arr.reduce((a, b) => (a.worst < b.worst ? a : b))
@@ -2542,7 +2569,7 @@ function computeSystem(Rs) {
     const n = +cSel;
     E = okAll.find((e) => e.n === n) || minWorst(all.filter((e) => e.n === n));
   } else {
-    const g = gpuById(gSel) || CATALOG[0];
+    const g = gpuById(gSel) || GPU_CATALOG[0];
     if (cSel === "auto") {
       E = null;
       for (let n = 1; n <= 4 && !E; n++) {
@@ -2571,25 +2598,27 @@ function computeSystem(Rs) {
 const stTxt = STR.st;
 const cap1 = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 function renderType(result) {
-  const vd = $("verdict");
-  $("resTitle").textContent = t(
+  const vd = byId("verdict");
+  byId("resTitle").textContent = t(
     "resTitleOf",
     result.type.name || t("untitled"),
   );
   if (result.err) {
     vd.className = "verdict bad";
     vd.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
-    ["kpis", "dens", "facts", "side"].forEach((id) => ($(id).innerHTML = ""));
+    ["kpis", "dens", "facts", "side"].forEach(
+      (id) => (byId(id).innerHTML = ""),
+    );
     return;
   }
   vd.className = "verdict " + result.status;
-  vd.innerHTML = `<span class="pill">${result.pill}</span><div>${esc(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((n) => "<li>" + esc(n) + "</li>").join("") + "</ul>" : ""}</div>`;
+  vd.innerHTML = `<span class="pill">${result.pill}</span><div>${escapeHtml(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((n) => "<li>" + escapeHtml(n) + "</li>").join("") + "</ul>" : ""}</div>`;
   const { hfov, vfov, f, rotated, tilt, frameWidthAt, depthAt, x1, x2 } =
     result;
-  $("kpis").innerHTML = [
+  byId("kpis").innerHTML = [
     [
       t("kF"),
-      U(fmt(f, 1), "mm"),
+      U(formatNumber(f, 1), "mm"),
       t(
         result.clamped
           ? "kFLimit"
@@ -2600,20 +2629,20 @@ function renderType(result) {
     ],
     [
       t(rotated ? "kAngRot" : "kAng"),
-      fmt(hfov / R, 0) + "° × " + fmt(vfov / R, 0) + "°",
-      `DFOV ≈ ${fmt((2 * Math.atan(Math.hypot(Math.tan(hfov / 2), Math.tan(vfov / 2)))) / R, 0)}°`,
+      formatNumber(hfov / DEG, 0) + "° × " + formatNumber(vfov / DEG, 0) + "°",
+      `DFOV ≈ ${formatNumber((2 * Math.atan(Math.hypot(Math.tan(hfov / 2), Math.tan(vfov / 2)))) / DEG, 0)}°`,
     ],
     [
       t("kTilt"),
-      fmt(tilt / R, 0) + "°",
-      t(Math.abs(tilt / R - 90) < 1 ? "kTiltDown" : "kTiltHor"),
+      formatNumber(tilt / DEG, 0) + "°",
+      t(Math.abs(tilt / DEG - 90) < 1 ? "kTiltDown" : "kTiltHor"),
     ],
     [
       t("kFrame"),
       U(
-        fmt(frameWidthAt(depthAt(x1)), 1) +
+        formatNumber(frameWidthAt(depthAt(x1)), 1) +
           "–" +
-          fmt(frameWidthAt(depthAt(x2)), 1),
+          formatNumber(frameWidthAt(depthAt(x2)), 1),
         "m",
       ),
       t("kFrameSub"),
@@ -2625,8 +2654,8 @@ function renderType(result) {
     )
     .join("");
   result.objs.forEach((o, i) => {
-    const el = $(`ores-${i}`),
-      dt = $(`odot-${i}`);
+    const el = byId(`ores-${i}`),
+      dt = byId(`odot-${i}`);
     if (!el) return;
     if (o.bad) {
       el.className = "ores";
@@ -2636,13 +2665,13 @@ function renderType(result) {
     }
     el.className = "ores " + o.status;
     if (dt) dt.className = "dot " + o.status;
-    el.innerHTML = `<b>${cap1(stTxt[o.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(o)}</span>`, fmt(o.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(o), esc(o.feedInfo.text))}</span>`;
+    el.innerHTML = `<b>${cap1(stTxt[o.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(o)}</span>`, formatNumber(o.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(o), escapeHtml(o.feedInfo.text))}</span>`;
   });
   const top = result.placement === "top";
-  $("dens").innerHTML =
+  byId("dens").innerHTML =
     `<tr><th>${t("densHead")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
-    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(fmt(result.edge1.D, 1), "m")}</td><td>${fmt(result.edge1.across, 0)}</td><td>${fmt(result.edge1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(fmt(result.edge2.D, 1), "m")}</td><td>${fmt(result.edge2.across, 0)}</td><td>${fmt(result.edge2.depth, 0)}</td></tr>`;
+    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
+    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
   const lv = [25, 62, 125, 250],
     names = STR.dori;
   let li = -1;
@@ -2650,8 +2679,8 @@ function renderType(result) {
     if (result.minAcross >= l) li = i;
   });
   const shutter = result.shutterDenominator;
-  $("facts").innerHTML =
-    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(fmt(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${esc(result.cameraLabel)}</b></span>`;
+  byId("facts").innerHTML =
+    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
   drawSide({
     H: result.H,
     h: result.h,
@@ -2668,7 +2697,7 @@ function renderType(result) {
 
 // ---------- вкладки
 function renderTabs(Rs) {
-  const nav = $("tabs");
+  const nav = byId("tabs");
   nav.innerHTML = "";
   Rs.forEach((r) => {
     const b = document.createElement("button");
@@ -2677,7 +2706,7 @@ function renderTabs(Rs) {
     b.setAttribute("role", "tab");
     b.setAttribute("aria-selected", String(r.type.id === ACT));
     b.setAttribute("aria-controls", "typeOut");
-    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.status}" aria-hidden="true"></span><b>${esc(r.type.name || t("untitled"))}</b><small>× ${r.count}</small>`;
+    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.status}" aria-hidden="true"></span><b>${escapeHtml(r.type.name || t("untitled"))}</b><small>× ${r.count}</small>`;
     b.title = r.err ? t("tabErr") : t("tabObjs", stTxt[r.status] || r.pill);
     b.addEventListener("click", () => {
       if (ACT === r.type.id) return;
@@ -2725,7 +2754,7 @@ function ring(cx, cy, r, w, segs, mark) {
 // ---------- система
 function renderSystem(Rs, S) {
   const { E, best, kr, uMax, live } = S;
-  const pc = (u) => fmt(u * 100, 0) + "%";
+  const pc = (u) => formatNumber(u * 100, 0) + "%";
   const cams = Rs.reduce((s, r) => s + r.count, 0);
   const vAll = Rs.flatMap((r) => r.valid || []),
     objOk = vAll.filter((o) => o.status === "ok").length;
@@ -2748,12 +2777,12 @@ function renderSystem(Rs, S) {
       : mbTot * 1.3 < 9000
         ? U(10, "gbps")
         : "> " + U(10, "gbps");
-  $("sysKpis").innerHTML = [
+  byId("sysKpis").innerHTML = [
     [
       t("sCams"),
       `${cams}`,
       camCost
-        ? t("sTypes", Rs.length) + t("sCamCost", "$" + fmt(camCost, 0))
+        ? t("sTypes", Rs.length) + t("sCamCost", "$" + formatNumber(camCost, 0))
         : t("sTypes", Rs.length, Rs.map((r) => r.type.name).join(", ")),
     ],
     [
@@ -2763,7 +2792,7 @@ function renderSystem(Rs, S) {
         ? t(
             "sSmallest",
             smallest.name,
-            fmt(
+            formatNumber(
               Math.min(smallest.widthPx, smallest.heightPx) *
                 smallest.feedInfo.modelScale,
               1,
@@ -2773,26 +2802,26 @@ function renderSystem(Rs, S) {
     ],
     [
       t("sCompute"),
-      live.length ? `${E.n} × ${esc(E.g.name)}` : "—",
+      live.length ? `${E.n} × ${escapeHtml(E.g.name)}` : "—",
       live.length
-        ? `$${fmt(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - E.worst))) : t("insufficient")}`
+        ? `$${formatNumber(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - E.worst))) : t("insufficient")}`
         : t("sNoCams"),
     ],
     [
       t("sNet"),
-      `${U(fmt(mbTot, 0), "mbps")}`,
-      t("sPort", port, fmt(cams * 15.4, 0)),
+      `${U(formatNumber(mbTot, 0), "mbps")}`,
+      t("sPort", port, formatNumber(cams * 15.4, 0)),
     ],
   ]
     .map(
       ([l, v, e]) =>
-        `<div class="sk"><span>${l}</span><strong>${v}</strong><em>${esc(e)}</em></div>`,
+        `<div class="sk"><span>${l}</span><strong>${v}</strong><em>${escapeHtml(e)}</em></div>`,
     )
     .join("");
   // дашборд
   const hot = E.uI > uMax;
-  $("dsum").innerHTML = live.length
-    ? `<b>${E.n} × ${esc(E.g.name)}</b> · $${fmt(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - E.worst)))} · ${t("bottleneck", E.bott)}`
+  byId("dsum").innerHTML = live.length
+    ? `<b>${E.n} × ${escapeHtml(E.g.name)}</b> · $${formatNumber(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - E.worst)))} · ${t("bottleneck", E.bott)}`
     : "";
   const runs = E.mods
     .filter((o) => !o.bad)
@@ -2810,16 +2839,19 @@ function renderSystem(Rs, S) {
     restU = rest.reduce((s, o) => s + o.u, 0);
   const segs = shown.map((o, i) => ({ f: o.u, color: COLS[i] }));
   if (restU > 0) segs.push({ f: restU, color: "var(--c6)" });
-  $("donut").innerHTML = live.length
+  byId("donut").innerHTML = live.length
     ? ring(60, 60, 48, 14, segs, uMax) +
       `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${hot ? "var(--bad)" : "var(--fg)"}">${pc(E.uI)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
     : "";
-  $("donut").setAttribute("aria-label", t("donutAriaVal", pc(E.uI), pc(uMax)));
-  $("legend").innerHTML = live.length
+  byId("donut").setAttribute(
+    "aria-label",
+    t("donutAriaVal", pc(E.uI), pc(uMax)),
+  );
+  byId("legend").innerHTML = live.length
     ? shown
         .map(
           (o, i) =>
-            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${esc(mName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${esc(o.typeName)}: ${esc(o.names.join(", "))} · ${U(fmt(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
+            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${escapeHtml(mName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${escapeHtml(o.typeName)}: ${escapeHtml(o.names.join(", "))} · ${U(formatNumber(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
         )
         .join("") +
       (rest.length
@@ -2830,65 +2862,65 @@ function renderSystem(Rs, S) {
   const decCapN = (E.n * S.decTotal) / (E.dec || 1);
   const gauge = (label, u, lim, center, sub) =>
     `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ f: u, color: u > lim ? "var(--bad)" : "var(--meter)" }], lim < 1 ? lim : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
-  $("gauges").innerHTML = live.length
+  byId("gauges").innerHTML = live.length
     ? gauge(
         t("gDec"),
         E.uD,
         uMax,
         pc(E.uD),
-        t("gDecSub", fmt(S.decTotal, 1), fmt(decCapN, 0)),
+        t("gDecSub", formatNumber(S.decTotal, 1), formatNumber(decCapN, 0)),
       ) +
       gauge(
         t("gMem"),
         E.uM,
         1,
         pc(E.uM),
-        t("gMemSub", fmt(E.memUse, 1), fmt(E.memCap, 0)),
+        t("gMemSub", formatNumber(E.memUse, 1), formatNumber(E.memCap, 0)),
       )
     : "";
   const warn = S.noCand ? t("noCand") : !best && live.length ? t("noFit") : "";
-  $("loadNote").innerHTML = warn
-    ? `<span style="color:var(--bad)">${esc(warn)}</span>`
+  byId("loadNote").innerHTML = warn
+    ? `<span style="color:var(--bad)">${escapeHtml(warn)}</span>`
     : live.length && STR.gpuNotes[E.g.id]
-      ? esc(STR.gpuNotes[E.g.id])
+      ? escapeHtml(STR.gpuNotes[E.g.id])
       : "";
-  $("loadNote").hidden = !$("loadNote").innerHTML;
+  byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
-  const days = P($("days").value) || 0,
+  const days = parseNum(byId("days").value) || 0,
     tb = (((mbTot * 1e6) / 8) * 86400 * days) / 1e12;
-  $("netTbl").innerHTML =
+  byId("netTbl").innerHTML =
     `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((k) => `<th>${t(k)}</th>`).join("")}</tr>` +
     Rs.map((r) =>
       r.err
-        ? `<tr><td class="txt">${esc(r.type.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
-        : `<tr><td class="txt">${esc(r.type.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${fmt(r.fps, 0)}</td><td>${U(fmt(r.bitrateMbps, 1), "mbps")}</td><td>${U(fmt(r.bitrateMbps * r.count, 0), "mbps")}</td></tr>`,
+        ? `<tr><td class="txt">${escapeHtml(r.type.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
+        : `<tr><td class="txt">${escapeHtml(r.type.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${formatNumber(r.fps, 0)}</td><td>${U(formatNumber(r.bitrateMbps, 1), "mbps")}</td><td>${U(formatNumber(r.bitrateMbps * r.count, 0), "mbps")}</td></tr>`,
     ).join("") +
-    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(fmt(mbTot, 0), "mbps")}</td></tr>` +
-    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", fmt(tb, 1), fmt(days, 0)) : t("nArchOff")}</td></tr>`;
-  $("assList").innerHTML = t("ass", fmt(kr, 2))
-    .map((x) => `<li>${esc(x)}</li>`)
+    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(formatNumber(mbTot, 0), "mbps")}</td></tr>` +
+    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", formatNumber(tb, 1), formatNumber(days, 0)) : t("nArchOff")}</td></tr>`;
+  byId("assList").innerHTML = t("ass", formatNumber(kr, 2))
+    .map((x) => `<li>${escapeHtml(x)}</li>`)
     .join("");
   return { cams, mbTot, camCost };
 }
 
 // ---------- шаблоны: видеокарты
 function buildGpuSelect() {
-  const sel = $("gpu"),
+  const sel = byId("gpu"),
     cur = sel.value || "auto";
   sel.innerHTML =
     `<option value="auto">${t("gpuAuto")}</option>` +
     allGpus()
       .map(
         (g) =>
-          `<option value="${g.id}">${esc(g.name)}${g.custom ? t("gpuCustomMark") : ""}</option>`,
+          `<option value="${g.id}">${escapeHtml(g.name)}${g.custom ? t("gpuCustomMark") : ""}</option>`,
       )
       .join("");
   sel.value = allGpus().some((g) => g.id === cur) ? cur : "auto";
-  const ref = $("ndRef");
+  const ref = byId("ndRef");
   if (ref) {
     const c = ref.value;
     ref.innerHTML = allGpus()
-      .map((g) => `<option value="${g.id}">${esc(g.name)}</option>`)
+      .map((g) => `<option value="${g.id}">${escapeHtml(g.name)}</option>`)
       .join("");
     ref.value = gpuById(c) ? c : "5090";
   }
@@ -2896,36 +2928,36 @@ function buildGpuSelect() {
 function renderGpuView() {
   const row = (
     g,
-  ) => `<tr><td class="txt"><b style="font-weight:600">${esc(g.name)}</b><span class="sub">${g.jet ? t("gJet") : esc(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${fmt(g.tf, 1)}</td><td>${decText(g)}</td><td>${U(fmt(g.mem, 0), "gb")}</td><td>${g.tdp ? U(fmt(g.tdp, 0), "w") : "—"}</td>
-    <td><input id="pr-${g.id}" value="${esc(PRICE[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${esc(t("gPriceAria", g.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${esc(t("gOnAria", g.name))}"></td>
-    ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${esc(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
+  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(g.name)}</b><span class="sub">${g.jet ? t("gJet") : escapeHtml(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(g.tf, 1)}</td><td>${decText(g)}</td><td>${U(formatNumber(g.mem, 0), "gb")}</td><td>${g.tdp ? U(formatNumber(g.tdp, 0), "w") : "—"}</td>
+    <td><input id="pr-${g.id}" value="${escapeHtml(gpuPrices[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", g.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", g.name))}"></td>
+    ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${escapeHtml(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
   const gh = STR.gHead,
     head = `<tr>${gh
       .slice(0, 6)
       .map((x) => `<th>${x}</th>`)
       .join("")}<th style="text-align:center">${gh[6]}</th><th></th></tr>`;
-  $("catTitle").textContent = t("catTitle", CATALOG.length);
-  $("catTbl").innerHTML = head + CATALOG.map(row).join("");
-  $("mine").innerHTML = CUSTOM.length
-    ? `<strong style="font-weight:600">${t("mineN", CUSTOM.length)}</strong><div class="tbl"><table>${head}${CUSTOM.map(row).join("")}</table></div>`
+  byId("catTitle").textContent = t("catTitle", GPU_CATALOG.length);
+  byId("catTbl").innerHTML = head + GPU_CATALOG.map(row).join("");
+  byId("mine").innerHTML = customGpus.length
+    ? `<strong style="font-weight:600">${t("mineN", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("mine0")}</strong><span class="note" style="font-size:13px">${t("mineEmpty")}</span>`;
   allGpus().forEach((g) => {
-    $(`pr-${g.id}`).addEventListener("input", (e) => {
-      PRICE[g.id] = e.target.value;
+    byId(`pr-${g.id}`).addEventListener("input", (e) => {
+      gpuPrices[g.id] = e.target.value;
       calcAll();
     });
-    $(`gon-${g.id}`).addEventListener("change", (e) => {
-      ON[g.id] = e.target.checked;
+    byId(`gon-${g.id}`).addEventListener("change", (e) => {
+      gpuEnabled[g.id] = e.target.checked;
       calcAll();
     });
   });
   document.querySelectorAll("[data-delg]").forEach((b) =>
     b.addEventListener("click", () => {
       const id = b.dataset.delg;
-      CUSTOM = CUSTOM.filter((g) => g.id !== id);
-      delete PRICE[id];
-      delete ON[id];
+      customGpus = customGpus.filter((g) => g.id !== id);
+      delete gpuPrices[id];
+      delete gpuEnabled[id];
       DETS.forEach((d) => {
         if (d.ref === id) d.ref = "5090";
       });
@@ -2936,27 +2968,27 @@ function renderGpuView() {
     }),
   );
 }
-$("ngArch").addEventListener("change", () => {
-  const j = $("ngArch").value === "jet";
-  $("ngDecL").textContent = t(j ? "ngDecJet" : "ngDec");
-  $("ngDec").placeholder = j ? "22" : "2";
+byId("ngArch").addEventListener("change", () => {
+  const j = byId("ngArch").value === "jet";
+  byId("ngDecL").textContent = t(j ? "ngDecJet" : "ngDec");
+  byId("ngDec").placeholder = j ? "22" : "2";
 });
-$("newForm").addEventListener("submit", (e) => {
+byId("newForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const name = $("ngName").value.trim(),
-    arch = $("ngArch").value,
-    tf = P($("ngTf").value),
-    dec = P($("ngDec").value),
-    mem = P($("ngMem").value),
-    tdp = P($("ngTdp").value),
-    price = P($("ngPrice").value);
+  const name = byId("ngName").value.trim(),
+    arch = byId("ngArch").value,
+    tf = parseNum(byId("ngTf").value),
+    dec = parseNum(byId("ngDec").value),
+    mem = parseNum(byId("ngMem").value),
+    tdp = parseNum(byId("ngTdp").value),
+    price = parseNum(byId("ngPrice").value);
   const errs = [];
   if (!name) errs.push(t("eName"));
   if (!(tf > 0)) errs.push(t("eTf"));
   if (!(dec > 0)) errs.push(t(arch === "jet" ? "eDecJet" : "eDec"));
   if (!(mem > 0)) errs.push(t("eMem"));
   if (!(price > 0)) errs.push(t("ePrice"));
-  const er = $("ngErr");
+  const er = byId("ngErr");
   if (errs.length) {
     er.hidden = false;
     er.textContent = t("ngErr", errs.join(", "));
@@ -2977,10 +3009,10 @@ $("newForm").addEventListener("submit", (e) => {
     g.jet = true;
     g.st = { h265: dec, h264: +((dec * 748) / 1415).toFixed(1) };
   } else g.nvdec = Math.round(dec);
-  CUSTOM.push(g);
-  ON[g.id] = $("ngOn").checked;
+  customGpus.push(g);
+  gpuEnabled[g.id] = byId("ngOn").checked;
   ["ngName", "ngTf", "ngDec", "ngMem", "ngTdp", "ngPrice"].forEach(
-    (id) => ($(id).value = ""),
+    (id) => (byId(id).value = ""),
   );
   buildGpuSelect();
   renderGpuView();
@@ -2992,16 +3024,16 @@ $("newForm").addEventListener("submit", (e) => {
 function renderCamView() {
   const used = (id) =>
     TYPES.filter((t) => t.v.cam === id).reduce(
-      (s, t) => s + (Math.round(P(t.count)) || 0),
+      (s, t) => s + (Math.round(parseNum(t.count)) || 0),
       0,
     );
-  $("camTitle").textContent = t("camTitle", allCams().length);
-  $("camTbl").innerHTML =
+  byId("camTitle").textContent = t("camTitle", allCams().length);
+  byId("camTbl").innerHTML =
     `<tr>${STR.cHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
     allCams()
       .map(
         (c) =>
-          `<tr><td class="txt"><b style="font-weight:600">${esc(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(fmt(c.sw, 2), "mm")}</td><td>${c.fmin > 0 ? (c.fmin === c.fmax ? U(fmt(c.fmin, 1), "mm") : U(fmt(c.fmin, 1) + "–" + fmt(c.fmax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + fmt(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${esc(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(formatNumber(c.sw, 2), "mm")}</td><td>${c.fmin > 0 ? (c.fmin === c.fmax ? U(formatNumber(c.fmin, 1), "mm") : U(formatNumber(c.fmin, 1) + "–" + formatNumber(c.fmax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + formatNumber(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${escapeHtml(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
       )
       .join("");
   document.querySelectorAll("[data-delc]").forEach((b) =>
@@ -3019,16 +3051,16 @@ function renderCamView() {
     }),
   );
 }
-$("camForm").addEventListener("submit", (e) => {
+byId("camForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const name = $("ncName").value.trim(),
-    Nw = Math.round(P($("ncW").value)),
-    Nh = Math.round(P($("ncH").value)),
-    pp = P($("ncPp").value);
-  let sw = P($("ncSw").value);
-  let fmin = P($("ncFmin").value),
-    fmax = P($("ncFmax").value);
-  const price = P($("ncPrice").value);
+  const name = byId("ncName").value.trim(),
+    Nw = Math.round(parseNum(byId("ncW").value)),
+    Nh = Math.round(parseNum(byId("ncH").value)),
+    pp = parseNum(byId("ncPp").value);
+  let sw = parseNum(byId("ncSw").value);
+  let fmin = parseNum(byId("ncFmin").value),
+    fmax = parseNum(byId("ncFmax").value);
+  const price = parseNum(byId("ncPrice").value);
   if (!(sw > 0) && pp > 0 && Nw > 0) sw = +((pp * Nw) / 1000).toFixed(3);
   if (fmin > 0 && !(fmax > 0)) fmax = fmin;
   if (fmax > 0 && !(fmin > 0)) fmin = fmax;
@@ -3037,7 +3069,7 @@ $("camForm").addEventListener("submit", (e) => {
   if (!(Nw > 0 && Nh > 0)) errs.push(t("eFrame"));
   if (!(sw > 0)) errs.push(t("eSw"));
   if (fmin > 0 && fmax > 0 && fmin > fmax) errs.push(t("eFRange"));
-  const er = $("ncErr");
+  const er = byId("ncErr");
   if (errs.length) {
     er.hidden = false;
     er.textContent = t("ncErr", errs.join(", "));
@@ -3064,7 +3096,7 @@ $("camForm").addEventListener("submit", (e) => {
     "ncFmin",
     "ncFmax",
     "ncPrice",
-  ].forEach((id) => ($(id).value = ""));
+  ].forEach((id) => (byId(id).value = ""));
   buildCamSelect();
   renderCamView();
   save();
@@ -3073,20 +3105,20 @@ $("camForm").addEventListener("submit", (e) => {
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
-  $("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
+  byId("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
   const used = (id) =>
     TYPES.reduce((s, t) => s + t.objs.filter((o) => o.model === id).length, 0);
-  $("detTbl").innerHTML =
+  byId("detTbl").innerHTML =
     `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
     (DETS.length
       ? DETS.map((d) => {
           const rg = gpuById(d.ref);
-          return `<tr><td class="txt"><b style="font-weight:600">${esc(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inp}</td><td>${d.gf > 0 ? fmt(d.gf, 1) : "—"}</td><td>${t("dSpeed", fmt(d.fps, 0), esc(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${esc(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
+          return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inp}</td><td>${d.gf > 0 ? formatNumber(d.gf, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
         }).join("")
       : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
     MODELS.map(
       (m) =>
-        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${fmt(m.gf, 1)}</td><td>${t("dSpeed", fmt(1000 / m.ms, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
+        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(m.gf, 1)}</td><td>${t("dSpeed", formatNumber(1000 / m.ms, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
     ).join("");
   document.querySelectorAll("[data-deld]").forEach((b) =>
     b.addEventListener("click", () => {
@@ -3104,20 +3136,20 @@ function renderDetView() {
     }),
   );
 }
-$("ndInp").innerHTML = INPUTS.map(
+byId("ndInp").innerHTML = INPUTS.map(
   (x) => `<option${x === 640 ? " selected" : ""}>${x}</option>`,
 ).join("");
-$("detForm").addEventListener("submit", (e) => {
+byId("detForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const name = $("ndName").value.trim(),
-    fps = P($("ndFps").value),
-    inp = +$("ndInp").value,
-    ref = $("ndRef").value,
-    gf = P($("ndGf").value);
+  const name = byId("ndName").value.trim(),
+    fps = parseNum(byId("ndFps").value),
+    inp = +byId("ndInp").value,
+    ref = byId("ndRef").value,
+    gf = parseNum(byId("ndGf").value);
   const errs = [];
   if (!name) errs.push(t("eName"));
   if (!(fps > 0)) errs.push(t("eFps"));
-  const er = $("ndErr");
+  const er = byId("ndErr");
   if (errs.length) {
     er.hidden = false;
     er.textContent = t("ncErr", errs.join(", "));
@@ -3133,7 +3165,7 @@ $("detForm").addEventListener("submit", (e) => {
     gf: gf > 0 ? gf : 0,
     custom: true,
   });
-  ["ndName", "ndFps", "ndGf"].forEach((id) => ($(id).value = ""));
+  ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
   renderObjs();
   renderDetView();
   calcAll();
@@ -3164,15 +3196,15 @@ function calcAll() {
             t("rCam", {
               rl: r.cameraLabel,
               rot: r.rotated,
-              s: fmt(r.s, 2),
-              f: fmt(r.f, 1),
-              hf: fmt(r.hfov / R, 0),
-              tilt: fmt(r.tilt / R, 0),
+              s: formatNumber(r.s, 2),
+              f: formatNumber(r.f, 1),
+              hf: formatNumber(r.hfov / DEG, 0),
+              tilt: formatNumber(r.tilt / DEG, 0),
               top: r.placement === "top",
-              L0: fmt(r.zoneStart, 2),
-              H: fmt(r.H, 2),
-              Wz: fmt(r.zoneWidth, 2),
-              Dz: fmt(r.zoneDepth, 2),
+              L0: formatNumber(r.zoneStart, 2),
+              H: formatNumber(r.H, 2),
+              Wz: formatNumber(r.zoneWidth, 2),
+              Dz: formatNumber(r.zoneDepth, 2),
             }),
             ...r.valid.map((o) =>
               t("rObj", {
@@ -3181,13 +3213,13 @@ function calcAll() {
                 feed: o.feedInfo.text,
                 pxs: r.sensorPxText(o),
                 pxm: r.modelPxText(o),
-                req: fmt(o.requiredPx, 0),
+                req: formatNumber(o.requiredPx, 0),
                 st: stTxt[o.status],
               }),
             ),
             t(
               "rStream",
-              fmt(r.bitrateMbps, 1),
+              formatNumber(r.bitrateMbps, 1),
               Math.ceil(r.shutterDenominator),
             ),
           ],
@@ -3196,21 +3228,21 @@ function calcAll() {
       t(
         "rSys",
         sysTot.cams,
-        fmt(sysTot.mbTot, 0),
-        sysTot.camCost ? "$" + fmt(sysTot.camCost, 0) : "",
+        formatNumber(sysTot.mbTot, 0),
+        sysTot.camCost ? "$" + formatNumber(sysTot.camCost, 0) : "",
       ),
     S.live.length
       ? t("rCompute", {
           n: E.n,
           g: E.g.name,
-          cost: "$" + fmt(E.cost, 0),
-          uI: fmt(E.uI * 100, 0),
-          uD: fmt(E.uD * 100, 0),
-          mem: fmt(E.memUse, 1),
-          cap: fmt(E.memCap, 0),
+          cost: "$" + formatNumber(E.cost, 0),
+          uI: formatNumber(E.uI * 100, 0),
+          uD: formatNumber(E.uD * 100, 0),
+          mem: formatNumber(E.memUse, 1),
+          cap: formatNumber(E.memCap, 0),
           best:
             S.best && S.best !== E
-              ? `${S.best.n} × ${S.best.g.name}, $${fmt(S.best.cost, 0)}`
+              ? `${S.best.n} × ${S.best.g.name}, $${formatNumber(S.best.cost, 0)}`
               : "",
         })
       : t("rNoCompute"),
@@ -3221,10 +3253,10 @@ const GL_IDS = ["kr", "resv", "days", "gpu", "gcnt"];
 const snap = () => ({
   types: TYPES,
   act: ACT,
-  gl: Object.fromEntries(GL_IDS.map((id) => [id, $(id).value])),
-  price: PRICE,
-  on: ON,
-  custom: CUSTOM,
+  gl: Object.fromEntries(GL_IDS.map((id) => [id, byId(id).value])),
+  price: gpuPrices,
+  on: gpuEnabled,
+  custom: customGpus,
   cams: CAMS_C,
   dets: DETS,
   light: document.documentElement.classList.contains("light"),
@@ -3256,7 +3288,7 @@ function load() {
       Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
     const shownName = (x) => (x.nameKey && builtinName(x.nameKey)) || x.name;
     if (Array.isArray(st.custom))
-      CUSTOM = st.custom
+      customGpus = st.custom
         .filter((g) => g && g.id && g.name && g.tf > 0)
         .map((g) => ({ ...g, custom: true }));
     if (Array.isArray(st.cams))
@@ -3267,8 +3299,8 @@ function load() {
       DETS = st.dets
         .filter((d) => d && d.id && d.fps > 0)
         .map((d) => ({ ...d, custom: true }));
-    if (st.price && typeof st.price === "object") PRICE = dotAll(st.price);
-    if (st.on && typeof st.on === "object") ON = st.on;
+    if (st.price && typeof st.price === "object") gpuPrices = dotAll(st.price);
+    if (st.on && typeof st.on === "object") gpuEnabled = st.on;
     if (st.light) setTheme(true);
     buildGpuSelect();
     buildCamSelect();
@@ -3298,7 +3330,7 @@ function load() {
     }
     if (st.gl)
       GL_IDS.forEach((id) => {
-        const el = $(id);
+        const el = byId(id);
         if (st.gl[id] != null) el.value = dot(st.gl[id]);
         if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = "auto";
       });
@@ -3308,17 +3340,17 @@ function load() {
 // ---------- события
 function setTheme(light) {
   document.documentElement.classList.toggle("light", light);
-  $("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
-  $("themeBtn").setAttribute("aria-pressed", String(light));
+  byId("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
+  byId("themeBtn").setAttribute("aria-pressed", String(light));
 }
-$("themeBtn").addEventListener("click", () => {
+byId("themeBtn").addEventListener("click", () => {
   setTheme(!document.documentElement.classList.contains("light"));
   save();
 });
-$("langBtn").lang = LANG === "en" ? "ru" : "en";
-$("langBtn").addEventListener("click", () => {
+byId("langBtn").lang = LANG === "en" ? "ru" : "en";
+byId("langBtn").addEventListener("click", () => {
   try {
-    localStorage.setItem(LANG_KEY, $("langBtn").lang);
+    localStorage.setItem(LANG_KEY, byId("langBtn").lang);
   } catch (e) {
     toast(t("saveFail"));
     return;
@@ -3335,9 +3367,9 @@ PRESETS.forEach((pr) => {
     renderObjs();
     calcAll();
   });
-  $("presets").append(b);
+  byId("presets").append(b);
 });
-$("addObj").addEventListener("click", () => {
+byId("addObj").addEventListener("click", () => {
   const T = act();
   T.objs.push(
     mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
@@ -3345,23 +3377,23 @@ $("addObj").addEventListener("click", () => {
   renderObjs();
   calcAll();
   const i = T.objs.length - 1;
-  $(`on-${i}`).focus();
-  $(`on-${i}`).select();
+  byId(`on-${i}`).focus();
+  byId(`on-${i}`).select();
 });
-$("frm").addEventListener("input", () => {
+byId("frm").addEventListener("input", () => {
   readForm();
   calcAll();
 });
-$("frm").addEventListener("change", () => {
+byId("frm").addEventListener("change", () => {
   readForm();
   calcAll();
 });
-$("frm").addEventListener("submit", (e) => e.preventDefault());
+byId("frm").addEventListener("submit", (e) => e.preventDefault());
 GL_IDS.forEach((id) => {
-  $(id).addEventListener("input", calcAll);
-  $(id).addEventListener("change", calcAll);
+  byId(id).addEventListener("input", calcAll);
+  byId(id).addEventListener("change", calcAll);
 });
-$("dupBtn").addEventListener("click", () => {
+byId("dupBtn").addEventListener("click", () => {
   readForm();
   const src = act(),
     T = JSON.parse(JSON.stringify(src));
@@ -3375,8 +3407,8 @@ $("dupBtn").addEventListener("click", () => {
   toast(t("typeCopied"));
 });
 let delArm = null;
-$("delBtn").addEventListener("click", () => {
-  const b = $("delBtn");
+byId("delBtn").addEventListener("click", () => {
+  const b = byId("delBtn");
   if (TYPES.length < 2) {
     toast(t("lastType"));
     return;
@@ -3400,34 +3432,34 @@ $("delBtn").addEventListener("click", () => {
   toast(t("typeDeleted"));
 });
 function toast(t) {
-  const el = $("toast");
+  const el = byId("toast");
   el.textContent = t;
   el.hidden = false;
   clearTimeout(toast.t);
   toast.t = setTimeout(() => (el.hidden = true), 1800);
 }
-$("resetBtn").addEventListener("click", () => {
+byId("resetBtn").addEventListener("click", () => {
   TYPES = defTypes();
   ACT = TYPES[0].id;
-  $("kr").value = "0.6";
-  $("resv").value = "20";
-  $("days").value = "0";
-  $("gcnt").value = "auto";
-  PRICE = {};
-  ON = {};
+  byId("kr").value = "0.6";
+  byId("resv").value = "20";
+  byId("days").value = "0";
+  byId("gcnt").value = "auto";
+  gpuPrices = {};
+  gpuEnabled = {};
   buildGpuSelect();
-  $("gpu").value = "auto";
+  byId("gpu").value = "auto";
   writeForm(act());
   calcAll();
   toast(t("exampleLoaded"));
 });
-$("copyBtn").addEventListener("click", () => {
+byId("copyBtn").addEventListener("click", () => {
   navigator.clipboard.writeText(report).then(
     () => toast(t("reportCopied")),
     () => toast(t("copyFail")),
   );
 });
-$("expBtn").addEventListener("click", () => {
+byId("expBtn").addEventListener("click", () => {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(
     new Blob([JSON.stringify(snap(), null, 1)], { type: "application/json" }),
@@ -3470,8 +3502,8 @@ function importText(s) {
   location.reload();
 }
 let impArm = null;
-$("impBtn").addEventListener("click", () => {
-  const b = $("impBtn");
+byId("impBtn").addEventListener("click", () => {
+  const b = byId("impBtn");
   if (!impArm) {
     b.textContent = t("impConfirm");
     impArm = setTimeout(() => {
@@ -3483,9 +3515,9 @@ $("impBtn").addEventListener("click", () => {
   clearTimeout(impArm);
   impArm = null;
   b.textContent = t("impBtn");
-  $("impFile").click();
+  byId("impFile").click();
 });
-$("impFile").addEventListener("change", (e) => {
+byId("impFile").addEventListener("change", (e) => {
   const f = e.target.files[0];
   e.target.value = "";
   if (f) f.text().then(importText, () => toast(t("readFail")));
@@ -3498,14 +3530,14 @@ const TPL = {
 function route() {
   const h = location.hash.slice(1),
     isTpl = h in TPL;
-  $("viewMain").style.display = isTpl ? "none" : "flex";
-  $("viewTpl").hidden = !isTpl;
-  $("viewTpl").style.display = isTpl ? "flex" : "none";
+  byId("viewMain").style.display = isTpl ? "none" : "flex";
+  byId("viewTpl").hidden = !isTpl;
+  byId("viewTpl").style.display = isTpl ? "flex" : "none";
   if (isTpl) {
     Object.keys(TPL).forEach((k) => {
-      $(k + "-v").hidden = k !== h;
-      $(k + "-v").style.display = k === h ? "flex" : "none";
-      const a = $("tt-" + k.slice(4));
+      byId(k + "-v").hidden = k !== h;
+      byId(k + "-v").style.display = k === h ? "flex" : "none";
+      const a = byId("tt-" + k.slice(4));
       if (k === h) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
@@ -3587,12 +3619,12 @@ function drawSide({ H, h, x1, x2, tilt, vf, Hc, pos, wN, wF }) {
   const room = y0 - yP >= 40;
   const zLabY = room ? yP - 16 : yP - 40,
     fLabY = room ? yP + 28 : yP - 18;
-  g += `<text x="${n((zx1 + zx2) / 2)}" y="${n(zLabY)}" text-anchor="middle" class="t-z">${t("dZone", fmt(x2 - x1, 1))}</text>`;
+  g += `<text x="${n((zx1 + zx2) / 2)}" y="${n(zLabY)}" text-anchor="middle" class="t-z">${t("dZone", formatNumber(x2 - x1, 1))}</text>`;
   if (isFinite(wN) && isFinite(wF)) {
     const nar = zw < 240;
     g += `<line x1="${n(zx1)}" y1="${n(yP + 7)}" x2="${n(zx1)}" y2="${n(yP + 13)}" stroke="var(--accent)" stroke-width="1.5"/><line x1="${n(zx2)}" y1="${n(yP + 7)}" x2="${n(zx2)}" y2="${n(yP + 13)}" stroke="var(--accent)" stroke-width="1.5"/>`;
-    g += `<text x="${n(zx1)}" y="${n(fLabY)}" text-anchor="${nar ? "end" : "middle"}">${t("dFrame", fmt(wN, 1))}</text>`;
-    g += `<text x="${n(zx2)}" y="${n(fLabY)}" text-anchor="${nar ? "start" : "middle"}">${t("dFrame", fmt(wF, 1))}</text>`;
+    g += `<text x="${n(zx1)}" y="${n(fLabY)}" text-anchor="${nar ? "end" : "middle"}">${t("dFrame", formatNumber(wN, 1))}</text>`;
+    g += `<text x="${n(zx2)}" y="${n(fLabY)}" text-anchor="${nar ? "start" : "middle"}">${t("dFrame", formatNumber(wF, 1))}</text>`;
   }
   // углы
   const dAx = (yP - cy) / Math.max(Math.sin(tilt), 0.05);
@@ -3603,25 +3635,25 @@ function drawSide({ H, h, x1, x2, tilt, vf, Hc, pos, wN, wF }) {
   const [t1x, t1y] = pt(r1, tilt);
   g += `<path d="M${n(cx + r1)},${n(cy)} A${r1},${r1} 0 0 1 ${n(t1x)},${n(t1y)}" fill="none" stroke="var(--fg)" stroke-width="1.5"/>`;
   const [tlx, tly] = pt(r1 + 10, tilt / 2);
-  g += `<text x="${n(tlx)}" y="${n(tly + 5)}" class="t-b">${t("dTilt", fmt(tilt / R, 0))}</text>`;
+  g += `<text x="${n(tlx)}" y="${n(tly + 5)}" class="t-b">${t("dTilt", formatNumber(tilt / DEG, 0))}</text>`;
   const [v1x, v1y] = pt(r2, a2),
     [v2x, v2y] = pt(r2, a1);
   g += `<path d="M${n(v1x)},${n(v1y)} A${n(r2)},${n(r2)} 0 0 1 ${n(v2x)},${n(v2y)}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`;
   const [vlx, vly] = pt(r2 + 12, tilt);
-  g += `<text x="${n(vlx + 4)}" y="${n(vly + 5)}" class="t-a">VFOV ${fmt(vf / R, 0)}°</text>`;
+  g += `<text x="${n(vlx + 4)}" y="${n(vly + 5)}" class="t-a">VFOV ${formatNumber(vf / DEG, 0)}°</text>`;
   // камера
   g += `<line x1="${n(cx)}" y1="${n(cy)}" x2="${n(cx)}" y2="${n(y0)}" stroke="var(--dim)" stroke-width="1.5"/>`;
   g += `<rect x="${n(cx - 16)}" y="${n(cy - 10)}" width="28" height="18" rx="3" fill="var(--fg)"/><circle cx="${n(cx + 12)}" cy="${n(cy - 1)}" r="4" fill="var(--bg)"/>`;
   // H слева
   const xd = Math.min(cx, xL) - 30;
   g += `<line x1="${n(xd)}" y1="${n(cy)}" x2="${n(xd)}" y2="${n(y0)}" stroke="var(--muted)"/><line x1="${n(xd - 6)}" y1="${n(cy)}" x2="${n(xd + 6)}" y2="${n(cy)}" stroke="var(--muted)"/><line x1="${n(xd - 6)}" y1="${n(y0)}" x2="${n(xd + 6)}" y2="${n(y0)}" stroke="var(--muted)"/>`;
-  g += `<text x="${n(xd - 8)}" y="${n((cy + y0) / 2)}" transform="rotate(-90 ${n(xd - 8)} ${n((cy + y0) / 2)})" text-anchor="middle" class="t-b">${t("dH", fmt(H, 1))}</text>`;
+  g += `<text x="${n(xd - 8)}" y="${n((cy + y0) / 2)}" transform="rotate(-90 ${n(xd - 8)} ${n((cy + y0) / 2)})" text-anchor="middle" class="t-b">${t("dH", formatNumber(H, 1))}</text>`;
   // h справа — повернута, не пересекается с подписями кадра
   if (h > 0.01) {
     const xh = xR + 22,
       ym = (yP + y0) / 2;
     g += `<line x1="${n(xh)}" y1="${n(yP)}" x2="${n(xh)}" y2="${n(y0)}" stroke="var(--muted)"/><line x1="${n(xh - 6)}" y1="${n(yP)}" x2="${n(xh + 6)}" y2="${n(yP)}" stroke="var(--muted)"/><line x1="${n(xh - 6)}" y1="${n(y0)}" x2="${n(xh + 6)}" y2="${n(y0)}" stroke="var(--muted)"/>`;
-    g += `<text x="${n(xh + 20)}" y="${n(ym)}" transform="rotate(-90 ${n(xh + 20)} ${n(ym)})" text-anchor="middle">${t("dh", fmt(h, 2))}</text>`;
+    g += `<text x="${n(xh + 20)}" y="${n(ym)}" transform="rotate(-90 ${n(xh + 20)} ${n(ym)})" text-anchor="middle">${t("dh", formatNumber(h, 2))}</text>`;
   }
   // размеры по полу
   const yd = y0 + 26,
@@ -3632,24 +3664,24 @@ function drawSide({ H, h, x1, x2, tilt, vf, Hc, pos, wN, wF }) {
   g += `<line x1="${n(zx1)}" y1="${n(yP + 6)}" x2="${n(zx1)}" y2="${n(yd - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/><line x1="${n(zx2)}" y1="${n(yP + 6)}" x2="${n(zx2)}" y2="${n(yd - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/>`;
   if (x1 > 0.05) {
     const w = zx1 - cx;
-    dim(cx, zx1, t(w > 110 ? "dOffset" : "dLen", fmt(x1, 1)));
+    dim(cx, zx1, t(w > 110 ? "dOffset" : "dLen", formatNumber(x1, 1)));
   }
-  dim(zx1, zx2, t(zw > 170 ? "dDepth" : "dLen", fmt(x2 - x1, 1)));
+  dim(zx1, zx2, t(zw > 170 ? "dDepth" : "dLen", formatNumber(x2 - x1, 1)));
   if (x1 <= 0.05)
     g += `<text x="${n(cx)}" y="${n(yt + 20)}" text-anchor="middle">${t(pos === "top" ? "dOverCenter" : "dOverZone")}</text>`;
-  const s = $("side");
+  const s = byId("side");
   s.innerHTML = g;
   s.setAttribute(
     "aria-label",
     t("dAria", {
-      H: fmt(H, 1),
-      tilt: fmt(tilt / R, 0),
-      vf: fmt(vf / R, 0),
-      x1: fmt(x1, 1),
-      x2: fmt(x2, 1),
-      h: fmt(h, 2),
-      wN: isFinite(wN) && fmt(wN, 1),
-      wF: fmt(wF, 1),
+      H: formatNumber(H, 1),
+      tilt: formatNumber(tilt / DEG, 0),
+      vf: formatNumber(vf / DEG, 0),
+      x1: formatNumber(x1, 1),
+      x2: formatNumber(x2, 1),
+      h: formatNumber(h, 2),
+      wN: isFinite(wN) && formatNumber(wN, 1),
+      wF: formatNumber(wF, 1),
     }),
   );
 }

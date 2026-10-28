@@ -6,8 +6,8 @@ const gfOf = (id) => {
 };
 function computeSystem(Rs) {
   const live = Rs.filter((r) => !r.err && r.count > 0);
-  const kr = P($("kr").value),
-    resv = Math.max(0, P($("resv").value) || 0) / 100,
+  const kr = parseNum(byId("kr").value),
+    resv = Math.max(0, parseNum(byId("resv").value) || 0) / 100,
     uMax = 1 / (1 + resv),
     BATCH = 16;
   const groups = live.flatMap((r) =>
@@ -31,9 +31,9 @@ function computeSystem(Rs) {
       if (!m) return { ...o, bad: true };
       if (MODELS.includes(m)) {
         const inScale = (640 / o.feedInfo.inputSize) ** 2;
-        base = ((1000 / m.ms) * inScale * g.tf) / T4TF;
+        base = ((1000 / m.ms) * inScale * g.tf) / T4_TFLOPS;
       } else {
-        const rg = gpuById(m.ref) || CATALOG[0],
+        const rg = gpuById(m.ref) || GPU_CATALOG[0],
           inScale = (m.inp / o.feedInfo.inputSize) ** 2;
         base = (m.fps * inScale * g.tf) / rg.tf;
       }
@@ -82,8 +82,8 @@ function computeSystem(Rs) {
     .filter((e) => e.ok)
     .sort((a, b) => a.cost - b.cost || a.n * a.g.tdp - b.n * b.g.tdp);
   const best = okAll[0],
-    gSel = $("gpu").value,
-    cSel = $("gcnt").value;
+    gSel = byId("gpu").value,
+    cSel = byId("gcnt").value;
   const minWorst = (arr) =>
     arr.length
       ? arr.reduce((a, b) => (a.worst < b.worst ? a : b))
@@ -94,7 +94,7 @@ function computeSystem(Rs) {
     const n = +cSel;
     E = okAll.find((e) => e.n === n) || minWorst(all.filter((e) => e.n === n));
   } else {
-    const g = gpuById(gSel) || CATALOG[0];
+    const g = gpuById(gSel) || GPU_CATALOG[0];
     if (cSel === "auto") {
       E = null;
       for (let n = 1; n <= 4 && !E; n++) {
@@ -123,25 +123,27 @@ function computeSystem(Rs) {
 const stTxt = STR.st;
 const cap1 = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 function renderType(result) {
-  const vd = $("verdict");
-  $("resTitle").textContent = t(
+  const vd = byId("verdict");
+  byId("resTitle").textContent = t(
     "resTitleOf",
     result.type.name || t("untitled"),
   );
   if (result.err) {
     vd.className = "verdict bad";
     vd.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
-    ["kpis", "dens", "facts", "side"].forEach((id) => ($(id).innerHTML = ""));
+    ["kpis", "dens", "facts", "side"].forEach(
+      (id) => (byId(id).innerHTML = ""),
+    );
     return;
   }
   vd.className = "verdict " + result.status;
-  vd.innerHTML = `<span class="pill">${result.pill}</span><div>${esc(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((n) => "<li>" + esc(n) + "</li>").join("") + "</ul>" : ""}</div>`;
+  vd.innerHTML = `<span class="pill">${result.pill}</span><div>${escapeHtml(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((n) => "<li>" + escapeHtml(n) + "</li>").join("") + "</ul>" : ""}</div>`;
   const { hfov, vfov, f, rotated, tilt, frameWidthAt, depthAt, x1, x2 } =
     result;
-  $("kpis").innerHTML = [
+  byId("kpis").innerHTML = [
     [
       t("kF"),
-      U(fmt(f, 1), "mm"),
+      U(formatNumber(f, 1), "mm"),
       t(
         result.clamped
           ? "kFLimit"
@@ -152,20 +154,20 @@ function renderType(result) {
     ],
     [
       t(rotated ? "kAngRot" : "kAng"),
-      fmt(hfov / R, 0) + "° × " + fmt(vfov / R, 0) + "°",
-      `DFOV ≈ ${fmt((2 * Math.atan(Math.hypot(Math.tan(hfov / 2), Math.tan(vfov / 2)))) / R, 0)}°`,
+      formatNumber(hfov / DEG, 0) + "° × " + formatNumber(vfov / DEG, 0) + "°",
+      `DFOV ≈ ${formatNumber((2 * Math.atan(Math.hypot(Math.tan(hfov / 2), Math.tan(vfov / 2)))) / DEG, 0)}°`,
     ],
     [
       t("kTilt"),
-      fmt(tilt / R, 0) + "°",
-      t(Math.abs(tilt / R - 90) < 1 ? "kTiltDown" : "kTiltHor"),
+      formatNumber(tilt / DEG, 0) + "°",
+      t(Math.abs(tilt / DEG - 90) < 1 ? "kTiltDown" : "kTiltHor"),
     ],
     [
       t("kFrame"),
       U(
-        fmt(frameWidthAt(depthAt(x1)), 1) +
+        formatNumber(frameWidthAt(depthAt(x1)), 1) +
           "–" +
-          fmt(frameWidthAt(depthAt(x2)), 1),
+          formatNumber(frameWidthAt(depthAt(x2)), 1),
         "m",
       ),
       t("kFrameSub"),
@@ -177,8 +179,8 @@ function renderType(result) {
     )
     .join("");
   result.objs.forEach((o, i) => {
-    const el = $(`ores-${i}`),
-      dt = $(`odot-${i}`);
+    const el = byId(`ores-${i}`),
+      dt = byId(`odot-${i}`);
     if (!el) return;
     if (o.bad) {
       el.className = "ores";
@@ -188,13 +190,13 @@ function renderType(result) {
     }
     el.className = "ores " + o.status;
     if (dt) dt.className = "dot " + o.status;
-    el.innerHTML = `<b>${cap1(stTxt[o.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(o)}</span>`, fmt(o.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(o), esc(o.feedInfo.text))}</span>`;
+    el.innerHTML = `<b>${cap1(stTxt[o.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(o)}</span>`, formatNumber(o.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(o), escapeHtml(o.feedInfo.text))}</span>`;
   });
   const top = result.placement === "top";
-  $("dens").innerHTML =
+  byId("dens").innerHTML =
     `<tr><th>${t("densHead")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
-    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(fmt(result.edge1.D, 1), "m")}</td><td>${fmt(result.edge1.across, 0)}</td><td>${fmt(result.edge1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(fmt(result.edge2.D, 1), "m")}</td><td>${fmt(result.edge2.across, 0)}</td><td>${fmt(result.edge2.depth, 0)}</td></tr>`;
+    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
+    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
   const lv = [25, 62, 125, 250],
     names = STR.dori;
   let li = -1;
@@ -202,8 +204,8 @@ function renderType(result) {
     if (result.minAcross >= l) li = i;
   });
   const shutter = result.shutterDenominator;
-  $("facts").innerHTML =
-    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(fmt(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${esc(result.cameraLabel)}</b></span>`;
+  byId("facts").innerHTML =
+    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
   drawSide({
     H: result.H,
     h: result.h,
@@ -220,7 +222,7 @@ function renderType(result) {
 
 // ---------- вкладки
 function renderTabs(Rs) {
-  const nav = $("tabs");
+  const nav = byId("tabs");
   nav.innerHTML = "";
   Rs.forEach((r) => {
     const b = document.createElement("button");
@@ -229,7 +231,7 @@ function renderTabs(Rs) {
     b.setAttribute("role", "tab");
     b.setAttribute("aria-selected", String(r.type.id === ACT));
     b.setAttribute("aria-controls", "typeOut");
-    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.status}" aria-hidden="true"></span><b>${esc(r.type.name || t("untitled"))}</b><small>× ${r.count}</small>`;
+    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.status}" aria-hidden="true"></span><b>${escapeHtml(r.type.name || t("untitled"))}</b><small>× ${r.count}</small>`;
     b.title = r.err ? t("tabErr") : t("tabObjs", stTxt[r.status] || r.pill);
     b.addEventListener("click", () => {
       if (ACT === r.type.id) return;
@@ -277,7 +279,7 @@ function ring(cx, cy, r, w, segs, mark) {
 // ---------- система
 function renderSystem(Rs, S) {
   const { E, best, kr, uMax, live } = S;
-  const pc = (u) => fmt(u * 100, 0) + "%";
+  const pc = (u) => formatNumber(u * 100, 0) + "%";
   const cams = Rs.reduce((s, r) => s + r.count, 0);
   const vAll = Rs.flatMap((r) => r.valid || []),
     objOk = vAll.filter((o) => o.status === "ok").length;
@@ -300,12 +302,12 @@ function renderSystem(Rs, S) {
       : mbTot * 1.3 < 9000
         ? U(10, "gbps")
         : "> " + U(10, "gbps");
-  $("sysKpis").innerHTML = [
+  byId("sysKpis").innerHTML = [
     [
       t("sCams"),
       `${cams}`,
       camCost
-        ? t("sTypes", Rs.length) + t("sCamCost", "$" + fmt(camCost, 0))
+        ? t("sTypes", Rs.length) + t("sCamCost", "$" + formatNumber(camCost, 0))
         : t("sTypes", Rs.length, Rs.map((r) => r.type.name).join(", ")),
     ],
     [
@@ -315,7 +317,7 @@ function renderSystem(Rs, S) {
         ? t(
             "sSmallest",
             smallest.name,
-            fmt(
+            formatNumber(
               Math.min(smallest.widthPx, smallest.heightPx) *
                 smallest.feedInfo.modelScale,
               1,
@@ -325,26 +327,26 @@ function renderSystem(Rs, S) {
     ],
     [
       t("sCompute"),
-      live.length ? `${E.n} × ${esc(E.g.name)}` : "—",
+      live.length ? `${E.n} × ${escapeHtml(E.g.name)}` : "—",
       live.length
-        ? `$${fmt(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - E.worst))) : t("insufficient")}`
+        ? `$${formatNumber(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - E.worst))) : t("insufficient")}`
         : t("sNoCams"),
     ],
     [
       t("sNet"),
-      `${U(fmt(mbTot, 0), "mbps")}`,
-      t("sPort", port, fmt(cams * 15.4, 0)),
+      `${U(formatNumber(mbTot, 0), "mbps")}`,
+      t("sPort", port, formatNumber(cams * 15.4, 0)),
     ],
   ]
     .map(
       ([l, v, e]) =>
-        `<div class="sk"><span>${l}</span><strong>${v}</strong><em>${esc(e)}</em></div>`,
+        `<div class="sk"><span>${l}</span><strong>${v}</strong><em>${escapeHtml(e)}</em></div>`,
     )
     .join("");
   // дашборд
   const hot = E.uI > uMax;
-  $("dsum").innerHTML = live.length
-    ? `<b>${E.n} × ${esc(E.g.name)}</b> · $${fmt(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - E.worst)))} · ${t("bottleneck", E.bott)}`
+  byId("dsum").innerHTML = live.length
+    ? `<b>${E.n} × ${escapeHtml(E.g.name)}</b> · $${formatNumber(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - E.worst)))} · ${t("bottleneck", E.bott)}`
     : "";
   const runs = E.mods
     .filter((o) => !o.bad)
@@ -362,16 +364,19 @@ function renderSystem(Rs, S) {
     restU = rest.reduce((s, o) => s + o.u, 0);
   const segs = shown.map((o, i) => ({ f: o.u, color: COLS[i] }));
   if (restU > 0) segs.push({ f: restU, color: "var(--c6)" });
-  $("donut").innerHTML = live.length
+  byId("donut").innerHTML = live.length
     ? ring(60, 60, 48, 14, segs, uMax) +
       `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${hot ? "var(--bad)" : "var(--fg)"}">${pc(E.uI)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
     : "";
-  $("donut").setAttribute("aria-label", t("donutAriaVal", pc(E.uI), pc(uMax)));
-  $("legend").innerHTML = live.length
+  byId("donut").setAttribute(
+    "aria-label",
+    t("donutAriaVal", pc(E.uI), pc(uMax)),
+  );
+  byId("legend").innerHTML = live.length
     ? shown
         .map(
           (o, i) =>
-            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${esc(mName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${esc(o.typeName)}: ${esc(o.names.join(", "))} · ${U(fmt(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
+            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${escapeHtml(mName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${escapeHtml(o.typeName)}: ${escapeHtml(o.names.join(", "))} · ${U(formatNumber(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
         )
         .join("") +
       (rest.length
@@ -382,65 +387,65 @@ function renderSystem(Rs, S) {
   const decCapN = (E.n * S.decTotal) / (E.dec || 1);
   const gauge = (label, u, lim, center, sub) =>
     `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ f: u, color: u > lim ? "var(--bad)" : "var(--meter)" }], lim < 1 ? lim : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
-  $("gauges").innerHTML = live.length
+  byId("gauges").innerHTML = live.length
     ? gauge(
         t("gDec"),
         E.uD,
         uMax,
         pc(E.uD),
-        t("gDecSub", fmt(S.decTotal, 1), fmt(decCapN, 0)),
+        t("gDecSub", formatNumber(S.decTotal, 1), formatNumber(decCapN, 0)),
       ) +
       gauge(
         t("gMem"),
         E.uM,
         1,
         pc(E.uM),
-        t("gMemSub", fmt(E.memUse, 1), fmt(E.memCap, 0)),
+        t("gMemSub", formatNumber(E.memUse, 1), formatNumber(E.memCap, 0)),
       )
     : "";
   const warn = S.noCand ? t("noCand") : !best && live.length ? t("noFit") : "";
-  $("loadNote").innerHTML = warn
-    ? `<span style="color:var(--bad)">${esc(warn)}</span>`
+  byId("loadNote").innerHTML = warn
+    ? `<span style="color:var(--bad)">${escapeHtml(warn)}</span>`
     : live.length && STR.gpuNotes[E.g.id]
-      ? esc(STR.gpuNotes[E.g.id])
+      ? escapeHtml(STR.gpuNotes[E.g.id])
       : "";
-  $("loadNote").hidden = !$("loadNote").innerHTML;
+  byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
-  const days = P($("days").value) || 0,
+  const days = parseNum(byId("days").value) || 0,
     tb = (((mbTot * 1e6) / 8) * 86400 * days) / 1e12;
-  $("netTbl").innerHTML =
+  byId("netTbl").innerHTML =
     `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((k) => `<th>${t(k)}</th>`).join("")}</tr>` +
     Rs.map((r) =>
       r.err
-        ? `<tr><td class="txt">${esc(r.type.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
-        : `<tr><td class="txt">${esc(r.type.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${fmt(r.fps, 0)}</td><td>${U(fmt(r.bitrateMbps, 1), "mbps")}</td><td>${U(fmt(r.bitrateMbps * r.count, 0), "mbps")}</td></tr>`,
+        ? `<tr><td class="txt">${escapeHtml(r.type.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
+        : `<tr><td class="txt">${escapeHtml(r.type.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${formatNumber(r.fps, 0)}</td><td>${U(formatNumber(r.bitrateMbps, 1), "mbps")}</td><td>${U(formatNumber(r.bitrateMbps * r.count, 0), "mbps")}</td></tr>`,
     ).join("") +
-    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(fmt(mbTot, 0), "mbps")}</td></tr>` +
-    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", fmt(tb, 1), fmt(days, 0)) : t("nArchOff")}</td></tr>`;
-  $("assList").innerHTML = t("ass", fmt(kr, 2))
-    .map((x) => `<li>${esc(x)}</li>`)
+    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(formatNumber(mbTot, 0), "mbps")}</td></tr>` +
+    `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", formatNumber(tb, 1), formatNumber(days, 0)) : t("nArchOff")}</td></tr>`;
+  byId("assList").innerHTML = t("ass", formatNumber(kr, 2))
+    .map((x) => `<li>${escapeHtml(x)}</li>`)
     .join("");
   return { cams, mbTot, camCost };
 }
 
 // ---------- шаблоны: видеокарты
 function buildGpuSelect() {
-  const sel = $("gpu"),
+  const sel = byId("gpu"),
     cur = sel.value || "auto";
   sel.innerHTML =
     `<option value="auto">${t("gpuAuto")}</option>` +
     allGpus()
       .map(
         (g) =>
-          `<option value="${g.id}">${esc(g.name)}${g.custom ? t("gpuCustomMark") : ""}</option>`,
+          `<option value="${g.id}">${escapeHtml(g.name)}${g.custom ? t("gpuCustomMark") : ""}</option>`,
       )
       .join("");
   sel.value = allGpus().some((g) => g.id === cur) ? cur : "auto";
-  const ref = $("ndRef");
+  const ref = byId("ndRef");
   if (ref) {
     const c = ref.value;
     ref.innerHTML = allGpus()
-      .map((g) => `<option value="${g.id}">${esc(g.name)}</option>`)
+      .map((g) => `<option value="${g.id}">${escapeHtml(g.name)}</option>`)
       .join("");
     ref.value = gpuById(c) ? c : "5090";
   }
@@ -448,36 +453,36 @@ function buildGpuSelect() {
 function renderGpuView() {
   const row = (
     g,
-  ) => `<tr><td class="txt"><b style="font-weight:600">${esc(g.name)}</b><span class="sub">${g.jet ? t("gJet") : esc(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${fmt(g.tf, 1)}</td><td>${decText(g)}</td><td>${U(fmt(g.mem, 0), "gb")}</td><td>${g.tdp ? U(fmt(g.tdp, 0), "w") : "—"}</td>
-    <td><input id="pr-${g.id}" value="${esc(PRICE[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${esc(t("gPriceAria", g.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${esc(t("gOnAria", g.name))}"></td>
-    ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${esc(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
+  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(g.name)}</b><span class="sub">${g.jet ? t("gJet") : escapeHtml(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(g.tf, 1)}</td><td>${decText(g)}</td><td>${U(formatNumber(g.mem, 0), "gb")}</td><td>${g.tdp ? U(formatNumber(g.tdp, 0), "w") : "—"}</td>
+    <td><input id="pr-${g.id}" value="${escapeHtml(gpuPrices[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", g.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", g.name))}"></td>
+    ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${escapeHtml(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
   const gh = STR.gHead,
     head = `<tr>${gh
       .slice(0, 6)
       .map((x) => `<th>${x}</th>`)
       .join("")}<th style="text-align:center">${gh[6]}</th><th></th></tr>`;
-  $("catTitle").textContent = t("catTitle", CATALOG.length);
-  $("catTbl").innerHTML = head + CATALOG.map(row).join("");
-  $("mine").innerHTML = CUSTOM.length
-    ? `<strong style="font-weight:600">${t("mineN", CUSTOM.length)}</strong><div class="tbl"><table>${head}${CUSTOM.map(row).join("")}</table></div>`
+  byId("catTitle").textContent = t("catTitle", GPU_CATALOG.length);
+  byId("catTbl").innerHTML = head + GPU_CATALOG.map(row).join("");
+  byId("mine").innerHTML = customGpus.length
+    ? `<strong style="font-weight:600">${t("mineN", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("mine0")}</strong><span class="note" style="font-size:13px">${t("mineEmpty")}</span>`;
   allGpus().forEach((g) => {
-    $(`pr-${g.id}`).addEventListener("input", (e) => {
-      PRICE[g.id] = e.target.value;
+    byId(`pr-${g.id}`).addEventListener("input", (e) => {
+      gpuPrices[g.id] = e.target.value;
       calcAll();
     });
-    $(`gon-${g.id}`).addEventListener("change", (e) => {
-      ON[g.id] = e.target.checked;
+    byId(`gon-${g.id}`).addEventListener("change", (e) => {
+      gpuEnabled[g.id] = e.target.checked;
       calcAll();
     });
   });
   document.querySelectorAll("[data-delg]").forEach((b) =>
     b.addEventListener("click", () => {
       const id = b.dataset.delg;
-      CUSTOM = CUSTOM.filter((g) => g.id !== id);
-      delete PRICE[id];
-      delete ON[id];
+      customGpus = customGpus.filter((g) => g.id !== id);
+      delete gpuPrices[id];
+      delete gpuEnabled[id];
       DETS.forEach((d) => {
         if (d.ref === id) d.ref = "5090";
       });
@@ -488,27 +493,27 @@ function renderGpuView() {
     }),
   );
 }
-$("ngArch").addEventListener("change", () => {
-  const j = $("ngArch").value === "jet";
-  $("ngDecL").textContent = t(j ? "ngDecJet" : "ngDec");
-  $("ngDec").placeholder = j ? "22" : "2";
+byId("ngArch").addEventListener("change", () => {
+  const j = byId("ngArch").value === "jet";
+  byId("ngDecL").textContent = t(j ? "ngDecJet" : "ngDec");
+  byId("ngDec").placeholder = j ? "22" : "2";
 });
-$("newForm").addEventListener("submit", (e) => {
+byId("newForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const name = $("ngName").value.trim(),
-    arch = $("ngArch").value,
-    tf = P($("ngTf").value),
-    dec = P($("ngDec").value),
-    mem = P($("ngMem").value),
-    tdp = P($("ngTdp").value),
-    price = P($("ngPrice").value);
+  const name = byId("ngName").value.trim(),
+    arch = byId("ngArch").value,
+    tf = parseNum(byId("ngTf").value),
+    dec = parseNum(byId("ngDec").value),
+    mem = parseNum(byId("ngMem").value),
+    tdp = parseNum(byId("ngTdp").value),
+    price = parseNum(byId("ngPrice").value);
   const errs = [];
   if (!name) errs.push(t("eName"));
   if (!(tf > 0)) errs.push(t("eTf"));
   if (!(dec > 0)) errs.push(t(arch === "jet" ? "eDecJet" : "eDec"));
   if (!(mem > 0)) errs.push(t("eMem"));
   if (!(price > 0)) errs.push(t("ePrice"));
-  const er = $("ngErr");
+  const er = byId("ngErr");
   if (errs.length) {
     er.hidden = false;
     er.textContent = t("ngErr", errs.join(", "));
@@ -529,10 +534,10 @@ $("newForm").addEventListener("submit", (e) => {
     g.jet = true;
     g.st = { h265: dec, h264: +((dec * 748) / 1415).toFixed(1) };
   } else g.nvdec = Math.round(dec);
-  CUSTOM.push(g);
-  ON[g.id] = $("ngOn").checked;
+  customGpus.push(g);
+  gpuEnabled[g.id] = byId("ngOn").checked;
   ["ngName", "ngTf", "ngDec", "ngMem", "ngTdp", "ngPrice"].forEach(
-    (id) => ($(id).value = ""),
+    (id) => (byId(id).value = ""),
   );
   buildGpuSelect();
   renderGpuView();
@@ -544,16 +549,16 @@ $("newForm").addEventListener("submit", (e) => {
 function renderCamView() {
   const used = (id) =>
     TYPES.filter((t) => t.v.cam === id).reduce(
-      (s, t) => s + (Math.round(P(t.count)) || 0),
+      (s, t) => s + (Math.round(parseNum(t.count)) || 0),
       0,
     );
-  $("camTitle").textContent = t("camTitle", allCams().length);
-  $("camTbl").innerHTML =
+  byId("camTitle").textContent = t("camTitle", allCams().length);
+  byId("camTbl").innerHTML =
     `<tr>${STR.cHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
     allCams()
       .map(
         (c) =>
-          `<tr><td class="txt"><b style="font-weight:600">${esc(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(fmt(c.sw, 2), "mm")}</td><td>${c.fmin > 0 ? (c.fmin === c.fmax ? U(fmt(c.fmin, 1), "mm") : U(fmt(c.fmin, 1) + "–" + fmt(c.fmax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + fmt(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${esc(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(c.name)}</b><span class="sub">${t(c.custom ? "cOwn" : "cBuiltin")}</span></td><td>${c.Nw} × ${c.Nh}</td><td>${U(formatNumber(c.sw, 2), "mm")}</td><td>${c.fmin > 0 ? (c.fmin === c.fmax ? U(formatNumber(c.fmin, 1), "mm") : U(formatNumber(c.fmin, 1) + "–" + formatNumber(c.fmax, 1), "mm")) : t("cAny")}</td><td>${c.price > 0 ? "$" + formatNumber(c.price, 0) : "—"}</td><td>${used(c.id)}</td><td>${c.custom ? `<button type="button" class="sm" data-delc="${c.id}" aria-label="${escapeHtml(t("delAria", c.name))}">${t("del")}</button>` : ""}</td></tr>`,
       )
       .join("");
   document.querySelectorAll("[data-delc]").forEach((b) =>
@@ -571,16 +576,16 @@ function renderCamView() {
     }),
   );
 }
-$("camForm").addEventListener("submit", (e) => {
+byId("camForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const name = $("ncName").value.trim(),
-    Nw = Math.round(P($("ncW").value)),
-    Nh = Math.round(P($("ncH").value)),
-    pp = P($("ncPp").value);
-  let sw = P($("ncSw").value);
-  let fmin = P($("ncFmin").value),
-    fmax = P($("ncFmax").value);
-  const price = P($("ncPrice").value);
+  const name = byId("ncName").value.trim(),
+    Nw = Math.round(parseNum(byId("ncW").value)),
+    Nh = Math.round(parseNum(byId("ncH").value)),
+    pp = parseNum(byId("ncPp").value);
+  let sw = parseNum(byId("ncSw").value);
+  let fmin = parseNum(byId("ncFmin").value),
+    fmax = parseNum(byId("ncFmax").value);
+  const price = parseNum(byId("ncPrice").value);
   if (!(sw > 0) && pp > 0 && Nw > 0) sw = +((pp * Nw) / 1000).toFixed(3);
   if (fmin > 0 && !(fmax > 0)) fmax = fmin;
   if (fmax > 0 && !(fmin > 0)) fmin = fmax;
@@ -589,7 +594,7 @@ $("camForm").addEventListener("submit", (e) => {
   if (!(Nw > 0 && Nh > 0)) errs.push(t("eFrame"));
   if (!(sw > 0)) errs.push(t("eSw"));
   if (fmin > 0 && fmax > 0 && fmin > fmax) errs.push(t("eFRange"));
-  const er = $("ncErr");
+  const er = byId("ncErr");
   if (errs.length) {
     er.hidden = false;
     er.textContent = t("ncErr", errs.join(", "));
@@ -616,7 +621,7 @@ $("camForm").addEventListener("submit", (e) => {
     "ncFmin",
     "ncFmax",
     "ncPrice",
-  ].forEach((id) => ($(id).value = ""));
+  ].forEach((id) => (byId(id).value = ""));
   buildCamSelect();
   renderCamView();
   save();
@@ -625,20 +630,20 @@ $("camForm").addEventListener("submit", (e) => {
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
-  $("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
+  byId("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
   const used = (id) =>
     TYPES.reduce((s, t) => s + t.objs.filter((o) => o.model === id).length, 0);
-  $("detTbl").innerHTML =
+  byId("detTbl").innerHTML =
     `<tr>${STR.dHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
     (DETS.length
       ? DETS.map((d) => {
           const rg = gpuById(d.ref);
-          return `<tr><td class="txt"><b style="font-weight:600">${esc(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inp}</td><td>${d.gf > 0 ? fmt(d.gf, 1) : "—"}</td><td>${t("dSpeed", fmt(d.fps, 0), esc(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${esc(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
+          return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(d.name)}</b><span class="sub">${t("dOwn")}</span></td><td>${d.inp}</td><td>${d.gf > 0 ? formatNumber(d.gf, 1) : "—"}</td><td>${t("dSpeed", formatNumber(d.fps, 0), escapeHtml(rg ? rg.name : "?"))}</td><td>${used(d.id)}</td><td><button type="button" class="sm" data-deld="${d.id}" aria-label="${escapeHtml(t("delAria", d.name))}">${t("del")}</button></td></tr>`;
         }).join("")
       : `<tr><td class="txt dim" colspan="6">${t("dEmpty")}</td></tr>`) +
     MODELS.map(
       (m) =>
-        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${fmt(m.gf, 1)}</td><td>${t("dSpeed", fmt(1000 / m.ms, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
+        `<tr><td class="txt">${m.name}<span class="sub">${t("dCatalog")}</span></td><td>640</td><td>${formatNumber(m.gf, 1)}</td><td>${t("dSpeed", formatNumber(1000 / m.ms, 0), "T4")}</td><td>${used(m.id)}</td><td></td></tr>`,
     ).join("");
   document.querySelectorAll("[data-deld]").forEach((b) =>
     b.addEventListener("click", () => {
@@ -656,20 +661,20 @@ function renderDetView() {
     }),
   );
 }
-$("ndInp").innerHTML = INPUTS.map(
+byId("ndInp").innerHTML = INPUTS.map(
   (x) => `<option${x === 640 ? " selected" : ""}>${x}</option>`,
 ).join("");
-$("detForm").addEventListener("submit", (e) => {
+byId("detForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const name = $("ndName").value.trim(),
-    fps = P($("ndFps").value),
-    inp = +$("ndInp").value,
-    ref = $("ndRef").value,
-    gf = P($("ndGf").value);
+  const name = byId("ndName").value.trim(),
+    fps = parseNum(byId("ndFps").value),
+    inp = +byId("ndInp").value,
+    ref = byId("ndRef").value,
+    gf = parseNum(byId("ndGf").value);
   const errs = [];
   if (!name) errs.push(t("eName"));
   if (!(fps > 0)) errs.push(t("eFps"));
-  const er = $("ndErr");
+  const er = byId("ndErr");
   if (errs.length) {
     er.hidden = false;
     er.textContent = t("ncErr", errs.join(", "));
@@ -685,7 +690,7 @@ $("detForm").addEventListener("submit", (e) => {
     gf: gf > 0 ? gf : 0,
     custom: true,
   });
-  ["ndName", "ndFps", "ndGf"].forEach((id) => ($(id).value = ""));
+  ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
   renderObjs();
   renderDetView();
   calcAll();
@@ -716,15 +721,15 @@ function calcAll() {
             t("rCam", {
               rl: r.cameraLabel,
               rot: r.rotated,
-              s: fmt(r.s, 2),
-              f: fmt(r.f, 1),
-              hf: fmt(r.hfov / R, 0),
-              tilt: fmt(r.tilt / R, 0),
+              s: formatNumber(r.s, 2),
+              f: formatNumber(r.f, 1),
+              hf: formatNumber(r.hfov / DEG, 0),
+              tilt: formatNumber(r.tilt / DEG, 0),
               top: r.placement === "top",
-              L0: fmt(r.zoneStart, 2),
-              H: fmt(r.H, 2),
-              Wz: fmt(r.zoneWidth, 2),
-              Dz: fmt(r.zoneDepth, 2),
+              L0: formatNumber(r.zoneStart, 2),
+              H: formatNumber(r.H, 2),
+              Wz: formatNumber(r.zoneWidth, 2),
+              Dz: formatNumber(r.zoneDepth, 2),
             }),
             ...r.valid.map((o) =>
               t("rObj", {
@@ -733,13 +738,13 @@ function calcAll() {
                 feed: o.feedInfo.text,
                 pxs: r.sensorPxText(o),
                 pxm: r.modelPxText(o),
-                req: fmt(o.requiredPx, 0),
+                req: formatNumber(o.requiredPx, 0),
                 st: stTxt[o.status],
               }),
             ),
             t(
               "rStream",
-              fmt(r.bitrateMbps, 1),
+              formatNumber(r.bitrateMbps, 1),
               Math.ceil(r.shutterDenominator),
             ),
           ],
@@ -748,21 +753,21 @@ function calcAll() {
       t(
         "rSys",
         sysTot.cams,
-        fmt(sysTot.mbTot, 0),
-        sysTot.camCost ? "$" + fmt(sysTot.camCost, 0) : "",
+        formatNumber(sysTot.mbTot, 0),
+        sysTot.camCost ? "$" + formatNumber(sysTot.camCost, 0) : "",
       ),
     S.live.length
       ? t("rCompute", {
           n: E.n,
           g: E.g.name,
-          cost: "$" + fmt(E.cost, 0),
-          uI: fmt(E.uI * 100, 0),
-          uD: fmt(E.uD * 100, 0),
-          mem: fmt(E.memUse, 1),
-          cap: fmt(E.memCap, 0),
+          cost: "$" + formatNumber(E.cost, 0),
+          uI: formatNumber(E.uI * 100, 0),
+          uD: formatNumber(E.uD * 100, 0),
+          mem: formatNumber(E.memUse, 1),
+          cap: formatNumber(E.memCap, 0),
           best:
             S.best && S.best !== E
-              ? `${S.best.n} × ${S.best.g.name}, $${fmt(S.best.cost, 0)}`
+              ? `${S.best.n} × ${S.best.g.name}, $${formatNumber(S.best.cost, 0)}`
               : "",
         })
       : t("rNoCompute"),
@@ -773,10 +778,10 @@ const GL_IDS = ["kr", "resv", "days", "gpu", "gcnt"];
 const snap = () => ({
   types: TYPES,
   act: ACT,
-  gl: Object.fromEntries(GL_IDS.map((id) => [id, $(id).value])),
-  price: PRICE,
-  on: ON,
-  custom: CUSTOM,
+  gl: Object.fromEntries(GL_IDS.map((id) => [id, byId(id).value])),
+  price: gpuPrices,
+  on: gpuEnabled,
+  custom: customGpus,
   cams: CAMS_C,
   dets: DETS,
   light: document.documentElement.classList.contains("light"),
@@ -808,7 +813,7 @@ function load() {
       Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
     const shownName = (x) => (x.nameKey && builtinName(x.nameKey)) || x.name;
     if (Array.isArray(st.custom))
-      CUSTOM = st.custom
+      customGpus = st.custom
         .filter((g) => g && g.id && g.name && g.tf > 0)
         .map((g) => ({ ...g, custom: true }));
     if (Array.isArray(st.cams))
@@ -819,8 +824,8 @@ function load() {
       DETS = st.dets
         .filter((d) => d && d.id && d.fps > 0)
         .map((d) => ({ ...d, custom: true }));
-    if (st.price && typeof st.price === "object") PRICE = dotAll(st.price);
-    if (st.on && typeof st.on === "object") ON = st.on;
+    if (st.price && typeof st.price === "object") gpuPrices = dotAll(st.price);
+    if (st.on && typeof st.on === "object") gpuEnabled = st.on;
     if (st.light) setTheme(true);
     buildGpuSelect();
     buildCamSelect();
@@ -850,7 +855,7 @@ function load() {
     }
     if (st.gl)
       GL_IDS.forEach((id) => {
-        const el = $(id);
+        const el = byId(id);
         if (st.gl[id] != null) el.value = dot(st.gl[id]);
         if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = "auto";
       });
@@ -860,17 +865,17 @@ function load() {
 // ---------- события
 function setTheme(light) {
   document.documentElement.classList.toggle("light", light);
-  $("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
-  $("themeBtn").setAttribute("aria-pressed", String(light));
+  byId("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
+  byId("themeBtn").setAttribute("aria-pressed", String(light));
 }
-$("themeBtn").addEventListener("click", () => {
+byId("themeBtn").addEventListener("click", () => {
   setTheme(!document.documentElement.classList.contains("light"));
   save();
 });
-$("langBtn").lang = LANG === "en" ? "ru" : "en";
-$("langBtn").addEventListener("click", () => {
+byId("langBtn").lang = LANG === "en" ? "ru" : "en";
+byId("langBtn").addEventListener("click", () => {
   try {
-    localStorage.setItem(LANG_KEY, $("langBtn").lang);
+    localStorage.setItem(LANG_KEY, byId("langBtn").lang);
   } catch (e) {
     toast(t("saveFail"));
     return;
@@ -887,9 +892,9 @@ PRESETS.forEach((pr) => {
     renderObjs();
     calcAll();
   });
-  $("presets").append(b);
+  byId("presets").append(b);
 });
-$("addObj").addEventListener("click", () => {
+byId("addObj").addEventListener("click", () => {
   const T = act();
   T.objs.push(
     mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
@@ -897,23 +902,23 @@ $("addObj").addEventListener("click", () => {
   renderObjs();
   calcAll();
   const i = T.objs.length - 1;
-  $(`on-${i}`).focus();
-  $(`on-${i}`).select();
+  byId(`on-${i}`).focus();
+  byId(`on-${i}`).select();
 });
-$("frm").addEventListener("input", () => {
+byId("frm").addEventListener("input", () => {
   readForm();
   calcAll();
 });
-$("frm").addEventListener("change", () => {
+byId("frm").addEventListener("change", () => {
   readForm();
   calcAll();
 });
-$("frm").addEventListener("submit", (e) => e.preventDefault());
+byId("frm").addEventListener("submit", (e) => e.preventDefault());
 GL_IDS.forEach((id) => {
-  $(id).addEventListener("input", calcAll);
-  $(id).addEventListener("change", calcAll);
+  byId(id).addEventListener("input", calcAll);
+  byId(id).addEventListener("change", calcAll);
 });
-$("dupBtn").addEventListener("click", () => {
+byId("dupBtn").addEventListener("click", () => {
   readForm();
   const src = act(),
     T = JSON.parse(JSON.stringify(src));
@@ -927,8 +932,8 @@ $("dupBtn").addEventListener("click", () => {
   toast(t("typeCopied"));
 });
 let delArm = null;
-$("delBtn").addEventListener("click", () => {
-  const b = $("delBtn");
+byId("delBtn").addEventListener("click", () => {
+  const b = byId("delBtn");
   if (TYPES.length < 2) {
     toast(t("lastType"));
     return;
@@ -952,34 +957,34 @@ $("delBtn").addEventListener("click", () => {
   toast(t("typeDeleted"));
 });
 function toast(t) {
-  const el = $("toast");
+  const el = byId("toast");
   el.textContent = t;
   el.hidden = false;
   clearTimeout(toast.t);
   toast.t = setTimeout(() => (el.hidden = true), 1800);
 }
-$("resetBtn").addEventListener("click", () => {
+byId("resetBtn").addEventListener("click", () => {
   TYPES = defTypes();
   ACT = TYPES[0].id;
-  $("kr").value = "0.6";
-  $("resv").value = "20";
-  $("days").value = "0";
-  $("gcnt").value = "auto";
-  PRICE = {};
-  ON = {};
+  byId("kr").value = "0.6";
+  byId("resv").value = "20";
+  byId("days").value = "0";
+  byId("gcnt").value = "auto";
+  gpuPrices = {};
+  gpuEnabled = {};
   buildGpuSelect();
-  $("gpu").value = "auto";
+  byId("gpu").value = "auto";
   writeForm(act());
   calcAll();
   toast(t("exampleLoaded"));
 });
-$("copyBtn").addEventListener("click", () => {
+byId("copyBtn").addEventListener("click", () => {
   navigator.clipboard.writeText(report).then(
     () => toast(t("reportCopied")),
     () => toast(t("copyFail")),
   );
 });
-$("expBtn").addEventListener("click", () => {
+byId("expBtn").addEventListener("click", () => {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(
     new Blob([JSON.stringify(snap(), null, 1)], { type: "application/json" }),
@@ -1022,8 +1027,8 @@ function importText(s) {
   location.reload();
 }
 let impArm = null;
-$("impBtn").addEventListener("click", () => {
-  const b = $("impBtn");
+byId("impBtn").addEventListener("click", () => {
+  const b = byId("impBtn");
   if (!impArm) {
     b.textContent = t("impConfirm");
     impArm = setTimeout(() => {
@@ -1035,9 +1040,9 @@ $("impBtn").addEventListener("click", () => {
   clearTimeout(impArm);
   impArm = null;
   b.textContent = t("impBtn");
-  $("impFile").click();
+  byId("impFile").click();
 });
-$("impFile").addEventListener("change", (e) => {
+byId("impFile").addEventListener("change", (e) => {
   const f = e.target.files[0];
   e.target.value = "";
   if (f) f.text().then(importText, () => toast(t("readFail")));
@@ -1050,14 +1055,14 @@ const TPL = {
 function route() {
   const h = location.hash.slice(1),
     isTpl = h in TPL;
-  $("viewMain").style.display = isTpl ? "none" : "flex";
-  $("viewTpl").hidden = !isTpl;
-  $("viewTpl").style.display = isTpl ? "flex" : "none";
+  byId("viewMain").style.display = isTpl ? "none" : "flex";
+  byId("viewTpl").hidden = !isTpl;
+  byId("viewTpl").style.display = isTpl ? "flex" : "none";
   if (isTpl) {
     Object.keys(TPL).forEach((k) => {
-      $(k + "-v").hidden = k !== h;
-      $(k + "-v").style.display = k === h ? "flex" : "none";
-      const a = $("tt-" + k.slice(4));
+      byId(k + "-v").hidden = k !== h;
+      byId(k + "-v").style.display = k === h ? "flex" : "none";
+      const a = byId("tt-" + k.slice(4));
       if (k === h) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
