@@ -130,7 +130,7 @@ const verdictItems = (objects: ValidObject[]) =>
     )
     .join("; ");
 
-export function verdictHeadline(verdict: Verdict) {
+export function verdictHeadline(verdict: Verdict): string {
   switch (verdict.code) {
     case "noObjects":
       return t("verdictNoObjects");
@@ -148,7 +148,7 @@ export function verdictHeadline(verdict: Verdict) {
 }
 
 // плашка вердикта; при замечаниях «достаточно» заменяется на «есть замечания»
-export function verdictPill(verdict: Verdict, notes: Note[]) {
+export function verdictPill(verdict: Verdict, notes: Note[]): string {
   switch (verdict.code) {
     case "noObjects":
       return t("pillNoObjects");
