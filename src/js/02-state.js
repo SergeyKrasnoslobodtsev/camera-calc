@@ -1,20 +1,20 @@
 // ---------- состояние
-const PRESETS = [
+const OBJECT_PRESETS = [
   [50, 30, 170, 32, "y26s", "roi", 640],
   [9, 18, 4, 20, "y26s", "tiles", 640],
   [8, 8, 2, 20, "y26s", "roi", 640],
   [25, 6, 6, 20, "y26s", "roi", 640],
   [1.3, 1.3, 0.7, 10, "y26s", "tiles", 640],
-].map((p, i) => [STR.presetNames[i], ...p, `presetNames.${i}`]);
+].map((preset, i) => [STR.presetNames[i], ...preset, `presetNames.${i}`]);
 // встроенное название на текущем языке по ключу словаря, например "presetNames.0";
 // ключ есть, пока пользователь не изменил название
 const builtinName = (key) => {
-  const v = String(key)
+  const value = String(key)
     .split(".")
-    .reduce((v, k) => v?.[k], STR);
-  return typeof v === "string" ? v : undefined;
+    .reduce((node, part) => node?.[part], STR);
+  return typeof value === "string" ? value : undefined;
 };
-const mkObj = ([
+const makeObject = ([
   name,
   width,
   length,
@@ -38,7 +38,7 @@ const mkObj = ([
   fps: 300,
   ref: "5090",
 });
-const FIELDS = [
+const INPUT_IDS = [
   "camera",
   "cameraHeight",
   "planeHeight",
@@ -61,7 +61,7 @@ const FIELDS = [
   "speed",
   "blurPx",
 ];
-const DEF_V = {
+const DEFAULT_INPUTS = {
   camera: "",
   cameraHeight: "4",
   planeHeight: "0.9",
@@ -86,17 +86,23 @@ const DEF_V = {
   lensMode: "auto",
   placement: "side",
 };
-const mkType = (name, count, over, objects, nameKey) => ({
+const makeType = (name, count, overrides, objects, nameKey) => ({
   id: uid(),
   name,
   nameKey,
   count: String(count),
-  inputs: { ...DEF_V, ...over },
-  objects: objects.map(mkObj),
+  inputs: { ...DEFAULT_INPUTS, ...overrides },
+  objects: objects.map(makeObject),
 });
-const defTypes = () => [
-  mkType(STR.typeNames[0], 10, {}, [PRESETS[0], PRESETS[1]], "typeNames.0"),
-  mkType(
+const exampleTypes = () => [
+  makeType(
+    STR.typeNames[0],
+    10,
+    {},
+    [OBJECT_PRESETS[0], OBJECT_PRESETS[1]],
+    "typeNames.0",
+  ),
+  makeType(
     STR.typeNames[1],
     10,
     {
@@ -108,58 +114,61 @@ const defTypes = () => [
       analyticsFps: "2",
       fps: "10",
     },
-    [PRESETS[2]],
+    [OBJECT_PRESETS[2]],
     "typeNames.1",
   ),
 ];
-let TYPES = defTypes(),
-  ACT = TYPES[0].id;
-const act = () => TYPES.find((t) => t.id === ACT) || TYPES[0];
+let cameraTypes = exampleTypes(),
+  activeTypeId = cameraTypes[0].id;
+const activeType = () =>
+  cameraTypes.find((type) => type.id === activeTypeId) || cameraTypes[0];
 
 // ---------- форма ↔ тип
-RESOLUTIONS.forEach((r, i) => byId("resolution").add(new Option(r[0], i)));
-SENSORS.forEach((s, i) =>
+RESOLUTIONS.forEach(([label], i) =>
+  byId("resolution").add(new Option(label, i)),
+);
+SENSORS.forEach(([label, width], i) =>
   byId("sensor").add(
     new Option(
-      typeof s[1] === "number"
-        ? t("sensMm", s[0], formatNumber(s[1], 1))
-        : s[1] === "pp"
+      typeof width === "number"
+        ? t("sensMm", label, formatNumber(width, 1))
+        : width === "pp"
           ? t("sensPp")
           : t("sensOwn"),
       i,
     ),
   ),
 );
-function writeForm(T) {
-  byId("tName").value = T.name;
-  byId("tCount").value = T.count;
-  FIELDS.forEach((id) => {
-    byId(id).value = T.inputs[id] ?? DEF_V[id];
+function writeForm(type) {
+  byId("tName").value = type.name;
+  byId("tCount").value = type.count;
+  INPUT_IDS.forEach((id) => {
+    byId(id).value = type.inputs[id] ?? DEFAULT_INPUTS[id];
   });
-  const md =
+  const lensModeRadio =
     document.querySelector(
-      `input[name="lensMode"][value="${T.inputs.lensMode}"]`,
+      `input[name="lensMode"][value="${type.inputs.lensMode}"]`,
     ) || byId("mAuto");
-  md.checked = true;
-  const ps =
+  lensModeRadio.checked = true;
+  const placementRadio =
     document.querySelector(
-      `input[name="placement"][value="${T.inputs.placement}"]`,
+      `input[name="placement"][value="${type.inputs.placement}"]`,
     ) || byId("pSide");
-  ps.checked = true;
+  placementRadio.checked = true;
   renderObjs();
 }
 function readForm() {
-  const T = act();
-  if (T.name !== byId("tName").value) delete T.nameKey;
-  T.name = byId("tName").value;
-  T.count = byId("tCount").value;
-  FIELDS.forEach((id) => {
-    T.inputs[id] = byId(id).value;
+  const type = activeType();
+  if (type.name !== byId("tName").value) delete type.nameKey;
+  type.name = byId("tName").value;
+  type.count = byId("tCount").value;
+  INPUT_IDS.forEach((id) => {
+    type.inputs[id] = byId(id).value;
   });
-  T.inputs.lensMode =
+  type.inputs.lensMode =
     (document.querySelector('input[name="lensMode"]:checked') || {}).value ||
     "auto";
-  T.inputs.placement =
+  type.inputs.placement =
     (document.querySelector('input[name="placement"]:checked') || {}).value ||
     "side";
 }

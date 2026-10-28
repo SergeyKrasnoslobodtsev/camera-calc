@@ -229,14 +229,14 @@ function renderTabs(Rs) {
     b.type = "button";
     b.className = "tab";
     b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(r.type.id === ACT));
+    b.setAttribute("aria-selected", String(r.type.id === activeTypeId));
     b.setAttribute("aria-controls", "typeOut");
     b.innerHTML = `<span class="dot ${r.err ? "bad" : r.status}" aria-hidden="true"></span><b>${escapeHtml(r.type.name || t("untitled"))}</b><small>× ${r.count}</small>`;
     b.title = r.err ? t("tabErr") : t("tabObjs", stTxt[r.status] || r.pill);
     b.addEventListener("click", () => {
-      if (ACT === r.type.id) return;
-      ACT = r.type.id;
-      writeForm(act());
+      if (activeTypeId === r.type.id) return;
+      activeTypeId = r.type.id;
+      writeForm(activeType());
       calcAll();
     });
     nav.append(b);
@@ -246,9 +246,11 @@ function renderTabs(Rs) {
   add.className = "tab ghost";
   add.textContent = t("addType");
   add.addEventListener("click", () => {
-    const T = mkType(t("newType", TYPES.length + 1), 1, {}, [PRESETS[0]]);
-    TYPES.push(T);
-    ACT = T.id;
+    const T = makeType(t("newType", cameraTypes.length + 1), 1, {}, [
+      OBJECT_PRESETS[0],
+    ]);
+    cameraTypes.push(T);
+    activeTypeId = T.id;
     writeForm(T);
     calcAll();
   });
@@ -548,10 +550,9 @@ byId("newForm").addEventListener("submit", (e) => {
 // ---------- шаблоны: камеры
 function renderCamView() {
   const used = (id) =>
-    TYPES.filter((t) => t.inputs.camera === id).reduce(
-      (s, t) => s + (Math.round(parseNum(t.count)) || 0),
-      0,
-    );
+    cameraTypes
+      .filter((t) => t.inputs.camera === id)
+      .reduce((s, t) => s + (Math.round(parseNum(t.count)) || 0), 0);
   byId("camTitle").textContent = t("camTitle", allCams().length);
   byId("camTbl").innerHTML =
     `<tr>${STR.cHead.map((x) => `<th>${x}</th>`).join("")}<th></th></tr>` +
@@ -565,11 +566,11 @@ function renderCamView() {
     b.addEventListener("click", () => {
       const id = b.dataset.delc;
       CAMS_C = CAMS_C.filter((c) => c.id !== id);
-      TYPES.forEach((t) => {
+      cameraTypes.forEach((t) => {
         if (t.inputs.camera === id) t.inputs.camera = "";
       });
       buildCamSelect();
-      writeForm(act());
+      writeForm(activeType());
       renderCamView();
       calcAll();
       toast(t("cDeleted"));
@@ -634,7 +635,7 @@ byId("camForm").addEventListener("submit", (e) => {
 function renderDetView() {
   byId("detTitle").textContent = t("detTitle", MODELS.length + DETS.length);
   const used = (id) =>
-    TYPES.reduce(
+    cameraTypes.reduce(
       (s, t) => s + t.objects.filter((o) => o.model === id).length,
       0,
     );
@@ -654,7 +655,7 @@ function renderDetView() {
     b.addEventListener("click", () => {
       const id = b.dataset.deld;
       DETS = DETS.filter((d) => d.id !== id);
-      TYPES.forEach((t) =>
+      cameraTypes.forEach((t) =>
         t.objects.forEach((o) => {
           if (o.model === id) o.model = "y26s";
         }),
@@ -705,12 +706,12 @@ byId("detForm").addEventListener("submit", (e) => {
 // ---------- главный цикл
 let report = "";
 function calcAll() {
-  const Rs = TYPES.map(computeType);
+  const Rs = cameraTypes.map(computeType);
   const i = Math.max(
     0,
-    TYPES.findIndex((t) => t.id === ACT),
+    cameraTypes.findIndex((t) => t.id === activeTypeId),
   );
-  syncFormUI(TYPES[i], Rs[i]);
+  syncFormUI(cameraTypes[i], Rs[i]);
   renderType(Rs[i]);
   renderTabs(Rs);
   const S = computeSystem(Rs);
@@ -781,8 +782,8 @@ function calcAll() {
 }
 const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
 const snap = () => ({
-  types: TYPES,
-  activeTypeId: ACT,
+  types: cameraTypes,
+  activeTypeId,
   system: Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value])),
   gpuPrices,
   gpuEnabled,
@@ -837,14 +838,14 @@ function load() {
     buildGpuSelect();
     buildCamSelect();
     if (Array.isArray(st.types) && st.types.length) {
-      TYPES = st.types.map((t) => ({
+      cameraTypes = st.types.map((t) => ({
         id: t.id || uid(),
         name: shownName(t),
         nameKey: t.nameKey,
         count: dot(t.count),
-        inputs: dotAll({ ...DEF_V, ...t.inputs }),
+        inputs: dotAll({ ...DEFAULT_INPUTS, ...t.inputs }),
         objects: (t.objects || []).map((o) => ({
-          ...mkObj([
+          ...makeObject([
             shownName(o),
             dot(o.width),
             dot(o.length),
@@ -858,9 +859,9 @@ function load() {
           overlap: dot(o.overlap ?? 20),
         })),
       }));
-      ACT = TYPES.some((t) => t.id === st.activeTypeId)
+      activeTypeId = cameraTypes.some((t) => t.id === st.activeTypeId)
         ? st.activeTypeId
-        : TYPES[0].id;
+        : cameraTypes[0].id;
     }
     if (st.system)
       SYSTEM_IDS.forEach((id) => {
@@ -891,22 +892,32 @@ byId("langBtn").addEventListener("click", () => {
   }
   location.reload();
 });
-PRESETS.forEach((pr) => {
+OBJECT_PRESETS.forEach((pr) => {
   const b = document.createElement("button");
   b.type = "button";
   b.className = "chip";
   b.textContent = pr[0];
   b.addEventListener("click", () => {
-    act().objects.push(mkObj(pr));
+    activeType().objects.push(makeObject(pr));
     renderObjs();
     calcAll();
   });
   byId("presets").append(b);
 });
 byId("addObj").addEventListener("click", () => {
-  const T = act();
+  const T = activeType();
   T.objects.push(
-    mkObj([t("objDefault"), 10, 10, 10, 20, "y26s", "roi", 640, "objDefault"]),
+    makeObject([
+      t("objDefault"),
+      10,
+      10,
+      10,
+      20,
+      "y26s",
+      "roi",
+      640,
+      "objDefault",
+    ]),
   );
   renderObjs();
   calcAll();
@@ -929,13 +940,13 @@ SYSTEM_IDS.forEach((id) => {
 });
 byId("dupBtn").addEventListener("click", () => {
   readForm();
-  const src = act(),
+  const src = activeType(),
     T = JSON.parse(JSON.stringify(src));
   T.id = uid();
   T.name = src.name + t("copySuffix");
   delete T.nameKey;
-  TYPES.splice(TYPES.indexOf(src) + 1, 0, T);
-  ACT = T.id;
+  cameraTypes.splice(cameraTypes.indexOf(src) + 1, 0, T);
+  activeTypeId = T.id;
   writeForm(T);
   calcAll();
   toast(t("typeCopied"));
@@ -943,7 +954,7 @@ byId("dupBtn").addEventListener("click", () => {
 let delArm = null;
 byId("delBtn").addEventListener("click", () => {
   const b = byId("delBtn");
-  if (TYPES.length < 2) {
+  if (cameraTypes.length < 2) {
     toast(t("lastType"));
     return;
   }
@@ -958,10 +969,10 @@ byId("delBtn").addEventListener("click", () => {
   clearTimeout(delArm);
   delArm = null;
   b.textContent = t("delBtn");
-  const i = TYPES.findIndex((t) => t.id === ACT);
-  TYPES.splice(i, 1);
-  ACT = TYPES[Math.max(0, i - 1)].id;
-  writeForm(act());
+  const i = cameraTypes.findIndex((t) => t.id === activeTypeId);
+  cameraTypes.splice(i, 1);
+  activeTypeId = cameraTypes[Math.max(0, i - 1)].id;
+  writeForm(activeType());
   calcAll();
   toast(t("typeDeleted"));
 });
@@ -973,8 +984,8 @@ function toast(t) {
   toast.t = setTimeout(() => (el.hidden = true), 1800);
 }
 byId("resetBtn").addEventListener("click", () => {
-  TYPES = defTypes();
-  ACT = TYPES[0].id;
+  cameraTypes = exampleTypes();
+  activeTypeId = cameraTypes[0].id;
   byId("efficiency").value = "0.6";
   byId("reserve").value = "20";
   byId("archiveDays").value = "0";
@@ -983,7 +994,7 @@ byId("resetBtn").addEventListener("click", () => {
   gpuEnabled = {};
   buildGpuSelect();
   byId("gpu").value = "auto";
-  writeForm(act());
+  writeForm(activeType());
   calcAll();
   toast(t("exampleLoaded"));
 });
@@ -1079,7 +1090,7 @@ function route() {
       else a.removeAttribute("aria-current");
     });
     TPL[h]();
-  } else if (h === "") (writeForm(act()), calcAll());
+  } else if (h === "") (writeForm(activeType()), calcAll());
   try {
     window.scrollTo(0, 0);
   } catch (e) {}

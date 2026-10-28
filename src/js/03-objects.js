@@ -38,7 +38,7 @@ function buildCamSelect() {
 
 // ---------- карточки объектов
 function renderObjs() {
-  const T = act(),
+  const T = activeType(),
     L = byId("objList");
   L.innerHTML = "";
   T.objects.forEach((o, i) => {

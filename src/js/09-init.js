@@ -1,6 +1,6 @@
 buildGpuSelect();
 buildCamSelect();
 load();
-writeForm(act());
+writeForm(activeType());
 calcAll();
 route();
