@@ -167,7 +167,7 @@ svg text.mid{font-family:var(--mono);font-size:15px;font-weight:500;fill:var(--f
 .colhead{padding:14px 16px 12px;border-bottom:1px solid var(--line2)}
 .typehead{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px 10px;align-items:end}
 .typehead h2{grid-column:1/-1}
-.typehead input#tName{font-family:var(--sans);font-weight:600}
+.typehead input#typeName{font-family:var(--sans);font-weight:600}
 details.sec{border-bottom:1px solid var(--line2)}
 details.sec>summary{list-style:none;cursor:pointer;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
 details.sec>summary::-webkit-details-marker{display:none}
@@ -266,7 +266,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   <div class="acts">
     <button type="button" id="themeBtn" aria-pressed="false" data-t="themeLight"></button>
     <button type="button" id="langBtn" data-t="langBtn" data-ta="langAria"></button>
-    <a class="btn" href="#tpl-gpus" id="tplBtn" data-t="templatesBtn"></a>
+    <a class="btn" href="#tpl-gpus" id="templatesBtn" data-t="templatesBtn"></a>
     <button type="button" id="resetBtn" data-t="resetBtn"></button>
     <button type="button" id="copyBtn" class="primary" data-t="copyBtn"></button>
   </div>
@@ -276,9 +276,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <nav class="tabs" role="tablist" data-ta="tabsAria" id="tabs"></nav>
 
 <div class="first">
-<section class="syswrap" aria-labelledby="sysTitle">
-  <h2 id="sysTitle" data-t="systemTitle"></h2>
-  <div class="sys" id="sysKpis"></div>
+<section class="syswrap" aria-labelledby="systemTitle">
+  <h2 id="systemTitle" data-t="systemTitle"></h2>
+  <div class="sys" id="systemKpis"></div>
 </section>
 
 <section class="panel dash" aria-labelledby="loadTitle">
@@ -290,7 +290,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     <div class="f"><label for="gpu" data-t="gpu"></label><select id="gpu"></select></div>
     <div class="f"><label for="gpuCount" data-t="gpuCount"></label><select id="gpuCount"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
   </div>
-  <div class="dsum" id="dsum"></div>
+  <div class="dsum" id="loadSummary"></div>
   <div class="donutbox">
     <svg id="donut" viewBox="0 0 120 120" role="img" data-ta="donutAria"></svg>
     <ul class="legend" id="legend"></ul>
@@ -299,9 +299,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   <p class="note" id="loadNote"></p>
 </section>
 
-<section class="panel res" aria-labelledby="resTitle" role="tabpanel" id="typeOut">
+<section class="panel res" aria-labelledby="resultTitle" role="tabpanel" id="typeResult">
   <div class="reshead">
-    <h2 id="resTitle" data-t="resultTitle"></h2>
+    <h2 id="resultTitle" data-t="resultTitle"></h2>
     <div class="verdict" id="verdict"></div>
   </div>
   <div class="resbody">
@@ -313,7 +313,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     </figure>
     <div class="rcol">
       <div class="kpis" id="kpis"></div>
-      <table id="dens"></table>
+      <table id="densityTable"></table>
       <div class="facts" id="facts"></div>
     </div>
   </div>
@@ -321,51 +321,51 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 </div>
 
 <div class="work">
-  <form class="panel col" id="frm" autocomplete="off" aria-labelledby="parTitle">
+  <form class="panel col" id="typeForm" autocomplete="off" aria-labelledby="parametersTitle">
     <div class="colhead typehead">
-      <h2 id="parTitle" data-t="parametersTitle"></h2>
-      <div class="f"><label for="tName" data-t="typeName"></label><input id="tName"></div>
-      <div class="f"><label for="tCount" data-t="typeCount"></label><input id="tCount" type="number" step="1" inputmode="numeric"></div>
+      <h2 id="parametersTitle" data-t="parametersTitle"></h2>
+      <div class="f"><label for="typeName" data-t="typeName"></label><input id="typeName"></div>
+      <div class="f"><label for="typeCount" data-t="typeCount"></label><input id="typeCount" type="number" step="1" inputmode="numeric"></div>
     </div>
     <details class="sec" open>
-      <summary><span data-t="sectionGeometry"></span> <span class="sumv" id="sumGeo"></span></summary>
+      <summary><span data-t="sectionGeometry"></span> <span class="sumv" id="summaryGeometry"></span></summary>
       <div class="fs">
         <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="L0box"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="zoneStartBox"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" step="any" inputmode="decimal"></div>
         <div class="f full"><span data-tip="placement" data-t="placement"></span>
           <div class="seg" role="radiogroup" data-ta="placement">
-            <label><input type="radio" name="placement" id="pSide" value="side"><span data-t="placementSide"></span></label>
-            <label><input type="radio" name="placement" id="pTop" value="top"><span data-t="placementTop"></span></label>
+            <label><input type="radio" name="placement" id="placementSide" value="side"><span data-t="placementSide"></span></label>
+            <label><input type="radio" name="placement" id="placementTop" value="top"><span data-t="placementTop"></span></label>
           </div>
         </div>
       </div>
     </details>
     <details class="sec" open>
-      <summary><span data-t="sectionCamera"></span> <span class="sumv" id="sumCam"></span></summary>
+      <summary><span data-t="sectionCamera"></span> <span class="sumv" id="summaryCamera"></span></summary>
       <div class="fs">
         <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cameraSelect"></label><a class="inlink" href="#tpl-cams" data-t="addCameraLink"></a></div><select id="camera"></select></div>
         <div class="f full"><label for="resolution" data-t="resolution"></label><select id="resolution"></select></div>
         <div class="f"><label for="sensor" data-t="sensor"></label><select id="sensor"></select></div>
         <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full" id="ppBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
+        <div class="f full" id="pixelPitchBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
         <div class="f full"><label for="orientation" data-t="orientation"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orientationLandscape"></option><option value="portrait" data-t="orientationPortrait"></option></select></div>
         <div class="f full"><span data-tip="lensMode" data-t="lensMode"></span>
           <div class="seg three" role="radiogroup" data-ta="lensModeAria">
-            <label><input type="radio" name="lensMode" id="mAuto" value="auto"><span data-t="lensModeAuto"></span></label>
-            <label><input type="radio" name="lensMode" id="mF" value="focal"><span data-t="lensModeFocal"></span></label>
-            <label><input type="radio" name="lensMode" id="mA" value="angle"><span data-t="lensModeAngle"></span></label>
+            <label><input type="radio" name="lensMode" id="lensModeAuto" value="auto"><span data-t="lensModeAuto"></span></label>
+            <label><input type="radio" name="lensMode" id="lensModeFocal" value="focal"><span data-t="lensModeFocal"></span></label>
+            <label><input type="radio" name="lensMode" id="lensModeAngle" value="angle"><span data-t="lensModeAngle"></span></label>
           </div>
         </div>
-        <div class="f" id="fBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="aBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="focalLengthBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="hfovBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <details class="sec">
-      <summary><span data-t="sectionStream"></span> <span class="sumv" id="sumStr"></span></summary>
+      <summary><span data-t="sectionStream"></span> <span class="sumv" id="summaryStream"></span></summary>
       <div class="fs">
         <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" step="any" inputmode="decimal"></div>
         <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" step="any" inputmode="decimal"></div>
@@ -376,16 +376,16 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" step="any" inputmode="decimal"></div>
       </div>
     </details>
-    <div class="colfoot"><button type="button" class="sm" id="dupBtn" data-t="duplicateTypeBtn"></button><button type="button" class="sm danger" id="delBtn" data-t="deleteTypeBtn"></button></div>
+    <div class="colfoot"><button type="button" class="sm" id="duplicateTypeBtn" data-t="duplicateTypeBtn"></button><button type="button" class="sm danger" id="deleteTypeBtn" data-t="deleteTypeBtn"></button></div>
   </form>
 
-  <section class="panel col" aria-labelledby="objTitle">
+  <section class="panel col" aria-labelledby="objectsTitle">
     <div class="colhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <h2 id="objTitle"><span data-tip="objects" data-t="objectsTitle"></span></h2>
-      <button type="button" class="primary sm" id="addObj" data-t="addObject"></button>
+      <h2 id="objectsTitle"><span data-tip="objects" data-t="objectsTitle"></span></h2>
+      <button type="button" class="primary sm" id="addObject" data-t="addObject"></button>
     </div>
     <div class="olist">
-      <div id="objList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="objectList" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="presets"><span data-t="presets"></span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto" data-t="addDetectorLink"></a></div>
     </div>
     <div class="colfoot" data-t="objectsFooter"></div>
@@ -394,14 +394,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 </div>
 
 <div class="bottom">
-  <section class="panel net" aria-labelledby="netTitle">
-    <div class="rowhead"><h2 id="netTitle" data-t="networkTitle"></h2>
+  <section class="panel net" aria-labelledby="networkTitle">
+    <div class="rowhead"><h2 id="networkTitle" data-t="networkTitle"></h2>
       <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" step="1" inputmode="numeric" value="0"></div></div>
-    <div class="tbl"><table id="netTbl"></table></div>
+    <div class="tbl"><table id="networkTable"></table></div>
   </section>
-  <section class="panel assum" aria-labelledby="assTitle">
-    <h2 id="assTitle" data-t="assumptionsTitle"></h2>
-    <ul id="assList"></ul>
+  <section class="panel assum" aria-labelledby="assumptionsTitle">
+    <h2 id="assumptionsTitle" data-t="assumptionsTitle"></h2>
+    <ul id="assumptionsList"></ul>
     <details class="how" style="margin-top:auto"><summary data-t="formulas"></summary><div class="formulas" id="formulas"><div lang="ru"><p>Hc = H − h — высота камеры над плоскостью. x — расстояние по полу от точки под камерой (отрицательное — позади неё). Камера наклонена на середину зоны: t = (φ(x₁) + φ(x₂)) / 2.</p>
         HFOV = 2·arctg(s / 2f), &nbsp;VFOV = 2·arctg(tg(HFOV/2) · Nh/Nw)<br>
         f<sub>px</sub> = Nw / (2·tg(HFOV/2)) — фокусное в пикселях<br>
@@ -449,81 +449,81 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 </div>
 </div>
 
-<div id="viewTpl" hidden style="flex-direction:column;gap:14px">
+<div id="viewTemplates" hidden style="flex-direction:column;gap:14px">
   <div class="tplhead">
     <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none" data-t="back"></a><h2 class="h2big" style="font-size:22px" data-t="templatesTitle"></h2></div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      <nav class="tpltabs" data-ta="templatesNav"><a href="#tpl-gpus" id="tt-gpus" data-t="templateTabGpus"></a><a href="#tpl-cams" id="tt-cams" data-t="templateTabCameras"></a><a href="#tpl-dets" id="tt-dets" data-t="templateTabDetectors"></a></nav>
-      <button type="button" id="expBtn" data-tt="exportTitle" data-t="exportBtn"></button>
-      <button type="button" id="impBtn" data-tt="importTitle" data-t="importBtn"></button>
-      <input type="file" id="impFile" accept=".json,application/json" hidden>
+      <nav class="tpltabs" data-ta="templatesNav"><a href="#tpl-gpus" id="templateTab-gpus" data-t="templateTabGpus"></a><a href="#tpl-cams" id="templateTab-cams" data-t="templateTabCameras"></a><a href="#tpl-dets" id="templateTab-dets" data-t="templateTabDetectors"></a></nav>
+      <button type="button" id="exportBtn" data-tt="exportTitle" data-t="exportBtn"></button>
+      <button type="button" id="importBtn" data-tt="importTitle" data-t="importBtn"></button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
     </div>
   </div>
-  <div class="gpage" id="tpl-gpus-v">
-    <section class="panel cat" aria-labelledby="catTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catTitle" data-t="catalogTitleNoCount"></h2><span class="note" data-t="catalogNote"></span></div>
-      <div class="tbl" style="padding:4px 8px 8px"><table id="catTbl"></table></div>
-      <div class="mine" id="mine"></div>
+  <div class="gpage" id="templatePage-gpus">
+    <section class="panel cat" aria-labelledby="catalogTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catalogTitle" data-t="catalogTitleNoCount"></h2><span class="note" data-t="catalogNote"></span></div>
+      <div class="tbl" style="padding:4px 8px 8px"><table id="catalogTable"></table></div>
+      <div class="mine" id="customGpus"></div>
       <div class="params">
         <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" step="any" inputmode="decimal" value="0.6"></div>
         <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" step="any" inputmode="decimal" value="20"></div>
       </div>
     </section>
-    <section class="panel newc" aria-labelledby="newTitle">
-      <div class="colhead"><h2 id="newTitle" data-t="gpuFormTitle"></h2></div>
-      <form id="newForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ngName" data-t="gpuFormName"></label><input id="ngName" data-tp="gpuFormNamePlaceholder" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ngArch" data-t="gpuFormArchitecture"></label><select id="ngArch"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="gpuFormJetson"></option></select></div>
-        <div class="f"><label for="ngTf" data-t="gpuFormTflops"></label><input id="ngTf" type="number" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
-        <div class="f"><label for="ngDec" id="ngDecL" data-t="gpuFormDecoders"></label><input id="ngDec" type="number" step="any" inputmode="decimal" placeholder="2"></div>
-        <div class="f"><label for="ngMem" data-t="gpuFormMemory"></label><input id="ngMem" type="number" step="any" inputmode="decimal" placeholder="48"></div>
-        <div class="f"><label for="ngTdp" data-t="gpuFormTdp"></label><input id="ngTdp" type="number" step="1" inputmode="numeric" placeholder="300"></div>
-        <div class="f"><label for="ngPrice" data-t="gpuFormPrice"></label><input id="ngPrice" type="number" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
-        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="ngOn" checked><span data-t="gpuFormEnabled"></span></label>
+    <section class="panel newc" aria-labelledby="gpuFormTitle">
+      <div class="colhead"><h2 id="gpuFormTitle" data-t="gpuFormTitle"></h2></div>
+      <form id="gpuForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="gpuFormName" data-t="gpuFormName"></label><input id="gpuFormName" data-tp="gpuFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="gpuFormArchitecture" data-t="gpuFormArchitecture"></label><select id="gpuFormArchitecture"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="gpuFormJetson"></option></select></div>
+        <div class="f"><label for="gpuFormTflops" data-t="gpuFormTflops"></label><input id="gpuFormTflops" type="number" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
+        <div class="f"><label for="gpuFormDecoders" id="gpuFormDecodersLabel" data-t="gpuFormDecoders"></label><input id="gpuFormDecoders" type="number" step="any" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="gpuFormMemory" data-t="gpuFormMemory"></label><input id="gpuFormMemory" type="number" step="any" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="gpuFormTdp" data-t="gpuFormTdp"></label><input id="gpuFormTdp" type="number" step="1" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="gpuFormPrice" data-t="gpuFormPrice"></label><input id="gpuFormPrice" type="number" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
+        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="gpuFormEnabled" checked><span data-t="gpuFormEnabled"></span></label>
         <div class="hint"><b data-t="hintWhere"></b><span data-t="gpuFormHint1"></span><span data-t="gpuFormHint2"></span></div>
-        <div class="err" id="ngErr" hidden></div>
+        <div class="err" id="gpuFormError" hidden></div>
         <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addGpuBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
       </form>
     </section>
   </div>
 
-  <div class="gpage" id="tpl-cams-v" hidden>
-    <section class="panel cat" aria-labelledby="camTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camTitle" data-t="camerasTitleNoCount"></h2><span class="note" data-t="camerasNote"></span></div>
-      <div class="tbl" style="padding:4px 8px 12px"><table id="camTbl"></table></div>
+  <div class="gpage" id="templatePage-cams" hidden>
+    <section class="panel cat" aria-labelledby="camerasTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camerasTitle" data-t="camerasTitleNoCount"></h2><span class="note" data-t="camerasNote"></span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="cameraTable"></table></div>
     </section>
-    <section class="panel newc" aria-labelledby="ncTitle">
-      <div class="colhead"><h2 id="ncTitle" data-t="cameraFormTitle"></h2></div>
-      <form id="camForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ncName" data-t="typeName"></label><input id="ncName" data-tp="cameraFormNamePlaceholder" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ncW" data-t="cameraFormWidth"></label><input id="ncW" type="number" step="1" inputmode="numeric" placeholder="2560"></div>
-        <div class="f"><label for="ncH" data-t="cameraFormHeight"></label><input id="ncH" type="number" step="1" inputmode="numeric" placeholder="1440"></div>
-        <div class="f"><label for="ncSw" data-t="cameraFormSensorWidth"></label><input id="ncSw" type="number" step="any" inputmode="decimal" placeholder="5.4"></div>
-        <div class="f"><label for="ncPp" data-t="cameraFormPixelPitch"></label><input id="ncPp" type="number" step="any" inputmode="decimal" placeholder="2.0"></div>
-        <div class="f"><label for="ncFmin" data-t="cameraFormFocalMin"></label><input id="ncFmin" type="number" step="any" inputmode="decimal" placeholder="2.8"></div>
-        <div class="f"><label for="ncFmax" data-t="cameraFormFocalMax"></label><input id="ncFmax" type="number" step="any" inputmode="decimal" placeholder="12"></div>
-        <div class="f"><label for="ncPrice" data-t="cameraFormPrice"></label><input id="ncPrice" type="number" step="1" inputmode="numeric" data-tp="optional"></div>
+    <section class="panel newc" aria-labelledby="cameraFormTitle">
+      <div class="colhead"><h2 id="cameraFormTitle" data-t="cameraFormTitle"></h2></div>
+      <form id="cameraForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="cameraFormName" data-t="typeName"></label><input id="cameraFormName" data-tp="cameraFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="cameraFormWidth" data-t="cameraFormWidth"></label><input id="cameraFormWidth" type="number" step="1" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="cameraFormHeight" data-t="cameraFormHeight"></label><input id="cameraFormHeight" type="number" step="1" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="cameraFormSensorWidth" data-t="cameraFormSensorWidth"></label><input id="cameraFormSensorWidth" type="number" step="any" inputmode="decimal" placeholder="5.4"></div>
+        <div class="f"><label for="cameraFormPixelPitch" data-t="cameraFormPixelPitch"></label><input id="cameraFormPixelPitch" type="number" step="any" inputmode="decimal" placeholder="2.0"></div>
+        <div class="f"><label for="cameraFormFocalMin" data-t="cameraFormFocalMin"></label><input id="cameraFormFocalMin" type="number" step="any" inputmode="decimal" placeholder="2.8"></div>
+        <div class="f"><label for="cameraFormFocalMax" data-t="cameraFormFocalMax"></label><input id="cameraFormFocalMax" type="number" step="any" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="cameraFormPrice" data-t="cameraFormPrice"></label><input id="cameraFormPrice" type="number" step="1" inputmode="numeric" data-tp="optional"></div>
         <div class="hint"><b data-t="hintWhere"></b><span data-t="cameraFormHint1"></span><span data-t="cameraFormHint2"></span></div>
-        <div class="err" id="ncErr" hidden></div>
+        <div class="err" id="cameraFormError" hidden></div>
         <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addCameraBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
       </form>
     </section>
   </div>
-  <div class="gpage" id="tpl-dets-v" hidden>
-    <section class="panel cat" aria-labelledby="detTitle">
-      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detTitle" data-t="detectorsTitleNoCount"></h2><span class="note" data-t="detectorsNote"></span></div>
-      <div class="tbl" style="padding:4px 8px 12px"><table id="detTbl"></table></div>
+  <div class="gpage" id="templatePage-dets" hidden>
+    <section class="panel cat" aria-labelledby="detectorsTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detectorsTitle" data-t="detectorsTitleNoCount"></h2><span class="note" data-t="detectorsNote"></span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="detectorTable"></table></div>
     </section>
-    <section class="panel newc" aria-labelledby="ndTitle">
-      <div class="colhead"><h2 id="ndTitle" data-t="detectorFormTitle"></h2></div>
-      <form id="detForm" autocomplete="off" novalidate>
-        <div class="f full"><label for="ndName" data-t="typeName"></label><input id="ndName" data-tp="detectorFormNamePlaceholder" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="ndFps" data-t="detectorFormFps"></label><input id="ndFps" type="number" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
-        <div class="f"><label for="ndInp" data-t="detectorFormInput"></label><select id="ndInp" style="font-family:var(--mono)"></select></div>
-        <div class="f full"><label for="ndRef" data-t="detectorFormRefGpu"></label><select id="ndRef"></select></div>
-        <div class="f full"><label for="ndGf" data-t="detectorFormGflops"></label><input id="ndGf" type="number" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
+    <section class="panel newc" aria-labelledby="detectorFormTitle">
+      <div class="colhead"><h2 id="detectorFormTitle" data-t="detectorFormTitle"></h2></div>
+      <form id="detectorForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="detectorFormName" data-t="typeName"></label><input id="detectorFormName" data-tp="detectorFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="detectorFormFps" data-t="detectorFormFps"></label><input id="detectorFormFps" type="number" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
+        <div class="f"><label for="detectorFormInput" data-t="detectorFormInput"></label><select id="detectorFormInput" style="font-family:var(--mono)"></select></div>
+        <div class="f full"><label for="detectorFormRefGpu" data-t="detectorFormRefGpu"></label><select id="detectorFormRefGpu"></select></div>
+        <div class="f full"><label for="detectorFormGflops" data-t="detectorFormGflops"></label><input id="detectorFormGflops" type="number" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
         <div class="hint"><b data-t="hintHow"></b><span data-t="detectorFormHint1"></span><span data-t="detectorFormHint2"></span></div>
-        <div class="err" id="ndErr" hidden></div>
+        <div class="err" id="detectorFormError" hidden></div>
         <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addDetectorBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
       </form>
     </section>
@@ -981,18 +981,20 @@ const RU = {
       : ""),
   // подсказки «?»
   tips: {
-    tName:
+    typeName:
       "Название типа камеры, например «Рабочее место» или «Тележка». Тип — группа одинаковых камер с одной задачей: общие геометрия, матрица, поток и объекты.",
-    tCount:
+    typeCount:
       "Количество камер этого типа в системе. Влияет на сетевой поток, декодирование и нагрузку на GPU, но не на пиксели на объекте.",
     camera:
       "Камера из «Шаблонов»: разрешение и матрица берутся из неё, а требуемое фокусное расстояние проверяется по диапазону её объектива. «Ручная настройка матрицы» — разрешение и матрица задаются вручную.",
-    ngTf: "FP16 Tensor из даташита NVIDIA без sparsity. Если значение отмечено звёздочкой «with sparsity», разделите его на 2. Для GeForce используйте FP16 с FP32-накоплением: оно вдвое меньше FP16-накопления.",
-    ngArch:
+    gpuFormTflops:
+      "FP16 Tensor из даташита NVIDIA без sparsity. Если значение отмечено звёздочкой «with sparsity», разделите его на 2. Для GeForce используйте FP16 с FP32-накоплением: оно вдвое меньше FP16-накопления.",
+    gpuFormArchitecture:
       "Архитектура задаёт производительность одного аппаратного декодера NVDEC. Для Jetson выберите «Jetson или свой декодер» и укажите число потоков 1080p30 из спецификации.",
-    ndFps:
+    detectorFormFps:
       "Число кадров в секунду, которое модель обрабатывает на одном GPU в TensorRT с той же точностью и batch, что и в эксплуатации.",
-    ncSw: "Ширина активной области сенсора из даташита. Если её нет, оставьте поле пустым и укажите размер пикселя.",
+    cameraFormSensorWidth:
+      "Ширина активной области сенсора из даташита. Если её нет, оставьте поле пустым и укажите размер пикселя.",
     cameraHeight:
       "Высота объектива над полом. Измерьте лазерным дальномером от пола до точки крепления. Чем выше камера, тем меньше перекрытий объектов, но ниже плотность пикселей.",
     planeHeight:
@@ -1487,18 +1489,20 @@ const EN = {
       : ""),
   // подсказки «?»
   tips: {
-    tName:
+    typeName:
       'Camera type name, for example "Workstation" or "Cart". A type is a group of identical cameras with one task: shared geometry, sensor, stream, and objects.',
-    tCount:
+    typeCount:
       "Number of cameras of this type in the system. Affects network traffic, decoding, and GPU load, but not the pixels on the object.",
     camera:
       'Camera from "Templates": the resolution and sensor are taken from it, and the required focal length is checked against its lens range. "Manual sensor setup": the resolution and sensor are set manually.',
-    ngTf: 'FP16 Tensor from the NVIDIA datasheet without sparsity. If the value is marked with an asterisk "with sparsity", divide it by 2. For GeForce, use FP16 with FP32 accumulate: it\'s half of FP16 accumulate.',
-    ngArch:
+    gpuFormTflops:
+      'FP16 Tensor from the NVIDIA datasheet without sparsity. If the value is marked with an asterisk "with sparsity", divide it by 2. For GeForce, use FP16 with FP32 accumulate: it\'s half of FP16 accumulate.',
+    gpuFormArchitecture:
       'The architecture defines the performance of one NVDEC hardware decoder. For Jetson, choose "Jetson or custom decoder" and enter the number of 1080p30 streams from the specification.',
-    ndFps:
+    detectorFormFps:
       "Frames per second the model processes on one GPU in TensorRT with the same precision and batch as in production.",
-    ncSw: "Width of the sensor active area from the datasheet. If it isn't listed, leave the field empty and enter the pixel size.",
+    cameraFormSensorWidth:
+      "Width of the sensor active area from the datasheet. If it isn't listed, leave the field empty and enter the pixel size.",
     cameraHeight:
       "Height of the lens above the floor. Measure with a laser rangefinder from the floor to the mounting point. The higher the camera, the less objects occlude each other, but the lower the pixel density.",
     planeHeight:
@@ -1895,28 +1899,28 @@ SENSORS.forEach(([label, width], i) =>
   ),
 );
 function writeForm(type) {
-  byId("tName").value = type.name;
-  byId("tCount").value = type.count;
+  byId("typeName").value = type.name;
+  byId("typeCount").value = type.count;
   INPUT_IDS.forEach((id) => {
     byId(id).value = type.inputs[id] ?? DEFAULT_INPUTS[id];
   });
   const lensModeRadio =
     document.querySelector(
       `input[name="lensMode"][value="${type.inputs.lensMode}"]`,
-    ) || byId("mAuto");
+    ) || byId("lensModeAuto");
   lensModeRadio.checked = true;
   const placementRadio =
     document.querySelector(
       `input[name="placement"][value="${type.inputs.placement}"]`,
-    ) || byId("pSide");
+    ) || byId("placementSide");
   placementRadio.checked = true;
   renderObjects();
 }
 function readForm() {
   const type = activeType();
-  if (type.name !== byId("tName").value) delete type.nameKey;
-  type.name = byId("tName").value;
-  type.count = byId("tCount").value;
+  if (type.name !== byId("typeName").value) delete type.nameKey;
+  type.name = byId("typeName").value;
+  type.count = byId("typeCount").value;
   INPUT_IDS.forEach((id) => {
     type.inputs[id] = byId(id).value;
   });
@@ -1972,7 +1976,7 @@ function buildCameraSelect() {
 // ---------- карточки объектов
 function renderObjects() {
   const type = activeType(),
-    list = byId("objList");
+    list = byId("objectList");
   list.innerHTML = "";
   type.objects.forEach((obj, i) => {
     if (!modelById(obj.model)) obj.model = "y26s";
@@ -1983,34 +1987,34 @@ function renderObjects() {
       (customDetectors.length
         ? `<optgroup label="${t("customDetectors")}">${customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
-    card.innerHTML = `<div class="ohdr"><span class="dot" id="obj-dot-${i}" aria-hidden="true"></span><input id="obj-name-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
+    card.innerHTML = `<div class="ohdr"><span class="dot" id="objectDot-${i}" aria-hidden="true"></span><input id="objectName-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="obj-width-${i}">${t("objectWidth")}</label><input id="obj-width-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-length-${i}">${t("objectLength")}</label><input id="obj-length-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-height-${i}">${t("objectHeight")}</label><input id="obj-height-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="obj-required-${i}">${t("objectRequiredPx")}</label><input id="obj-required-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f c2"><label for="obj-model-${i}">${t("objectModel")}</label><select id="obj-model-${i}">${modelOptions}</select></div>
-        <div class="f"><label for="obj-feed-${i}">${t("objectFeed")}</label><select id="obj-feed-${i}">${Object.entries(
+        <div class="f"><label for="objectWidth-${i}">${t("objectWidth")}</label><input id="objectWidth-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectLength-${i}">${t("objectLength")}</label><input id="objectLength-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectHeight-${i}">${t("objectHeight")}</label><input id="objectHeight-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f c2"><label for="objectModel-${i}">${t("objectModel")}</label><select id="objectModel-${i}">${modelOptions}</select></div>
+        <div class="f"><label for="objectFeed-${i}">${t("objectFeed")}</label><select id="objectFeed-${i}">${Object.entries(
           FEEDS,
         )
           .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
-        <div class="f"><label for="obj-input-${i}">${t("objectInput")}</label><select id="obj-input-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
-        <div class="f" id="obj-overlap-box-${i}"><label for="obj-overlap-${i}">${t("objectOverlap")}</label><input id="obj-overlap-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectInput-${i}">${t("objectInput")}</label><select id="objectInput-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
+        <div class="f" id="objectOverlapBox-${i}"><label for="objectOverlap-${i}">${t("objectOverlap")}</label><input id="objectOverlap-${i}" type="number" step="any" inputmode="decimal"></div>
       </div>
-      <div class="ores" id="obj-result-${i}" aria-live="polite"></div>`;
+      <div class="ores" id="objectResult-${i}" aria-live="polite"></div>`;
     list.append(card);
     // перекрытие задаётся только для тайлов
     const syncOverlapBox = () => {
-      byId(`obj-overlap-box-${i}`).hidden = obj.feed !== "tiles";
+      byId(`objectOverlapBox-${i}`).hidden = obj.feed !== "tiles";
     };
     [
-      ["obj-name", "name"],
-      ["obj-width", "width"],
-      ["obj-length", "length"],
-      ["obj-height", "height"],
-      ["obj-required", "requiredPx"],
-      ["obj-overlap", "overlap"],
+      ["objectName", "name"],
+      ["objectWidth", "width"],
+      ["objectLength", "length"],
+      ["objectHeight", "height"],
+      ["objectRequired", "requiredPx"],
+      ["objectOverlap", "overlap"],
     ].forEach(([idPrefix, field]) => {
       const input = byId(`${idPrefix}-${i}`);
       input.value = obj[field] ?? "";
@@ -2022,9 +2026,9 @@ function renderObjects() {
       });
     });
     [
-      ["obj-model", "model"],
-      ["obj-feed", "feed"],
-      ["obj-input", "inputSize"],
+      ["objectModel", "model"],
+      ["objectFeed", "feed"],
+      ["objectInput", "inputSize"],
     ].forEach(([idPrefix, field]) => {
       const select = byId(`${idPrefix}-${i}`);
       select.value = String(obj[field]);
@@ -2047,19 +2051,19 @@ function renderObjects() {
 function syncFormUI(type, result) {
   const inputs = type.inputs,
     camera = cameraById(inputs.camera);
-  byId("fBox").hidden = inputs.lensMode !== "focal";
-  byId("aBox").hidden = inputs.lensMode !== "angle";
-  byId("L0box").hidden = inputs.placement === "top";
+  byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
+  byId("hfovBox").hidden = inputs.lensMode !== "angle";
+  byId("zoneStartBox").hidden = inputs.placement === "top";
   const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
   byId("resolution").disabled = !!camera;
   byId("sensor").disabled = !!camera;
-  byId("ppBox").hidden = !!camera || sensorPreset !== "pp";
+  byId("pixelPitchBox").hidden = !!camera || sensorPreset !== "pp";
   byId("sensorWidth").readOnly = !!camera || sensorPreset !== null;
   if (result && isFinite(result.s) && (camera || sensorPreset !== null))
     byId("sensorWidth").value = +result.s.toFixed(2);
-  byId("sumGeo").textContent =
+  byId("summaryGeometry").textContent =
     `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
-  byId("sumCam").textContent =
+  byId("summaryCamera").textContent =
     (camera
       ? `${camera.Nw} × ${camera.Nh}`
       : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
@@ -2068,7 +2072,7 @@ function syncFormUI(type, result) {
     (result && !result.err
       ? `, f ${withUnit(formatNumber(result.f, 1), "mm")}`
       : "");
-  byId("sumStr").textContent =
+  byId("summaryStream").textContent =
     `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }
 // ---------- расчёт одного типа камер (без DOM)
@@ -2764,14 +2768,14 @@ const capitalize = (text) =>
   text ? text[0].toUpperCase() + text.slice(1) : text;
 function renderType(result) {
   const verdict = byId("verdict");
-  byId("resTitle").textContent = t(
+  byId("resultTitle").textContent = t(
     "resultTitleOf",
     result.type.name || t("untitled"),
   );
   if (result.err) {
     verdict.className = "verdict bad";
     verdict.innerHTML = `<span class="pill">${t("pillError")}</span><div>${t("inputError")}</div>`;
-    ["kpis", "dens", "facts", "side"].forEach(
+    ["kpis", "densityTable", "facts", "side"].forEach(
       (id) => (byId(id).innerHTML = ""),
     );
     return;
@@ -2819,8 +2823,8 @@ function renderType(result) {
     )
     .join("");
   result.objs.forEach((obj, i) => {
-    const resultEl = byId(`obj-result-${i}`),
-      dotEl = byId(`obj-dot-${i}`);
+    const resultEl = byId(`objectResult-${i}`),
+      dotEl = byId(`objectDot-${i}`);
     if (!resultEl) return;
     if (obj.bad) {
       resultEl.className = "ores";
@@ -2833,7 +2837,7 @@ function renderType(result) {
     resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objectAtModel", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
   });
   const top = result.placement === "top";
-  byId("dens").innerHTML =
+  byId("densityTable").innerHTML =
     `<tr><th>${t("densityHeader")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
     <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
     <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
@@ -2870,7 +2874,7 @@ function renderTabs(results) {
     tab.className = "tab";
     tab.setAttribute("role", "tab");
     tab.setAttribute("aria-selected", String(result.type.id === activeTypeId));
-    tab.setAttribute("aria-controls", "typeOut");
+    tab.setAttribute("aria-controls", "typeResult");
     tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
     tab.title = result.err
       ? t("tabError")
@@ -2955,7 +2959,7 @@ function renderSystem(results, system) {
       : totalMbps * 1.3 < 9000
         ? withUnit(10, "gbps")
         : "> " + withUnit(10, "gbps");
-  byId("sysKpis").innerHTML = [
+  byId("systemKpis").innerHTML = [
     [
       t("systemCameras"),
       `${cameraCount}`,
@@ -3005,7 +3009,7 @@ function renderSystem(results, system) {
     .join("");
   // дашборд
   const overloaded = chosen.inferenceLoad > maxLoad;
-  byId("dsum").innerHTML = liveResults.length
+  byId("loadSummary").innerHTML = liveResults.length
     ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", chosen.bottleneck)}`
     : "";
   const runs = chosen.runs
@@ -3089,7 +3093,7 @@ function renderSystem(results, system) {
   // сеть
   const archiveDays = parseNum(byId("archiveDays").value) || 0,
     archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
-  byId("netTbl").innerHTML =
+  byId("networkTable").innerHTML =
     `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
     results
       .map((result) =>
@@ -3100,7 +3104,10 @@ function renderSystem(results, system) {
       .join("") +
     `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
     `<tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
-  byId("assList").innerHTML = t("assumptions", formatNumber(efficiency, 2))
+  byId("assumptionsList").innerHTML = t(
+    "assumptions",
+    formatNumber(efficiency, 2),
+  )
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
   return { cameraCount, totalMbps, cameraCost };
@@ -3119,7 +3126,7 @@ function buildGpuSelect() {
       )
       .join("");
   select.value = allGpus().some((gpu) => gpu.id === current) ? current : "auto";
-  const refSelect = byId("ndRef");
+  const refSelect = byId("detectorFormRefGpu");
   if (refSelect) {
     const refCurrent = refSelect.value;
     refSelect.innerHTML = allGpus()
@@ -3134,25 +3141,25 @@ function renderGpuView() {
   const row = (
     gpu,
   ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="pr-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gon-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
   const headers = STR.gpuTableHeader,
     head = `<tr>${headers
       .slice(0, 6)
       .map((header) => `<th>${header}</th>`)
       .join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
-  byId("catTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
-  byId("catTbl").innerHTML = head + GPU_CATALOG.map(row).join("");
-  byId("mine").innerHTML = customGpus.length
+  byId("catalogTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
+  byId("catalogTable").innerHTML = head + GPU_CATALOG.map(row).join("");
+  byId("customGpus").innerHTML = customGpus.length
     ? `<strong style="font-weight:600">${t("customGpusTitle", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
   allGpus().forEach((gpu) => {
-    byId(`pr-${gpu.id}`).addEventListener("input", (event) => {
+    byId(`gpuPrice-${gpu.id}`).addEventListener("input", (event) => {
       gpuPrices[gpu.id] = event.target.value;
       calcAll();
     });
-    byId(`gon-${gpu.id}`).addEventListener("change", (event) => {
+    byId(`gpuEnabled-${gpu.id}`).addEventListener("change", (event) => {
       gpuEnabled[gpu.id] = event.target.checked;
       calcAll();
     });
@@ -3173,23 +3180,23 @@ function renderGpuView() {
     }),
   );
 }
-byId("ngArch").addEventListener("change", () => {
-  const isJetson = byId("ngArch").value === "jet";
-  byId("ngDecL").textContent = t(
+byId("gpuFormArchitecture").addEventListener("change", () => {
+  const isJetson = byId("gpuFormArchitecture").value === "jet";
+  byId("gpuFormDecodersLabel").textContent = t(
     isJetson ? "gpuFormDecoderStreams" : "gpuFormDecoders",
   );
-  byId("ngDec").placeholder = isJetson ? "22" : "2";
+  byId("gpuFormDecoders").placeholder = isJetson ? "22" : "2";
 });
-byId("newForm").addEventListener("submit", (event) => {
+byId("gpuForm").addEventListener("submit", (event) => {
   event.preventDefault();
   // decode — число NVDEC, у Jetson — потоков 1080p30 H.265
-  const name = byId("ngName").value.trim(),
-    arch = byId("ngArch").value,
-    tflops = parseNum(byId("ngTf").value),
-    decode = parseNum(byId("ngDec").value),
-    memoryGB = parseNum(byId("ngMem").value),
-    tdpW = parseNum(byId("ngTdp").value),
-    price = parseNum(byId("ngPrice").value);
+  const name = byId("gpuFormName").value.trim(),
+    arch = byId("gpuFormArchitecture").value,
+    tflops = parseNum(byId("gpuFormTflops").value),
+    decode = parseNum(byId("gpuFormDecoders").value),
+    memoryGB = parseNum(byId("gpuFormMemory").value),
+    tdpW = parseNum(byId("gpuFormTdp").value),
+    price = parseNum(byId("gpuFormPrice").value);
   const errors = [];
   if (!name) errors.push(t("errorName"));
   if (!(tflops > 0)) errors.push(t("errorTflops"));
@@ -3197,7 +3204,7 @@ byId("newForm").addEventListener("submit", (event) => {
     errors.push(t(arch === "jet" ? "errorDecoderStreams" : "errorDecoders"));
   if (!(memoryGB > 0)) errors.push(t("errorMemory"));
   if (!(price > 0)) errors.push(t("errorPrice"));
-  const errorEl = byId("ngErr");
+  const errorEl = byId("gpuFormError");
   if (errors.length) {
     errorEl.hidden = false;
     errorEl.textContent = t("gpuFormError", errors.join(", "));
@@ -3222,10 +3229,15 @@ byId("newForm").addEventListener("submit", (event) => {
     };
   } else gpu.nvdec = Math.round(decode);
   customGpus.push(gpu);
-  gpuEnabled[gpu.id] = byId("ngOn").checked;
-  ["ngName", "ngTf", "ngDec", "ngMem", "ngTdp", "ngPrice"].forEach(
-    (id) => (byId(id).value = ""),
-  );
+  gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
+  [
+    "gpuFormName",
+    "gpuFormTflops",
+    "gpuFormDecoders",
+    "gpuFormMemory",
+    "gpuFormTdp",
+    "gpuFormPrice",
+  ].forEach((id) => (byId(id).value = ""));
   buildGpuSelect();
   renderGpuView();
   calcAll();
@@ -3238,8 +3250,8 @@ function renderCamView() {
     cameraTypes
       .filter((type) => type.inputs.camera === id)
       .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
-  byId("camTitle").textContent = t("camerasTitle", allCameras().length);
-  byId("camTbl").innerHTML =
+  byId("camerasTitle").textContent = t("camerasTitle", allCameras().length);
+  byId("cameraTable").innerHTML =
     `<tr>${STR.cameraTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     allCameras()
       .map(
@@ -3262,16 +3274,16 @@ function renderCamView() {
     }),
   );
 }
-byId("camForm").addEventListener("submit", (event) => {
+byId("cameraForm").addEventListener("submit", (event) => {
   event.preventDefault();
-  const name = byId("ncName").value.trim(),
-    Nw = Math.round(parseNum(byId("ncW").value)),
-    Nh = Math.round(parseNum(byId("ncH").value)),
-    pixelPitchUm = parseNum(byId("ncPp").value);
-  let sensorWidth = parseNum(byId("ncSw").value);
-  let focalMin = parseNum(byId("ncFmin").value),
-    focalMax = parseNum(byId("ncFmax").value);
-  const price = parseNum(byId("ncPrice").value);
+  const name = byId("cameraFormName").value.trim(),
+    Nw = Math.round(parseNum(byId("cameraFormWidth").value)),
+    Nh = Math.round(parseNum(byId("cameraFormHeight").value)),
+    pixelPitchUm = parseNum(byId("cameraFormPixelPitch").value);
+  let sensorWidth = parseNum(byId("cameraFormSensorWidth").value);
+  let focalMin = parseNum(byId("cameraFormFocalMin").value),
+    focalMax = parseNum(byId("cameraFormFocalMax").value);
+  const price = parseNum(byId("cameraFormPrice").value);
   if (!(sensorWidth > 0) && pixelPitchUm > 0 && Nw > 0)
     sensorWidth = +((pixelPitchUm * Nw) / 1000).toFixed(3);
   if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
@@ -3282,7 +3294,7 @@ byId("camForm").addEventListener("submit", (event) => {
   if (!(sensorWidth > 0)) errors.push(t("errorSensorWidth"));
   if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
     errors.push(t("errorFocalRange"));
-  const errorEl = byId("ncErr");
+  const errorEl = byId("cameraFormError");
   if (errors.length) {
     errorEl.hidden = false;
     errorEl.textContent = t("cameraFormError", errors.join(", "));
@@ -3301,14 +3313,14 @@ byId("camForm").addEventListener("submit", (event) => {
     custom: true,
   });
   [
-    "ncName",
-    "ncW",
-    "ncH",
-    "ncSw",
-    "ncPp",
-    "ncFmin",
-    "ncFmax",
-    "ncPrice",
+    "cameraFormName",
+    "cameraFormWidth",
+    "cameraFormHeight",
+    "cameraFormSensorWidth",
+    "cameraFormPixelPitch",
+    "cameraFormFocalMin",
+    "cameraFormFocalMax",
+    "cameraFormPrice",
   ].forEach((id) => (byId(id).value = ""));
   buildCameraSelect();
   renderCamView();
@@ -3318,7 +3330,7 @@ byId("camForm").addEventListener("submit", (event) => {
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
-  byId("detTitle").textContent = t(
+  byId("detectorsTitle").textContent = t(
     "detectorsTitle",
     MODELS.length + customDetectors.length,
   );
@@ -3328,7 +3340,7 @@ function renderDetView() {
         sum + type.objects.filter((obj) => obj.model === id).length,
       0,
     );
-  byId("detTbl").innerHTML =
+  byId("detectorTable").innerHTML =
     `<tr>${STR.detectorTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     (customDetectors.length
       ? customDetectors
@@ -3360,20 +3372,20 @@ function renderDetView() {
     }),
   );
 }
-byId("ndInp").innerHTML = INPUTS.map(
+byId("detectorFormInput").innerHTML = INPUTS.map(
   (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`,
 ).join("");
-byId("detForm").addEventListener("submit", (event) => {
+byId("detectorForm").addEventListener("submit", (event) => {
   event.preventDefault();
-  const name = byId("ndName").value.trim(),
-    fps = parseNum(byId("ndFps").value),
-    inputSize = +byId("ndInp").value,
-    refGpu = byId("ndRef").value,
-    gflops = parseNum(byId("ndGf").value);
+  const name = byId("detectorFormName").value.trim(),
+    fps = parseNum(byId("detectorFormFps").value),
+    inputSize = +byId("detectorFormInput").value,
+    refGpu = byId("detectorFormRefGpu").value,
+    gflops = parseNum(byId("detectorFormGflops").value);
   const errors = [];
   if (!name) errors.push(t("errorName"));
   if (!(fps > 0)) errors.push(t("errorFps"));
-  const errorEl = byId("ndErr");
+  const errorEl = byId("detectorFormError");
   if (errors.length) {
     errorEl.hidden = false;
     errorEl.textContent = t("cameraFormError", errors.join(", "));
@@ -3389,7 +3401,9 @@ byId("detForm").addEventListener("submit", (event) => {
     gflops: gflops > 0 ? gflops : 0,
     custom: true,
   });
-  ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
+  ["detectorFormName", "detectorFormFps", "detectorFormGflops"].forEach(
+    (id) => (byId(id).value = ""),
+  );
   renderObjects();
   renderDetView();
   calcAll();
@@ -3611,7 +3625,7 @@ OBJECT_PRESETS.forEach((preset) => {
   });
   byId("presets").append(chip);
 });
-byId("addObj").addEventListener("click", () => {
+byId("addObject").addEventListener("click", () => {
   const type = activeType();
   type.objects.push(
     makeObject([
@@ -3629,23 +3643,23 @@ byId("addObj").addEventListener("click", () => {
   renderObjects();
   calcAll();
   const lastIndex = type.objects.length - 1;
-  byId(`obj-name-${lastIndex}`).focus();
-  byId(`obj-name-${lastIndex}`).select();
+  byId(`objectName-${lastIndex}`).focus();
+  byId(`objectName-${lastIndex}`).select();
 });
-byId("frm").addEventListener("input", () => {
+byId("typeForm").addEventListener("input", () => {
   readForm();
   calcAll();
 });
-byId("frm").addEventListener("change", () => {
+byId("typeForm").addEventListener("change", () => {
   readForm();
   calcAll();
 });
-byId("frm").addEventListener("submit", (event) => event.preventDefault());
+byId("typeForm").addEventListener("submit", (event) => event.preventDefault());
 SYSTEM_IDS.forEach((id) => {
   byId(id).addEventListener("input", calcAll);
   byId(id).addEventListener("change", calcAll);
 });
-byId("dupBtn").addEventListener("click", () => {
+byId("duplicateTypeBtn").addEventListener("click", () => {
   readForm();
   const source = activeType(),
     copy = JSON.parse(JSON.stringify(source));
@@ -3659,8 +3673,8 @@ byId("dupBtn").addEventListener("click", () => {
   toast(t("typeCopied"));
 });
 let deleteTimer = null;
-byId("delBtn").addEventListener("click", () => {
-  const button = byId("delBtn");
+byId("deleteTypeBtn").addEventListener("click", () => {
+  const button = byId("deleteTypeBtn");
   if (cameraTypes.length < 2) {
     toast(t("lastType"));
     return;
@@ -3711,7 +3725,7 @@ byId("copyBtn").addEventListener("click", () => {
     () => toast(t("copyFail")),
   );
 });
-byId("expBtn").addEventListener("click", () => {
+byId("exportBtn").addEventListener("click", () => {
   const link = document.createElement("a");
   link.href = URL.createObjectURL(
     new Blob([JSON.stringify(snapshot(), null, 1)], {
@@ -3759,8 +3773,8 @@ function importText(text) {
   location.reload();
 }
 let importTimer = null;
-byId("impBtn").addEventListener("click", () => {
-  const button = byId("impBtn");
+byId("importBtn").addEventListener("click", () => {
+  const button = byId("importBtn");
   if (!importTimer) {
     button.textContent = t("importConfirm");
     importTimer = setTimeout(() => {
@@ -3772,9 +3786,9 @@ byId("impBtn").addEventListener("click", () => {
   clearTimeout(importTimer);
   importTimer = null;
   button.textContent = t("importBtn");
-  byId("impFile").click();
+  byId("importFile").click();
 });
-byId("impFile").addEventListener("change", (event) => {
+byId("importFile").addEventListener("change", (event) => {
   const file = event.target.files[0];
   event.target.value = "";
   if (file) file.text().then(importText, () => toast(t("readFail")));
@@ -3788,13 +3802,14 @@ function route() {
   const hash = location.hash.slice(1),
     isTemplate = hash in TEMPLATE_VIEWS;
   byId("viewMain").style.display = isTemplate ? "none" : "flex";
-  byId("viewTpl").hidden = !isTemplate;
-  byId("viewTpl").style.display = isTemplate ? "flex" : "none";
+  byId("viewTemplates").hidden = !isTemplate;
+  byId("viewTemplates").style.display = isTemplate ? "flex" : "none";
   if (isTemplate) {
     Object.keys(TEMPLATE_VIEWS).forEach((view) => {
-      byId(view + "-v").hidden = view !== hash;
-      byId(view + "-v").style.display = view === hash ? "flex" : "none";
-      const link = byId("tt-" + view.slice(4));
+      byId("templatePage-" + view.slice(4)).hidden = view !== hash;
+      byId("templatePage-" + view.slice(4)).style.display =
+        view === hash ? "flex" : "none";
+      const link = byId("templateTab-" + view.slice(4));
       if (view === hash) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     });
@@ -3987,7 +4002,7 @@ function drawSide({
 }
 const popover = document.createElement("div");
 popover.className = "pop";
-popover.id = "pop";
+popover.id = "popover";
 popover.setAttribute("role", "tooltip");
 popover.hidden = true;
 document.body.append(popover);
@@ -4045,7 +4060,7 @@ Object.keys(STR.tips).forEach((key) => {
   button.dataset.key = key;
   button.setAttribute("aria-label", t("tipAria"));
   button.setAttribute("aria-expanded", "false");
-  button.setAttribute("aria-describedby", "pop");
+  button.setAttribute("aria-describedby", "popover");
   row.append(button);
   button.addEventListener("click", (event) => {
     event.stopPropagation();

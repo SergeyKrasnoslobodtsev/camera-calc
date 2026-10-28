@@ -1,6 +1,6 @@
 const popover = document.createElement("div");
 popover.className = "pop";
-popover.id = "pop";
+popover.id = "popover";
 popover.setAttribute("role", "tooltip");
 popover.hidden = true;
 document.body.append(popover);
@@ -58,7 +58,7 @@ Object.keys(STR.tips).forEach((key) => {
   button.dataset.key = key;
   button.setAttribute("aria-label", t("tipAria"));
   button.setAttribute("aria-expanded", "false");
-  button.setAttribute("aria-describedby", "pop");
+  button.setAttribute("aria-describedby", "popover");
   row.append(button);
   button.addEventListener("click", (event) => {
     event.stopPropagation();

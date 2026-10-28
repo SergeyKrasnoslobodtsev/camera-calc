@@ -34,8 +34,8 @@ const go = (h) => {
 const set = (id, v) => (d.getElementById(id).value = v);
 const fire = (id, ev = "input") =>
   d.getElementById(id).dispatchEvent(new w.Event(ev, { bubbles: true }));
-console.log("SYS:", T("sysKpis"));
-console.log("DSUM:", T("dsum"));
+console.log("SYS:", T("systemKpis"));
+console.log("DSUM:", T("loadSummary"));
 console.log(
   "DONUT:",
   T("donut"),
@@ -53,45 +53,45 @@ console.log("VERDICT:", T("verdict"));
 console.log("FACTS:", T("facts"));
 console.log(
   "header btn:",
-  T("tplBtn"),
-  d.getElementById("tplBtn").getAttribute("href"),
+  T("templatesBtn"),
+  d.getElementById("templatesBtn").getAttribute("href"),
 );
 // templates: cameras
 go("#tpl-cams");
 console.log(
   "tpl visible",
-  !d.getElementById("viewTpl").hidden,
+  !d.getElementById("viewTemplates").hidden,
   "cams",
-  !d.getElementById("tpl-cams-v").hidden,
+  !d.getElementById("templatePage-cams").hidden,
   "gpus",
-  !d.getElementById("tpl-gpus-v").hidden,
+  !d.getElementById("templatePage-gpus").hidden,
 );
-console.log(tbl("camTbl"));
-set("ncName", "Тест-камера 8 Мп");
-set("ncW", "3840");
-set("ncH", "2160");
-set("ncPp", "2");
-set("ncFmin", "6");
-set("ncFmax", "6");
-set("ncPrice", "300");
-d.getElementById("camForm").dispatchEvent(
+console.log(tbl("cameraTable"));
+set("cameraFormName", "Тест-камера 8 Мп");
+set("cameraFormWidth", "3840");
+set("cameraFormHeight", "2160");
+set("cameraFormPixelPitch", "2");
+set("cameraFormFocalMin", "6");
+set("cameraFormFocalMax", "6");
+set("cameraFormPrice", "300");
+d.getElementById("cameraForm").dispatchEvent(
   new w.Event("submit", { cancelable: true }),
 );
-console.log("after add cam rows", d.querySelectorAll("#camTbl tr").length);
+console.log("after add cam rows", d.querySelectorAll("#cameraTable tr").length);
 // detectors
 go("#tpl-dets");
-set("ndName", "Детектор деталей");
-set("ndFps", "900");
-set("ndInp", "640");
-set("ndRef", "l40s");
-d.getElementById("detForm").dispatchEvent(
+set("detectorFormName", "Детектор деталей");
+set("detectorFormFps", "900");
+set("detectorFormInput", "640");
+set("detectorFormRefGpu", "l40s");
+d.getElementById("detectorForm").dispatchEvent(
   new w.Event("submit", { cancelable: true }),
 );
-console.log("det first row:", tbl("detTbl").split("\n")[1]);
-d.getElementById("detForm").dispatchEvent(
+console.log("det first row:", tbl("detectorTable").split("\n")[1]);
+d.getElementById("detectorForm").dispatchEvent(
   new w.Event("submit", { cancelable: true }),
 );
-console.log("det err:", T("ndErr"));
+console.log("det err:", T("detectorFormError"));
 // back to main, apply camera to type 1 and detector to object 2
 go("");
 const camSel = d.getElementById("camera");
@@ -107,7 +107,7 @@ console.log(
   d.getElementById("sensorWidth").value,
 );
 console.log("VERDICT cam:", T("verdict"));
-const om = d.getElementById("obj-model-1");
+const om = d.getElementById("objectModel-1");
 const det = [...om.options].find((o) => o.text === "Детектор деталей");
 om.value = det.value;
 om.dispatchEvent(new w.Event("change", { bubbles: true }));
@@ -117,7 +117,7 @@ console.log(
     .map((l) => l.textContent.replace(/\s+/g, " ").trim())
     .join(" || "),
 );
-console.log("SYS:", T("sysKpis"));
+console.log("SYS:", T("systemKpis"));
 console.log("tips", d.querySelectorAll(".tipbtn").length);
 // export → import
 const assert = require("assert");
@@ -157,7 +157,7 @@ w.HTMLAnchorElement.prototype.click = function () {
   href = this.href;
   attached = this.isConnected;
 };
-d.getElementById("expBtn").click();
+d.getElementById("exportBtn").click();
 assert.ok(
   blob instanceof w.Blob && blob.type === "application/json",
   "экспорт: не Blob с JSON",
@@ -219,13 +219,13 @@ assert.strictEqual(
   );
 });
 let picks = 0;
-d.getElementById("impFile").click = () => picks++;
-d.getElementById("impBtn").click();
-assert.strictEqual(T("impBtn"), "Заменить все данные");
+d.getElementById("importFile").click = () => picks++;
+d.getElementById("importBtn").click();
+assert.strictEqual(T("importBtn"), "Заменить все данные");
 assert.strictEqual(picks, 0, "выбор файла без подтверждения");
-d.getElementById("impBtn").click();
+d.getElementById("importBtn").click();
 assert.strictEqual(picks, 1, "второе нажатие не открыло выбор файла");
-assert.strictEqual(T("impBtn"), "Импорт");
+assert.strictEqual(T("importBtn"), "Импорт");
 const w2 = page();
 w2.importText(exp);
 assert.strictEqual(reloads, 1, "импорт не перезагрузил страницу");
@@ -238,7 +238,11 @@ assert.ok(
   ),
   "после импорта нет своей камеры",
 );
-assert.strictEqual(T3("sysKpis"), T("sysKpis"), "после импорта другие итоги");
+assert.strictEqual(
+  T3("systemKpis"),
+  T("systemKpis"),
+  "после импорта другие итоги",
+);
 assert.strictEqual(
   w3.eval("report"),
   w.eval("report"),
@@ -246,7 +250,7 @@ assert.strictEqual(
 );
 console.log("export/import: ok");
 // unreadable file
-const inp = d.getElementById("impFile"),
+const inp = d.getElementById("importFile"),
   kept = w.localStorage.getItem("camcalc4");
 d.getElementById("toast").textContent = "";
 Object.defineProperty(inp, "files", {
@@ -406,7 +410,10 @@ assert.strictEqual(
   "ru",
   "выбор языка не сохранился",
 );
-assert.strictEqual(w8.document.getElementById("tplBtn").textContent, "Шаблоны");
+assert.strictEqual(
+  w8.document.getElementById("templatesBtn").textContent,
+  "Шаблоны",
+);
 console.log("lang persists: ok");
 // language: example names saved on RU are shown in EN after switching
 const w10 = page(page(null, "ru").localStorage.getItem("camcalc4"), "en"),
@@ -414,8 +421,8 @@ const w10 = page(page(null, "ru").localStorage.getItem("camcalc4"), "en"),
 const shown = [
   w10.eval("report"),
   d10.getElementById("tabs").textContent,
-  d10.getElementById("tName").value,
-  ...[...d10.querySelectorAll("[id^=obj-name-]")].map((el) => el.value),
+  d10.getElementById("typeName").value,
+  ...[...d10.querySelectorAll("[id^=objectName-]")].map((el) => el.value),
 ].join("\n");
 assert.deepStrictEqual(
   builtinRu.filter((n) => shown.includes(n)),
@@ -429,13 +436,13 @@ assert.ok(
 console.log("example names follow lang: ok");
 // language: a name typed by the user is kept as is, even if it matches a built-in one
 const w11 = page(null, "ru");
-w11.document.getElementById("tName").value = "Тележка";
+w11.document.getElementById("typeName").value = "Тележка";
 w11.document
-  .getElementById("tName")
+  .getElementById("typeName")
   .dispatchEvent(new w11.Event("input", { bubbles: true }));
 const d12 = page(w11.localStorage.getItem("camcalc4"), "en").document;
 assert.strictEqual(
-  d12.getElementById("tName").value,
+  d12.getElementById("typeName").value,
   "Тележка",
   "EN: название пользователя переведено",
 );
@@ -445,8 +452,8 @@ const w9 = page(null, "en"),
   d9 = w9.document;
 w9.location.hash = "#tpl-gpus";
 w9.dispatchEvent(new w9.HashChangeEvent("hashchange"));
-d9.getElementById("pr-l40s").value = "1,999";
-d9.getElementById("pr-l40s").dispatchEvent(
+d9.getElementById("gpuPrice-l40s").value = "1,999";
+d9.getElementById("gpuPrice-l40s").dispatchEvent(
   new w9.Event("input", { bubbles: true }),
 );
 assert.notStrictEqual(
@@ -492,7 +499,7 @@ const withNumbers = (H, w, kr) => {
 });
 console.log("legacy comma: ok");
 // numbers: integer fields reject fractions
-const tCount = d9.getElementById("tCount");
+const tCount = d9.getElementById("typeCount");
 tCount.value = "1.5";
 assert.strictEqual(
   tCount.checkValidity(),

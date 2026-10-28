@@ -140,28 +140,28 @@ SENSORS.forEach(([label, width], i) =>
   ),
 );
 function writeForm(type) {
-  byId("tName").value = type.name;
-  byId("tCount").value = type.count;
+  byId("typeName").value = type.name;
+  byId("typeCount").value = type.count;
   INPUT_IDS.forEach((id) => {
     byId(id).value = type.inputs[id] ?? DEFAULT_INPUTS[id];
   });
   const lensModeRadio =
     document.querySelector(
       `input[name="lensMode"][value="${type.inputs.lensMode}"]`,
-    ) || byId("mAuto");
+    ) || byId("lensModeAuto");
   lensModeRadio.checked = true;
   const placementRadio =
     document.querySelector(
       `input[name="placement"][value="${type.inputs.placement}"]`,
-    ) || byId("pSide");
+    ) || byId("placementSide");
   placementRadio.checked = true;
   renderObjects();
 }
 function readForm() {
   const type = activeType();
-  if (type.name !== byId("tName").value) delete type.nameKey;
-  type.name = byId("tName").value;
-  type.count = byId("tCount").value;
+  if (type.name !== byId("typeName").value) delete type.nameKey;
+  type.name = byId("typeName").value;
+  type.count = byId("typeCount").value;
   INPUT_IDS.forEach((id) => {
     type.inputs[id] = byId(id).value;
   });

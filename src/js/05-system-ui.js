@@ -156,14 +156,14 @@ const capitalize = (text) =>
   text ? text[0].toUpperCase() + text.slice(1) : text;
 function renderType(result) {
   const verdict = byId("verdict");
-  byId("resTitle").textContent = t(
+  byId("resultTitle").textContent = t(
     "resultTitleOf",
     result.type.name || t("untitled"),
   );
   if (result.err) {
     verdict.className = "verdict bad";
     verdict.innerHTML = `<span class="pill">${t("pillError")}</span><div>${t("inputError")}</div>`;
-    ["kpis", "dens", "facts", "side"].forEach(
+    ["kpis", "densityTable", "facts", "side"].forEach(
       (id) => (byId(id).innerHTML = ""),
     );
     return;
@@ -211,8 +211,8 @@ function renderType(result) {
     )
     .join("");
   result.objs.forEach((obj, i) => {
-    const resultEl = byId(`obj-result-${i}`),
-      dotEl = byId(`obj-dot-${i}`);
+    const resultEl = byId(`objectResult-${i}`),
+      dotEl = byId(`objectDot-${i}`);
     if (!resultEl) return;
     if (obj.bad) {
       resultEl.className = "ores";
@@ -225,7 +225,7 @@ function renderType(result) {
     resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objectAtModel", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
   });
   const top = result.placement === "top";
-  byId("dens").innerHTML =
+  byId("densityTable").innerHTML =
     `<tr><th>${t("densityHeader")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
     <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
     <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
@@ -262,7 +262,7 @@ function renderTabs(results) {
     tab.className = "tab";
     tab.setAttribute("role", "tab");
     tab.setAttribute("aria-selected", String(result.type.id === activeTypeId));
-    tab.setAttribute("aria-controls", "typeOut");
+    tab.setAttribute("aria-controls", "typeResult");
     tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
     tab.title = result.err
       ? t("tabError")
@@ -347,7 +347,7 @@ function renderSystem(results, system) {
       : totalMbps * 1.3 < 9000
         ? withUnit(10, "gbps")
         : "> " + withUnit(10, "gbps");
-  byId("sysKpis").innerHTML = [
+  byId("systemKpis").innerHTML = [
     [
       t("systemCameras"),
       `${cameraCount}`,
@@ -397,7 +397,7 @@ function renderSystem(results, system) {
     .join("");
   // дашборд
   const overloaded = chosen.inferenceLoad > maxLoad;
-  byId("dsum").innerHTML = liveResults.length
+  byId("loadSummary").innerHTML = liveResults.length
     ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", chosen.bottleneck)}`
     : "";
   const runs = chosen.runs
@@ -481,7 +481,7 @@ function renderSystem(results, system) {
   // сеть
   const archiveDays = parseNum(byId("archiveDays").value) || 0,
     archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
-  byId("netTbl").innerHTML =
+  byId("networkTable").innerHTML =
     `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
     results
       .map((result) =>
@@ -492,7 +492,10 @@ function renderSystem(results, system) {
       .join("") +
     `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
     `<tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
-  byId("assList").innerHTML = t("assumptions", formatNumber(efficiency, 2))
+  byId("assumptionsList").innerHTML = t(
+    "assumptions",
+    formatNumber(efficiency, 2),
+  )
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
   return { cameraCount, totalMbps, cameraCost };
@@ -511,7 +514,7 @@ function buildGpuSelect() {
       )
       .join("");
   select.value = allGpus().some((gpu) => gpu.id === current) ? current : "auto";
-  const refSelect = byId("ndRef");
+  const refSelect = byId("detectorFormRefGpu");
   if (refSelect) {
     const refCurrent = refSelect.value;
     refSelect.innerHTML = allGpus()
@@ -526,25 +529,25 @@ function renderGpuView() {
   const row = (
     gpu,
   ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="pr-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gon-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
   const headers = STR.gpuTableHeader,
     head = `<tr>${headers
       .slice(0, 6)
       .map((header) => `<th>${header}</th>`)
       .join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
-  byId("catTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
-  byId("catTbl").innerHTML = head + GPU_CATALOG.map(row).join("");
-  byId("mine").innerHTML = customGpus.length
+  byId("catalogTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
+  byId("catalogTable").innerHTML = head + GPU_CATALOG.map(row).join("");
+  byId("customGpus").innerHTML = customGpus.length
     ? `<strong style="font-weight:600">${t("customGpusTitle", customGpus.length)}</strong><div class="tbl"><table>${head}${customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
   allGpus().forEach((gpu) => {
-    byId(`pr-${gpu.id}`).addEventListener("input", (event) => {
+    byId(`gpuPrice-${gpu.id}`).addEventListener("input", (event) => {
       gpuPrices[gpu.id] = event.target.value;
       calcAll();
     });
-    byId(`gon-${gpu.id}`).addEventListener("change", (event) => {
+    byId(`gpuEnabled-${gpu.id}`).addEventListener("change", (event) => {
       gpuEnabled[gpu.id] = event.target.checked;
       calcAll();
     });
@@ -565,23 +568,23 @@ function renderGpuView() {
     }),
   );
 }
-byId("ngArch").addEventListener("change", () => {
-  const isJetson = byId("ngArch").value === "jet";
-  byId("ngDecL").textContent = t(
+byId("gpuFormArchitecture").addEventListener("change", () => {
+  const isJetson = byId("gpuFormArchitecture").value === "jet";
+  byId("gpuFormDecodersLabel").textContent = t(
     isJetson ? "gpuFormDecoderStreams" : "gpuFormDecoders",
   );
-  byId("ngDec").placeholder = isJetson ? "22" : "2";
+  byId("gpuFormDecoders").placeholder = isJetson ? "22" : "2";
 });
-byId("newForm").addEventListener("submit", (event) => {
+byId("gpuForm").addEventListener("submit", (event) => {
   event.preventDefault();
   // decode — число NVDEC, у Jetson — потоков 1080p30 H.265
-  const name = byId("ngName").value.trim(),
-    arch = byId("ngArch").value,
-    tflops = parseNum(byId("ngTf").value),
-    decode = parseNum(byId("ngDec").value),
-    memoryGB = parseNum(byId("ngMem").value),
-    tdpW = parseNum(byId("ngTdp").value),
-    price = parseNum(byId("ngPrice").value);
+  const name = byId("gpuFormName").value.trim(),
+    arch = byId("gpuFormArchitecture").value,
+    tflops = parseNum(byId("gpuFormTflops").value),
+    decode = parseNum(byId("gpuFormDecoders").value),
+    memoryGB = parseNum(byId("gpuFormMemory").value),
+    tdpW = parseNum(byId("gpuFormTdp").value),
+    price = parseNum(byId("gpuFormPrice").value);
   const errors = [];
   if (!name) errors.push(t("errorName"));
   if (!(tflops > 0)) errors.push(t("errorTflops"));
@@ -589,7 +592,7 @@ byId("newForm").addEventListener("submit", (event) => {
     errors.push(t(arch === "jet" ? "errorDecoderStreams" : "errorDecoders"));
   if (!(memoryGB > 0)) errors.push(t("errorMemory"));
   if (!(price > 0)) errors.push(t("errorPrice"));
-  const errorEl = byId("ngErr");
+  const errorEl = byId("gpuFormError");
   if (errors.length) {
     errorEl.hidden = false;
     errorEl.textContent = t("gpuFormError", errors.join(", "));
@@ -614,10 +617,15 @@ byId("newForm").addEventListener("submit", (event) => {
     };
   } else gpu.nvdec = Math.round(decode);
   customGpus.push(gpu);
-  gpuEnabled[gpu.id] = byId("ngOn").checked;
-  ["ngName", "ngTf", "ngDec", "ngMem", "ngTdp", "ngPrice"].forEach(
-    (id) => (byId(id).value = ""),
-  );
+  gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
+  [
+    "gpuFormName",
+    "gpuFormTflops",
+    "gpuFormDecoders",
+    "gpuFormMemory",
+    "gpuFormTdp",
+    "gpuFormPrice",
+  ].forEach((id) => (byId(id).value = ""));
   buildGpuSelect();
   renderGpuView();
   calcAll();
@@ -630,8 +638,8 @@ function renderCamView() {
     cameraTypes
       .filter((type) => type.inputs.camera === id)
       .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
-  byId("camTitle").textContent = t("camerasTitle", allCameras().length);
-  byId("camTbl").innerHTML =
+  byId("camerasTitle").textContent = t("camerasTitle", allCameras().length);
+  byId("cameraTable").innerHTML =
     `<tr>${STR.cameraTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     allCameras()
       .map(
@@ -654,16 +662,16 @@ function renderCamView() {
     }),
   );
 }
-byId("camForm").addEventListener("submit", (event) => {
+byId("cameraForm").addEventListener("submit", (event) => {
   event.preventDefault();
-  const name = byId("ncName").value.trim(),
-    Nw = Math.round(parseNum(byId("ncW").value)),
-    Nh = Math.round(parseNum(byId("ncH").value)),
-    pixelPitchUm = parseNum(byId("ncPp").value);
-  let sensorWidth = parseNum(byId("ncSw").value);
-  let focalMin = parseNum(byId("ncFmin").value),
-    focalMax = parseNum(byId("ncFmax").value);
-  const price = parseNum(byId("ncPrice").value);
+  const name = byId("cameraFormName").value.trim(),
+    Nw = Math.round(parseNum(byId("cameraFormWidth").value)),
+    Nh = Math.round(parseNum(byId("cameraFormHeight").value)),
+    pixelPitchUm = parseNum(byId("cameraFormPixelPitch").value);
+  let sensorWidth = parseNum(byId("cameraFormSensorWidth").value);
+  let focalMin = parseNum(byId("cameraFormFocalMin").value),
+    focalMax = parseNum(byId("cameraFormFocalMax").value);
+  const price = parseNum(byId("cameraFormPrice").value);
   if (!(sensorWidth > 0) && pixelPitchUm > 0 && Nw > 0)
     sensorWidth = +((pixelPitchUm * Nw) / 1000).toFixed(3);
   if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
@@ -674,7 +682,7 @@ byId("camForm").addEventListener("submit", (event) => {
   if (!(sensorWidth > 0)) errors.push(t("errorSensorWidth"));
   if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
     errors.push(t("errorFocalRange"));
-  const errorEl = byId("ncErr");
+  const errorEl = byId("cameraFormError");
   if (errors.length) {
     errorEl.hidden = false;
     errorEl.textContent = t("cameraFormError", errors.join(", "));
@@ -693,14 +701,14 @@ byId("camForm").addEventListener("submit", (event) => {
     custom: true,
   });
   [
-    "ncName",
-    "ncW",
-    "ncH",
-    "ncSw",
-    "ncPp",
-    "ncFmin",
-    "ncFmax",
-    "ncPrice",
+    "cameraFormName",
+    "cameraFormWidth",
+    "cameraFormHeight",
+    "cameraFormSensorWidth",
+    "cameraFormPixelPitch",
+    "cameraFormFocalMin",
+    "cameraFormFocalMax",
+    "cameraFormPrice",
   ].forEach((id) => (byId(id).value = ""));
   buildCameraSelect();
   renderCamView();
@@ -710,7 +718,7 @@ byId("camForm").addEventListener("submit", (event) => {
 
 // ---------- шаблоны: детекторы
 function renderDetView() {
-  byId("detTitle").textContent = t(
+  byId("detectorsTitle").textContent = t(
     "detectorsTitle",
     MODELS.length + customDetectors.length,
   );
@@ -720,7 +728,7 @@ function renderDetView() {
         sum + type.objects.filter((obj) => obj.model === id).length,
       0,
     );
-  byId("detTbl").innerHTML =
+  byId("detectorTable").innerHTML =
     `<tr>${STR.detectorTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
     (customDetectors.length
       ? customDetectors
@@ -752,20 +760,20 @@ function renderDetView() {
     }),
   );
 }
-byId("ndInp").innerHTML = INPUTS.map(
+byId("detectorFormInput").innerHTML = INPUTS.map(
   (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`,
 ).join("");
-byId("detForm").addEventListener("submit", (event) => {
+byId("detectorForm").addEventListener("submit", (event) => {
   event.preventDefault();
-  const name = byId("ndName").value.trim(),
-    fps = parseNum(byId("ndFps").value),
-    inputSize = +byId("ndInp").value,
-    refGpu = byId("ndRef").value,
-    gflops = parseNum(byId("ndGf").value);
+  const name = byId("detectorFormName").value.trim(),
+    fps = parseNum(byId("detectorFormFps").value),
+    inputSize = +byId("detectorFormInput").value,
+    refGpu = byId("detectorFormRefGpu").value,
+    gflops = parseNum(byId("detectorFormGflops").value);
   const errors = [];
   if (!name) errors.push(t("errorName"));
   if (!(fps > 0)) errors.push(t("errorFps"));
-  const errorEl = byId("ndErr");
+  const errorEl = byId("detectorFormError");
   if (errors.length) {
     errorEl.hidden = false;
     errorEl.textContent = t("cameraFormError", errors.join(", "));
@@ -781,7 +789,9 @@ byId("detForm").addEventListener("submit", (event) => {
     gflops: gflops > 0 ? gflops : 0,
     custom: true,
   });
-  ["ndName", "ndFps", "ndGf"].forEach((id) => (byId(id).value = ""));
+  ["detectorFormName", "detectorFormFps", "detectorFormGflops"].forEach(
+    (id) => (byId(id).value = ""),
+  );
   renderObjects();
   renderDetView();
   calcAll();
@@ -1003,7 +1013,7 @@ OBJECT_PRESETS.forEach((preset) => {
   });
   byId("presets").append(chip);
 });
-byId("addObj").addEventListener("click", () => {
+byId("addObject").addEventListener("click", () => {
   const type = activeType();
   type.objects.push(
     makeObject([
@@ -1021,23 +1031,23 @@ byId("addObj").addEventListener("click", () => {
   renderObjects();
   calcAll();
   const lastIndex = type.objects.length - 1;
-  byId(`obj-name-${lastIndex}`).focus();
-  byId(`obj-name-${lastIndex}`).select();
+  byId(`objectName-${lastIndex}`).focus();
+  byId(`objectName-${lastIndex}`).select();
 });
-byId("frm").addEventListener("input", () => {
+byId("typeForm").addEventListener("input", () => {
   readForm();
   calcAll();
 });
-byId("frm").addEventListener("change", () => {
+byId("typeForm").addEventListener("change", () => {
   readForm();
   calcAll();
 });
-byId("frm").addEventListener("submit", (event) => event.preventDefault());
+byId("typeForm").addEventListener("submit", (event) => event.preventDefault());
 SYSTEM_IDS.forEach((id) => {
   byId(id).addEventListener("input", calcAll);
   byId(id).addEventListener("change", calcAll);
 });
-byId("dupBtn").addEventListener("click", () => {
+byId("duplicateTypeBtn").addEventListener("click", () => {
   readForm();
   const source = activeType(),
     copy = JSON.parse(JSON.stringify(source));
@@ -1051,8 +1061,8 @@ byId("dupBtn").addEventListener("click", () => {
   toast(t("typeCopied"));
 });
 let deleteTimer = null;
-byId("delBtn").addEventListener("click", () => {
-  const button = byId("delBtn");
+byId("deleteTypeBtn").addEventListener("click", () => {
+  const button = byId("deleteTypeBtn");
   if (cameraTypes.length < 2) {
     toast(t("lastType"));
     return;
@@ -1103,7 +1113,7 @@ byId("copyBtn").addEventListener("click", () => {
     () => toast(t("copyFail")),
   );
 });
-byId("expBtn").addEventListener("click", () => {
+byId("exportBtn").addEventListener("click", () => {
   const link = document.createElement("a");
   link.href = URL.createObjectURL(
     new Blob([JSON.stringify(snapshot(), null, 1)], {
@@ -1151,8 +1161,8 @@ function importText(text) {
   location.reload();
 }
 let importTimer = null;
-byId("impBtn").addEventListener("click", () => {
-  const button = byId("impBtn");
+byId("importBtn").addEventListener("click", () => {
+  const button = byId("importBtn");
   if (!importTimer) {
     button.textContent = t("importConfirm");
     importTimer = setTimeout(() => {
@@ -1164,9 +1174,9 @@ byId("impBtn").addEventListener("click", () => {
   clearTimeout(importTimer);
   importTimer = null;
   button.textContent = t("importBtn");
-  byId("impFile").click();
+  byId("importFile").click();
 });
-byId("impFile").addEventListener("change", (event) => {
+byId("importFile").addEventListener("change", (event) => {
   const file = event.target.files[0];
   event.target.value = "";
   if (file) file.text().then(importText, () => toast(t("readFail")));
@@ -1180,13 +1190,14 @@ function route() {
   const hash = location.hash.slice(1),
     isTemplate = hash in TEMPLATE_VIEWS;
   byId("viewMain").style.display = isTemplate ? "none" : "flex";
-  byId("viewTpl").hidden = !isTemplate;
-  byId("viewTpl").style.display = isTemplate ? "flex" : "none";
+  byId("viewTemplates").hidden = !isTemplate;
+  byId("viewTemplates").style.display = isTemplate ? "flex" : "none";
   if (isTemplate) {
     Object.keys(TEMPLATE_VIEWS).forEach((view) => {
-      byId(view + "-v").hidden = view !== hash;
-      byId(view + "-v").style.display = view === hash ? "flex" : "none";
-      const link = byId("tt-" + view.slice(4));
+      byId("templatePage-" + view.slice(4)).hidden = view !== hash;
+      byId("templatePage-" + view.slice(4)).style.display =
+        view === hash ? "flex" : "none";
+      const link = byId("templateTab-" + view.slice(4));
       if (view === hash) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     });

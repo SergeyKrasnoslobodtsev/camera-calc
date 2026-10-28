@@ -447,18 +447,20 @@ const RU = {
       : ""),
   // подсказки «?»
   tips: {
-    tName:
+    typeName:
       "Название типа камеры, например «Рабочее место» или «Тележка». Тип — группа одинаковых камер с одной задачей: общие геометрия, матрица, поток и объекты.",
-    tCount:
+    typeCount:
       "Количество камер этого типа в системе. Влияет на сетевой поток, декодирование и нагрузку на GPU, но не на пиксели на объекте.",
     camera:
       "Камера из «Шаблонов»: разрешение и матрица берутся из неё, а требуемое фокусное расстояние проверяется по диапазону её объектива. «Ручная настройка матрицы» — разрешение и матрица задаются вручную.",
-    ngTf: "FP16 Tensor из даташита NVIDIA без sparsity. Если значение отмечено звёздочкой «with sparsity», разделите его на 2. Для GeForce используйте FP16 с FP32-накоплением: оно вдвое меньше FP16-накопления.",
-    ngArch:
+    gpuFormTflops:
+      "FP16 Tensor из даташита NVIDIA без sparsity. Если значение отмечено звёздочкой «with sparsity», разделите его на 2. Для GeForce используйте FP16 с FP32-накоплением: оно вдвое меньше FP16-накопления.",
+    gpuFormArchitecture:
       "Архитектура задаёт производительность одного аппаратного декодера NVDEC. Для Jetson выберите «Jetson или свой декодер» и укажите число потоков 1080p30 из спецификации.",
-    ndFps:
+    detectorFormFps:
       "Число кадров в секунду, которое модель обрабатывает на одном GPU в TensorRT с той же точностью и batch, что и в эксплуатации.",
-    ncSw: "Ширина активной области сенсора из даташита. Если её нет, оставьте поле пустым и укажите размер пикселя.",
+    cameraFormSensorWidth:
+      "Ширина активной области сенсора из даташита. Если её нет, оставьте поле пустым и укажите размер пикселя.",
     cameraHeight:
       "Высота объектива над полом. Измерьте лазерным дальномером от пола до точки крепления. Чем выше камера, тем меньше перекрытий объектов, но ниже плотность пикселей.",
     planeHeight:
@@ -953,18 +955,20 @@ const EN = {
       : ""),
   // подсказки «?»
   tips: {
-    tName:
+    typeName:
       'Camera type name, for example "Workstation" or "Cart". A type is a group of identical cameras with one task: shared geometry, sensor, stream, and objects.',
-    tCount:
+    typeCount:
       "Number of cameras of this type in the system. Affects network traffic, decoding, and GPU load, but not the pixels on the object.",
     camera:
       'Camera from "Templates": the resolution and sensor are taken from it, and the required focal length is checked against its lens range. "Manual sensor setup": the resolution and sensor are set manually.',
-    ngTf: 'FP16 Tensor from the NVIDIA datasheet without sparsity. If the value is marked with an asterisk "with sparsity", divide it by 2. For GeForce, use FP16 with FP32 accumulate: it\'s half of FP16 accumulate.',
-    ngArch:
+    gpuFormTflops:
+      'FP16 Tensor from the NVIDIA datasheet without sparsity. If the value is marked with an asterisk "with sparsity", divide it by 2. For GeForce, use FP16 with FP32 accumulate: it\'s half of FP16 accumulate.',
+    gpuFormArchitecture:
       'The architecture defines the performance of one NVDEC hardware decoder. For Jetson, choose "Jetson or custom decoder" and enter the number of 1080p30 streams from the specification.',
-    ndFps:
+    detectorFormFps:
       "Frames per second the model processes on one GPU in TensorRT with the same precision and batch as in production.",
-    ncSw: "Width of the sensor active area from the datasheet. If it isn't listed, leave the field empty and enter the pixel size.",
+    cameraFormSensorWidth:
+      "Width of the sensor active area from the datasheet. If it isn't listed, leave the field empty and enter the pixel size.",
     cameraHeight:
       "Height of the lens above the floor. Measure with a laser rangefinder from the floor to the mounting point. The higher the camera, the less objects occlude each other, but the lower the pixel density.",
     planeHeight:

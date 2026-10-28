@@ -34,17 +34,17 @@ function results(window) {
   return [
     window.eval("report"),
     "",
-    "KPI системы: " + text("sysKpis"),
-    "Сводка: " + text("dsum"),
+    "KPI системы: " + text("systemKpis"),
+    "Сводка: " + text("loadSummary"),
     "Легенда: " + items("#legend li"),
     "Датчики: " + text("gauges"),
     "Примечание: " + text("loadNote"),
-    "Допущения: " + items("#assList li"),
-    "Сеть:\n" + table("netTbl"),
+    "Допущения: " + items("#assumptionsList li"),
+    "Сеть:\n" + table("networkTable"),
     "Вердикт: " + text("verdict"),
     "KPI типа: " + text("kpis"),
     "Факты: " + text("facts"),
-    "Плотность:\n" + table("dens"),
+    "Плотность:\n" + table("densityTable"),
     "Схема:\n" + doc.getElementById("side").innerHTML.replace(/></g, ">\n<"),
   ].join("\n");
 }
