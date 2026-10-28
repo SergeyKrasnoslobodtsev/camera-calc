@@ -1,4 +1,4 @@
-// Тексты для результатов domain: заметки, вердикт, подача, разрешение.
+// Тексты для результатов domain: заметки, вердикт, подача, разрешение, узкое место, порт.
 // Из domain берутся только типы (import type), в сборку его код отсюда не попадает.
 import type {
   Feed,
@@ -7,8 +7,12 @@ import type {
   ValidObject,
   Verdict,
 } from "../domain/compute-type/index.ts";
+import type {
+  Bottleneck,
+  NetworkPort,
+} from "../domain/compute-system/index.ts";
 import type { Resolution } from "../domain/references/resolutions.ts";
-import { formatNumber, t } from "./index.ts";
+import { formatNumber, t, withUnit } from "./index.ts";
 
 export const resolutionLabel = ({ megapixels, width, height }: Resolution) =>
   `${t("megapixels", megapixels)} · ${width} × ${height}`;
@@ -160,3 +164,18 @@ export function verdictPill(verdict: Verdict, notes: Note[]): string {
       return t(notes.length ? "pillCheck" : "pillOk");
   }
 }
+
+const BOTTLENECK_KEYS = {
+  inference: "bottleneckInference",
+  decoder: "bottleneckDecoder",
+  memory: "bottleneckMemory",
+} as const;
+export const bottleneckText = (bottleneck: Bottleneck) =>
+  t(BOTTLENECK_KEYS[bottleneck]);
+
+export const portText = (port: NetworkPort) =>
+  port === "1G"
+    ? withUnit(1, "gbps")
+    : port === "10G"
+      ? withUnit(10, "gbps")
+      : "> " + withUnit(10, "gbps");
