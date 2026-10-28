@@ -9,6 +9,7 @@
 ```
 camera-calc/
 ├── build.ts                  сборка src/ → dist/camera-calc.html через esbuild
+├── tsconfig.json             настройки проверки типов tsc (build.ts и src/**/*.ts)
 ├── dist/camera-calc.html     собранная страница (коммитится, чтобы открывать без сборки)
 ├── src/
 │   ├── layout.html           разметка и CSS (тёмная тема, своя светлая по кнопке)
@@ -38,9 +39,9 @@ camera-calc/
 ## Работа
 
 ```bash
-npm install           # один раз, ставит esbuild, jsdom и Prettier
+npm install           # один раз, ставит esbuild, TypeScript, jsdom и Prettier
 npm run build         # node build.ts; Node запускает .ts сам, проверено на Node 26.12
-npm test
+npm test              # проверка типов tsc, затем тесты
 ```
 
 После правок в `src/` пересоберите страницу и закоммитьте `dist/` вместе с исходниками.
