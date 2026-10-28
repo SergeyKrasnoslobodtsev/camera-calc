@@ -23,29 +23,30 @@ const RU = {
   gpuCustomMark: " (свой)",
   donutAria: "Загрузка инференса",
   donutCap: "инференс",
-  donutAriaVal: (u, lim) => `Загрузка инференса ${u}, порог ${lim}`,
+  donutAriaVal: (load, threshold) =>
+    `Загрузка инференса ${load}, порог ${threshold}`,
   bottInf: "инференс",
   bottDec: "декодирование",
   bottMem: "видеопамять",
   optimum: "оптимум по цене",
   manual: "выбрано вручную",
   insufficient: "недостаточно",
-  headroom: (p) => `запас ${p}`,
-  bottleneck: (b) => `узкое место: ${b}`,
-  otherRuns: (n) => `Другие запуски: ${n}`,
+  headroom: (percent) => `запас ${percent}`,
+  bottleneck: (resource) => `узкое место: ${resource}`,
+  otherRuns: (count) => `Другие запуски: ${count}`,
   free: "Свободно",
-  freeSub: (p) => `Порог ${p} отмечен риской на кольце`,
+  freeSub: (threshold) => `Порог ${threshold} отмечен риской на кольце`,
   noLoad: "Добавьте камеры и объекты с моделями.",
   gDec: "Декодер",
   gMem: "Видеопамять",
-  gDecSub: (a, b) => `${a} из ${b} потоков`,
-  gMemSub: (a, b) => `${a} из ${b} ГБ`,
+  gDecSub: (used, capacity) => `${used} из ${capacity} потоков`,
+  gMemSub: (used, capacity) => `${used} из ${capacity} ГБ`,
   noCand: "Ни один GPU не отмечен для подбора. Отметьте GPU в «Шаблонах».",
   noFit:
     "Нагрузку не выдерживает ни один GPU даже в количестве 4. Уменьшите частоту для аналитики, используйте вырез зоны вместо тайлов, выберите модель легче или распределите камеры по нескольким серверам.",
   // результат
   resTitle: "Результат",
-  resTitleOf: (n) => `Результат · ${n}`,
+  resTitleOf: (name) => `Результат · ${name}`,
   untitled: "Без названия",
   sideFig: "Вид сбоку",
   lgFov: "Поле зрения",
@@ -68,8 +69,9 @@ const RU = {
   kFrame: "Ширина кадра",
   kFrameSub: "у ближнего и дальнего края",
   objBad: "Укажите габариты и порог в пикселях.",
-  objSeen: (px, req) => `на входе модели ${px}, порог ${req}`,
-  objSensor: (px, feed) => `на матрице ${px} · ${feed}`,
+  objSeen: (modelPx, requiredPx) =>
+    `на входе модели ${modelPx}, порог ${requiredPx}`,
+  objSensor: (sensorPx, feed) => `на матрице ${sensorPx} · ${feed}`,
   densHead: "Плотность, px/м",
   across: "Поперёк",
   depth: "Вглубь",
@@ -83,30 +85,33 @@ const RU = {
   camera: "Камера",
   st: { ok: "достаточно", warn: "на грани", bad: "недостаточно" },
   tabErr: "Ошибка в исходных данных",
-  tabObjs: (s) => `Объекты: ${s}`,
+  tabObjs: (status) => `Объекты: ${status}`,
   addType: "+ Тип камеры",
-  newType: (n) => `Камера ${n}`,
+  newType: (number) => `Камера ${number}`,
   // вердикт типа
-  feedTiles: (n, nx, ny, inp) => `тайлов: ${n} (${nx} × ${ny}) по ${inp} px`,
-  feedRoi: (w, h, inp) => `вырез ${w} × ${h} → ${inp} px`,
-  feedFull: (w, h, inp) => `кадр ${w} × ${h} → ${inp} px`,
-  nZoneW: (a, b) =>
-    `Зона не помещается по ширине: у ближнего края ширина кадра ${a} м, ширина зоны ${b} м.`,
-  nZoneD: (a, b) =>
-    `Зона не помещается по глубине: требуется ${a}° по вертикали, доступно ${b}°.`,
-  nFMax: (a, b) =>
-    `Для зоны требуется фокусное расстояние ≈ ${a} мм, максимум объектива — ${b} мм. Расчёт выполнен для ${b} мм: кадр шире зоны, пикселей на объекте меньше.`,
-  nFMin: (a, b) =>
-    `Для зоны требуется фокусное расстояние ≈ ${a} мм, минимум объектива — ${b} мм. Расчёт выполнен для ${b} мм: зона не помещается в кадр целиком. Поднимите камеру, уменьшите зону или выберите объектив с большим углом обзора.`,
-  nFOut: (f, r) =>
-    `Фокусное расстояние ${f} мм вне диапазона объектива камеры (${r} мм).`,
-  nWide: (a) =>
-    `HFOV ${a}°: такие объективы заметно сжимают края кадра (бочкообразная дисторсия), расчёт этого не учитывает. Уменьшите коэффициент качества или поднимите камеру.`,
+  feedTiles: (count, columns, rows, inputSize) =>
+    `тайлов: ${count} (${columns} × ${rows}) по ${inputSize} px`,
+  feedRoi: (width, height, inputSize) =>
+    `вырез ${width} × ${height} → ${inputSize} px`,
+  feedFull: (width, height, inputSize) =>
+    `кадр ${width} × ${height} → ${inputSize} px`,
+  nZoneW: (frameWidth, zoneWidth) =>
+    `Зона не помещается по ширине: у ближнего края ширина кадра ${frameWidth} м, ширина зоны ${zoneWidth} м.`,
+  nZoneD: (requiredAngle, availableAngle) =>
+    `Зона не помещается по глубине: требуется ${requiredAngle}° по вертикали, доступно ${availableAngle}°.`,
+  nFMax: (requiredFocal, maxFocal) =>
+    `Для зоны требуется фокусное расстояние ≈ ${requiredFocal} мм, максимум объектива — ${maxFocal} мм. Расчёт выполнен для ${maxFocal} мм: кадр шире зоны, пикселей на объекте меньше.`,
+  nFMin: (requiredFocal, minFocal) =>
+    `Для зоны требуется фокусное расстояние ≈ ${requiredFocal} мм, минимум объектива — ${minFocal} мм. Расчёт выполнен для ${minFocal} мм: зона не помещается в кадр целиком. Поднимите камеру, уменьшите зону или выберите объектив с большим углом обзора.`,
+  nFOut: (focal, range) =>
+    `Фокусное расстояние ${focal} мм вне диапазона объектива камеры (${range} мм).`,
+  nWide: (hfov) =>
+    `HFOV ${hfov}°: такие объективы заметно сжимают края кадра (бочкообразная дисторсия), расчёт этого не учитывает. Уменьшите коэффициент качества или поднимите камеру.`,
   nTop: "Вид сверху: детали в ячейках видны торцами, это удобно для подсчёта. Человек виден сверху (голова и плечи), действия рук различаются хуже.",
-  nLowRay: (a) =>
-    `Луч на дальний край зоны идёт под углом ${a}° к плоскости: объекты будут перекрывать друг друга. Поднимите камеру или уменьшите вынос.`,
-  nAfps: (a, b) =>
-    `Частота для аналитики (${a} кадр/с) больше частоты потока (${b} кадр/с). В расчёте использовано ${b} кадр/с.`,
+  nLowRay: (angle) =>
+    `Луч на дальний край зоны идёт под углом ${angle}° к плоскости: объекты будут перекрывать друг друга. Поднимите камеру или уменьшите вынос.`,
+  nAfps: (analyticsFps, streamFps) =>
+    `Частота для аналитики (${analyticsFps} кадр/с) больше частоты потока (${streamFps} кадр/с). В расчёте использовано ${streamFps} кадр/с.`,
   pNoObj: "Нет объектов",
   pBad: "Недостаточно",
   pWarn: "На грани",
@@ -114,33 +119,34 @@ const RU = {
   pCheck: "Есть замечания",
   hNoObj:
     "Добавьте объект с габаритами и моделью, чтобы проверить его различимость.",
-  hItem: (n, px, req) => `${n} — ${px} при пороге ${req}`,
-  hBad: (l) => `Недостаточно пикселей на входе модели: ${l}.`,
-  hWarn: (l) => `На грани на входе модели: ${l}.`,
-  hOk: (n, px) =>
-    `Все объекты различимы на входе модели. Самый мелкий: ${n} — ${px}.`,
-  nScale: (n, px, inp, adv, need) =>
-    `«${n}»: на матрице ${px}, пиксели теряются при уменьшении до входа ${inp} px. ${adv} или увеличьте вход до ≈ ${need} px.`,
+  hItem: (name, modelPx, requiredPx) =>
+    `${name} — ${modelPx} при пороге ${requiredPx}`,
+  hBad: (list) => `Недостаточно пикселей на входе модели: ${list}.`,
+  hWarn: (list) => `На грани на входе модели: ${list}.`,
+  hOk: (name, modelPx) =>
+    `Все объекты различимы на входе модели. Самый мелкий: ${name} — ${modelPx}.`,
+  nScale: (name, sensorPx, inputSize, advice, neededInputSize) =>
+    `«${name}»: на матрице ${sensorPx}, пиксели теряются при уменьшении до входа ${inputSize} px. ${advice} или увеличьте вход до ≈ ${neededInputSize} px.`,
   advFull: "Выберите подачу «Вырез зоны» или «Тайлы»",
   advRoi: "Выберите подачу «Тайлы»",
   advTiles: "Проверьте размер входа",
-  nRes: (n, px, res) =>
-    `Для «${n}» требуется не меньше ${px} px по горизонтали (${res}) при том же угле обзора.`,
-  nResNone: (n, px) =>
-    `Для «${n}» требуется ${px} px по горизонтали — больше, чем у любого разрешения из списка. Установите отдельную камеру ближе к объекту или выберите объектив с меньшим углом обзора.`,
+  nRes: (name, requiredWidthPx, resolution) =>
+    `Для «${name}» требуется не меньше ${requiredWidthPx} px по горизонтали (${resolution}) при том же угле обзора.`,
+  nResNone: (name, requiredWidthPx) =>
+    `Для «${name}» требуется ${requiredWidthPx} px по горизонтали — больше, чем у любого разрешения из списка. Установите отдельную камеру ближе к объекту или выберите объектив с меньшим углом обзора.`,
   objDefault: "Объект",
   // система
   sCams: "Камеры",
-  sTypes: (n, names) => `Типов: ${n}${names ? ` (${names})` : ""}`,
-  sCamCost: (c) => ` · стоимость камер ${c}`,
+  sTypes: (count, names) => `Типов: ${count}${names ? ` (${names})` : ""}`,
+  sCamCost: (cost) => ` · стоимость камер ${cost}`,
   sObjs: "Объекты различимы",
-  sOfN: (a, b) => `${a} из ${b}`,
-  sSmallest: (n, px) => `Самый мелкий: ${n}, ${px} px`,
+  sOfN: (okCount, total) => `${okCount} из ${total}`,
+  sSmallest: (name, modelPx) => `Самый мелкий: ${name}, ${modelPx} px`,
   sNoObjs: "Нет объектов",
   sCompute: "Вычислитель",
   sNoCams: "Нет камер",
   sNet: "Сетевой поток",
-  sPort: (p, w) => `Порт ${p} · PoE ≈ ${w} Вт`,
+  sPort: (port, poeWatts) => `Порт ${port} · PoE ≈ ${poeWatts} Вт`,
   // сеть и допущения
   netTitle: "Сеть и хранение",
   days: "Глубина архива, дн.",
@@ -152,11 +158,11 @@ const RU = {
   nAll: "Всего",
   nTotal: "Итого",
   nArch: "Архив",
-  nArchVal: (tb, d) => `≈ ${tb} ТБ за ${d} дн.`,
+  nArchVal: (terabytes, days) => `≈ ${terabytes} ТБ за ${days} дн.`,
   nArchOff: "Не ведётся",
   assTitle: "Допущения",
-  ass: (kr) => [
-    `Коэффициент реальности ${kr} к замеренной скорости`,
+  ass: (efficiency) => [
+    `Коэффициент реальности ${efficiency} к замеренной скорости`,
     "Модели из каталога: замеры Ultralytics на T4",
     "Декодер: производительность NVDEC по поколению GPU",
     "Стоимость сервера для GPU не учитывается",
@@ -254,8 +260,8 @@ const RU = {
     gb: "ГБ",
     w: "Вт",
   },
-  mp: (mp) => `${mp} Мп`,
-  sensMm: (s, w) => `${s} ≈ ${w} мм`,
+  mp: (megapixels) => `${megapixels} Мп`,
+  sensMm: (format, widthMm) => `${format} ≈ ${widthMm} мм`,
   camBuiltin: {
     k4: "Типовая 4 Мп · 1/2.7″ · 2,8–12 мм",
     k8: "Типовая 8 Мп · 1/1.8″ · 2,8–12 мм",
@@ -266,7 +272,7 @@ const RU = {
       "FP16 dense оценён как 4 PFLOPS FP4 / 8 по соотношению у RTX 5090.",
     agx: "Отдельный модуль. Память общая с CPU, для моделей доступно 60%. FP16 оценён как 16 SM × 2048 FLOP/такт × 1,3 ГГц.",
   },
-  decStreams: (n) => `потоков: ${n}`,
+  decStreams: (count) => `потоков: ${count}`,
   // шаблоны
   back: "← К расчёту",
   toCalc: "К расчёту",
@@ -280,7 +286,7 @@ const RU = {
   impBtn: "Импорт",
   impTitle: "Заменить все данные содержимым файла",
   impConfirm: "Заменить все данные",
-  catTitle: (n) => `Каталог GPU · ${n}`,
+  catTitle: (count) => `Каталог GPU · ${count}`,
   catTitle0: "Каталог GPU",
   catNote: "Характеристики из даташитов NVIDIA",
   kr: "Коэффициент реальности",
@@ -296,11 +302,11 @@ const RU = {
   ],
   gJet: "Модуль Jetson",
   gOwn: "свой",
-  gPriceAria: (n) => `Цена ${n}, $`,
-  gOnAria: (n) => `${n} участвует в подборе`,
+  gPriceAria: (name) => `Цена ${name}, $`,
+  gOnAria: (name) => `${name} участвует в подборе`,
   del: "Удалить",
-  delAria: (n) => `Удалить ${n}`,
-  mineN: (n) => `Свои GPU · ${n}`,
+  delAria: (name) => `Удалить ${name}`,
+  mineN: (count) => `Свои GPU · ${count}`,
   mine0: "Свои GPU",
   mineEmpty:
     "Своих GPU нет. Добавленный GPU появится здесь, в списке «GPU» и в автоподборе.",
@@ -324,16 +330,16 @@ const RU = {
   ngHint2:
     "NVDEC: число аппаратных декодеров. Для Jetson укажите число потоков 1080p30 H.265 из спецификации.",
   addGpuBtn: "Добавить GPU",
-  ngErr: (l) => `Заполните поля: ${l}.`,
+  ngErr: (fields) => `Заполните поля: ${fields}.`,
   eName: "название",
   eTf: "FP16 Tensor",
   eDecJet: "потоки декодера",
   eDec: "число NVDEC",
   eMem: "память",
   ePrice: "цена (нужна для сравнения в подборе)",
-  gAdded: (n) => `«${n}» добавлен`,
+  gAdded: (name) => `«${name}» добавлен`,
   gDeleted: "GPU удалён",
-  camTitle: (n) => `Камеры · ${n}`,
+  camTitle: (count) => `Камеры · ${count}`,
   camTitle0: "Камеры",
   camNote: "Выбираются в параметрах типа, раздел «Матрица и объектив»",
   cHead: ["Камера", "Кадр", "Матрица", "Объектив", "Цена", "В системе"],
@@ -355,19 +361,19 @@ const RU = {
   ncHint2:
     "Для объектива с фиксированным фокусным расстоянием укажите одно значение в обоих полях. Если поля пустые, фокусное расстояние подбирается без ограничений.",
   addCamBtn: "Добавить камеру",
-  ncErr: (l) => `Укажите: ${l}.`,
+  ncErr: (fields) => `Укажите: ${fields}.`,
   eFrame: "размер кадра в пикселях",
   eSw: "ширину матрицы или размер пикселя",
   eFRange: "фокусное расстояние «от» не больше «до»",
-  cAdded: (n) => `«${n}» добавлена`,
+  cAdded: (name) => `«${name}» добавлена`,
   cDeleted: "Камера удалена",
-  detTitle: (n) => `Детекторы · ${n}`,
+  detTitle: (count) => `Детекторы · ${count}`,
   detTitle0: "Детекторы",
   detNote: "Выбираются в карточке объекта, поле «Модель»",
   dHead: ["Модель", "Вход", "GFLOPs", "Скорость", "Объекты"],
   dOwn: "Свой",
   dCatalog: "Каталог Ultralytics",
-  dSpeed: (f, g) => `${f} кадр/с на ${g}`,
+  dSpeed: (fps, gpuName) => `${fps} кадр/с на ${gpuName}`,
   dEmpty: "Своих детекторов нет. Добавьте детектор в форме «Новый детектор».",
   ndTitle: "Новый детектор",
   ndNamePh: "Например, детектор деталей v2",
@@ -384,20 +390,20 @@ const RU = {
     "Для других GPU замер пересчитывается по FP16, для другого входа — по квадрату его стороны.",
   addDetBtn: "Добавить детектор",
   eFps: "замер",
-  dAdded: (n) => `«${n}» добавлен`,
+  dAdded: (name) => `«${name}» добавлен`,
   dDeleted: "Детектор удалён",
   // отчёт
-  rErr: (n, c) => `${n} × ${c}: ошибка в исходных данных`,
-  rCam: (o) =>
-    `  Камера: ${o.rl}${o.rot ? " (повёрнута на 90°)" : ""}, матрица ${o.s} мм, f ${o.f} мм, HFOV ${o.hf}°, наклон ${o.tilt}°, ${o.top ? "над центром зоны" : `вынос ${o.L0} м`}, высота ${o.H} м, зона ${o.Wz} × ${o.Dz} м`,
-  rObj: (o) =>
-    `  ${o.name}: ${o.model}, ${o.feed}; на матрице ${o.pxs}, на входе модели ${o.pxm}, порог ${o.req}: ${o.st}`,
-  rStream: (mb, x) =>
-    `  Поток ${mb} Мбит/с на камеру, выдержка не длиннее 1/${x} с`,
-  rSys: (c, mb, cost) =>
-    `Система: камер ${c}, ${mb} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
-  rCompute: (o) =>
-    `Вычислитель (оценка): ${o.n} × ${o.g}, ${o.cost}; инференс ${o.uI}%, декодер ${o.uD}%, видеопамять ${o.mem}/${o.cap} ГБ${o.best ? `; оптимум по цене: ${o.best}` : ""}`,
+  rErr: (name, count) => `${name} × ${count}: ошибка в исходных данных`,
+  rCam: (params) =>
+    `  Камера: ${params.rl}${params.rot ? " (повёрнута на 90°)" : ""}, матрица ${params.s} мм, f ${params.f} мм, HFOV ${params.hf}°, наклон ${params.tilt}°, ${params.top ? "над центром зоны" : `вынос ${params.L0} м`}, высота ${params.H} м, зона ${params.Wz} × ${params.Dz} м`,
+  rObj: (params) =>
+    `  ${params.name}: ${params.model}, ${params.feed}; на матрице ${params.pxs}, на входе модели ${params.pxm}, порог ${params.req}: ${params.st}`,
+  rStream: (mbps, shutterDenominator) =>
+    `  Поток ${mbps} Мбит/с на камеру, выдержка не длиннее 1/${shutterDenominator} с`,
+  rSys: (cameraCount, mbps, cost) =>
+    `Система: камер ${cameraCount}, ${mbps} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
+  rCompute: (params) =>
+    `Вычислитель (оценка): ${params.n} × ${params.g}, ${params.cost}; инференс ${params.uI}%, декодер ${params.uD}%, видеопамять ${params.mem}/${params.cap} ГБ${params.best ? `; оптимум по цене: ${params.best}` : ""}`,
   rNoCompute: "Вычислитель: нет данных",
   // уведомления
   stale: "Данные изменены в другой вкладке. Обновите страницу.",
@@ -413,19 +419,19 @@ const RU = {
   readFail: "Не удалось прочитать файл.",
   tipAria: "Подсказка",
   // схема
-  dZone: (a) => `Зона контроля ${a} м`,
-  dFrame: (a) => `Кадр ${a} м`,
-  dTilt: (a) => `Наклон ${a}°`,
-  dLen: (a) => `${a} м`,
-  dOffset: (a) => `Вынос ${a} м`,
-  dDepth: (a) => `Глубина зоны ${a} м`,
+  dZone: (depth) => `Зона контроля ${depth} м`,
+  dFrame: (width) => `Кадр ${width} м`,
+  dTilt: (degrees) => `Наклон ${degrees}°`,
+  dLen: (length) => `${length} м`,
+  dOffset: (offset) => `Вынос ${offset} м`,
+  dDepth: (depth) => `Глубина зоны ${depth} м`,
   dOverCenter: "Камера над центром зоны",
   dOverZone: "Камера над зоной",
-  dH: (a) => `H ${a} м`,
-  dh: (a) => `h ${a} м`,
-  dAria: (o) =>
-    `Вид сбоку: камера на высоте ${o.H} м, наклон ${o.tilt}°, VFOV ${o.vf}°, зона от ${o.x1} до ${o.x2} м на высоте ${o.h} м` +
-    (o.wN ? `, ширина кадра ${o.wN}–${o.wF} м` : ""),
+  dH: (height) => `H ${height} м`,
+  dh: (height) => `h ${height} м`,
+  dAria: (params) =>
+    `Вид сбоку: камера на высоте ${params.H} м, наклон ${params.tilt}°, VFOV ${params.vf}°, зона от ${params.x1} до ${params.x2} м на высоте ${params.h} м` +
+    (params.wN ? `, ширина кадра ${params.wN}–${params.wF} м` : ""),
   // подсказки «?»
   tips: {
     tName:
@@ -494,29 +500,30 @@ const EN = {
   gpuCustomMark: " (custom)",
   donutAria: "Inference load",
   donutCap: "inference",
-  donutAriaVal: (u, lim) => `Inference load ${u}, threshold ${lim}`,
+  donutAriaVal: (load, threshold) =>
+    `Inference load ${load}, threshold ${threshold}`,
   bottInf: "inference",
   bottDec: "decoding",
   bottMem: "GPU memory",
   optimum: "best price",
   manual: "manual selection",
   insufficient: "insufficient",
-  headroom: (p) => `headroom ${p}`,
-  bottleneck: (b) => `bottleneck: ${b}`,
-  otherRuns: (n) => `Other inference runs: ${n}`,
+  headroom: (percent) => `headroom ${percent}`,
+  bottleneck: (resource) => `bottleneck: ${resource}`,
+  otherRuns: (count) => `Other inference runs: ${count}`,
   free: "Free",
-  freeSub: (p) => `Threshold ${p} is marked on the ring`,
+  freeSub: (threshold) => `Threshold ${threshold} is marked on the ring`,
   noLoad: "Add cameras and objects with models.",
   gDec: "Decoder",
   gMem: "GPU memory",
-  gDecSub: (a, b) => `${a} of ${b} streams`,
-  gMemSub: (a, b) => `${a} of ${b} GB`,
+  gDecSub: (used, capacity) => `${used} of ${capacity} streams`,
+  gMemSub: (used, capacity) => `${used} of ${capacity} GB`,
   noCand: 'No GPU is selected for auto-selection. Select GPUs in "Templates".',
   noFit:
     "No GPU can handle the load, even 4 of them. Lower the analytics frame rate, use zone crop instead of tiles, choose a lighter model, or split the cameras across several servers.",
   // результат
   resTitle: "Result",
-  resTitleOf: (n) => `Result · ${n}`,
+  resTitleOf: (name) => `Result · ${name}`,
   untitled: "Untitled",
   sideFig: "Side view",
   lgFov: "Field of view",
@@ -539,8 +546,9 @@ const EN = {
   kFrame: "Frame width",
   kFrameSub: "at the near and far edge",
   objBad: "Enter the dimensions and the threshold in pixels.",
-  objSeen: (px, req) => `at model input ${px}, threshold ${req}`,
-  objSensor: (px, feed) => `on sensor ${px} · ${feed}`,
+  objSeen: (modelPx, requiredPx) =>
+    `at model input ${modelPx}, threshold ${requiredPx}`,
+  objSensor: (sensorPx, feed) => `on sensor ${sensorPx} · ${feed}`,
   densHead: "Density, px/m",
   across: "Across",
   depth: "In depth",
@@ -554,30 +562,33 @@ const EN = {
   camera: "Camera",
   st: { ok: "OK", warn: "marginal", bad: "insufficient" },
   tabErr: "Input data error",
-  tabObjs: (s) => `Objects: ${s}`,
+  tabObjs: (status) => `Objects: ${status}`,
   addType: "+ Camera type",
-  newType: (n) => `Camera ${n}`,
+  newType: (number) => `Camera ${number}`,
   // вердикт типа
-  feedTiles: (n, nx, ny, inp) => `tiles: ${n} (${nx} × ${ny}) of ${inp} px`,
-  feedRoi: (w, h, inp) => `crop ${w} × ${h} → ${inp} px`,
-  feedFull: (w, h, inp) => `frame ${w} × ${h} → ${inp} px`,
-  nZoneW: (a, b) =>
-    `Zone doesn't fit horizontally: at the near edge the frame width is ${a} m, the zone width is ${b} m.`,
-  nZoneD: (a, b) =>
-    `Zone doesn't fit in depth: ${a}° vertical is required, ${b}° is available.`,
-  nFMax: (a, b) =>
-    `The zone requires a focal length of ≈ ${a} mm, the lens maximum is ${b} mm. Calculated for ${b} mm: the frame is wider than the zone, and objects get fewer pixels.`,
-  nFMin: (a, b) =>
-    `The zone requires a focal length of ≈ ${a} mm, the lens minimum is ${b} mm. Calculated for ${b} mm: the zone doesn't fit in the frame entirely. Raise the camera, reduce the zone, or choose a lens with a wider field of view.`,
-  nFOut: (f, r) =>
-    `Focal length ${f} mm is outside the camera lens range (${r} mm).`,
-  nWide: (a) =>
-    `HFOV ${a}°: such lenses noticeably compress the frame edges (barrel distortion), and the calculation doesn't account for it. Lower the quality factor or raise the camera.`,
+  feedTiles: (count, columns, rows, inputSize) =>
+    `tiles: ${count} (${columns} × ${rows}) of ${inputSize} px`,
+  feedRoi: (width, height, inputSize) =>
+    `crop ${width} × ${height} → ${inputSize} px`,
+  feedFull: (width, height, inputSize) =>
+    `frame ${width} × ${height} → ${inputSize} px`,
+  nZoneW: (frameWidth, zoneWidth) =>
+    `Zone doesn't fit horizontally: at the near edge the frame width is ${frameWidth} m, the zone width is ${zoneWidth} m.`,
+  nZoneD: (requiredAngle, availableAngle) =>
+    `Zone doesn't fit in depth: ${requiredAngle}° vertical is required, ${availableAngle}° is available.`,
+  nFMax: (requiredFocal, maxFocal) =>
+    `The zone requires a focal length of ≈ ${requiredFocal} mm, the lens maximum is ${maxFocal} mm. Calculated for ${maxFocal} mm: the frame is wider than the zone, and objects get fewer pixels.`,
+  nFMin: (requiredFocal, minFocal) =>
+    `The zone requires a focal length of ≈ ${requiredFocal} mm, the lens minimum is ${minFocal} mm. Calculated for ${minFocal} mm: the zone doesn't fit in the frame entirely. Raise the camera, reduce the zone, or choose a lens with a wider field of view.`,
+  nFOut: (focal, range) =>
+    `Focal length ${focal} mm is outside the camera lens range (${range} mm).`,
+  nWide: (hfov) =>
+    `HFOV ${hfov}°: such lenses noticeably compress the frame edges (barrel distortion), and the calculation doesn't account for it. Lower the quality factor or raise the camera.`,
   nTop: "Overhead view: parts in cells are seen end-on, which is convenient for counting. A person is seen from above (head and shoulders), and hand actions are harder to tell apart.",
-  nLowRay: (a) =>
-    `The ray to the far zone edge meets the plane at ${a}°: objects will occlude each other. Raise the camera or reduce the zone offset.`,
-  nAfps: (a, b) =>
-    `Analytics frame rate (${a} fps) is higher than the stream frame rate (${b} fps). The calculation uses ${b} fps.`,
+  nLowRay: (angle) =>
+    `The ray to the far zone edge meets the plane at ${angle}°: objects will occlude each other. Raise the camera or reduce the zone offset.`,
+  nAfps: (analyticsFps, streamFps) =>
+    `Analytics frame rate (${analyticsFps} fps) is higher than the stream frame rate (${streamFps} fps). The calculation uses ${streamFps} fps.`,
   pNoObj: "No objects",
   pBad: "Insufficient",
   pWarn: "Marginal",
@@ -585,33 +596,34 @@ const EN = {
   pCheck: "Has warnings",
   hNoObj:
     "Add an object with dimensions and a model to check whether it can be detected.",
-  hItem: (n, px, req) => `${n} — ${px} at threshold ${req}`,
-  hBad: (l) => `Not enough pixels at model input: ${l}.`,
-  hWarn: (l) => `Marginal at model input: ${l}.`,
-  hOk: (n, px) =>
-    `All objects are detectable at model input. Smallest: ${n} — ${px}.`,
-  nScale: (n, px, inp, adv, need) =>
-    `"${n}": ${px} on the sensor, pixels are lost when downscaling to the ${inp} px input. ${adv} or increase the input to ≈ ${need} px.`,
+  hItem: (name, modelPx, requiredPx) =>
+    `${name} — ${modelPx} at threshold ${requiredPx}`,
+  hBad: (list) => `Not enough pixels at model input: ${list}.`,
+  hWarn: (list) => `Marginal at model input: ${list}.`,
+  hOk: (name, modelPx) =>
+    `All objects are detectable at model input. Smallest: ${name} — ${modelPx}.`,
+  nScale: (name, sensorPx, inputSize, advice, neededInputSize) =>
+    `"${name}": ${sensorPx} on the sensor, pixels are lost when downscaling to the ${inputSize} px input. ${advice} or increase the input to ≈ ${neededInputSize} px.`,
   advFull: 'Choose the "Zone crop" or "Tiles" input mode',
   advRoi: 'Choose the "Tiles" input mode',
   advTiles: "Check the input size",
-  nRes: (n, px, res) =>
-    `"${n}" requires at least ${px} px horizontally (${res}) at the same field of view.`,
-  nResNone: (n, px) =>
-    `"${n}" requires ${px} px horizontally, more than any resolution in the list. Install a separate camera closer to the object or choose a lens with a narrower field of view.`,
+  nRes: (name, requiredWidthPx, resolution) =>
+    `"${name}" requires at least ${requiredWidthPx} px horizontally (${resolution}) at the same field of view.`,
+  nResNone: (name, requiredWidthPx) =>
+    `"${name}" requires ${requiredWidthPx} px horizontally, more than any resolution in the list. Install a separate camera closer to the object or choose a lens with a narrower field of view.`,
   objDefault: "Object",
   // система
   sCams: "Cameras",
-  sTypes: (n, names) => `Types: ${n}${names ? ` (${names})` : ""}`,
-  sCamCost: (c) => ` · camera cost ${c}`,
+  sTypes: (count, names) => `Types: ${count}${names ? ` (${names})` : ""}`,
+  sCamCost: (cost) => ` · camera cost ${cost}`,
   sObjs: "Objects detectable",
-  sOfN: (a, b) => `${a} of ${b}`,
-  sSmallest: (n, px) => `Smallest: ${n}, ${px} px`,
+  sOfN: (okCount, total) => `${okCount} of ${total}`,
+  sSmallest: (name, modelPx) => `Smallest: ${name}, ${modelPx} px`,
   sNoObjs: "No objects",
   sCompute: "Compute node",
   sNoCams: "No cameras",
   sNet: "Network traffic",
-  sPort: (p, w) => `Port ${p} · PoE ≈ ${w} W`,
+  sPort: (port, poeWatts) => `Port ${port} · PoE ≈ ${poeWatts} W`,
   // сеть и допущения
   netTitle: "Network and storage",
   days: "Archive retention, days",
@@ -623,11 +635,11 @@ const EN = {
   nAll: "Total",
   nTotal: "Total",
   nArch: "Archive",
-  nArchVal: (tb, d) => `≈ ${tb} TB for ${d} days`,
+  nArchVal: (terabytes, days) => `≈ ${terabytes} TB for ${days} days`,
   nArchOff: "Not recorded",
   assTitle: "Assumptions",
-  ass: (kr) => [
-    `Derating factor ${kr} applied to the measured speed`,
+  ass: (efficiency) => [
+    `Derating factor ${efficiency} applied to the measured speed`,
     "Catalog models: Ultralytics benchmarks on T4",
     "Decoder: NVDEC performance by GPU generation",
     "Server cost for the GPUs isn't included",
@@ -720,8 +732,8 @@ const EN = {
     gb: "GB",
     w: "W",
   },
-  mp: (mp) => `${mp} MP`,
-  sensMm: (s, w) => `${s} ≈ ${w} mm`,
+  mp: (megapixels) => `${megapixels} MP`,
+  sensMm: (format, widthMm) => `${format} ≈ ${widthMm} mm`,
   camBuiltin: {
     k4: "Generic 4 MP · 1/2.7″ · 2.8–12 mm",
     k8: "Generic 8 MP · 1/1.8″ · 2.8–12 mm",
@@ -732,7 +744,7 @@ const EN = {
       "FP16 dense is estimated as 4 PFLOPS FP4 / 8, based on the RTX 5090 ratio.",
     agx: "Standalone module. Memory is shared with the CPU, 60% is available for models. FP16 is estimated as 16 SM × 2048 FLOP/cycle × 1.3 GHz.",
   },
-  decStreams: (n) => `streams: ${n}`,
+  decStreams: (count) => `streams: ${count}`,
   // шаблоны
   back: "← Back to calculator",
   toCalc: "Back to calculator",
@@ -746,7 +758,7 @@ const EN = {
   impBtn: "Import",
   impTitle: "Replace all data with the file contents",
   impConfirm: "Replace all data",
-  catTitle: (n) => `GPU catalog · ${n}`,
+  catTitle: (count) => `GPU catalog · ${count}`,
   catTitle0: "GPU catalog",
   catNote: "Specs from NVIDIA datasheets",
   kr: "Derating factor",
@@ -762,11 +774,11 @@ const EN = {
   ],
   gJet: "Jetson module",
   gOwn: "custom",
-  gPriceAria: (n) => `${n} price, $`,
-  gOnAria: (n) => `${n} is included in auto-selection`,
+  gPriceAria: (name) => `${name} price, $`,
+  gOnAria: (name) => `${name} is included in auto-selection`,
   del: "Delete",
-  delAria: (n) => `Delete ${n}`,
-  mineN: (n) => `Custom GPUs · ${n}`,
+  delAria: (name) => `Delete ${name}`,
+  mineN: (count) => `Custom GPUs · ${count}`,
   mine0: "Custom GPUs",
   mineEmpty:
     'No custom GPUs. An added GPU appears here, in the "GPU" list, and in auto-selection.',
@@ -790,16 +802,16 @@ const EN = {
   ngHint2:
     "NVDEC: the number of hardware decoders. For Jetson, enter the number of 1080p30 H.265 streams from the specification.",
   addGpuBtn: "Add GPU",
-  ngErr: (l) => `Fill in the fields: ${l}.`,
+  ngErr: (fields) => `Fill in the fields: ${fields}.`,
   eName: "name",
   eTf: "FP16 Tensor",
   eDecJet: "decoder streams",
   eDec: "NVDEC count",
   eMem: "memory",
   ePrice: "price (needed for comparison in auto-selection)",
-  gAdded: (n) => `"${n}" added`,
+  gAdded: (name) => `"${name}" added`,
   gDeleted: "GPU deleted",
-  camTitle: (n) => `Cameras · ${n}`,
+  camTitle: (count) => `Cameras · ${count}`,
   camTitle0: "Cameras",
   camNote: 'Selected in the type parameters, "Sensor and lens" section',
   cHead: ["Camera", "Frame", "Sensor", "Lens", "Price", "In system"],
@@ -821,19 +833,19 @@ const EN = {
   ncHint2:
     "For a fixed focal length lens, enter the same value in both fields. If the fields are empty, the focal length is selected without limits.",
   addCamBtn: "Add camera",
-  ncErr: (l) => `Enter: ${l}.`,
+  ncErr: (fields) => `Enter: ${fields}.`,
   eFrame: "frame size in pixels",
   eSw: "sensor width or pixel size",
   eFRange: 'focal length "from" not greater than "to"',
-  cAdded: (n) => `"${n}" added`,
+  cAdded: (name) => `"${name}" added`,
   cDeleted: "Camera deleted",
-  detTitle: (n) => `Detectors · ${n}`,
+  detTitle: (count) => `Detectors · ${count}`,
   detTitle0: "Detectors",
   detNote: 'Selected in the object card, "Model" field',
   dHead: ["Model", "Input", "GFLOPs", "Speed", "Objects"],
   dOwn: "Custom",
   dCatalog: "Ultralytics catalog",
-  dSpeed: (f, g) => `${f} fps on ${g}`,
+  dSpeed: (fps, gpuName) => `${fps} fps on ${gpuName}`,
   dEmpty: 'No custom detectors. Add a detector in the "New detector" form.',
   ndTitle: "New detector",
   ndNamePh: "For example, parts detector v2",
@@ -850,20 +862,20 @@ const EN = {
     "For other GPUs the benchmark is scaled by FP16, for another input size by the square of its side.",
   addDetBtn: "Add detector",
   eFps: "benchmark",
-  dAdded: (n) => `"${n}" added`,
+  dAdded: (name) => `"${name}" added`,
   dDeleted: "Detector deleted",
   // отчёт
-  rErr: (n, c) => `${n} × ${c}: input data error`,
-  rCam: (o) =>
-    `  Camera: ${o.rl}${o.rot ? " (rotated 90°)" : ""}, sensor ${o.s} mm, f ${o.f} mm, HFOV ${o.hf}°, tilt ${o.tilt}°, ${o.top ? "overhead" : `zone offset ${o.L0} m`}, height ${o.H} m, zone ${o.Wz} × ${o.Dz} m`,
-  rObj: (o) =>
-    `  ${o.name}: ${o.model}, ${o.feed}; on sensor ${o.pxs}, at model input ${o.pxm}, threshold ${o.req}: ${o.st}`,
-  rStream: (mb, x) =>
-    `  Stream ${mb} Mbps per camera, exposure time up to 1/${x} s`,
-  rSys: (c, mb, cost) =>
-    `System: ${c} cameras, ${mb} Mbps${cost ? `, camera cost ${cost}` : ""}`,
-  rCompute: (o) =>
-    `Compute node (estimate): ${o.n} × ${o.g}, ${o.cost}; inference ${o.uI}%, decoder ${o.uD}%, GPU memory ${o.mem}/${o.cap} GB${o.best ? `; best price: ${o.best}` : ""}`,
+  rErr: (name, count) => `${name} × ${count}: input data error`,
+  rCam: (params) =>
+    `  Camera: ${params.rl}${params.rot ? " (rotated 90°)" : ""}, sensor ${params.s} mm, f ${params.f} mm, HFOV ${params.hf}°, tilt ${params.tilt}°, ${params.top ? "overhead" : `zone offset ${params.L0} m`}, height ${params.H} m, zone ${params.Wz} × ${params.Dz} m`,
+  rObj: (params) =>
+    `  ${params.name}: ${params.model}, ${params.feed}; on sensor ${params.pxs}, at model input ${params.pxm}, threshold ${params.req}: ${params.st}`,
+  rStream: (mbps, shutterDenominator) =>
+    `  Stream ${mbps} Mbps per camera, exposure time up to 1/${shutterDenominator} s`,
+  rSys: (cameraCount, mbps, cost) =>
+    `System: ${cameraCount} cameras, ${mbps} Mbps${cost ? `, camera cost ${cost}` : ""}`,
+  rCompute: (params) =>
+    `Compute node (estimate): ${params.n} × ${params.g}, ${params.cost}; inference ${params.uI}%, decoder ${params.uD}%, GPU memory ${params.mem}/${params.cap} GB${params.best ? `; best price: ${params.best}` : ""}`,
   rNoCompute: "Compute node: no data",
   // уведомления
   stale: "The data was changed in another tab. Reload the page.",
@@ -878,19 +890,19 @@ const EN = {
   readFail: "Couldn't read the file.",
   tipAria: "Hint",
   // схема
-  dZone: (a) => `Monitored zone ${a} m`,
-  dFrame: (a) => `Frame ${a} m`,
-  dTilt: (a) => `Tilt ${a}°`,
-  dLen: (a) => `${a} m`,
-  dOffset: (a) => `Offset ${a} m`,
-  dDepth: (a) => `Zone depth ${a} m`,
+  dZone: (depth) => `Monitored zone ${depth} m`,
+  dFrame: (width) => `Frame ${width} m`,
+  dTilt: (degrees) => `Tilt ${degrees}°`,
+  dLen: (length) => `${length} m`,
+  dOffset: (offset) => `Offset ${offset} m`,
+  dDepth: (depth) => `Zone depth ${depth} m`,
   dOverCenter: "Camera above the zone center",
   dOverZone: "Camera above the zone",
-  dH: (a) => `H ${a} m`,
-  dh: (a) => `h ${a} m`,
-  dAria: (o) =>
-    `Side view: camera at ${o.H} m, tilt ${o.tilt}°, VFOV ${o.vf}°, zone from ${o.x1} to ${o.x2} m at ${o.h} m height` +
-    (o.wN ? `, frame width ${o.wN}–${o.wF} m` : ""),
+  dH: (height) => `H ${height} m`,
+  dh: (height) => `h ${height} m`,
+  dAria: (params) =>
+    `Side view: camera at ${params.H} m, tilt ${params.tilt}°, VFOV ${params.vf}°, zone from ${params.x1} to ${params.x2} m at ${params.h} m height` +
+    (params.wN ? `, frame width ${params.wN}–${params.wF} m` : ""),
   // подсказки «?»
   tips: {
     tName:
