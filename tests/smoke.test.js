@@ -308,6 +308,35 @@ const sameKeys = (a, b, p) =>
   });
 sameKeys(w.eval("RU"), w.eval("EN"), "");
 console.log("en keys: ok");
+// language: no key is declared twice in a dictionary (the last one would silently win)
+const i18nSource = fs.readFileSync(__dirname + "/../src/js/00-i18n.js", "utf8");
+["RU", "EN"].forEach((name) => {
+  const body = i18nSource.match(
+    new RegExp(`^const ${name} = \\{\\n([\\s\\S]*?)^\\};`, "m"),
+  )[1];
+  const keys = body.match(/^ {2}[\w$]+(?=:)/gm).map((key) => key.trim());
+  const repeated = keys.filter((key, i) => keys.indexOf(key) !== i);
+  assert.deepStrictEqual(repeated, [], "повторяющиеся ключи в " + name);
+});
+console.log("no duplicate keys: ok");
+// notes: an object too small for the camera resolution gets the full hint
+const tooSmall = JSON.parse(page(null, "ru").localStorage.getItem("camcalc4"));
+tooSmall.types[0].objects[0].width = 8;
+[
+  ["ru", /^Для «.+» требуется не меньше [\d\s]+\spx по горизонтали \(.+\)/],
+  ["en", /^".+" requires at least [\d,]+ px horizontally \(.+\)/],
+].forEach(([lang, hint]) => {
+  const notes = [
+    ...page(JSON.stringify(tooSmall), lang).document.querySelectorAll(
+      "#verdict li",
+    ),
+  ].map((li) => li.textContent);
+  assert.ok(
+    notes.some((note) => hint.test(note)),
+    "нет подсказки о разрешении, " + lang + ": " + notes.join(" | "),
+  );
+});
+console.log("resolution hint: ok");
 // language: EN report has no Cyrillic except user names, numbers match RU
 const w6 = page(exp, "en"),
   d6 = w6.document;

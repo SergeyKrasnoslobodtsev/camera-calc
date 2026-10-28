@@ -482,7 +482,7 @@ function renderSystem(results, system) {
   const archiveDays = parseNum(byId("archiveDays").value) || 0,
     archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
   byId("netTbl").innerHTML =
-    `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
+    `<tr>${["nType", "nCams", "nResolution", "nFps", "nPerCam", "nAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
     results
       .map((result) =>
         result.err

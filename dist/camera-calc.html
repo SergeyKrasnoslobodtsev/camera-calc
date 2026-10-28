@@ -686,7 +686,7 @@ const RU = {
   days: "Глубина архива, дн.",
   nType: "Тип камеры",
   nCams: "Камеры",
-  nRes: "Разрешение",
+  nResolution: "Разрешение",
   nFps: "Кадр/с",
   nPerCam: "На камеру",
   nAll: "Всего",
@@ -1165,7 +1165,7 @@ const EN = {
   days: "Archive retention, days",
   nType: "Camera type",
   nCams: "Cameras",
-  nRes: "Resolution",
+  nResolution: "Resolution",
   nFps: "fps",
   nPerCam: "Per camera",
   nAll: "Total",
@@ -3019,7 +3019,7 @@ function renderSystem(results, system) {
   const archiveDays = parseNum(byId("archiveDays").value) || 0,
     archiveTB = (((totalMbps * 1e6) / 8) * 86400 * archiveDays) / 1e12;
   byId("netTbl").innerHTML =
-    `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
+    `<tr>${["nType", "nCams", "nResolution", "nFps", "nPerCam", "nAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
     results
       .map((result) =>
         result.err
