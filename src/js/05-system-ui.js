@@ -270,7 +270,9 @@ $("resetBtn").addEventListener("click",()=>{TYPES=defTypes();ACT=TYPES[0].id;$("
 $("copyBtn").addEventListener("click",()=>{navigator.clipboard.writeText(report).then(()=>toast("Отчёт скопирован"),()=>toast("Не удалось скопировать: браузер запретил доступ к буферу"))});
 $("expBtn").addEventListener("click",()=>{const a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(snap(),null,1));a.download="camera-calc.json";a.click()});
 function importText(s){let st;try{st=JSON.parse(s)}catch(e){}
-  if(!st||typeof st!=="object"||!Array.isArray(st.types)){toast("Файл не похож на сохранение калькулятора");return}
+  const isObj=x=>x&&typeof x==="object";
+  if(!isObj(st)||!Array.isArray(st.types)||!st.types.length||!st.types.every(t=>isObj(t)&&typeof t.name==="string"&&(t.objs==null||Array.isArray(t.objs)&&t.objs.every(isObj)))
+    ||!["custom","cams","dets"].every(k=>Array.isArray(st[k]))||!isObj(st.price)||!isObj(st.on)){toast("Файл не похож на сохранение калькулятора");return}
   try{localStorage.setItem("camcalc3",JSON.stringify(st))}catch(e){toast("Браузер не дал сохранить данные");return}
   location.reload()}
 let impArm=null;

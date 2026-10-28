@@ -50,6 +50,10 @@ assert.deepStrictEqual([ex.cams.map(c=>c.name),ex.dets.map(x=>x.name)],[['Тес
 const before=w.localStorage.getItem('camcalc3');w.importText('{битый');
 assert.strictEqual(T('toast'),'Файл не похож на сохранение калькулятора');
 assert.strictEqual(w.localStorage.getItem('camcalc3'),before,'битый файл изменил данные');
+['{"types":[null]}','{"types":[]}','{}',JSON.stringify({...ex,types:[{name:'Тип',objs:'x'}]}),JSON.stringify({types:ex.types})].forEach(s=>{
+  d.getElementById('toast').textContent='';w.importText(s);
+  assert.strictEqual(T('toast'),'Файл не похож на сохранение калькулятора',s);
+  assert.strictEqual(w.localStorage.getItem('camcalc3'),before,'файл изменил данные: '+s)});
 let picks=0;d.getElementById('impFile').click=()=>picks++;
 d.getElementById('impBtn').click();
 assert.strictEqual(T('impBtn'),'Заменит всё. Ещё раз');assert.strictEqual(picks,0,'выбор файла без подтверждения');
