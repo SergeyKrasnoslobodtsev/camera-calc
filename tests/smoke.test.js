@@ -212,6 +212,16 @@ assert.deepStrictEqual(
   [["Тест-камера 8 Мп"], ["Детектор деталей"]],
   "экспорт: нет своих шаблонов",
 );
+const gpuWithoutPrice = {
+  id: "c1",
+  name: "Без цены",
+  arch: "Ada",
+  tflops: 50,
+  nvdec: 2,
+  memoryGB: 24,
+  tdpW: 300,
+  custom: true,
+};
 const before = w.localStorage.getItem("camcalc4");
 importFile(w, "{битый");
 assert.strictEqual(T("toast"), "Файл не является сохранением калькулятора.");
@@ -226,6 +236,17 @@ assert.strictEqual(
   "{}",
   JSON.stringify({ ...ex, types: [{ name: "Тип", objects: "x" }] }),
   JSON.stringify({ types: ex.types }),
+  // запись, которую не приняла бы форма: GPU без цены, неизвестная подача объекта
+  JSON.stringify({ ...ex, customGpus: [gpuWithoutPrice] }),
+  JSON.stringify({
+    ...ex,
+    types: [
+      {
+        ...ex.types[0],
+        objects: [{ ...ex.types[0].objects[0], feed: "crop" }],
+      },
+    ],
+  }),
 ].forEach((s) => {
   d.getElementById("toast").textContent = "";
   importFile(w, s);
@@ -296,6 +317,21 @@ assert.deepStrictEqual(
   "недопустимое значение списка после загрузки",
 );
 console.log("invalid select on load: ok");
+// сохранение с недопустимой записью загружается без неё
+const w4b = page(
+  JSON.stringify({
+    ...ex,
+    customGpus: [gpuWithoutPrice, { ...gpuWithoutPrice, id: "c2", price: 900 }],
+  }),
+);
+assert.deepStrictEqual(
+  [...w4b.document.getElementById("gpu").options]
+    .map((o) => o.value)
+    .filter((id) => id === "c1" || id === "c2"),
+  ["c2"],
+  "загрузка: GPU без цены не отброшен или отброшен допустимый",
+);
+console.log("invalid record on load: ok");
 // data changed in another tab
 const w5 = page(exp),
   d5 = w5.document,

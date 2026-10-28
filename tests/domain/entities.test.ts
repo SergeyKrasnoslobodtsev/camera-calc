@@ -1,0 +1,298 @@
+// Функции разбора сущностей: допустимые данные, каждое правило поля, лишние поля.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { parseCamera } from "../../src/domain/entities/camera.ts";
+import {
+  parseCameraType,
+  parseSceneObject,
+} from "../../src/domain/entities/camera-type.ts";
+import { parseDetector } from "../../src/domain/entities/detector.ts";
+import { parseGpu } from "../../src/domain/entities/gpu.ts";
+import type { ParseResult } from "../../src/domain/entities/parse-result.ts";
+import { parseSystemSettings } from "../../src/domain/entities/system-settings.ts";
+
+// поля с ошибкой и коды правил
+const errorsOf = (parsed: ParseResult<unknown>) =>
+  parsed.ok ? [] : parsed.errors.map((error) => `${error.field}:${error.code}`);
+
+const gpu = {
+  id: "c1",
+  name: "Моя карта",
+  arch: "Ada",
+  tflops: 50,
+  nvdec: 2,
+  memoryGB: 24,
+  tdpW: 300,
+  price: 1500,
+  custom: true,
+};
+const jetson = {
+  ...gpu,
+  arch: "Ampere",
+  nvdec: undefined,
+  decodeStreams: { h264: 11.6, h265: 22 },
+  jetson: true,
+};
+
+test("parseGpu: допустимая карта и Jetson", () => {
+  assert.deepEqual(parseGpu(gpu), { ok: true, value: gpu });
+  const { nvdec, ...jetsonValue } = jetson;
+  assert.deepEqual(parseGpu(jetson), { ok: true, value: jetsonValue });
+});
+
+test("parseGpu: правило каждого поля", () => {
+  const cases: [Record<string, unknown>, string][] = [
+    [{ id: "" }, "id:required"],
+    [{ name: " " }, "name:required"],
+    [{ name: 5 }, "name:required"],
+    [{ arch: "Pascal" }, "arch:oneOf"],
+    [{ tflops: 0 }, "tflops:positive"],
+    [{ tflops: "50" }, "tflops:positive"],
+    [{ nvdec: -1 }, "nvdec:positive"],
+    [{ memoryGB: NaN }, "memoryGB:positive"],
+    [{ tdpW: -1 }, "tdpW:nonNegative"],
+    [{ price: undefined }, "price:positive"],
+  ];
+  for (const [change, expected] of cases)
+    assert.deepEqual(errorsOf(parseGpu({ ...gpu, ...change })), [expected]);
+  assert.deepEqual(errorsOf(parseGpu({ ...gpu, tdpW: 0 })), []);
+  assert.deepEqual(
+    errorsOf(parseGpu({ ...jetson, decodeStreams: { h264: 0, h265: 22 } })),
+    ["decodeStreams.h264:positive"],
+  );
+  assert.deepEqual(errorsOf(parseGpu({ ...jetson, decodeStreams: null })), [
+    "decodeStreams.h264:positive",
+    "decodeStreams.h265:positive",
+  ]);
+});
+
+test("parseGpu: лишние поля не попадают в значение, не объект — ошибка", () => {
+  assert.deepEqual(parseGpu({ ...gpu, extra: 1, decodeStreams: {} }), {
+    ok: true,
+    value: gpu,
+  });
+  assert.equal(parseGpu(null).ok, false);
+  assert.equal(parseGpu("gpu").ok, false);
+});
+
+const camera = {
+  id: "m1",
+  name: "Моя камера",
+  Nw: 1920,
+  Nh: 1080,
+  sensorWidth: 5.6,
+  focalMin: 2.8,
+  focalMax: 12,
+  price: 200,
+  custom: true,
+};
+
+test("parseCamera: допустимая камера, без цены и без ограничения фокуса", () => {
+  assert.deepEqual(parseCamera(camera), { ok: true, value: camera });
+  const { price, ...noPrice } = camera;
+  assert.deepEqual(parseCamera(noPrice), { ok: true, value: noPrice });
+  const anyLens = { ...camera, focalMin: 0, focalMax: 0 };
+  assert.deepEqual(parseCamera(anyLens), { ok: true, value: anyLens });
+});
+
+test("parseCamera: правило каждого поля", () => {
+  const cases: [Record<string, unknown>, string][] = [
+    [{ id: undefined }, "id:required"],
+    [{ name: "" }, "name:required"],
+    [{ Nw: 0 }, "Nw:positive"],
+    [{ Nh: "1080" }, "Nh:positive"],
+    [{ sensorWidth: -5 }, "sensorWidth:positive"],
+    [{ focalMin: -1 }, "focalMin:nonNegative"],
+    [{ focalMax: 2 }, "focalMax:order"],
+    [{ price: -1 }, "price:nonNegative"],
+  ];
+  for (const [change, expected] of cases)
+    assert.deepEqual(errorsOf(parseCamera({ ...camera, ...change })), [
+      expected,
+    ]);
+});
+
+test("parseCamera: лишние поля не попадают в значение", () => {
+  assert.deepEqual(parseCamera({ ...camera, fov: 90 }), {
+    ok: true,
+    value: camera,
+  });
+});
+
+const detector = {
+  id: "d1",
+  name: "Мой детектор",
+  fps: 120,
+  inputSize: 640,
+  refGpu: "5090",
+  gflops: 0,
+  custom: true,
+};
+
+test("parseDetector: допустимый детектор", () => {
+  assert.deepEqual(parseDetector(detector), { ok: true, value: detector });
+});
+
+test("parseDetector: правило каждого поля", () => {
+  const cases: [Record<string, unknown>, string][] = [
+    [{ id: "" }, "id:required"],
+    [{ name: undefined }, "name:required"],
+    [{ fps: 0 }, "fps:positive"],
+    [{ inputSize: "640" }, "inputSize:positive"],
+    [{ refGpu: "" }, "refGpu:required"],
+    [{ gflops: -1 }, "gflops:nonNegative"],
+  ];
+  for (const [change, expected] of cases)
+    assert.deepEqual(errorsOf(parseDetector({ ...detector, ...change })), [
+      expected,
+    ]);
+});
+
+test("parseDetector: лишние поля не попадают в значение", () => {
+  assert.deepEqual(parseDetector({ ...detector, ref: 1 }), {
+    ok: true,
+    value: detector,
+  });
+});
+
+// черновики: числа строками, как введены, в том числе пустые и недопустимые
+const sceneObject = {
+  name: "",
+  nameKey: "presetNames.0",
+  width: "50",
+  length: 30,
+  height: "",
+  requiredPx: "abc",
+  model: "y26s",
+  feed: "roi",
+  inputSize: "640",
+  overlap: 20,
+};
+
+test("parseSceneObject: черновик с любыми строками в числовых полях", () => {
+  assert.deepEqual(parseSceneObject(sceneObject), {
+    ok: true,
+    value: sceneObject,
+  });
+});
+
+test("parseSceneObject: правило каждого поля", () => {
+  const cases: [Record<string, unknown>, string][] = [
+    [{ name: null }, "name:required"],
+    [{ width: undefined }, "width:required"],
+    [{ length: NaN }, "length:required"],
+    [{ height: {} }, "height:required"],
+    [{ requiredPx: true }, "requiredPx:required"],
+    [{ model: "" }, "model:required"],
+    [{ feed: "crop" }, "feed:oneOf"],
+    [{ inputSize: null }, "inputSize:required"],
+    [{ overlap: undefined }, "overlap:required"],
+  ];
+  for (const [change, expected] of cases)
+    assert.deepEqual(
+      errorsOf(parseSceneObject({ ...sceneObject, ...change })),
+      [expected],
+    );
+});
+
+const inputs = {
+  camera: "",
+  cameraHeight: "4",
+  planeHeight: "0.9",
+  zoneStart: "1.5",
+  zoneDepth: "3",
+  zoneWidth: "",
+  margin: "10",
+  resolution: "1",
+  sensor: "3",
+  sensorWidth: "5.4",
+  pixelPitch: "2.0",
+  orientation: "auto",
+  focalLength: "6",
+  hfov: "50",
+  fps: 12,
+  analyticsFps: "5",
+  codec: "0.04",
+  scene: "1",
+  lensFactor: "0.6",
+  speed: "1",
+  blurPx: "2",
+  lensMode: "auto",
+  placement: "side",
+};
+const cameraType = {
+  id: "t1",
+  name: "Проход",
+  count: "10",
+  inputs,
+  objects: [sceneObject],
+};
+
+test("parseCameraType: черновик типа, nameKey сохраняется", () => {
+  assert.deepEqual(parseCameraType(cameraType), {
+    ok: true,
+    value: cameraType,
+  });
+  const builtin = { ...cameraType, nameKey: "typeNames.0", objects: [] };
+  assert.deepEqual(parseCameraType(builtin), { ok: true, value: builtin });
+});
+
+test("parseCameraType: правило каждого поля, ошибки inputs и объектов с путём", () => {
+  const cases: [Record<string, unknown>, string[]][] = [
+    [{ id: "" }, ["id:required"]],
+    [{ name: 1 }, ["name:required"]],
+    [{ count: null }, ["count:required"]],
+    [{ objects: undefined }, ["objects:required"]],
+    [
+      { objects: [sceneObject, { ...sceneObject, feed: "crop" }] },
+      ["objects.1.feed:oneOf"],
+    ],
+    [{ inputs: { ...inputs, camera: null } }, ["inputs.camera:required"]],
+    [{ inputs: { ...inputs, zoneDepth: {} } }, ["inputs.zoneDepth:required"]],
+    [{ inputs: { ...inputs, orientation: "x" } }, ["inputs.orientation:oneOf"]],
+    [{ inputs: { ...inputs, lensMode: "" } }, ["inputs.lensMode:oneOf"]],
+    [{ inputs: { ...inputs, placement: "wall" } }, ["inputs.placement:oneOf"]],
+  ];
+  for (const [change, expected] of cases)
+    assert.deepEqual(
+      errorsOf(parseCameraType({ ...cameraType, ...change })),
+      expected,
+    );
+  const { blurPx, ...noBlur } = inputs;
+  assert.deepEqual(
+    errorsOf(parseCameraType({ ...cameraType, inputs: noBlur })),
+    ["inputs.blurPx:required"],
+  );
+});
+
+test("parseCameraType: лишние поля типа, inputs и объектов не попадают в значение", () => {
+  assert.deepEqual(
+    parseCameraType({
+      ...cameraType,
+      extra: 1,
+      inputs: { ...inputs, mg: "10" },
+      objects: [{ ...sceneObject, fps: 5, ref: "x" }],
+    }),
+    { ok: true, value: cameraType },
+  );
+});
+
+const settings = {
+  efficiency: "0.6",
+  reserve: "",
+  archiveDays: "0",
+  gpu: "auto",
+  gpuCount: "auto",
+};
+
+test("parseSystemSettings: черновик, правило каждого поля, лишние поля", () => {
+  assert.deepEqual(parseSystemSettings({ ...settings, kr: "1" }), {
+    ok: true,
+    value: settings,
+  });
+  for (const field of Object.keys(settings))
+    assert.deepEqual(
+      errorsOf(parseSystemSettings({ ...settings, [field]: 0.6 })),
+      [`${field}:required`],
+    );
+});

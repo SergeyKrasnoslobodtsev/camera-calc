@@ -21,6 +21,11 @@ import {
 import { DEG } from "../domain/angles.ts";
 import { computeType } from "../domain/compute-type/index.ts";
 import { computeSystem, systemTotals } from "../domain/compute-system/index.ts";
+import { parseCamera } from "../domain/entities/camera.ts";
+import { parseCameraType } from "../domain/entities/camera-type.ts";
+import { parseDetector } from "../domain/entities/detector.ts";
+import { parseGpu } from "../domain/entities/gpu.ts";
+import { parseSystemSettings } from "../domain/entities/system-settings.ts";
 import { parseNum } from "../domain/parse-num.ts";
 import { GPU_CATALOG } from "../domain/references/gpu-catalog.ts";
 import { MODELS } from "../domain/references/models.ts";
@@ -486,47 +491,55 @@ byId("gpuFormArchitecture").addEventListener("change", () => {
   );
   byId("gpuFormDecoders").placeholder = isJetson ? "22" : "2";
 });
+// текст ошибки формы шаблона: messageKeys — ключ сообщения по полю, одно сообщение на несколько полей
+const formErrorText = (errors, messageKeys) =>
+  [...new Set(errors.map((error) => t(messageKeys[error.field])))].join(", ");
+const GPU_FORM_ERRORS = {
+  name: "errorName",
+  tflops: "errorTflops",
+  nvdec: "errorDecoders",
+  "decodeStreams.h264": "errorDecoderStreams",
+  "decodeStreams.h265": "errorDecoderStreams",
+  memoryGB: "errorMemory",
+  price: "errorPrice",
+};
 byId("gpuForm").addEventListener("submit", (event) => {
   event.preventDefault();
   // decode — число NVDEC, у Jetson — потоков 1080p30 H.265
   const name = byId("gpuFormName").value.trim(),
     arch = byId("gpuFormArchitecture").value,
-    tflops = parseNum(byId("gpuFormTflops").value),
     decode = parseNum(byId("gpuFormDecoders").value),
-    memoryGB = parseNum(byId("gpuFormMemory").value),
-    tdpW = parseNum(byId("gpuFormTdp").value),
-    price = parseNum(byId("gpuFormPrice").value);
-  const errors = [];
-  if (!name) errors.push(t("errorName"));
-  if (!(tflops > 0)) errors.push(t("errorTflops"));
-  if (!(decode > 0))
-    errors.push(t(arch === "jet" ? "errorDecoderStreams" : "errorDecoders"));
-  if (!(memoryGB > 0)) errors.push(t("errorMemory"));
-  if (!(price > 0)) errors.push(t("errorPrice"));
-  const errorEl = byId("gpuFormError");
-  if (errors.length) {
-    errorEl.hidden = false;
-    errorEl.textContent = t("gpuFormError", errors.join(", "));
-    return;
-  }
-  errorEl.hidden = true;
-  const gpu = {
+    tdpW = parseNum(byId("gpuFormTdp").value);
+  const parsed = parseGpu({
     id: "c" + uid(),
     name,
     arch: arch === "jet" ? "Ampere" : arch,
-    tflops,
-    memoryGB,
+    tflops: parseNum(byId("gpuFormTflops").value),
+    ...(arch === "jet"
+      ? {
+          jetson: true,
+          decodeStreams: {
+            h264: +((decode * 748) / 1415).toFixed(1),
+            h265: decode,
+          },
+        }
+      : { nvdec: Math.round(decode) }),
+    memoryGB: parseNum(byId("gpuFormMemory").value),
     tdpW: tdpW > 0 ? tdpW : 0,
-    price,
+    price: parseNum(byId("gpuFormPrice").value),
     custom: true,
-  };
-  if (arch === "jet") {
-    gpu.jetson = true;
-    gpu.decodeStreams = {
-      h265: decode,
-      h264: +((decode * 748) / 1415).toFixed(1),
-    };
-  } else gpu.nvdec = Math.round(decode);
+  });
+  const errorEl = byId("gpuFormError");
+  if (!parsed.ok) {
+    errorEl.hidden = false;
+    errorEl.textContent = t(
+      "gpuFormError",
+      formErrorText(parsed.errors, GPU_FORM_ERRORS),
+    );
+    return;
+  }
+  errorEl.hidden = true;
+  const gpu = parsed.value;
   store.customGpus.push(gpu);
   store.gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
   [
@@ -575,6 +588,13 @@ function renderCamView() {
     }),
   );
 }
+const CAMERA_FORM_ERRORS = {
+  name: "errorName",
+  Nw: "errorFrame",
+  Nh: "errorFrame",
+  sensorWidth: "errorSensorWidth",
+  focalMax: "errorFocalRange",
+};
 byId("cameraForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const name = byId("cameraFormName").value.trim(),
@@ -589,20 +609,7 @@ byId("cameraForm").addEventListener("submit", (event) => {
     sensorWidth = +((pixelPitchUm * Nw) / 1000).toFixed(3);
   if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
   if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
-  const errors = [];
-  if (!name) errors.push(t("errorName"));
-  if (!(Nw > 0 && Nh > 0)) errors.push(t("errorFrame"));
-  if (!(sensorWidth > 0)) errors.push(t("errorSensorWidth"));
-  if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
-    errors.push(t("errorFocalRange"));
-  const errorEl = byId("cameraFormError");
-  if (errors.length) {
-    errorEl.hidden = false;
-    errorEl.textContent = t("cameraFormError", errors.join(", "));
-    return;
-  }
-  errorEl.hidden = true;
-  store.customCameras.push({
+  const parsed = parseCamera({
     id: "m" + uid(),
     name,
     Nw,
@@ -613,6 +620,17 @@ byId("cameraForm").addEventListener("submit", (event) => {
     price: price > 0 ? price : 0,
     custom: true,
   });
+  const errorEl = byId("cameraFormError");
+  if (!parsed.ok) {
+    errorEl.hidden = false;
+    errorEl.textContent = t(
+      "cameraFormError",
+      formErrorText(parsed.errors, CAMERA_FORM_ERRORS),
+    );
+    return;
+  }
+  errorEl.hidden = true;
+  store.customCameras.push(parsed.value);
   [
     "cameraFormName",
     "cameraFormWidth",
@@ -676,32 +694,31 @@ function renderDetView() {
 byId("detectorFormInput").innerHTML = INPUTS.map(
   (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`,
 ).join("");
+const DETECTOR_FORM_ERRORS = { name: "errorName", fps: "errorFps" };
 byId("detectorForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const name = byId("detectorFormName").value.trim(),
-    fps = parseNum(byId("detectorFormFps").value),
-    inputSize = +byId("detectorFormInput").value,
-    refGpu = byId("detectorFormRefGpu").value,
     gflops = parseNum(byId("detectorFormGflops").value);
-  const errors = [];
-  if (!name) errors.push(t("errorName"));
-  if (!(fps > 0)) errors.push(t("errorFps"));
-  const errorEl = byId("detectorFormError");
-  if (errors.length) {
-    errorEl.hidden = false;
-    errorEl.textContent = t("cameraFormError", errors.join(", "));
-    return;
-  }
-  errorEl.hidden = true;
-  store.customDetectors.push({
+  const parsed = parseDetector({
     id: "d" + uid(),
     name,
-    fps,
-    inputSize,
-    refGpu,
+    fps: parseNum(byId("detectorFormFps").value),
+    inputSize: +byId("detectorFormInput").value,
+    refGpu: byId("detectorFormRefGpu").value,
     gflops: gflops > 0 ? gflops : 0,
     custom: true,
   });
+  const errorEl = byId("detectorFormError");
+  if (!parsed.ok) {
+    errorEl.hidden = false;
+    errorEl.textContent = t(
+      "cameraFormError",
+      formErrorText(parsed.errors, DETECTOR_FORM_ERRORS),
+    );
+    return;
+  }
+  errorEl.hidden = true;
+  store.customDetectors.push(parsed.value);
   ["detectorFormName", "detectorFormFps", "detectorFormGflops"].forEach(
     (id) => (byId(id).value = ""),
   );
@@ -830,38 +847,97 @@ function save() {
     localStorage.setItem("camcalc4", JSON.stringify(snapshot()));
   } catch (error) {}
 }
+// старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
+const withDot = (value) =>
+  typeof value === "string" ? value.replace(",", ".") : value;
+const allWithDot = (values) =>
+  Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [key, withDot(value)]),
+  );
+const shownName = (item) =>
+  (item.nameKey && builtinName(item.nameKey)) || item.name;
+const isObject = (value) => value && typeof value === "object";
+// Тип из сохранения или файла: недостающие поля — по умолчанию, встроенное название — на текущем языке.
+// Не объект остаётся как есть, его отклонит разбор.
+const savedObject = (obj) =>
+  isObject(obj)
+    ? {
+        ...makeObject([
+          shownName(obj),
+          withDot(obj.width),
+          withDot(obj.length),
+          withDot(obj.height),
+          withDot(obj.requiredPx),
+          obj.model,
+          obj.feed,
+          obj.inputSize,
+          obj.nameKey,
+        ]),
+        overlap: withDot(obj.overlap ?? 20),
+      }
+    : obj;
+const savedType = (type) =>
+  isObject(type)
+    ? {
+        id: type.id || uid(),
+        name: shownName(type),
+        nameKey: type.nameKey,
+        count: withDot(type.count),
+        inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
+        objects: Array.isArray(type.objects)
+          ? type.objects.map(savedObject)
+          : (type.objects ?? []),
+      }
+    : type;
+// параметры системы, которых нет в сохранении, — из полей формы
+const savedSystem = (system) =>
+  isObject(system)
+    ? Object.fromEntries(
+        SYSTEM_IDS.map((id) => [id, withDot(system[id] ?? byId(id).value)]),
+      )
+    : system;
+// записи сохранения или файла импорта, которые прошли разбор; rejected — сколько записей не прошли
+function parseSaved(saved) {
+  let rejected = 0;
+  const parseAll = (items, parse) =>
+    items.flatMap((item) => {
+      const parsed = parse(item);
+      if (parsed.ok) return [parsed.value];
+      rejected++;
+      return [];
+    });
+  const list = (items) => (Array.isArray(items) ? items : []);
+  // параметры системы — одна запись, если она есть
+  const [system] = parseAll(
+    saved.system == null ? [] : [savedSystem(saved.system)],
+    parseSystemSettings,
+  );
+  return {
+    customGpus: parseAll(list(saved.customGpus), parseGpu),
+    customCameras: parseAll(list(saved.customCameras), parseCamera),
+    customDetectors: parseAll(list(saved.customDetectors), parseDetector),
+    types: parseAll(list(saved.types).map(savedType), parseCameraType),
+    system,
+    rejected, // после всех parseAll выше
+  };
+}
 export function load() {
   try {
     const saved = JSON.parse(localStorage.getItem("camcalc4") || "null");
     if (!saved) return;
-    // старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
-    const withDot = (value) =>
-      typeof value === "string" ? value.replace(",", ".") : value;
-    const allWithDot = (values) =>
-      Object.fromEntries(
-        Object.entries(values).map(([key, value]) => [key, withDot(value)]),
-      );
-    const shownName = (item) =>
-      (item.nameKey && builtinName(item.nameKey)) || item.name;
+    const parsed = parseSaved(saved);
     if (Array.isArray(saved.customGpus))
-      store.customGpus = saved.customGpus
-        .filter((gpu) => gpu && gpu.id && gpu.name && gpu.tflops > 0)
-        .map((gpu) => ({ ...gpu, custom: true }));
+      store.customGpus = parsed.customGpus.map((gpu) => ({
+        ...gpu,
+        custom: true,
+      }));
     if (Array.isArray(saved.customCameras))
-      store.customCameras = saved.customCameras
-        .filter(
-          (camera) =>
-            camera &&
-            camera.id &&
-            camera.Nw > 0 &&
-            camera.Nh > 0 &&
-            camera.sensorWidth > 0,
-        )
-        .map((camera) => ({ ...camera, custom: true }));
+      store.customCameras = parsed.customCameras.map((camera) => ({
+        ...camera,
+        custom: true,
+      }));
     if (Array.isArray(saved.customDetectors))
-      store.customDetectors = saved.customDetectors
-        .filter((detector) => detector && detector.id && detector.fps > 0)
-        .map((detector) => ({ ...detector, custom: true }));
+      store.customDetectors = parsed.customDetectors;
     if (saved.gpuPrices && typeof saved.gpuPrices === "object")
       store.gpuPrices = allWithDot(saved.gpuPrices);
     if (saved.gpuEnabled && typeof saved.gpuEnabled === "object")
@@ -869,38 +945,23 @@ export function load() {
     if (saved.light) setTheme(true);
     buildGpuSelect();
     buildCameraSelect();
-    if (Array.isArray(saved.types) && saved.types.length) {
-      store.cameraTypes = saved.types.map((type) => ({
-        id: type.id || uid(),
-        name: shownName(type),
-        nameKey: type.nameKey,
-        count: withDot(type.count),
-        inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
-        objects: (type.objects || []).map((obj) => ({
-          ...makeObject([
-            shownName(obj),
-            withDot(obj.width),
-            withDot(obj.length),
-            withDot(obj.height),
-            withDot(obj.requiredPx),
-            modelById(obj.model) ? obj.model : "y26s",
-            obj.feed,
-            obj.inputSize,
-            obj.nameKey,
-          ]),
-          overlap: withDot(obj.overlap ?? 20),
-        })),
-      }));
+    if (parsed.types.length) {
+      store.cameraTypes = parsed.types;
+      store.cameraTypes.forEach((type) =>
+        type.objects.forEach((obj) => {
+          if (!modelById(obj.model)) obj.model = "y26s";
+        }),
+      );
       store.activeTypeId = store.cameraTypes.some(
         (type) => type.id === saved.activeTypeId,
       )
         ? saved.activeTypeId
         : store.cameraTypes[0].id;
     }
-    if (saved.system)
+    if (parsed.system)
       SYSTEM_IDS.forEach((id) => {
         const field = byId(id);
-        if (saved.system[id] != null) field.value = withDot(saved.system[id]);
+        field.value = parsed.system[id];
         if (field.tagName === "SELECT" && field.selectedIndex < 0)
           field.value = "auto";
       });
@@ -1059,23 +1120,16 @@ function importText(text) {
   try {
     saved = JSON.parse(text);
   } catch (error) {}
-  const isObject = (value) => value && typeof value === "object";
   if (
     !isObject(saved) ||
     !Array.isArray(saved.types) ||
     !saved.types.length ||
-    !saved.types.every(
-      (type) =>
-        isObject(type) &&
-        typeof type.name === "string" &&
-        (type.objects == null ||
-          (Array.isArray(type.objects) && type.objects.every(isObject))),
-    ) ||
     !["customGpus", "customCameras", "customDetectors"].every((key) =>
       Array.isArray(saved[key]),
     ) ||
     !isObject(saved.gpuPrices) ||
-    !isObject(saved.gpuEnabled)
+    !isObject(saved.gpuEnabled) ||
+    parseSaved(saved).rejected
   ) {
     toast(t("badFile"));
     return;

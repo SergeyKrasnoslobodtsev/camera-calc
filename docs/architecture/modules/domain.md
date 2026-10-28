@@ -3,19 +3,34 @@
 Ядро расчёта: сущности, справочники, расчёт одного типа камер, подбор GPU и итоги системы. Модуль не обращается к DOM, `localStorage` и текстам интерфейса и не импортирует другие модули проекта. Решения и известные проблемы — в [`../decisions/domain.md`](../decisions/domain.md). Формулы для пользователя — в блоке «Все формулы» (`src/formulas.html`).
 
 !!! note "Переход не закончен"
-    Функции разбора сущностей ещё не написаны (#48). Значения полей типа камер и параметров системы приходят строками из формы и разбираются при расчёте (`parseNum`).
+    Тип камер, объект и параметры системы — черновики: функции разбора проверяют их устройство, а числа остаются строками из формы и разбираются при расчёте (`parseNum`). Перевод расчёта на разобранные числа — отдельный шаг.
 
 ## Состав
 
 | Папка, файл | Что внутри |
 |---|---|
-| `entities/` | Типы сущностей: `CameraType`, `SceneObject`, `Camera`, `Gpu`, `CatalogModel`, `CustomDetector`, `SystemSettings` |
+| `entities/` | Типы сущностей: `CameraType`, `SceneObject`, `Camera`, `Gpu`, `CatalogModel`, `CustomDetector`, `SystemSettings` и функции их разбора; общие правила полей — `parse-result.ts` |
 | `references/` | Справочники: разрешения, форматы матрицы, каталог GPU и ёмкость декодера `decodableStreams`, модели Ultralytics, встроенные камеры |
 | `compute-type/` | Расчёт типа камер `computeType(type, camera)`, по шагу на файл |
 | `compute-system/` | Подбор GPU `computeSystem` (`index.ts`, нагрузка варианта — `gpu-load.ts`) и итоги системы `systemTotals` (`totals.ts`) |
 | `angles.ts`, `parse-num.ts` | `DEG` и разбор числа из поля формы |
 
 Встроенные записи хранят не название, а ключ словаря (`nameKey: "builtinCameraNames.k4"`). Название на текущем языке подставляет интерфейс.
+
+## Разбор сущностей
+
+Сырая запись из формы, сохранения или файла импорта проходит через функцию разбора своей сущности. Результат — `{ ok: true, value }` или `{ ok: false, errors }`, ошибка — `{ field, code }`. В `value` попадают только известные поля. Вложенное поле пишется путём: `decodeStreams.h265`, `inputs.placement`, `objects.1.feed`.
+
+| Функция | Проверяет |
+|---|---|
+| `parseGpu` | `id`, `name` — непустые строки; `arch` из списка; `tflops`, `memoryGB`, `price` > 0; `tdpW` ≥ 0; у Jetson `decodeStreams.h264`, `decodeStreams.h265` > 0, у остальных `nvdec` > 0 |
+| `parseCamera` | `id`, `name` — непустые строки; `Nw`, `Nh`, `sensorWidth` > 0; `focalMin`, `focalMax` ≥ 0 и `focalMin` ≤ `focalMax`; `price`, если есть, ≥ 0 |
+| `parseDetector` | `id`, `name`, `refGpu` — непустые строки; `fps`, `inputSize` > 0; `gflops` ≥ 0 |
+| `parseSceneObject` | черновик: `name` — строка, `model` — непустая строка, `feed` из `"full"`, `"roi"`, `"tiles"`, числовые поля — строка или число |
+| `parseCameraType` | черновик: `id` — непустая строка, `name` — строка, `count` и числовые поля `inputs` — строка или число, `orientation`, `lensMode`, `placement` из списков, каждый объект — `parseSceneObject` |
+| `parseSystemSettings` | черновик: пять полей — строки |
+
+Коды правил: `required` — нет значения нужного вида или пустая строка, `positive` — не число > 0, `nonNegative` — не число ≥ 0, `oneOf` — значение не из списка, `order` — нарушен порядок значений. Числа функции не разбирают из строк: у GPU, камеры и детектора поле-строка — ошибка. Формы переводят ввод в числа сами (`parseNum`) и подставляют значения по умолчанию, например TDP 0, до разбора.
 
 ## Расчёт типа камер
 
@@ -144,4 +159,5 @@ flowchart TD
 | `tests/domain/compute-type.test.ts` | Результат совпадает с прежней реализацией на 30 конфигурациях с допуском $10^{-9}$, включая тексты на русском. Фикстура `tests/domain/fixtures/compute-type.json` снята один раз со старого `computeType` (коммит 7cca661) и не перегенерируется |
 | `geometry.test.ts`, `objects.test.ts`, `stream.test.ts` | Шаги расчёта на случаях, которые считаются вручную |
 | `compute-system.test.ts` | Нагрузка инференса, декодера и памяти, выбор варианта по параметрам, итоги и порт на случаях, которые считаются вручную |
+| `entities.test.ts` | Каждая функция разбора: допустимые данные, каждое правило поля, лишние поля |
 | `boundaries.test.ts` | В `src/domain/` нет `document`, `window`, `localStorage`, `navigator` и импортов за пределы папки |

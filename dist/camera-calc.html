@@ -1525,11 +1525,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     }
   }
   var verdictItems = (objects) => objects.map(
-    (result) => t(
+    (result2) => t(
       "verdictItem",
-      objectName(result),
-      modelPxText(result),
-      formatNumber(result.requiredPx, 0)
+      objectName(result2),
+      modelPxText(result2),
+      formatNumber(result2.requiredPx, 0)
     )
   ).join("; ");
   function verdictHeadline(verdict) {
@@ -1746,8 +1746,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   // src/domain/compute-type/run-groups.ts
   function runGroups(objects, count, analyticsFps) {
     const groups = /* @__PURE__ */ new Map();
-    objects.forEach((result) => {
-      const { object, feed } = result;
+    objects.forEach((result2) => {
+      const { object, feed } = result2;
       const key = [
         object.model,
         object.feed,
@@ -1755,12 +1755,12 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         object.feed === "tiles" ? object.overlap : ""
       ].join("|");
       const group = groups.get(key);
-      if (group) group.objects.push(result);
+      if (group) group.objects.push(result2);
       else
         groups.set(key, {
           model: object.model,
           feed,
-          objects: [result],
+          objects: [result2],
           load: count * analyticsFps * feed.tiles
         });
     });
@@ -1915,8 +1915,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   }
   var isClamped = ({ f, fNeeded }) => fNeeded !== null && Math.abs(fNeeded - f) > FOCAL_CLAMP_NOTE_MM;
   function assessObjects(objects, sceneNotes2) {
-    const valid = objects.filter((result) => result.valid);
-    const failing = valid.filter((result) => result.status === "bad"), marginal = valid.filter((result) => result.status === "warn");
+    const valid = objects.filter((result2) => result2.valid);
+    const failing = valid.filter((result2) => result2.status === "bad"), marginal = valid.filter((result2) => result2.status === "warn");
     if (!valid.length)
       return {
         verdict: { code: "noObjects" },
@@ -1924,16 +1924,16 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         notes: sceneNotes2
       };
     if (failing.length) {
-      const downscale = failing.filter((result) => result.sensorOk).map((result) => ({
+      const downscale = failing.filter((result2) => result2.sensorOk).map((result2) => ({
         code: "downscale",
         values: {
-          object: result,
+          object: result2,
           neededInputSize: Math.ceil(
-            result.feed.inputSize * result.requiredPx / result.modelPx / INPUT_SIZE_STEP
+            result2.feed.inputSize * result2.requiredPx / result2.modelPx / INPUT_SIZE_STEP
           ) * INPUT_SIZE_STEP
         }
       }));
-      const lowResolution = failing.filter((result) => !result.sensorOk);
+      const lowResolution = failing.filter((result2) => !result2.sensorOk);
       const resolution = lowResolution.length ? [
         resolutionNote(
           lowResolution.reduce(
@@ -2222,14 +2222,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       0
     );
     const decodeGpus = liveResults.reduce(
-      (sum, result) => sum + result.stream.decodeUnits / (decodableStreams(gpu, result.stream.codec) * efficiency),
+      (sum, result2) => sum + result2.stream.decodeUnits / (decodableStreams(gpu, result2.stream.codec) * efficiency),
       0
     );
     const memoryUseGB = BASE_MEMORY_GB + demand.engines.reduce(
       (sum, engine) => sum + engineMemoryGB(demand, engine),
       0
     ) + liveResults.reduce(
-      (sum, result) => sum + Math.ceil(result.count / count) * FRAMES_PER_STREAM * result.stream.frameGB,
+      (sum, result2) => sum + Math.ceil(result2.count / count) * FRAMES_PER_STREAM * result2.stream.frameGB,
       0
     ), memoryCapGB = gpu.memoryGB * (gpu.jetson ? JETSON_MEMORY_USABLE_SHARE : MEMORY_USABLE_SHARE);
     const inferenceLoad = inferenceGpus / count, decodeLoad = decodeGpus / count, memoryLoad = memoryUseGB / memoryCapGB;
@@ -2258,17 +2258,17 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   var POE_PORT_W = 15.4;
   var SECONDS_PER_DAY = 86400;
   function systemTotals(results, settings, cameras) {
-    const cameraCount = results.reduce((sum, result) => sum + result.count, 0);
+    const cameraCount = results.reduce((sum, result2) => sum + result2.count, 0);
     const totalMbps = results.reduce(
-      (sum, result) => result.ok && result.count > 0 ? sum + result.stream.bitrateMbps * result.count : sum,
+      (sum, result2) => result2.ok && result2.count > 0 ? sum + result2.stream.bitrateMbps * result2.count : sum,
       0
     );
-    const cameraCost = results.reduce((sum, result) => {
+    const cameraCost = results.reduce((sum, result2) => {
       const camera = cameras.find(
-        (item) => item.id === result.type.inputs.camera
+        (item) => item.id === result2.type.inputs.camera
       );
       const price = camera?.price ?? 0;
-      return sum + (price > 0 ? price * result.count : 0);
+      return sum + (price > 0 ? price * result2.count : 0);
     }, 0);
     const portMbps = totalMbps * NETWORK_HEADROOM;
     const archiveDays = parseNum(settings.archiveDays) || 0;
@@ -2287,11 +2287,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   var GPU_COUNTS = [1, 2, 3, 4];
   function computeSystem(results, settings, catalog) {
     const liveResults = results.filter(
-      (result) => result.ok && result.count > 0
+      (result2) => result2.ok && result2.count > 0
     );
     const efficiency = parseNum(settings.efficiency), reserve = Math.max(0, parseNum(settings.reserve) || 0) / 100, maxLoad = 1 / (1 + reserve);
     const groups = liveResults.flatMap(
-      (result) => result.runGroups.map((group) => ({ ...group, typeName: result.type.name }))
+      (result2) => result2.runGroups.map((group) => ({ ...group, typeName: result2.type.name }))
     );
     const engines = [
       ...new Map(
@@ -2335,11 +2335,221 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       chosen: choose(),
       optimum,
       decodeUnitsTotal: liveResults.reduce(
-        (sum, result) => sum + result.stream.decodeUnits,
+        (sum, result2) => sum + result2.stream.decodeUnits,
         0
       ),
       noCandidates: !catalog.candidates.length
     };
+  }
+
+  // src/domain/entities/parse-result.ts
+  var isRecord = (value) => typeof value === "object" && value !== null;
+  function readFields(raw, prefix = "") {
+    const record = isRecord(raw) ? raw : {};
+    const errors = [];
+    const check = (ok, field, code) => {
+      if (!ok) errors.push({ field: prefix + field, code });
+    };
+    return {
+      record,
+      errors,
+      string(field, value = record[field]) {
+        check(typeof value === "string", field, "required");
+        return String(value ?? "");
+      },
+      // значение поля формы в черновике: строка как введена или число из шаблона
+      formValue(field, value = record[field]) {
+        check(
+          typeof value === "string" || Number.isFinite(value),
+          field,
+          "required"
+        );
+        return value;
+      },
+      text(field, value = record[field]) {
+        check(
+          typeof value === "string" && value.trim() !== "",
+          field,
+          "required"
+        );
+        return String(value ?? "");
+      },
+      positive(field, value = record[field]) {
+        check(Number.isFinite(value) && value > 0, field, "positive");
+        return value;
+      },
+      nonNegative(field, value = record[field]) {
+        check(
+          Number.isFinite(value) && value >= 0,
+          field,
+          "nonNegative"
+        );
+        return value;
+      },
+      oneOf(field, list, value = record[field]) {
+        check(list.includes(value), field, "oneOf");
+        return value;
+      },
+      order(field, ok) {
+        check(ok, field, "order");
+      }
+    };
+  }
+  var result = (errors, value) => errors.length ? { ok: false, errors } : { ok: true, value };
+
+  // src/domain/entities/camera.ts
+  function parseCamera(raw) {
+    const read = readFields(raw);
+    const camera = {
+      id: read.text("id"),
+      name: read.text("name"),
+      Nw: read.positive("Nw"),
+      Nh: read.positive("Nh"),
+      sensorWidth: read.positive("sensorWidth"),
+      focalMin: read.nonNegative("focalMin"),
+      focalMax: read.nonNegative("focalMax")
+    };
+    read.order("focalMax", camera.focalMin <= camera.focalMax);
+    if (read.record.price !== void 0) camera.price = read.nonNegative("price");
+    if (read.record.custom === true) camera.custom = true;
+    return result(read.errors, camera);
+  }
+
+  // src/domain/entities/camera-type.ts
+  var PLACEMENTS = ["side", "top"];
+  var LENS_MODES = ["auto", "focal", "angle"];
+  var ORIENTATIONS = ["auto", "landscape", "portrait"];
+  var FEED_MODES = ["full", "roi", "tiles"];
+  var withNameKey = (item, nameKey) => {
+    if (typeof nameKey === "string") item.nameKey = nameKey;
+    return item;
+  };
+  function parseSceneObject(raw) {
+    const read = readFields(raw);
+    const object = {
+      name: read.string("name"),
+      width: read.formValue("width"),
+      length: read.formValue("length"),
+      height: read.formValue("height"),
+      requiredPx: read.formValue("requiredPx"),
+      model: read.text("model"),
+      feed: read.oneOf("feed", FEED_MODES),
+      inputSize: read.formValue("inputSize"),
+      overlap: read.formValue("overlap")
+    };
+    return result(read.errors, withNameKey(object, read.record.nameKey));
+  }
+  function parseCameraType(raw) {
+    const read = readFields(raw);
+    const inputs = readFields(read.record.inputs, "inputs.");
+    const rawObjects = read.record.objects;
+    if (!Array.isArray(rawObjects))
+      read.errors.push({ field: "objects", code: "required" });
+    const objects = (Array.isArray(rawObjects) ? rawObjects : []).map(
+      parseSceneObject
+    );
+    const type = {
+      id: read.text("id"),
+      name: read.string("name"),
+      count: read.formValue("count"),
+      inputs: {
+        camera: inputs.string("camera"),
+        cameraHeight: inputs.formValue("cameraHeight"),
+        planeHeight: inputs.formValue("planeHeight"),
+        zoneStart: inputs.formValue("zoneStart"),
+        zoneDepth: inputs.formValue("zoneDepth"),
+        zoneWidth: inputs.formValue("zoneWidth"),
+        margin: inputs.formValue("margin"),
+        resolution: inputs.formValue("resolution"),
+        sensor: inputs.formValue("sensor"),
+        sensorWidth: inputs.formValue("sensorWidth"),
+        pixelPitch: inputs.formValue("pixelPitch"),
+        orientation: inputs.oneOf("orientation", ORIENTATIONS),
+        focalLength: inputs.formValue("focalLength"),
+        hfov: inputs.formValue("hfov"),
+        fps: inputs.formValue("fps"),
+        analyticsFps: inputs.formValue("analyticsFps"),
+        codec: inputs.formValue("codec"),
+        scene: inputs.formValue("scene"),
+        lensFactor: inputs.formValue("lensFactor"),
+        speed: inputs.formValue("speed"),
+        blurPx: inputs.formValue("blurPx"),
+        lensMode: inputs.oneOf("lensMode", LENS_MODES),
+        placement: inputs.oneOf("placement", PLACEMENTS)
+      },
+      objects: objects.flatMap((object) => object.ok ? [object.value] : [])
+    };
+    const errors = [
+      ...read.errors,
+      ...inputs.errors,
+      ...objects.flatMap(
+        (object, i) => object.ok ? [] : object.errors.map((error) => ({
+          ...error,
+          field: `objects.${i}.${error.field}`
+        }))
+      )
+    ];
+    return result(errors, withNameKey(type, read.record.nameKey));
+  }
+
+  // src/domain/entities/detector.ts
+  function parseDetector(raw) {
+    const read = readFields(raw);
+    const detector = {
+      id: read.text("id"),
+      name: read.text("name"),
+      fps: read.positive("fps"),
+      inputSize: read.positive("inputSize"),
+      refGpu: read.text("refGpu"),
+      gflops: read.nonNegative("gflops"),
+      custom: true
+    };
+    return result(read.errors, detector);
+  }
+
+  // src/domain/entities/gpu.ts
+  var ARCHS = [
+    "Turing",
+    "Hopper",
+    "Ampere",
+    "Ada",
+    "Blackwell"
+  ];
+  function parseGpu(raw) {
+    const read = readFields(raw);
+    const jetson = read.record.jetson === true;
+    const streams = read.record.decodeStreams;
+    const gpu = {
+      id: read.text("id"),
+      name: read.text("name"),
+      arch: read.oneOf("arch", ARCHS),
+      tflops: read.positive("tflops"),
+      ...jetson ? {
+        decodeStreams: {
+          h264: read.positive("decodeStreams.h264", streams?.h264),
+          h265: read.positive("decodeStreams.h265", streams?.h265)
+        }
+      } : { nvdec: read.positive("nvdec") },
+      memoryGB: read.positive("memoryGB"),
+      tdpW: read.nonNegative("tdpW"),
+      price: read.positive("price")
+    };
+    if (jetson) gpu.jetson = true;
+    if (read.record.custom === true) gpu.custom = true;
+    return result(read.errors, gpu);
+  }
+
+  // src/domain/entities/system-settings.ts
+  function parseSystemSettings(raw) {
+    const read = readFields(raw);
+    const settings = {
+      efficiency: read.string("efficiency"),
+      reserve: read.string("reserve"),
+      archiveDays: read.string("archiveDays"),
+      gpu: read.string("gpu"),
+      gpuCount: read.string("gpuCount")
+    };
+    return result(read.errors, settings);
   }
 
   // src/js/store.js
@@ -2481,12 +2691,12 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       syncOverlapBox();
     });
   }
-  function syncFormUI(type, result) {
+  function syncFormUI(type, result2) {
     const inputs = type.inputs, camera = cameraById(inputs.camera);
     byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
     byId("hfovBox").hidden = inputs.lensMode !== "angle";
     byId("zoneStartBox").hidden = inputs.placement === "top";
-    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR, sensorWidth = result?.frame.sensorWidth;
+    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR, sensorWidth = result2?.frame.sensorWidth;
     byId("resolution").disabled = !!camera;
     byId("sensor").disabled = !!camera;
     byId("pixelPitchBox").hidden = !!camera || sensor.kind !== "pixelPitch";
@@ -2497,7 +2707,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     byId("summaryCamera").textContent = (camera ? `${camera.Nw} × ${camera.Nh}` : t(
       "megapixels",
       (RESOLUTIONS[+inputs.resolution] ?? DEFAULT_RESOLUTION).megapixels
-    )) + (result?.ok ? `, f ${withUnit(formatNumber(result.lens.f, 1), "mm")}` : "");
+    )) + (result2?.ok ? `, f ${withUnit(formatNumber(result2.lens.f, 1), "mm")}` : "");
     byId("summaryStream").textContent = `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
   }
 
@@ -2799,13 +3009,13 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   };
   var STATUS_TEXT = STR.status;
   var capitalize = (text) => text ? text[0].toUpperCase() + text.slice(1) : text;
-  function renderType(result) {
+  function renderType(result2) {
     const verdict = byId("verdict");
     byId("resultTitle").textContent = t(
       "resultTitleOf",
-      result.type.name || t("untitled")
+      result2.type.name || t("untitled")
     );
-    if (!result.ok) {
+    if (!result2.ok) {
       verdict.className = "verdict bad";
       verdict.innerHTML = `<span class="pill">${t("pillError")}</span><div>${t("inputError")}</div>`;
       ["kpis", "densityTable", "facts", "side"].forEach(
@@ -2813,15 +3023,15 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       );
       return;
     }
-    verdict.className = "verdict " + result.status;
-    verdict.innerHTML = `<span class="pill">${verdictPill(result.verdict, result.notes)}</span><div>${escapeHtml(verdictHeadline(result.verdict))}${result.notes.length ? "<ul>" + result.notes.map((note) => "<li>" + escapeHtml(noteText(note)) + "</li>").join("") + "</ul>" : ""}</div>`;
-    const { hfov, vfov, f, rotated } = result.lens, { tilt, frameWidthNear, frameWidthFar } = result.geometry;
+    verdict.className = "verdict " + result2.status;
+    verdict.innerHTML = `<span class="pill">${verdictPill(result2.verdict, result2.notes)}</span><div>${escapeHtml(verdictHeadline(result2.verdict))}${result2.notes.length ? "<ul>" + result2.notes.map((note) => "<li>" + escapeHtml(noteText(note)) + "</li>").join("") + "</ul>" : ""}</div>`;
+    const { hfov, vfov, f, rotated } = result2.lens, { tilt, frameWidthNear, frameWidthFar } = result2.geometry;
     byId("kpis").innerHTML = [
       [
         t("kpiFocal"),
         withUnit(formatNumber(f, 1), "mm"),
         t(
-          result.lens.clamped ? "kpiFocalLimit" : result.lens.mode === "auto" ? "kpiFocalAuto" : "kpiFocalSet"
+          result2.lens.clamped ? "kpiFocalLimit" : result2.lens.mode === "auto" ? "kpiFocalAuto" : "kpiFocalSet"
         ) + (rotated ? t("kpiRotated") : "")
       ],
       [
@@ -2845,7 +3055,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ].map(
       ([label, value, extra]) => `<div class="kpi"><span>${label}</span><strong>${value}</strong><em>${extra}</em></div>`
     ).join("");
-    result.objects.forEach((item, i) => {
+    result2.objects.forEach((item, i) => {
       const resultEl = byId(`objectResult-${i}`), dotEl = byId(`objectDot-${i}`);
       if (!resultEl) return;
       if (!item.valid) {
@@ -2858,7 +3068,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       if (dotEl) dotEl.className = "dot " + item.status;
       resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
     });
-    const top = result.placement === "top", { near, far, minAcross } = result.density;
+    const top = result2.placement === "top", { near, far, minAcross } = result2.density;
     byId("densityTable").innerHTML = `<tr><th>${t("densityHeader")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
     <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(near.D, 1), "m")}</td><td>${formatNumber(near.across, 0)}</td><td>${formatNumber(near.depth, 0)}</td></tr>
     <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(far.D, 1), "m")}</td><td>${formatNumber(far.across, 0)}</td><td>${formatNumber(far.depth, 0)}</td></tr>`;
@@ -2867,9 +3077,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     doriLevels.forEach((level, i) => {
       if (minAcross >= level) doriLevel = i;
     });
-    const shutter = result.shutterDenominator;
-    byId("facts").innerHTML = `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(cameraLabel(result))}</b></span>`;
-    const { H, h, Hc, x1, x2 } = result.geometry;
+    const shutter = result2.shutterDenominator;
+    byId("facts").innerHTML = `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(cameraLabel(result2))}</b></span>`;
+    const { H, h, Hc, x1, x2 } = result2.geometry;
     drawSide({
       H,
       h,
@@ -2878,7 +3088,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       tilt,
       vfov,
       Hc,
-      placement: result.placement,
+      placement: result2.placement,
       frameWidthNear,
       frameWidthFar
     });
@@ -2886,21 +3096,21 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   function renderTabs(results) {
     const nav = byId("tabs");
     nav.innerHTML = "";
-    results.forEach((result) => {
+    results.forEach((result2) => {
       const tab = document.createElement("button");
       tab.type = "button";
       tab.className = "tab";
       tab.setAttribute("role", "tab");
       tab.setAttribute(
         "aria-selected",
-        String(result.type.id === store.activeTypeId)
+        String(result2.type.id === store.activeTypeId)
       );
       tab.setAttribute("aria-controls", "typeResult");
-      tab.innerHTML = `<span class="dot ${result.ok ? result.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
-      tab.title = result.ok ? t("tabObjects", STATUS_TEXT[result.status]) : t("tabError");
+      tab.innerHTML = `<span class="dot ${result2.ok ? result2.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(result2.type.name || t("untitled"))}</b><small>× ${result2.count}</small>`;
+      tab.title = result2.ok ? t("tabObjects", STATUS_TEXT[result2.status]) : t("tabError");
       tab.addEventListener("click", () => {
-        if (store.activeTypeId === result.type.id) return;
-        store.activeTypeId = result.type.id;
+        if (store.activeTypeId === result2.type.id) return;
+        store.activeTypeId = result2.type.id;
         writeForm(activeType());
         calcAll();
       });
@@ -2942,11 +3152,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const { cameraCount, totalMbps, cameraCost } = totals;
     const percent = (share) => formatNumber(share * 100, 0) + "%";
     const allObjects = results.flatMap(
-      (result) => result.ok ? result.objects.filter((item) => item.valid) : []
+      (result2) => result2.ok ? result2.objects.filter((item) => item.valid) : []
     ), okObjects = allObjects.filter((obj) => obj.status === "ok").length;
     const worstStatus = results.some(
-      (result) => !result.ok || result.status === "bad"
-    ) ? "bad" : results.some((result) => result.status === "warn") ? "warn" : "ok";
+      (result2) => !result2.ok || result2.status === "bad"
+    ) ? "bad" : results.some((result2) => result2.status === "warn") ? "warn" : "ok";
     const smallest = allObjects.length ? allObjects.reduce((a, b) => a.modelPx < b.modelPx ? a : b) : null;
     byId("systemKpis").innerHTML = [
       [
@@ -2955,7 +3165,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         cameraCost ? t("systemTypes", results.length) + t("systemCameraCost", "$" + formatNumber(cameraCost, 0)) : t(
           "systemTypes",
           results.length,
-          results.map((result) => result.type.name).join(", ")
+          results.map((result2) => result2.type.name).join(", ")
         )
       ],
       [
@@ -3035,7 +3245,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     byId("loadNote").hidden = !byId("loadNote").innerHTML;
     const { archiveDays, archiveTB } = totals;
     byId("networkTable").innerHTML = `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` + results.map(
-      (result) => !result.ok ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.frame.width} × ${result.frame.height}</td><td>${formatNumber(result.stream.fps, 0)}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps * result.count, 0), "mbps")}</td></tr>`
+      (result2) => !result2.ok ? `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td>${result2.frame.width} × ${result2.frame.height}</td><td>${formatNumber(result2.stream.fps, 0)}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps * result2.count, 0), "mbps")}</td></tr>`
     ).join("") + `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr><tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
     byId("assumptionsList").innerHTML = t(
       "assumptions",
@@ -3099,40 +3309,47 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     );
     byId("gpuFormDecoders").placeholder = isJetson ? "22" : "2";
   });
+  var formErrorText = (errors, messageKeys) => [...new Set(errors.map((error) => t(messageKeys[error.field])))].join(", ");
+  var GPU_FORM_ERRORS = {
+    name: "errorName",
+    tflops: "errorTflops",
+    nvdec: "errorDecoders",
+    "decodeStreams.h264": "errorDecoderStreams",
+    "decodeStreams.h265": "errorDecoderStreams",
+    memoryGB: "errorMemory",
+    price: "errorPrice"
+  };
   byId("gpuForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    const name = byId("gpuFormName").value.trim(), arch = byId("gpuFormArchitecture").value, tflops = parseNum(byId("gpuFormTflops").value), decode = parseNum(byId("gpuFormDecoders").value), memoryGB = parseNum(byId("gpuFormMemory").value), tdpW = parseNum(byId("gpuFormTdp").value), price = parseNum(byId("gpuFormPrice").value);
-    const errors = [];
-    if (!name) errors.push(t("errorName"));
-    if (!(tflops > 0)) errors.push(t("errorTflops"));
-    if (!(decode > 0))
-      errors.push(t(arch === "jet" ? "errorDecoderStreams" : "errorDecoders"));
-    if (!(memoryGB > 0)) errors.push(t("errorMemory"));
-    if (!(price > 0)) errors.push(t("errorPrice"));
-    const errorEl = byId("gpuFormError");
-    if (errors.length) {
-      errorEl.hidden = false;
-      errorEl.textContent = t("gpuFormError", errors.join(", "));
-      return;
-    }
-    errorEl.hidden = true;
-    const gpu = {
+    const name = byId("gpuFormName").value.trim(), arch = byId("gpuFormArchitecture").value, decode = parseNum(byId("gpuFormDecoders").value), tdpW = parseNum(byId("gpuFormTdp").value);
+    const parsed = parseGpu({
       id: "c" + uid(),
       name,
       arch: arch === "jet" ? "Ampere" : arch,
-      tflops,
-      memoryGB,
+      tflops: parseNum(byId("gpuFormTflops").value),
+      ...arch === "jet" ? {
+        jetson: true,
+        decodeStreams: {
+          h264: +(decode * 748 / 1415).toFixed(1),
+          h265: decode
+        }
+      } : { nvdec: Math.round(decode) },
+      memoryGB: parseNum(byId("gpuFormMemory").value),
       tdpW: tdpW > 0 ? tdpW : 0,
-      price,
+      price: parseNum(byId("gpuFormPrice").value),
       custom: true
-    };
-    if (arch === "jet") {
-      gpu.jetson = true;
-      gpu.decodeStreams = {
-        h265: decode,
-        h264: +(decode * 748 / 1415).toFixed(1)
-      };
-    } else gpu.nvdec = Math.round(decode);
+    });
+    const errorEl = byId("gpuFormError");
+    if (!parsed.ok) {
+      errorEl.hidden = false;
+      errorEl.textContent = t(
+        "gpuFormError",
+        formErrorText(parsed.errors, GPU_FORM_ERRORS)
+      );
+      return;
+    }
+    errorEl.hidden = true;
+    const gpu = parsed.value;
     store.customGpus.push(gpu);
     store.gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
     [
@@ -3171,6 +3388,13 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       })
     );
   }
+  var CAMERA_FORM_ERRORS = {
+    name: "errorName",
+    Nw: "errorFrame",
+    Nh: "errorFrame",
+    sensorWidth: "errorSensorWidth",
+    focalMax: "errorFocalRange"
+  };
   byId("cameraForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const name = byId("cameraFormName").value.trim(), Nw = Math.round(parseNum(byId("cameraFormWidth").value)), Nh = Math.round(parseNum(byId("cameraFormHeight").value)), pixelPitchUm = parseNum(byId("cameraFormPixelPitch").value);
@@ -3181,20 +3405,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       sensorWidth = +(pixelPitchUm * Nw / 1e3).toFixed(3);
     if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
     if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
-    const errors = [];
-    if (!name) errors.push(t("errorName"));
-    if (!(Nw > 0 && Nh > 0)) errors.push(t("errorFrame"));
-    if (!(sensorWidth > 0)) errors.push(t("errorSensorWidth"));
-    if (focalMin > 0 && focalMax > 0 && focalMin > focalMax)
-      errors.push(t("errorFocalRange"));
-    const errorEl = byId("cameraFormError");
-    if (errors.length) {
-      errorEl.hidden = false;
-      errorEl.textContent = t("cameraFormError", errors.join(", "));
-      return;
-    }
-    errorEl.hidden = true;
-    store.customCameras.push({
+    const parsed = parseCamera({
       id: "m" + uid(),
       name,
       Nw,
@@ -3205,6 +3416,17 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       price: price > 0 ? price : 0,
       custom: true
     });
+    const errorEl = byId("cameraFormError");
+    if (!parsed.ok) {
+      errorEl.hidden = false;
+      errorEl.textContent = t(
+        "cameraFormError",
+        formErrorText(parsed.errors, CAMERA_FORM_ERRORS)
+      );
+      return;
+    }
+    errorEl.hidden = true;
+    store.customCameras.push(parsed.value);
     [
       "cameraFormName",
       "cameraFormWidth",
@@ -3256,28 +3478,30 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   byId("detectorFormInput").innerHTML = INPUTS.map(
     (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`
   ).join("");
+  var DETECTOR_FORM_ERRORS = { name: "errorName", fps: "errorFps" };
   byId("detectorForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    const name = byId("detectorFormName").value.trim(), fps = parseNum(byId("detectorFormFps").value), inputSize = +byId("detectorFormInput").value, refGpu = byId("detectorFormRefGpu").value, gflops = parseNum(byId("detectorFormGflops").value);
-    const errors = [];
-    if (!name) errors.push(t("errorName"));
-    if (!(fps > 0)) errors.push(t("errorFps"));
-    const errorEl = byId("detectorFormError");
-    if (errors.length) {
-      errorEl.hidden = false;
-      errorEl.textContent = t("cameraFormError", errors.join(", "));
-      return;
-    }
-    errorEl.hidden = true;
-    store.customDetectors.push({
+    const name = byId("detectorFormName").value.trim(), gflops = parseNum(byId("detectorFormGflops").value);
+    const parsed = parseDetector({
       id: "d" + uid(),
       name,
-      fps,
-      inputSize,
-      refGpu,
+      fps: parseNum(byId("detectorFormFps").value),
+      inputSize: +byId("detectorFormInput").value,
+      refGpu: byId("detectorFormRefGpu").value,
       gflops: gflops > 0 ? gflops : 0,
       custom: true
     });
+    const errorEl = byId("detectorFormError");
+    if (!parsed.ok) {
+      errorEl.hidden = false;
+      errorEl.textContent = t(
+        "cameraFormError",
+        formErrorText(parsed.errors, DETECTOR_FORM_ERRORS)
+      );
+      return;
+    }
+    errorEl.hidden = true;
+    store.customDetectors.push(parsed.value);
     ["detectorFormName", "detectorFormFps", "detectorFormGflops"].forEach(
       (id) => byId(id).value = ""
     );
@@ -3311,23 +3535,23 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     report = [
       t("appTitle"),
       ...results.flatMap(
-        (result) => !result.ok ? ["\n" + t("reportError", result.type.name, result.count)] : [
+        (result2) => !result2.ok ? ["\n" + t("reportError", result2.type.name, result2.count)] : [
           `
-${result.type.name} × ${result.count}`,
+${result2.type.name} × ${result2.count}`,
           t("reportCamera", {
-            cameraLabel: cameraLabel(result),
-            rotated: result.lens.rotated,
-            sensorWidth: formatNumber(result.frame.sensorWidth, 2),
-            focal: formatNumber(result.lens.f, 1),
-            hfov: formatNumber(result.lens.hfov / DEG, 0),
-            tilt: formatNumber(result.geometry.tilt / DEG, 0),
-            overCenter: result.placement === "top",
-            zoneStart: formatNumber(result.geometry.zoneStart, 2),
-            cameraHeight: formatNumber(result.geometry.H, 2),
-            zoneWidth: formatNumber(result.geometry.zoneWidth, 2),
-            zoneDepth: formatNumber(result.geometry.zoneDepth, 2)
+            cameraLabel: cameraLabel(result2),
+            rotated: result2.lens.rotated,
+            sensorWidth: formatNumber(result2.frame.sensorWidth, 2),
+            focal: formatNumber(result2.lens.f, 1),
+            hfov: formatNumber(result2.lens.hfov / DEG, 0),
+            tilt: formatNumber(result2.geometry.tilt / DEG, 0),
+            overCenter: result2.placement === "top",
+            zoneStart: formatNumber(result2.geometry.zoneStart, 2),
+            cameraHeight: formatNumber(result2.geometry.H, 2),
+            zoneWidth: formatNumber(result2.geometry.zoneWidth, 2),
+            zoneDepth: formatNumber(result2.geometry.zoneDepth, 2)
           }),
-          ...result.objects.filter((item) => item.valid).map(
+          ...result2.objects.filter((item) => item.valid).map(
             (item) => t("reportObject", {
               name: item.object.name,
               model: modelName(item.object),
@@ -3340,8 +3564,8 @@ ${result.type.name} × ${result.count}`,
           ),
           t(
             "reportStream",
-            formatNumber(result.stream.bitrateMbps, 1),
-            Math.ceil(result.shutterDenominator)
+            formatNumber(result2.stream.bitrateMbps, 1),
+            Math.ceil(result2.shutterDenominator)
           )
         ]
       ),
@@ -3395,23 +3619,77 @@ ${result.type.name} × ${result.count}`,
     } catch (error) {
     }
   }
+  var withDot = (value) => typeof value === "string" ? value.replace(",", ".") : value;
+  var allWithDot = (values) => Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [key, withDot(value)])
+  );
+  var shownName = (item) => item.nameKey && builtinName(item.nameKey) || item.name;
+  var isObject = (value) => value && typeof value === "object";
+  var savedObject = (obj) => isObject(obj) ? {
+    ...makeObject([
+      shownName(obj),
+      withDot(obj.width),
+      withDot(obj.length),
+      withDot(obj.height),
+      withDot(obj.requiredPx),
+      obj.model,
+      obj.feed,
+      obj.inputSize,
+      obj.nameKey
+    ]),
+    overlap: withDot(obj.overlap ?? 20)
+  } : obj;
+  var savedType = (type) => isObject(type) ? {
+    id: type.id || uid(),
+    name: shownName(type),
+    nameKey: type.nameKey,
+    count: withDot(type.count),
+    inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
+    objects: Array.isArray(type.objects) ? type.objects.map(savedObject) : type.objects ?? []
+  } : type;
+  var savedSystem = (system) => isObject(system) ? Object.fromEntries(
+    SYSTEM_IDS.map((id) => [id, withDot(system[id] ?? byId(id).value)])
+  ) : system;
+  function parseSaved(saved) {
+    let rejected = 0;
+    const parseAll = (items, parse) => items.flatMap((item) => {
+      const parsed = parse(item);
+      if (parsed.ok) return [parsed.value];
+      rejected++;
+      return [];
+    });
+    const list = (items) => Array.isArray(items) ? items : [];
+    const [system] = parseAll(
+      saved.system == null ? [] : [savedSystem(saved.system)],
+      parseSystemSettings
+    );
+    return {
+      customGpus: parseAll(list(saved.customGpus), parseGpu),
+      customCameras: parseAll(list(saved.customCameras), parseCamera),
+      customDetectors: parseAll(list(saved.customDetectors), parseDetector),
+      types: parseAll(list(saved.types).map(savedType), parseCameraType),
+      system,
+      rejected
+      // после всех parseAll выше
+    };
+  }
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem("camcalc4") || "null");
       if (!saved) return;
-      const withDot = (value) => typeof value === "string" ? value.replace(",", ".") : value;
-      const allWithDot = (values) => Object.fromEntries(
-        Object.entries(values).map(([key, value]) => [key, withDot(value)])
-      );
-      const shownName = (item) => item.nameKey && builtinName(item.nameKey) || item.name;
+      const parsed = parseSaved(saved);
       if (Array.isArray(saved.customGpus))
-        store.customGpus = saved.customGpus.filter((gpu) => gpu && gpu.id && gpu.name && gpu.tflops > 0).map((gpu) => ({ ...gpu, custom: true }));
+        store.customGpus = parsed.customGpus.map((gpu) => ({
+          ...gpu,
+          custom: true
+        }));
       if (Array.isArray(saved.customCameras))
-        store.customCameras = saved.customCameras.filter(
-          (camera) => camera && camera.id && camera.Nw > 0 && camera.Nh > 0 && camera.sensorWidth > 0
-        ).map((camera) => ({ ...camera, custom: true }));
+        store.customCameras = parsed.customCameras.map((camera) => ({
+          ...camera,
+          custom: true
+        }));
       if (Array.isArray(saved.customDetectors))
-        store.customDetectors = saved.customDetectors.filter((detector) => detector && detector.id && detector.fps > 0).map((detector) => ({ ...detector, custom: true }));
+        store.customDetectors = parsed.customDetectors;
       if (saved.gpuPrices && typeof saved.gpuPrices === "object")
         store.gpuPrices = allWithDot(saved.gpuPrices);
       if (saved.gpuEnabled && typeof saved.gpuEnabled === "object")
@@ -3419,36 +3697,21 @@ ${result.type.name} × ${result.count}`,
       if (saved.light) setTheme(true);
       buildGpuSelect();
       buildCameraSelect();
-      if (Array.isArray(saved.types) && saved.types.length) {
-        store.cameraTypes = saved.types.map((type) => ({
-          id: type.id || uid(),
-          name: shownName(type),
-          nameKey: type.nameKey,
-          count: withDot(type.count),
-          inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
-          objects: (type.objects || []).map((obj) => ({
-            ...makeObject([
-              shownName(obj),
-              withDot(obj.width),
-              withDot(obj.length),
-              withDot(obj.height),
-              withDot(obj.requiredPx),
-              modelById(obj.model) ? obj.model : "y26s",
-              obj.feed,
-              obj.inputSize,
-              obj.nameKey
-            ]),
-            overlap: withDot(obj.overlap ?? 20)
-          }))
-        }));
+      if (parsed.types.length) {
+        store.cameraTypes = parsed.types;
+        store.cameraTypes.forEach(
+          (type) => type.objects.forEach((obj) => {
+            if (!modelById(obj.model)) obj.model = "y26s";
+          })
+        );
         store.activeTypeId = store.cameraTypes.some(
           (type) => type.id === saved.activeTypeId
         ) ? saved.activeTypeId : store.cameraTypes[0].id;
       }
-      if (saved.system)
+      if (parsed.system)
         SYSTEM_IDS.forEach((id) => {
           const field = byId(id);
-          if (saved.system[id] != null) field.value = withDot(saved.system[id]);
+          field.value = parsed.system[id];
           if (field.tagName === "SELECT" && field.selectedIndex < 0)
             field.value = "auto";
         });
@@ -3606,12 +3869,9 @@ ${result.type.name} × ${result.count}`,
       saved = JSON.parse(text);
     } catch (error) {
     }
-    const isObject = (value) => value && typeof value === "object";
-    if (!isObject(saved) || !Array.isArray(saved.types) || !saved.types.length || !saved.types.every(
-      (type) => isObject(type) && typeof type.name === "string" && (type.objects == null || Array.isArray(type.objects) && type.objects.every(isObject))
-    ) || !["customGpus", "customCameras", "customDetectors"].every(
+    if (!isObject(saved) || !Array.isArray(saved.types) || !saved.types.length || !["customGpus", "customCameras", "customDetectors"].every(
       (key) => Array.isArray(saved[key])
-    ) || !isObject(saved.gpuPrices) || !isObject(saved.gpuEnabled)) {
+    ) || !isObject(saved.gpuPrices) || !isObject(saved.gpuEnabled) || parseSaved(saved).rejected) {
       toast(t("badFile"));
       return;
     }
