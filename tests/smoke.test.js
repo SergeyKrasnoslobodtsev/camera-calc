@@ -311,7 +311,53 @@ const sameKeys = (a, b, p) =>
       sameKeys(a[k], b[k], p + k + ".");
   });
 sameKeys(w.eval("RU"), w.eval("EN"), "");
+const extraKeys = (a, b, p) =>
+  Object.keys(a).flatMap((k) =>
+    !(k in b)
+      ? [p + k]
+      : a[k] && typeof a[k] === "object" && !Array.isArray(a[k])
+        ? extraKeys(a[k], b[k], p + k + ".")
+        : [],
+  );
+assert.deepStrictEqual(
+  extraKeys(w.eval("EN"), w.eval("RU"), ""),
+  [],
+  "ключи EN, которых нет в RU",
+);
 console.log("en keys: ok");
+// language: every key is used in the code or markup, every referenced key exists
+const srcDir = __dirname + "/../src/";
+const appCode = fs
+  .readdirSync(srcDir + "js")
+  .map((file) => fs.readFileSync(srcDir + "js/" + file, "utf8"))
+  .join("\n")
+  .replace(/^const (RU|EN) = \{\n[\s\S]*?^\};/gm, "")
+  .replace(/byId\(["'`][^"'`]*["'`]\)/g, "");
+const layoutSource = fs.readFileSync(srcDir + "layout.html", "utf8");
+const dictKeys = Object.keys(w.eval("RU")).filter((key) => key !== "tips");
+const markupKeys = [...layoutSource.matchAll(/data-t[atp]?="([^"]+)"/g)].map(
+  (match) => match[1],
+);
+// a key counts as used when the code has a string with its name: t(cond ? "a" : "b") passes keys as strings
+const codeStrings = [
+  ...appCode.matchAll(/["'`]([\w$]+)["'`]|STR\.([\w$]+)/g),
+].map((match) => match[1] || match[2]);
+assert.deepStrictEqual(
+  dictKeys.filter(
+    (key) => !markupKeys.includes(key) && !codeStrings.includes(key),
+  ),
+  [],
+  "неиспользуемые ключи словаря",
+);
+const calledKeys = [...appCode.matchAll(/\bt\("([\w$]+)"/g)].map(
+  (match) => match[1],
+);
+assert.deepStrictEqual(
+  [...markupKeys, ...calledKeys].filter((key) => !dictKeys.includes(key)),
+  [],
+  "ключи, которых нет в словаре",
+);
+console.log("used keys: ok");
 // language: no key is declared twice in a dictionary (the last one would silently win)
 const i18nSource = fs.readFileSync(__dirname + "/../src/js/00-i18n.js", "utf8");
 ["RU", "EN"].forEach((name) => {
