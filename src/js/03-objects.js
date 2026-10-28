@@ -110,7 +110,7 @@ function renderObjs() {
     sync();
   });
 }
-function syncFormUI(T, Rt) {
+function syncFormUI(T, result) {
   const v = T.v,
     cam = camById(v.cam);
   $("fBox").hidden = v.mode !== "f";
@@ -121,15 +121,15 @@ function syncFormUI(T, Rt) {
   $("sens").disabled = !!cam;
   $("ppBox").hidden = !!cam || sv !== "pp";
   $("sw").readOnly = !!cam || sv !== null;
-  if (Rt && isFinite(Rt.s) && (cam || sv !== null))
-    $("sw").value = +Rt.s.toFixed(2);
+  if (result && isFinite(result.s) && (cam || sv !== null))
+    $("sw").value = +result.s.toFixed(2);
   $("sumGeo").textContent =
     `${t(v.pos === "top" ? "sumTop" : "sumSide")}, ${U(fmt(P(v.H), 1), "m")}, ${fmt(P(v.Wz), 1)} × ${U(fmt(P(v.Dz), 1), "m")}`;
   $("sumCam").textContent =
     (cam
       ? `${cam.Nw} × ${cam.Nh}`
       : (RES[+v.res] || RES[1])[0].split(" · ")[0]) +
-    (Rt && !Rt.err ? `, f ${U(fmt(Rt.f, 1), "mm")}` : "");
+    (result && !result.err ? `, f ${U(fmt(result.f, 1), "mm")}` : "");
   $("sumStr").textContent =
     `${U(fmt(P(v.fps), 0), "fps")}, ${v.codec === "0.04" ? "H.265" : "H.264"}`;
 }

@@ -11,14 +11,18 @@ function computeSystem(Rs) {
     uMax = 1 / (1 + resv),
     BATCH = 16;
   const groups = live.flatMap((r) =>
-    r.groups.map((g) => ({ ...g, typeName: r.T.name })),
+    r.groups.map((g) => ({ ...g, typeName: r.type.name })),
   );
   const engines = [
-    ...new Map(groups.map((g) => [`${g.model}|${g.fi.inp}`, g])).values(),
+    ...new Map(
+      groups.map((g) => [`${g.model}|${g.feedInfo.inputSize}`, g]),
+    ).values(),
   ];
   const modMemGB = (g) => {
     const gf = gfOf(g.model);
-    return gf ? 0.15 + (BATCH * g.fi.inp ** 2 * 3 * 2 * (gf / 4)) / 1e9 : 0.5;
+    return gf
+      ? 0.15 + (BATCH * g.feedInfo.inputSize ** 2 * 3 * 2 * (gf / 4)) / 1e9
+      : 0.5;
   };
   const evalGPU = (g, n) => {
     const mods = groups.map((o) => {
@@ -26,11 +30,11 @@ function computeSystem(Rs) {
       const m = modelById(o.model);
       if (!m) return { ...o, bad: true };
       if (MODELS.includes(m)) {
-        const inScale = (640 / o.fi.inp) ** 2;
+        const inScale = (640 / o.feedInfo.inputSize) ** 2;
         base = ((1000 / m.ms) * inScale * g.tf) / T4TF;
       } else {
         const rg = gpuById(m.ref) || CATALOG[0],
-          inScale = (m.inp / o.fi.inp) ** 2;
+          inScale = (m.inp / o.feedInfo.inputSize) ** 2;
         base = (m.fps * inScale * g.tf) / rg.tf;
       }
       const cap = base * kr;
@@ -118,29 +122,38 @@ function computeSystem(Rs) {
 // ---------- отрисовка типа
 const stTxt = STR.st;
 const cap1 = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
-function renderType(Rt) {
+function renderType(result) {
   const vd = $("verdict");
-  $("resTitle").textContent = t("resTitleOf", Rt.T.name || t("untitled"));
-  if (Rt.err) {
+  $("resTitle").textContent = t(
+    "resTitleOf",
+    result.type.name || t("untitled"),
+  );
+  if (result.err) {
     vd.className = "verdict bad";
     vd.innerHTML = `<span class="pill">${t("pillErr")}</span><div>${t("errInput")}</div>`;
     ["kpis", "dens", "facts", "side"].forEach((id) => ($(id).innerHTML = ""));
     return;
   }
-  vd.className = "verdict " + Rt.cls;
-  vd.innerHTML = `<span class="pill">${Rt.pill}</span><div>${esc(Rt.head)}${Rt.notes.length ? "<ul>" + Rt.notes.map((n) => "<li>" + esc(n) + "</li>").join("") + "</ul>" : ""}</div>`;
-  const { hf, vf, f, rot, tilt, W, zOf, x1, x2 } = Rt;
+  vd.className = "verdict " + result.status;
+  vd.innerHTML = `<span class="pill">${result.pill}</span><div>${esc(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((n) => "<li>" + esc(n) + "</li>").join("") + "</ul>" : ""}</div>`;
+  const { hfov, vfov, f, rotated, tilt, frameWidthAt, depthAt, x1, x2 } =
+    result;
   $("kpis").innerHTML = [
     [
       t("kF"),
       U(fmt(f, 1), "mm"),
-      t(Rt.clamped ? "kFLimit" : Rt.m === "auto" ? "kFAuto" : "kFSet") +
-        (rot ? t("kRot") : ""),
+      t(
+        result.clamped
+          ? "kFLimit"
+          : result.mode === "auto"
+            ? "kFAuto"
+            : "kFSet",
+      ) + (rotated ? t("kRot") : ""),
     ],
     [
-      t(rot ? "kAngRot" : "kAng"),
-      fmt(hf / R, 0) + "° × " + fmt(vf / R, 0) + "°",
-      `DFOV ≈ ${fmt((2 * Math.atan(Math.hypot(Math.tan(hf / 2), Math.tan(vf / 2)))) / R, 0)}°`,
+      t(rotated ? "kAngRot" : "kAng"),
+      fmt(hfov / R, 0) + "° × " + fmt(vfov / R, 0) + "°",
+      `DFOV ≈ ${fmt((2 * Math.atan(Math.hypot(Math.tan(hfov / 2), Math.tan(vfov / 2)))) / R, 0)}°`,
     ],
     [
       t("kTilt"),
@@ -149,7 +162,12 @@ function renderType(Rt) {
     ],
     [
       t("kFrame"),
-      U(fmt(W(zOf(x1)), 1) + "–" + fmt(W(zOf(x2)), 1), "m"),
+      U(
+        fmt(frameWidthAt(depthAt(x1)), 1) +
+          "–" +
+          fmt(frameWidthAt(depthAt(x2)), 1),
+        "m",
+      ),
       t("kFrameSub"),
     ],
   ]
@@ -158,7 +176,7 @@ function renderType(Rt) {
         `<div class="kpi"><span>${l}</span><strong>${v}</strong><em>${e}</em></div>`,
     )
     .join("");
-  Rt.objs.forEach((o, i) => {
+  result.objs.forEach((o, i) => {
     const el = $(`ores-${i}`),
       dt = $(`odot-${i}`);
     if (!el) return;
@@ -168,35 +186,35 @@ function renderType(Rt) {
       if (dt) dt.className = "dot";
       return;
     }
-    el.className = "ores " + o.st;
-    if (dt) dt.className = "dot " + o.st;
-    el.innerHTML = `<b>${cap1(stTxt[o.st])}</b><span>${t("objSeen", `<span class="mono">${Rt.pxm(o)}</span>`, fmt(o.reqN, 0))}</span><span class="m2">${t("objSensor", Rt.pxs(o), esc(o.fi.txt))}</span>`;
+    el.className = "ores " + o.status;
+    if (dt) dt.className = "dot " + o.status;
+    el.innerHTML = `<b>${cap1(stTxt[o.status])}</b><span>${t("objSeen", `<span class="mono">${result.modelPxText(o)}</span>`, fmt(o.requiredPx, 0))}</span><span class="m2">${t("objSensor", result.sensorPxText(o), esc(o.feedInfo.text))}</span>`;
   });
-  const top = Rt.pos === "top";
+  const top = result.placement === "top";
   $("dens").innerHTML =
     `<tr><th>${t("densHead")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
-    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(fmt(Rt.P1.D, 1), "m")}</td><td>${fmt(Rt.P1.across, 0)}</td><td>${fmt(Rt.P1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(fmt(Rt.P2.D, 1), "m")}</td><td>${fmt(Rt.P2.across, 0)}</td><td>${fmt(Rt.P2.depth, 0)}</td></tr>`;
+    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(fmt(result.edge1.D, 1), "m")}</td><td>${fmt(result.edge1.across, 0)}</td><td>${fmt(result.edge1.depth, 0)}</td></tr>
+    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(fmt(result.edge2.D, 1), "m")}</td><td>${fmt(result.edge2.across, 0)}</td><td>${fmt(result.edge2.depth, 0)}</td></tr>`;
   const lv = [25, 62, 125, 250],
     names = STR.dori;
   let li = -1;
   lv.forEach((l, i) => {
-    if (Rt.minA >= l) li = i;
+    if (result.minAcross >= l) li = i;
   });
-  const X = Rt.X;
+  const shutter = result.shutterDenominator;
   $("facts").innerHTML =
-    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(fmt(Rt.minA, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(X) && X > 0 ? U("1/" + Math.ceil(X), "s") : "—"}</b></span><span>${t("camera")}: <b>${esc(Rt.rl)}</b></span>`;
+    `<span>DORI: <b>${li < 0 ? t("doriBelow") : names[li]}</b> (${U(fmt(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${esc(result.cameraLabel)}</b></span>`;
   drawSide({
-    H: Rt.H,
-    h: Rt.h,
-    x1: Rt.x1,
-    x2: Rt.x2,
-    tilt: Rt.tilt,
-    vf: Rt.vf,
-    Hc: Rt.Hc,
-    pos: Rt.pos,
-    wN: W(zOf(x1)),
-    wF: W(zOf(x2)),
+    H: result.H,
+    h: result.h,
+    x1: result.x1,
+    x2: result.x2,
+    tilt: result.tilt,
+    vf: result.vfov,
+    Hc: result.Hc,
+    pos: result.placement,
+    wN: frameWidthAt(depthAt(x1)),
+    wF: frameWidthAt(depthAt(x2)),
   });
 }
 
@@ -209,13 +227,13 @@ function renderTabs(Rs) {
     b.type = "button";
     b.className = "tab";
     b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(r.T.id === ACT));
+    b.setAttribute("aria-selected", String(r.type.id === ACT));
     b.setAttribute("aria-controls", "typeOut");
-    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.cls}" aria-hidden="true"></span><b>${esc(r.T.name || t("untitled"))}</b><small>× ${r.count}</small>`;
-    b.title = r.err ? t("tabErr") : t("tabObjs", stTxt[r.cls] || r.pill);
+    b.innerHTML = `<span class="dot ${r.err ? "bad" : r.status}" aria-hidden="true"></span><b>${esc(r.type.name || t("untitled"))}</b><small>× ${r.count}</small>`;
+    b.title = r.err ? t("tabErr") : t("tabObjs", stTxt[r.status] || r.pill);
     b.addEventListener("click", () => {
-      if (ACT === r.T.id) return;
-      ACT = r.T.id;
+      if (ACT === r.type.id) return;
+      ACT = r.type.id;
       writeForm(act());
       calcAll();
     });
@@ -262,18 +280,18 @@ function renderSystem(Rs, S) {
   const pc = (u) => fmt(u * 100, 0) + "%";
   const cams = Rs.reduce((s, r) => s + r.count, 0);
   const vAll = Rs.flatMap((r) => r.valid || []),
-    objOk = vAll.filter((o) => o.st === "ok").length;
-  const worstCls = Rs.some((r) => r.err || r.cls === "bad")
+    objOk = vAll.filter((o) => o.status === "ok").length;
+  const worstCls = Rs.some((r) => r.err || r.status === "bad")
     ? "bad"
-    : Rs.some((r) => r.cls === "warn")
+    : Rs.some((r) => r.status === "warn")
       ? "warn"
       : "ok";
   const smallest = vAll.length
-    ? vAll.reduce((a, b) => (a.mm < b.mm ? a : b))
+    ? vAll.reduce((a, b) => (a.modelPx < b.modelPx ? a : b))
     : null;
-  const mbTot = live.reduce((s, r) => s + r.mb * r.count, 0);
+  const mbTot = live.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
   const camCost = Rs.reduce((s, r) => {
-    const c = camById(r.T.v.cam);
+    const c = camById(r.type.v.cam);
     return s + (c && c.price > 0 ? c.price * r.count : 0);
   }, 0);
   const port =
@@ -288,7 +306,7 @@ function renderSystem(Rs, S) {
       `${cams}`,
       camCost
         ? t("sTypes", Rs.length) + t("sCamCost", "$" + fmt(camCost, 0))
-        : t("sTypes", Rs.length, Rs.map((r) => r.T.name).join(", ")),
+        : t("sTypes", Rs.length, Rs.map((r) => r.type.name).join(", ")),
     ],
     [
       t("sObjs"),
@@ -297,7 +315,11 @@ function renderSystem(Rs, S) {
         ? t(
             "sSmallest",
             smallest.name,
-            fmt(Math.min(smallest.bw, smallest.bh) * smallest.fi.msc, 1),
+            fmt(
+              Math.min(smallest.widthPx, smallest.heightPx) *
+                smallest.feedInfo.modelScale,
+              1,
+            ),
           )
         : t("sNoObjs"),
     ],
@@ -349,7 +371,7 @@ function renderSystem(Rs, S) {
     ? shown
         .map(
           (o, i) =>
-            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${esc(mName(o))} · ${FEED_SHORT[o.feed]} ${o.fi.inp}<span class="sub">${esc(o.typeName)}: ${esc(o.names.join(", "))} · ${U(fmt(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
+            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${esc(mName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${esc(o.typeName)}: ${esc(o.names.join(", "))} · ${U(fmt(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
         )
         .join("") +
       (rest.length
@@ -390,8 +412,8 @@ function renderSystem(Rs, S) {
     `<tr>${["nType", "nCams", "nRes", "nFps", "nPerCam", "nAll"].map((k) => `<th>${t(k)}</th>`).join("")}</tr>` +
     Rs.map((r) =>
       r.err
-        ? `<tr><td class="txt">${esc(r.T.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
-        : `<tr><td class="txt">${esc(r.T.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${fmt(r.fps, 0)}</td><td>${U(fmt(r.mb, 1), "mbps")}</td><td>${U(fmt(r.mb * r.count, 0), "mbps")}</td></tr>`,
+        ? `<tr><td class="txt">${esc(r.type.name)}</td><td>${r.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
+        : `<tr><td class="txt">${esc(r.type.name)}</td><td>${r.count}</td><td>${r.Nw} × ${r.Nh}</td><td>${fmt(r.fps, 0)}</td><td>${U(fmt(r.bitrateMbps, 1), "mbps")}</td><td>${U(fmt(r.bitrateMbps * r.count, 0), "mbps")}</td></tr>`,
     ).join("") +
     `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(fmt(mbTot, 0), "mbps")}</td></tr>` +
     `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", fmt(tb, 1), fmt(days, 0)) : t("nArchOff")}</td></tr>`;
@@ -688,34 +710,38 @@ function calcAll() {
     t("appTitle"),
     ...Rs.flatMap((r) =>
       r.err
-        ? ["\n" + t("rErr", r.T.name, r.count)]
+        ? ["\n" + t("rErr", r.type.name, r.count)]
         : [
-            `\n${r.T.name} × ${r.count}`,
+            `\n${r.type.name} × ${r.count}`,
             t("rCam", {
-              rl: r.rl,
-              rot: r.rot,
+              rl: r.cameraLabel,
+              rot: r.rotated,
               s: fmt(r.s, 2),
               f: fmt(r.f, 1),
-              hf: fmt(r.hf / R, 0),
+              hf: fmt(r.hfov / R, 0),
               tilt: fmt(r.tilt / R, 0),
-              top: r.pos === "top",
-              L0: fmt(r.L0, 2),
+              top: r.placement === "top",
+              L0: fmt(r.zoneStart, 2),
               H: fmt(r.H, 2),
-              Wz: fmt(r.Wz, 2),
-              Dz: fmt(r.Dz, 2),
+              Wz: fmt(r.zoneWidth, 2),
+              Dz: fmt(r.zoneDepth, 2),
             }),
             ...r.valid.map((o) =>
               t("rObj", {
                 name: o.name,
                 model: mName(o),
-                feed: o.fi.txt,
-                pxs: r.pxs(o),
-                pxm: r.pxm(o),
-                req: fmt(o.reqN, 0),
-                st: stTxt[o.st],
+                feed: o.feedInfo.text,
+                pxs: r.sensorPxText(o),
+                pxm: r.modelPxText(o),
+                req: fmt(o.requiredPx, 0),
+                st: stTxt[o.status],
               }),
             ),
-            t("rStream", fmt(r.mb, 1), Math.ceil(r.X)),
+            t(
+              "rStream",
+              fmt(r.bitrateMbps, 1),
+              Math.ceil(r.shutterDenominator),
+            ),
           ],
     ),
     "\n" +
