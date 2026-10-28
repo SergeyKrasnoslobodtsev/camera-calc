@@ -429,7 +429,7 @@ function renderGpuView() {
   const row = (
     g,
   ) => `<tr><td class="txt"><b style="font-weight:600">${esc(g.name)}</b><span class="sub">${g.jet ? t("gJet") : esc(g.arch)}${g.custom ? " · " + t("gOwn") : ""}</span></td><td>${fmt(g.tf, 1)}</td><td>${decText(g)}</td><td>${U(fmt(g.mem, 0), "gb")}</td><td>${g.tdp ? U(fmt(g.tdp, 0), "w") : "—"}</td>
-    <td><input id="pr-${g.id}" value="${esc(PRICE[g.id] ?? g.price)}" inputmode="numeric" aria-label="${esc(t("gPriceAria", g.name))}"></td>
+    <td><input id="pr-${g.id}" value="${esc(PRICE[g.id] ?? g.price)}" type="number" step="1" inputmode="numeric" aria-label="${esc(t("gPriceAria", g.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gon-${g.id}" ${isOn(g) ? "checked" : ""} aria-label="${esc(t("gOnAria", g.name))}"></td>
     ${g.custom ? `<td><button type="button" class="sm" data-delg="${g.id}" aria-label="${esc(t("delAria", g.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
   const gh = STR.gHead,
@@ -778,6 +778,10 @@ function load() {
   try {
     const st = JSON.parse(localStorage.getItem("camcalc3") || "null");
     if (!st) return;
+    // старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
+    const dot = (x) => (typeof x === "string" ? x.replace(",", ".") : x);
+    const dotAll = (obj) =>
+      Object.fromEntries(Object.entries(obj).map(([k, x]) => [k, dot(x)]));
     if (Array.isArray(st.custom))
       CUSTOM = st.custom
         .filter((g) => g && g.id && g.name && g.tf > 0)
@@ -790,7 +794,7 @@ function load() {
       DETS = st.dets
         .filter((d) => d && d.id && d.fps > 0)
         .map((d) => ({ ...d, custom: true }));
-    if (st.price && typeof st.price === "object") PRICE = st.price;
+    if (st.price && typeof st.price === "object") PRICE = dotAll(st.price);
     if (st.on && typeof st.on === "object") ON = st.on;
     if (st.light) setTheme(true);
     buildGpuSelect();
@@ -799,20 +803,20 @@ function load() {
       TYPES = st.types.map((t) => ({
         id: t.id || uid(),
         name: t.name,
-        count: t.count,
-        v: { ...DEF_V, ...t.v },
+        count: dot(t.count),
+        v: dotAll({ ...DEF_V, ...t.v }),
         objs: (t.objs || []).map((o) => ({
           ...mkObj([
             o.name,
-            o.w,
-            o.d,
-            o.z,
-            o.req,
+            dot(o.w),
+            dot(o.d),
+            dot(o.z),
+            dot(o.req),
             modelById(o.model) ? o.model : "y26s",
             o.feed,
             o.inp,
           ]),
-          ov: o.ov ?? 20,
+          ov: dot(o.ov ?? 20),
         })),
       }));
       ACT = TYPES.some((t) => t.id === st.act) ? st.act : TYPES[0].id;
@@ -820,7 +824,7 @@ function load() {
     if (st.gl)
       GL_IDS.forEach((id) => {
         const el = $(id);
-        if (st.gl[id] != null) el.value = st.gl[id];
+        if (st.gl[id] != null) el.value = dot(st.gl[id]);
         if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = "auto";
       });
   } catch (e) {}

@@ -359,3 +359,59 @@ assert.strictEqual(
 );
 assert.strictEqual(w8.document.getElementById("tplBtn").textContent, "Шаблоны");
 console.log("lang persists: ok");
+// numbers: EN price "1,999" is not read as 1.999
+const w9 = page(null, "en"),
+  d9 = w9.document;
+w9.location.hash = "#tpl-gpus";
+w9.dispatchEvent(new w9.HashChangeEvent("hashchange"));
+d9.getElementById("pr-l40s").value = "1,999";
+d9.getElementById("pr-l40s").dispatchEvent(
+  new w9.Event("input", { bubbles: true }),
+);
+assert.notStrictEqual(
+  w9.eval('priceOf(gpuById("l40s"))'),
+  1.999,
+  "EN: «1,999» прочитано как 1.999",
+);
+const textNumbers = [...d9.querySelectorAll("input[inputmode]")].filter(
+  (el) => el.type !== "number",
+);
+assert.deepStrictEqual(
+  textNumbers.map((el) => el.id),
+  [],
+  "числовые поля не type=number",
+);
+console.log("number fields: ok");
+// numbers: saved values with a decimal comma load as neutral 1.5
+const withNumbers = (H, w, kr) => {
+  const st = JSON.parse(exp);
+  st.types[0].v.H = H;
+  st.types[0].objs[0].w = w;
+  st.gl.kr = kr;
+  return JSON.stringify(st);
+};
+["ru", "en"].forEach((lang) => {
+  const comma = page(withNumbers("4,5", "50,5", "0,5"), lang),
+    dot = page(withNumbers("4.5", "50.5", "0.5"), lang);
+  assert.strictEqual(comma.document.getElementById("H").value, "4.5", lang);
+  assert.strictEqual(comma.document.getElementById("kr").value, "0.5", lang);
+  assert.strictEqual(
+    comma.eval("report"),
+    dot.eval("report"),
+    "сохранение с запятой: другой отчёт, " + lang,
+  );
+});
+console.log("legacy comma: ok");
+// numbers: integer fields reject fractions
+const tCount = d9.getElementById("tCount");
+tCount.value = "1.5";
+assert.strictEqual(
+  tCount.checkValidity(),
+  false,
+  "количество камер 1.5 прошло",
+);
+const fractional = [...d9.querySelectorAll('input[inputmode="numeric"]')]
+  .filter((el) => el.step !== "1")
+  .map((el) => el.id);
+assert.deepStrictEqual(fractional, [], "целые поля принимают дробь");
+console.log("integer fields: ok");
