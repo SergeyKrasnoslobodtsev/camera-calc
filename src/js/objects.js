@@ -1,39 +1,25 @@
-import { STR, formatNumber, t, withUnit } from "../i18n/index.ts";
-import { store } from "./store.js";
+import { formatNumber, t, withUnit } from "../i18n/index.ts";
+import { parseNum } from "../domain/parse-num.ts";
+import { BUILTIN_CAMERAS } from "../domain/references/builtin-cameras.ts";
+import { MODELS } from "../domain/references/models.ts";
 import {
-  FEEDS,
-  INPUTS,
-  MODELS,
+  DEFAULT_RESOLUTION,
   RESOLUTIONS,
-  SENSORS,
-  byId,
-  escapeHtml,
-  parseNum,
-} from "./data.js";
-import { activeType } from "./state.js";
+} from "../domain/references/resolutions.ts";
+import { DEFAULT_SENSOR, SENSORS } from "../domain/references/sensors.ts";
+import { store } from "./store.js";
+import { FEEDS, INPUTS, byId, escapeHtml } from "./data.js";
+import { activeType, builtinName } from "./state.js";
 import { calcAll } from "./system-ui.js";
 // ---------- шаблоны камер и детекторов
-const BUILTIN_CAMERAS = [
-  {
-    id: "k4",
-    name: STR.builtinCameraNames.k4,
-    Nw: 2560,
-    Nh: 1440,
-    sensorWidth: 5.4,
-    focalMin: 2.8,
-    focalMax: 12,
-  },
-  {
-    id: "k8",
-    name: STR.builtinCameraNames.k8,
-    Nw: 3840,
-    Nh: 2160,
-    sensorWidth: 7.68,
-    focalMin: 2.8,
-    focalMax: 12,
-  },
+// встроенные камеры — с названием на текущем языке
+export const allCameras = () => [
+  ...BUILTIN_CAMERAS.map((camera) => ({
+    ...camera,
+    name: builtinName(camera.nameKey),
+  })),
+  ...store.customCameras,
 ];
-export const allCameras = () => [...BUILTIN_CAMERAS, ...store.customCameras];
 export const cameraById = (id) =>
   allCameras().find((camera) => camera.id === id);
 export const modelById = (id) =>
@@ -134,24 +120,25 @@ export function syncFormUI(type, result) {
   byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
   byId("hfovBox").hidden = inputs.lensMode !== "angle";
   byId("zoneStartBox").hidden = inputs.placement === "top";
-  const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
+  const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR,
+    sensorWidth = result?.frame.sensorWidth;
   byId("resolution").disabled = !!camera;
   byId("sensor").disabled = !!camera;
-  byId("pixelPitchBox").hidden = !!camera || sensorPreset !== "pp";
-  byId("sensorWidth").readOnly = !!camera || sensorPreset !== null;
-  if (result && isFinite(result.s) && (camera || sensorPreset !== null))
-    byId("sensorWidth").value = +result.s.toFixed(2);
+  byId("pixelPitchBox").hidden = !!camera || sensor.kind !== "pixelPitch";
+  byId("sensorWidth").readOnly = !!camera || sensor.kind !== "custom";
+  // ширину матрицы из камеры или по формату показываем в поле, своя остаётся как введена
+  if (isFinite(sensorWidth) && (camera || sensor.kind !== "custom"))
+    byId("sensorWidth").value = +sensorWidth.toFixed(2);
   byId("summaryGeometry").textContent =
     `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("summaryCamera").textContent =
     (camera
       ? `${camera.Nw} × ${camera.Nh}`
-      : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
-          " · ",
-        )[0]) +
-    (result && !result.err
-      ? `, f ${withUnit(formatNumber(result.f, 1), "mm")}`
-      : "");
+      : t(
+          "megapixels",
+          (RESOLUTIONS[+inputs.resolution] ?? DEFAULT_RESOLUTION).megapixels,
+        )) +
+    (result?.ok ? `, f ${withUnit(formatNumber(result.lens.f, 1), "mm")}` : "");
   byId("summaryStream").textContent =
     `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }

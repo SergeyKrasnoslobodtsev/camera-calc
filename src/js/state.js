@@ -1,6 +1,9 @@
 import { STR, formatNumber, t } from "../i18n/index.ts";
+import { resolutionLabel } from "../i18n/domain-text.ts";
+import { RESOLUTIONS } from "../domain/references/resolutions.ts";
+import { SENSORS } from "../domain/references/sensors.ts";
 import { store } from "./store.js";
-import { RESOLUTIONS, SENSORS, byId, uid } from "./data.js";
+import { byId, uid } from "./data.js";
 import { renderObjects } from "./objects.js";
 // ---------- состояние
 export const OBJECT_PRESETS = [
@@ -39,8 +42,6 @@ export const makeObject = ([
   feed,
   inputSize,
   overlap: 20,
-  fps: 300,
-  ref: "5090",
 });
 const INPUT_IDS = [
   "camera",
@@ -129,15 +130,15 @@ export const activeType = () =>
   store.cameraTypes[0];
 
 // ---------- форма ↔ тип
-RESOLUTIONS.forEach(([label], i) =>
-  byId("resolution").add(new Option(label, i)),
+RESOLUTIONS.forEach((resolution, i) =>
+  byId("resolution").add(new Option(resolutionLabel(resolution), i)),
 );
-SENSORS.forEach(([label, width], i) =>
+SENSORS.forEach((sensor, i) =>
   byId("sensor").add(
     new Option(
-      typeof width === "number"
-        ? t("sensorFormat", label, formatNumber(width, 1))
-        : width === "pp"
+      sensor.kind === "format"
+        ? t("sensorFormat", sensor.format, formatNumber(sensor.widthMm, 1))
+        : sensor.kind === "pixelPitch"
           ? t("sensorByPixelPitch")
           : t("sensorCustom"),
       i,

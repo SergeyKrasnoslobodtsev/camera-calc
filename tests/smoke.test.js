@@ -341,10 +341,11 @@ assert.deepStrictEqual(extraKeys(EN, RU, ""), [], "ключи EN, которых
 console.log("en keys: ok");
 // language: every key is used in the code or markup, every referenced key exists
 const srcDir = import.meta.dirname + "/../src/";
-const appCode = ["js", "i18n"]
+const appCode = ["js", "i18n", "domain"]
   .flatMap((dir) =>
     fs
-      .readdirSync(srcDir + dir)
+      .readdirSync(srcDir + dir, { recursive: true, encoding: "utf8" })
+      .filter((file) => /\.[jt]s$/.test(file))
       .map((file) => fs.readFileSync(srcDir + dir + "/" + file, "utf8")),
   )
   .join("\n")
@@ -355,9 +356,10 @@ const dictKeys = Object.keys(RU).filter((key) => key !== "tips");
 const markupKeys = [...layoutSource.matchAll(/data-t[atp]?="([^"]+)"/g)].map(
   (match) => match[1],
 );
-// a key counts as used when the code has a string with its name: t(cond ? "a" : "b") passes keys as strings
+// a key counts as used when the code has a string with its name: t(cond ? "a" : "b") passes keys as strings;
+// a nameKey like "builtinCameraNames.k4" uses its first part
 const codeStrings = [
-  ...appCode.matchAll(/["'`]([\w$]+)["'`]|STR\.([\w$]+)/g),
+  ...appCode.matchAll(/["'`]([\w$]+)[."'`]|STR\.([\w$]+)/g),
 ].map((match) => match[1] || match[2]);
 assert.deepStrictEqual(
   dictKeys.filter(

@@ -908,7 +908,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     reportError: (name, count) => `${name} × ${count}: ошибка в исходных данных`,
     reportCamera: (params) => `  Камера: ${params.cameraLabel}${params.rotated ? " (повёрнута на 90°)" : ""}, матрица ${params.sensorWidth} мм, f ${params.focal} мм, HFOV ${params.hfov}°, наклон ${params.tilt}°, ${params.overCenter ? "над центром зоны" : `вынос ${params.zoneStart} м`}, высота ${params.cameraHeight} м, зона ${params.zoneWidth} × ${params.zoneDepth} м`,
     reportObject: (params) => `  ${params.name}: ${params.model}, ${params.feed}; на матрице ${params.sensorPx}, на входе модели ${params.modelPx}, порог ${params.requiredPx}: ${params.status}`,
-    reportStream: (mbps, shutterDenominator) => `  Поток ${mbps} Мбит/с на камеру, выдержка не длиннее 1/${shutterDenominator} с`,
+    reportStream: (mbps, shutterDenominator2) => `  Поток ${mbps} Мбит/с на камеру, выдержка не длиннее 1/${shutterDenominator2} с`,
     reportSystem: (cameraCount, mbps, cost) => `Система: камер ${cameraCount}, ${mbps} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
     reportCompute: (params) => `Вычислитель (оценка): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; инференс ${params.inferenceLoad}%, декодер ${params.decodeLoad}%, видеопамять ${params.memoryUsed}/${params.memoryCap} ГБ${params.optimum ? `; оптимум по цене: ${params.optimum}` : ""}`,
     reportNoCompute: "Вычислитель: нет данных",
@@ -1344,7 +1344,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     reportError: (name, count) => `${name} × ${count}: input data error`,
     reportCamera: (params) => `  Camera: ${params.cameraLabel}${params.rotated ? " (rotated 90°)" : ""}, sensor ${params.sensorWidth} mm, f ${params.focal} mm, HFOV ${params.hfov}°, tilt ${params.tilt}°, ${params.overCenter ? "overhead" : `zone offset ${params.zoneStart} m`}, height ${params.cameraHeight} m, zone ${params.zoneWidth} × ${params.zoneDepth} m`,
     reportObject: (params) => `  ${params.name}: ${params.model}, ${params.feed}; on sensor ${params.sensorPx}, at model input ${params.modelPx}, threshold ${params.requiredPx}: ${params.status}`,
-    reportStream: (mbps, shutterDenominator) => `  Stream ${mbps} Mbps per camera, exposure time up to 1/${shutterDenominator} s`,
+    reportStream: (mbps, shutterDenominator2) => `  Stream ${mbps} Mbps per camera, exposure time up to 1/${shutterDenominator2} s`,
     reportSystem: (cameraCount, mbps, cost) => `System: ${cameraCount} cameras, ${mbps} Mbps${cost ? `, camera cost ${cost}` : ""}`,
     reportCompute: (params) => `Compute node (estimate): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; inference ${params.inferenceLoad}%, decoder ${params.decodeLoad}%, GPU memory ${params.memoryUsed}/${params.memoryCap} GB${params.optimum ? `; best price: ${params.optimum}` : ""}`,
     reportNoCompute: "Compute node: no data",
@@ -1433,54 +1433,650 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     maximumFractionDigits: digits
   }).replace("-", "−") : "—";
 
-  // src/js/store.js
-  var store = {
-    cameraTypes: [],
-    // типы камер, заполняет state.js
-    activeTypeId: null,
-    customGpus: [],
-    // свои карты: {id,name,arch,tflops,nvdec|decodeStreams,memoryGB,tdpW,price,jetson,custom:true}
-    gpuPrices: {},
-    // правки цен по id
-    gpuEnabled: {},
-    // участие в подборе по id
-    customCameras: [],
-    customDetectors: []
-  };
+  // src/i18n/domain-text.ts
+  var resolutionLabel = ({ megapixels, width, height }) => `${t("megapixels", megapixels)} · ${width} × ${height}`;
+  var objectName = ({ object }) => object.name || t("objDefault");
+  var sizePx = (width, height) => `${formatNumber(width, 1)} × ${formatNumber(height, 1)} px`;
+  var sensorPxText = ({ widthPx, heightPx }) => sizePx(widthPx, heightPx);
+  var modelPxText = ({ widthPx, heightPx, feed }) => sizePx(widthPx * feed.modelScale, heightPx * feed.modelScale);
+  function feedText({
+    mode,
+    inputSize,
+    source,
+    tiles,
+    tilesX,
+    tilesY
+  }) {
+    if (mode === "tiles") return t("feedTiles", tiles, tilesX, tilesY, inputSize);
+    return t(
+      mode === "roi" ? "feedRoi" : "feedFull",
+      Math.round(source.width),
+      Math.round(source.height),
+      inputSize
+    );
+  }
+  function noteText(note) {
+    switch (note.code) {
+      case "zoneWidth":
+        return t(
+          "noteZoneWidth",
+          formatNumber(note.values.frameWidth, 2),
+          formatNumber(note.values.zoneWidth, 2)
+        );
+      case "zoneDepth":
+        return t(
+          "noteZoneDepth",
+          formatNumber(note.values.requiredAngle, 1),
+          formatNumber(note.values.availableAngle, 1)
+        );
+      case "focalMax":
+      case "focalMin":
+        return t(
+          note.code === "focalMax" ? "noteFocalMax" : "noteFocalMin",
+          formatNumber(note.values.requiredFocal, 1),
+          formatNumber(note.values.focal, 1)
+        );
+      case "focalOutOfRange": {
+        const { focal, focalMin, focalMax } = note.values;
+        return t(
+          "noteFocalOutOfRange",
+          formatNumber(focal, 1),
+          focalMin === focalMax ? formatNumber(focalMin, 1) : formatNumber(focalMin, 1) + "–" + formatNumber(focalMax, 1)
+        );
+      }
+      case "wideAngle":
+        return t("noteWideAngle", formatNumber(note.values.hfov, 0));
+      case "topView":
+        return t("noteTopView");
+      case "lowRay":
+        return t("noteLowRay", formatNumber(note.values.angle, 0));
+      case "analyticsFps":
+        return t(
+          "noteAnalyticsFps",
+          formatNumber(note.values.analyticsFps, 0),
+          formatNumber(note.values.streamFps, 0)
+        );
+      case "downscale": {
+        const { object, neededInputSize } = note.values;
+        return t(
+          "noteDownscale",
+          object.object.name,
+          sensorPxText(object),
+          object.feed.inputSize,
+          t(
+            object.feed.mode === "full" ? "adviceFull" : object.feed.mode === "roi" ? "adviceRoi" : "adviceTiles"
+          ),
+          formatNumber(neededInputSize, 0)
+        );
+      }
+      case "resolution":
+        return t(
+          "noteResolution",
+          note.values.object.object.name,
+          formatNumber(note.values.object.minSensorWidthPx, 0),
+          resolutionLabel(note.values.resolution)
+        );
+      case "resolutionNone":
+        return t(
+          "noteResolutionNone",
+          note.values.object.object.name,
+          formatNumber(note.values.object.minSensorWidthPx, 0)
+        );
+    }
+  }
+  var verdictItems = (objects) => objects.map(
+    (result) => t(
+      "verdictItem",
+      objectName(result),
+      modelPxText(result),
+      formatNumber(result.requiredPx, 0)
+    )
+  ).join("; ");
+  function verdictHeadline(verdict) {
+    switch (verdict.code) {
+      case "noObjects":
+        return t("verdictNoObjects");
+      case "bad":
+        return t("verdictBad", verdictItems(verdict.objects));
+      case "warn":
+        return t("verdictWarn", verdictItems(verdict.objects));
+      case "ok":
+        return t(
+          "verdictOk",
+          verdict.object.object.name,
+          modelPxText(verdict.object)
+        );
+    }
+  }
+  function verdictPill(verdict, notes) {
+    switch (verdict.code) {
+      case "noObjects":
+        return t("pillNoObjects");
+      case "bad":
+        return t("pillBad");
+      case "warn":
+        return t("pillWarn");
+      case "ok":
+        return t(notes.length ? "pillCheck" : "pillOk");
+    }
+  }
 
-  // src/js/data.js
-  var byId = (id) => document.getElementById(id);
+  // src/domain/angles.ts
   var DEG = Math.PI / 180;
-  var escapeHtml = (text) => String(text ?? "").replace(
-    /[&<>"]/g,
-    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]
-  );
+
+  // src/domain/parse-num.ts
   var parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
-  var uid = () => Math.random().toString(36).slice(2, 9);
+
+  // src/domain/references/resolutions.ts
   var RESOLUTIONS = [
-    [2, 1920, 1080],
-    [4, 2560, 1440],
-    [5, 2592, 1944],
-    [5, 2880, 1620],
-    [6, 3072, 2048],
-    [8, 3840, 2160],
-    [12, 4e3, 3e3]
-  ].map(([mp, width, height]) => [
-    `${t("megapixels", mp)} · ${width} × ${height}`,
-    width,
-    height
-  ]);
-  var SENSORS = [
-    ['1/3"', 4.8],
-    ['1/2.9"', 5],
-    ['1/2.8"', 5.6],
-    ['1/2.7"', 5.4],
-    ['1/2.5"', 5.8],
-    ['1/1.8" 16:9', 7.7],
-    ['1/1.2" 16:9', 11.2],
-    ["pp", "pp"],
-    ["own", null]
+    { megapixels: 2, width: 1920, height: 1080 },
+    { megapixels: 4, width: 2560, height: 1440 },
+    { megapixels: 5, width: 2592, height: 1944 },
+    { megapixels: 5, width: 2880, height: 1620 },
+    { megapixels: 6, width: 3072, height: 2048 },
+    { megapixels: 8, width: 3840, height: 2160 },
+    { megapixels: 12, width: 4e3, height: 3e3 }
   ];
+  var DEFAULT_RESOLUTION = RESOLUTIONS[1];
+
+  // src/domain/references/sensors.ts
+  var SENSORS = [
+    { kind: "format", format: '1/3"', widthMm: 4.8 },
+    { kind: "format", format: '1/2.9"', widthMm: 5 },
+    { kind: "format", format: '1/2.8"', widthMm: 5.6 },
+    { kind: "format", format: '1/2.7"', widthMm: 5.4 },
+    { kind: "format", format: '1/2.5"', widthMm: 5.8 },
+    { kind: "format", format: '1/1.8" 16:9', widthMm: 7.7 },
+    { kind: "format", format: '1/1.2" 16:9', widthMm: 11.2 },
+    { kind: "pixelPitch" },
+    { kind: "custom" }
+  ];
+  var DEFAULT_SENSOR = SENSORS[3];
+
+  // src/domain/compute-type/frame.ts
+  function resolveFrame(inputs, camera) {
+    if (camera)
+      return {
+        width: camera.Nw,
+        height: camera.Nh,
+        sensorWidth: camera.sensorWidth
+      };
+    const { width, height } = RESOLUTIONS[+inputs.resolution] ?? DEFAULT_RESOLUTION;
+    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR;
+    const sensorWidth = sensor.kind === "format" ? sensor.widthMm : sensor.kind === "pixelPitch" ? parseNum(inputs.pixelPitch) * width / 1e3 : parseNum(inputs.sensorWidth);
+    return { width, height, sensorWidth };
+  }
+
+  // src/domain/compute-type/lens.ts
+  var PORTRAIT_MIN_GAIN = 1.02;
+  var CLAMP_TOLERANCE_MM = 1e-6;
+  function fitLens(frame, zone, request, orientation) {
+    if (orientation === "landscape")
+      return fitOrientation(frame, zone, request, false);
+    if (orientation === "portrait")
+      return fitOrientation(frame, zone, request, true);
+    const landscape = fitOrientation(frame, zone, request, false), portrait = fitOrientation(frame, zone, request, true);
+    if (request.mode === "auto")
+      return portrait.fpx > landscape.fpx * PORTRAIT_MIN_GAIN ? portrait : landscape;
+    return landscape.fits || !portrait.fits ? landscape : portrait;
+  }
+  function fitOrientation(frame, zone, request, rotated) {
+    const { width: Nw, height: Nh, sensorWidth: s } = frame;
+    const frameWidthPx = rotated ? Nh : Nw, frameHeightPx = rotated ? Nw : Nh, sensorWidth = rotated ? s * Nh / Nw : s, aspect = frameWidthPx / frameHeightPx;
+    let hfov, f, fNeeded = null;
+    if (request.mode === "auto") {
+      const hfovNeeded = 2 * Math.atan(
+        request.zoneWidth * (1 + request.margin) / 2 / zone.minDepth
+      ), vfovNeeded = zone.zoneAngle * (1 + request.margin);
+      hfov = Math.max(
+        hfovNeeded,
+        2 * Math.atan(aspect * Math.tan(vfovNeeded / 2))
+      );
+      f = sensorWidth / (2 * Math.tan(hfov / 2));
+      fNeeded = f;
+      const range = request.focalRange;
+      if (range) {
+        const fClamped = Math.min(range.max, Math.max(range.min, f));
+        if (Math.abs(fClamped - f) > CLAMP_TOLERANCE_MM) {
+          f = fClamped;
+          hfov = 2 * Math.atan(sensorWidth / (2 * f));
+        }
+      }
+    } else if (request.mode === "focal") {
+      f = request.focalLength;
+      hfov = 2 * Math.atan(sensorWidth / (2 * f));
+    } else {
+      hfov = request.hfov;
+      f = sensorWidth / (2 * Math.tan(hfov / 2));
+    }
+    const vfov = 2 * Math.atan(Math.tan(hfov / 2) / aspect), fpx = frameWidthPx / (2 * Math.tan(hfov / 2));
+    return {
+      rotated,
+      frameWidthPx,
+      frameHeightPx,
+      hfov,
+      f,
+      fNeeded,
+      vfov,
+      fpx,
+      fits: 2 * zone.minDepth * Math.tan(hfov / 2) >= request.zoneWidth && vfov >= zone.zoneAngle
+    };
+  }
+  var frameWidthAt = (hfov, z) => 2 * z * Math.tan(hfov / 2);
+
+  // src/domain/compute-type/projection.ts
+  var ZONE_STEPS = 40;
+  var MAX_TOP_SHARE = 0.98;
+  var MIN_DEPTH_M = 1e-6;
+  function densityAt({ Hc, tilt, fpx }, x) {
+    const phi = Math.atan2(Hc, x), D = Math.hypot(Hc, x), delta = phi - tilt, z = D * Math.cos(delta);
+    return {
+      x,
+      D,
+      z,
+      phi,
+      across: fpx / z,
+      depth: fpx * Math.sin(phi) / (D * Math.cos(delta) ** 2)
+    };
+  }
+  function densityProfile(view, { x1, x2 }) {
+    const samples = [];
+    for (let i = 0; i <= ZONE_STEPS; i++)
+      samples.push(densityAt(view, x1 + (x2 - x1) * i / ZONE_STEPS));
+    return {
+      near: densityAt(view, x1),
+      far: densityAt(view, x2),
+      minAcross: Math.min(...samples.map((sample) => sample.across)),
+      minDepth: Math.min(...samples.map((sample) => sample.depth)),
+      max: Math.max(
+        ...samples.map((sample) => Math.max(sample.across, sample.depth))
+      )
+    };
+  }
+  function projectPoint({ Hc, tilt, fpx }, x, y, height) {
+    const cosTilt = Math.cos(tilt), sinTilt = Math.sin(tilt);
+    const dh = height - Hc, z = x * cosTilt - dh * sinTilt;
+    if (z <= MIN_DEPTH_M) return null;
+    return [fpx * y / z, fpx * (x * sinTilt + dh * cosTilt) / z];
+  }
+  function boundingBox(points) {
+    let uMin = 1e9, uMax = -1e9, vMin = 1e9, vMax = -1e9;
+    for (const point of points) {
+      uMin = Math.min(uMin, point[0]);
+      uMax = Math.max(uMax, point[0]);
+      vMin = Math.min(vMin, point[1]);
+      vMax = Math.max(vMax, point[1]);
+    }
+    return { width: uMax - uMin, height: vMax - vMin };
+  }
+  function boxSizePx(view, k, x0, width, length, height) {
+    const topHeight = Math.min(height, view.Hc * MAX_TOP_SHARE);
+    const corners = [];
+    for (const x of [x0, x0 + length])
+      for (const y of [-width / 2, width / 2])
+        for (const pointHeight of [0, topHeight]) {
+          const point = projectPoint(view, x, y, pointHeight);
+          if (!point) return null;
+          corners.push(point);
+        }
+    const box = boundingBox(corners);
+    return { widthPx: box.width * k, heightPx: box.height * k };
+  }
+  function zoneRoiPx(view, { x1, x2 }, zoneWidth, frame) {
+    const corners = [];
+    for (const x of [x1, x2])
+      for (const y of [-zoneWidth / 2, zoneWidth / 2]) {
+        const point = projectPoint(view, x, y, 0);
+        if (point) corners.push(point);
+      }
+    const box = boundingBox(corners);
+    return {
+      width: Math.min(frame.width, box.width),
+      height: Math.min(frame.height, box.height)
+    };
+  }
+
+  // src/domain/compute-type/run-groups.ts
+  function runGroups(objects, count, analyticsFps) {
+    const groups = /* @__PURE__ */ new Map();
+    objects.forEach((result) => {
+      const { object, feed } = result;
+      const key = [
+        object.model,
+        object.feed,
+        feed.inputSize,
+        object.feed === "tiles" ? object.overlap : ""
+      ].join("|");
+      const group = groups.get(key);
+      if (group) group.objects.push(result);
+      else
+        groups.set(key, {
+          model: object.model,
+          feed,
+          objects: [result],
+          load: count * analyticsFps * feed.tiles
+        });
+    });
+    return [...groups.values()];
+  }
+
+  // src/domain/compute-type/feed.ts
+  var MAX_OVERLAP = 0.9;
+  function describeFeed(mode, inputSize, overlapPercent, frame, roi) {
+    const source = mode === "full" ? frame : roi;
+    if (mode === "full" || mode === "roi")
+      return {
+        mode,
+        inputSize,
+        source,
+        modelScale: Math.min(
+          1,
+          inputSize / Math.max(source.width, source.height)
+        ),
+        tiles: 1,
+        tilesX: 1,
+        tilesY: 1
+      };
+    const overlap = Math.min(
+      MAX_OVERLAP,
+      Math.max(0, (overlapPercent || 0) / 100)
+    ), step = inputSize * (1 - overlap);
+    const tilesAlong = (length) => length > inputSize ? Math.ceil((length - inputSize) / step) + 1 : 1;
+    const tilesX = tilesAlong(roi.width), tilesY = tilesAlong(roi.height);
+    return {
+      mode,
+      inputSize,
+      source,
+      modelScale: 1,
+      tiles: tilesX * tilesY,
+      tilesX,
+      tilesY
+    };
+  }
+
+  // src/domain/compute-type/scene-object.ts
+  var DEFAULT_INPUT_SIZE = 640;
+  var WARN_SHARE = 0.75;
+  function evaluateObject(object, context) {
+    const { view, k, zone } = context;
+    const width = parseNum(object.width) / 100, length = parseNum(object.length) / 100, height = parseNum(object.height) / 100, requiredPx = parseNum(object.requiredPx);
+    const feed = describeFeed(
+      object.feed,
+      parseNum(object.inputSize) || DEFAULT_INPUT_SIZE,
+      parseNum(object.overlap),
+      context.frame,
+      context.roi
+    );
+    if (![width, length, height].every((size) => isFinite(size) && size >= 0) || Math.max(width, length, height) <= 0 || !(requiredPx > 0))
+      return { valid: false, object, feed };
+    const travel = Math.max(0, zone.x2 - zone.x1 - length);
+    let worst = null;
+    for (let i = 0; i <= ZONE_STEPS; i++) {
+      const x0 = zone.x1 + travel * i / ZONE_STEPS, box = boxSizePx(view, k, x0, width, length, height);
+      if (!box) continue;
+      const minSidePx = Math.min(box.widthPx, box.heightPx);
+      if (!worst || minSidePx < worst.minSidePx)
+        worst = { ...box, minSidePx, x0 };
+    }
+    if (!worst) return { valid: false, object, feed };
+    const modelPx = worst.minSidePx * feed.modelScale;
+    return {
+      valid: true,
+      object,
+      feed,
+      requiredPx,
+      ...worst,
+      modelPx,
+      status: modelPx >= requiredPx ? "ok" : modelPx >= WARN_SHARE * requiredPx ? "warn" : "bad",
+      minSensorWidthPx: context.frameWidth * requiredPx / worst.minSidePx,
+      sensorOk: worst.minSidePx >= requiredPx
+    };
+  }
+
+  // src/domain/compute-type/stream.ts
+  var H265_MAX_BITS_PER_PIXEL = 0.055;
+  var REFERENCE_PIXEL_RATE = 1920 * 1080 * 30;
+  var DECODED_BYTES_PER_PIXEL = 1.5;
+  function describeStream(params) {
+    const { count, frameWidthPx, frameHeightPx, fps, bitsPerPixel } = params;
+    const pixels = frameWidthPx * frameHeightPx;
+    return {
+      fps,
+      analyticsFps: Math.min(params.analyticsFpsSet, fps),
+      analyticsFpsSet: params.analyticsFpsSet,
+      codec: bitsPerPixel < H265_MAX_BITS_PER_PIXEL ? "h265" : "h264",
+      bitrateMbps: pixels * fps * bitsPerPixel * params.sceneFactor / 1e6,
+      decodeUnits: count * pixels * fps / REFERENCE_PIXEL_RATE,
+      frameGB: pixels * DECODED_BYTES_PER_PIXEL / 1e9
+    };
+  }
+  var shutterDenominator = (speed, maxDensity, blurPx) => speed * maxDensity / blurPx;
+
+  // src/domain/compute-type/verdict.ts
+  var FOCAL_CLAMP_NOTE_MM = 0.05;
+  var FOCAL_RANGE_TOLERANCE = 0.02;
+  var WIDE_ANGLE_DEG = 100;
+  var TOP_VIEW_TILT_DEG = 75;
+  var LOW_RAY_DEG = 15;
+  var INPUT_SIZE_STEP = 32;
+  function sceneNotes(context) {
+    const { lens, zone, clamped, manualLens, focalRange } = context;
+    const { f, fNeeded, hfov, vfov } = lens;
+    const notes = [];
+    if (clamped && fNeeded !== null)
+      notes.push({
+        code: fNeeded > f ? "focalMax" : "focalMin",
+        values: { requiredFocal: fNeeded, focal: f }
+      });
+    if (manualLens || clamped) {
+      const frameWidth = frameWidthAt(hfov, zone.minDepth);
+      if (frameWidth < context.zoneWidth)
+        notes.push({
+          code: "zoneWidth",
+          values: { frameWidth, zoneWidth: context.zoneWidth }
+        });
+      if (vfov < zone.zoneAngle)
+        notes.push({
+          code: "zoneDepth",
+          values: {
+            requiredAngle: zone.zoneAngle / DEG,
+            availableAngle: vfov / DEG
+          }
+        });
+    }
+    if (!clamped && manualLens && focalRange && (f < focalRange.min * (1 - FOCAL_RANGE_TOLERANCE) || f > focalRange.max * (1 + FOCAL_RANGE_TOLERANCE)))
+      notes.push({
+        code: "focalOutOfRange",
+        values: { focal: f, focalMin: focalRange.min, focalMax: focalRange.max }
+      });
+    if (hfov / DEG > WIDE_ANGLE_DEG)
+      notes.push({ code: "wideAngle", values: { hfov: hfov / DEG } });
+    if (zone.tilt / DEG > TOP_VIEW_TILT_DEG && zone.x1 < 0)
+      notes.push({ code: "topView", values: {} });
+    const lowestRayAngle = Math.atan2(
+      context.Hc,
+      Math.max(Math.abs(zone.x1), Math.abs(zone.x2))
+    );
+    if (lowestRayAngle / DEG < LOW_RAY_DEG)
+      notes.push({ code: "lowRay", values: { angle: lowestRayAngle / DEG } });
+    if (context.analyticsFpsSet > context.fps)
+      notes.push({
+        code: "analyticsFps",
+        values: { analyticsFps: context.analyticsFpsSet, streamFps: context.fps }
+      });
+    return notes;
+  }
+  var isClamped = ({ f, fNeeded }) => fNeeded !== null && Math.abs(fNeeded - f) > FOCAL_CLAMP_NOTE_MM;
+  function assessObjects(objects, sceneNotes2) {
+    const valid = objects.filter((result) => result.valid);
+    const failing = valid.filter((result) => result.status === "bad"), marginal = valid.filter((result) => result.status === "warn");
+    if (!valid.length)
+      return {
+        verdict: { code: "noObjects" },
+        status: "warn",
+        notes: sceneNotes2
+      };
+    if (failing.length) {
+      const downscale = failing.filter((result) => result.sensorOk).map((result) => ({
+        code: "downscale",
+        values: {
+          object: result,
+          neededInputSize: Math.ceil(
+            result.feed.inputSize * result.requiredPx / result.modelPx / INPUT_SIZE_STEP
+          ) * INPUT_SIZE_STEP
+        }
+      }));
+      const lowResolution = failing.filter((result) => !result.sensorOk);
+      const resolution = lowResolution.length ? [
+        resolutionNote(
+          lowResolution.reduce(
+            (a, b) => a.minSensorWidthPx > b.minSensorWidthPx ? a : b
+          )
+        )
+      ] : [];
+      return {
+        verdict: {
+          code: "bad",
+          objects: failing
+        },
+        status: "bad",
+        notes: [...resolution, ...sceneNotes2, ...downscale]
+      };
+    }
+    if (marginal.length)
+      return {
+        verdict: {
+          code: "warn",
+          objects: marginal
+        },
+        status: "warn",
+        notes: sceneNotes2
+      };
+    const smallest = valid.reduce((a, b) => a.modelPx < b.modelPx ? a : b);
+    return {
+      verdict: { code: "ok", object: smallest },
+      status: sceneNotes2.length ? "warn" : "ok",
+      notes: sceneNotes2
+    };
+  }
+  function resolutionNote(object) {
+    const resolution = RESOLUTIONS.find(
+      ({ width }) => width >= object.minSensorWidthPx
+    );
+    return resolution ? { code: "resolution", values: { object, resolution } } : { code: "resolutionNone", values: { object } };
+  }
+
+  // src/domain/compute-type/zone.ts
+  function zoneGeometry(placement, Hc, zoneStart, zoneDepth) {
+    const x1 = placement === "top" ? -zoneDepth / 2 : zoneStart, x2 = x1 + zoneDepth;
+    const phi1 = Math.atan2(Hc, x1), phi2 = Math.atan2(Hc, x2);
+    const tilt = (phi1 + phi2) / 2;
+    return {
+      x1,
+      x2,
+      tilt,
+      zoneAngle: phi1 - phi2,
+      minDepth: Math.min(depthAt(Hc, tilt, x1), depthAt(Hc, tilt, x2))
+    };
+  }
+  var depthAt = (Hc, tilt, x) => x * Math.cos(tilt) + Hc * Math.sin(tilt);
+
+  // src/domain/compute-type/index.ts
+  function computeType(type, camera) {
+    const { inputs } = type;
+    const count = Math.max(0, Math.round(parseNum(type.count)) || 0);
+    const frame = resolveFrame(inputs, camera);
+    const H = parseNum(inputs.cameraHeight), h = parseNum(inputs.planeHeight), zoneStart = parseNum(inputs.zoneStart), zoneDepth = parseNum(inputs.zoneDepth), zoneWidth = parseNum(inputs.zoneWidth), k = parseNum(inputs.lensFactor);
+    const Hc = H - h;
+    const error = { ok: false, type, count, frame };
+    if (![H, h, zoneDepth, zoneWidth, frame.sensorWidth, k].every(isFinite) || inputs.placement === "side" && !isFinite(zoneStart) || Hc <= 0 || zoneDepth <= 0 || zoneWidth <= 0 || !(frame.sensorWidth > 0))
+      return error;
+    const zone = zoneGeometry(inputs.placement, Hc, zoneStart, zoneDepth);
+    const focalRange = camera && camera.focalMin > 0 ? { min: camera.focalMin, max: camera.focalMax } : null;
+    const lens = fitLens(
+      frame,
+      zone,
+      {
+        mode: inputs.lensMode,
+        focalLength: parseNum(inputs.focalLength),
+        hfov: parseNum(inputs.hfov) * DEG,
+        margin: (parseNum(inputs.margin) || 0) / 100,
+        zoneWidth,
+        focalRange
+      },
+      inputs.orientation
+    );
+    if (!isFinite(lens.fpx) || lens.fpx <= 0) return error;
+    const view = { Hc, tilt: zone.tilt, fpx: lens.fpx };
+    const fittedFrame = { width: lens.frameWidthPx, height: lens.frameHeightPx };
+    const objectContext = {
+      view,
+      k,
+      zone,
+      frameWidth: frame.width,
+      frame: fittedFrame,
+      roi: zoneRoiPx(view, zone, zoneWidth, fittedFrame)
+    };
+    const objects = type.objects.map(
+      (object) => evaluateObject(object, objectContext)
+    );
+    const stream = describeStream({
+      count,
+      frameWidthPx: lens.frameWidthPx,
+      frameHeightPx: lens.frameHeightPx,
+      fps: parseNum(inputs.fps),
+      analyticsFpsSet: parseNum(inputs.analyticsFps),
+      bitsPerPixel: +inputs.codec,
+      sceneFactor: +inputs.scene
+    });
+    const clamped = isClamped(lens);
+    const assessment = assessObjects(
+      objects,
+      sceneNotes({
+        lens,
+        clamped,
+        manualLens: inputs.lensMode !== "auto",
+        focalRange,
+        zone,
+        zoneWidth,
+        Hc,
+        analyticsFpsSet: stream.analyticsFpsSet,
+        fps: stream.fps
+      })
+    );
+    const density = densityProfile(view, zone);
+    return {
+      ok: true,
+      type,
+      count,
+      frame,
+      placement: inputs.placement,
+      geometry: {
+        H,
+        h,
+        Hc,
+        zoneStart,
+        zoneDepth,
+        zoneWidth,
+        ...zone,
+        frameWidthNear: frameWidthAt(lens.hfov, depthAt(Hc, zone.tilt, zone.x1)),
+        frameWidthFar: frameWidthAt(lens.hfov, depthAt(Hc, zone.tilt, zone.x2))
+      },
+      lens: { ...lens, mode: inputs.lensMode, clamped },
+      density,
+      stream,
+      shutterDenominator: shutterDenominator(
+        parseNum(inputs.speed),
+        density.max,
+        parseNum(inputs.blurPx)
+      ),
+      objects,
+      ...assessment,
+      runGroups: runGroups(objects, count, stream.analyticsFps)
+    };
+  }
+
+  // src/domain/references/gpu-catalog.ts
   var GPU_CATALOG = [
     {
       id: "5090",
@@ -1544,13 +2140,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       jetson: true
     }
   ];
-  var allGpus = () => [...GPU_CATALOG, ...store.customGpus];
-  var gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
-  var priceOf = (gpu) => {
-    const price = parseNum(store.gpuPrices[gpu.id]);
-    return price > 0 ? price : gpu.price;
-  };
-  var isOn = (gpu) => store.gpuEnabled[gpu.id] !== false;
   var NVDEC_FPS = {
     Turing: { h264: 771, h265: 1316 },
     Hopper: { h264: 771, h265: 1316 },
@@ -1558,35 +2147,68 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     Ada: { h264: 903, h265: 1641 },
     Blackwell: { h264: 2172, h265: 1872 }
   };
-  var decStreams = (gpu, codec) => gpu.decodeStreams ? gpu.decodeStreams[codec] : gpu.nvdec * NVDEC_FPS[gpu.arch][codec] / 30;
-  var decText = (gpu) => gpu.decodeStreams ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0)) : `${gpu.nvdec} NVDEC`;
+  var REFERENCE_STREAM_FPS = 30;
+  var decodableStreams = (gpu, codec) => gpu.decodeStreams ? gpu.decodeStreams[codec] : gpu.nvdec * NVDEC_FPS[gpu.arch][codec] / REFERENCE_STREAM_FPS;
+
+  // src/domain/references/models.ts
   var MODELS = [
-    ["y26n", "YOLO26n", 5.5, 1.7],
-    ["y26s", "YOLO26s", 20.9, 2.5],
-    ["y26m", "YOLO26m", 68.4, 4.7],
-    ["y26l", "YOLO26l", 86.8, 6.2],
-    ["y26x", "YOLO26x", 194.4, 11.8],
-    ["y26np", "YOLO26n-pose", 7.6, 1.8],
-    ["y26sp", "YOLO26s-pose", 24.1, 2.7],
-    ["y26mp", "YOLO26m-pose", 73.3, 5],
-    ["y26lp", "YOLO26l-pose", 91.7, 6.5],
-    ["y26xp", "YOLO26x-pose", 202.3, 12.2],
-    ["y11n", "YOLO11n", 6.5, 1.5],
-    ["y11s", "YOLO11s", 21.6, 2.5],
-    ["y11m", "YOLO11m", 68.1, 4.7],
-    ["y11l", "YOLO11l", 87.2, 6.2],
-    ["y11x", "YOLO11x", 195.3, 11.3]
-  ].map(([id, name, gflops, latencyMs]) => ({ id, name, gflops, latencyMs }));
+    { id: "y26n", name: "YOLO26n", gflops: 5.5, latencyMs: 1.7 },
+    { id: "y26s", name: "YOLO26s", gflops: 20.9, latencyMs: 2.5 },
+    { id: "y26m", name: "YOLO26m", gflops: 68.4, latencyMs: 4.7 },
+    { id: "y26l", name: "YOLO26l", gflops: 86.8, latencyMs: 6.2 },
+    { id: "y26x", name: "YOLO26x", gflops: 194.4, latencyMs: 11.8 },
+    { id: "y26np", name: "YOLO26n-pose", gflops: 7.6, latencyMs: 1.8 },
+    { id: "y26sp", name: "YOLO26s-pose", gflops: 24.1, latencyMs: 2.7 },
+    { id: "y26mp", name: "YOLO26m-pose", gflops: 73.3, latencyMs: 5 },
+    { id: "y26lp", name: "YOLO26l-pose", gflops: 91.7, latencyMs: 6.5 },
+    { id: "y26xp", name: "YOLO26x-pose", gflops: 202.3, latencyMs: 12.2 },
+    { id: "y11n", name: "YOLO11n", gflops: 6.5, latencyMs: 1.5 },
+    { id: "y11s", name: "YOLO11s", gflops: 21.6, latencyMs: 2.5 },
+    { id: "y11m", name: "YOLO11m", gflops: 68.1, latencyMs: 4.7 },
+    { id: "y11l", name: "YOLO11l", gflops: 87.2, latencyMs: 6.2 },
+    { id: "y11x", name: "YOLO11x", gflops: 195.3, latencyMs: 11.3 }
+  ];
   var T4_TFLOPS = 65;
+
+  // src/js/store.js
+  var store = {
+    cameraTypes: [],
+    // типы камер, заполняет state.js
+    activeTypeId: null,
+    customGpus: [],
+    // свои карты: {id,name,arch,tflops,nvdec|decodeStreams,memoryGB,tdpW,price,jetson,custom:true}
+    gpuPrices: {},
+    // правки цен по id
+    gpuEnabled: {},
+    // участие в подборе по id
+    customCameras: [],
+    customDetectors: []
+  };
+
+  // src/js/data.js
+  var byId = (id) => document.getElementById(id);
+  var escapeHtml = (text) => String(text ?? "").replace(
+    /[&<>"]/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]
+  );
+  var uid = () => Math.random().toString(36).slice(2, 9);
+  var allGpus = () => [...GPU_CATALOG, ...store.customGpus];
+  var gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
+  var priceOf = (gpu) => {
+    const price = parseNum(store.gpuPrices[gpu.id]);
+    return price > 0 ? price : gpu.price;
+  };
+  var isOn = (gpu) => store.gpuEnabled[gpu.id] !== false;
+  var decText = (gpu) => gpu.decodeStreams ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0)) : `${gpu.nvdec} NVDEC`;
   var FEEDS = STR.feeds;
   var FEED_SHORT = STR.feedsShort;
   var INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
 
-  // src/js/objects.js
+  // src/domain/references/builtin-cameras.ts
   var BUILTIN_CAMERAS = [
     {
       id: "k4",
-      name: STR.builtinCameraNames.k4,
+      nameKey: "builtinCameraNames.k4",
       Nw: 2560,
       Nh: 1440,
       sensorWidth: 5.4,
@@ -1595,7 +2217,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     },
     {
       id: "k8",
-      name: STR.builtinCameraNames.k8,
+      nameKey: "builtinCameraNames.k8",
       Nw: 3840,
       Nh: 2160,
       sensorWidth: 7.68,
@@ -1603,7 +2225,15 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       focalMax: 12
     }
   ];
-  var allCameras = () => [...BUILTIN_CAMERAS, ...store.customCameras];
+
+  // src/js/objects.js
+  var allCameras = () => [
+    ...BUILTIN_CAMERAS.map((camera) => ({
+      ...camera,
+      name: builtinName(camera.nameKey)
+    })),
+    ...store.customCameras
+  ];
   var cameraById = (id) => allCameras().find((camera) => camera.id === id);
   var modelById = (id) => MODELS.find((model) => model.id === id) || store.customDetectors.find((detector) => detector.id === id);
   function buildCameraSelect() {
@@ -1684,17 +2314,18 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
     byId("hfovBox").hidden = inputs.lensMode !== "angle";
     byId("zoneStartBox").hidden = inputs.placement === "top";
-    const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
+    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR, sensorWidth = result?.frame.sensorWidth;
     byId("resolution").disabled = !!camera;
     byId("sensor").disabled = !!camera;
-    byId("pixelPitchBox").hidden = !!camera || sensorPreset !== "pp";
-    byId("sensorWidth").readOnly = !!camera || sensorPreset !== null;
-    if (result && isFinite(result.s) && (camera || sensorPreset !== null))
-      byId("sensorWidth").value = +result.s.toFixed(2);
+    byId("pixelPitchBox").hidden = !!camera || sensor.kind !== "pixelPitch";
+    byId("sensorWidth").readOnly = !!camera || sensor.kind !== "custom";
+    if (isFinite(sensorWidth) && (camera || sensor.kind !== "custom"))
+      byId("sensorWidth").value = +sensorWidth.toFixed(2);
     byId("summaryGeometry").textContent = `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
-    byId("summaryCamera").textContent = (camera ? `${camera.Nw} × ${camera.Nh}` : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
-      " · "
-    )[0]) + (result && !result.err ? `, f ${withUnit(formatNumber(result.f, 1), "mm")}` : "");
+    byId("summaryCamera").textContent = (camera ? `${camera.Nw} × ${camera.Nh}` : t(
+      "megapixels",
+      (RESOLUTIONS[+inputs.resolution] ?? DEFAULT_RESOLUTION).megapixels
+    )) + (result?.ok ? `, f ${withUnit(formatNumber(result.lens.f, 1), "mm")}` : "");
     byId("summaryStream").textContent = `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
   }
 
@@ -1730,9 +2361,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     model,
     feed,
     inputSize,
-    overlap: 20,
-    fps: 300,
-    ref: "5090"
+    overlap: 20
   });
   var INPUT_IDS = [
     "camera",
@@ -1818,12 +2447,12 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   store.activeTypeId = store.cameraTypes[0].id;
   var activeType = () => store.cameraTypes.find((type) => type.id === store.activeTypeId) || store.cameraTypes[0];
   RESOLUTIONS.forEach(
-    ([label], i) => byId("resolution").add(new Option(label, i))
+    (resolution, i) => byId("resolution").add(new Option(resolutionLabel(resolution), i))
   );
   SENSORS.forEach(
-    ([label, width], i) => byId("sensor").add(
+    (sensor, i) => byId("sensor").add(
       new Option(
-        typeof width === "number" ? t("sensorFormat", label, formatNumber(width, 1)) : width === "pp" ? t("sensorByPixelPitch") : t("sensorCustom"),
+        sensor.kind === "format" ? t("sensorFormat", sensor.format, formatNumber(sensor.widthMm, 1)) : sensor.kind === "pixelPitch" ? t("sensorByPixelPitch") : t("sensorCustom"),
         i
       )
     )
@@ -1854,408 +2483,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     });
     type.inputs.lensMode = (document.querySelector('input[name="lensMode"]:checked') || {}).value || "auto";
     type.inputs.placement = (document.querySelector('input[name="placement"]:checked') || {}).value || "side";
-  }
-
-  // src/js/compute-type.js
-  function computeType(type) {
-    const inputs = type.inputs, mode = inputs.lensMode, placement = inputs.placement, count = Math.max(0, Math.round(parseNum(type.count)) || 0);
-    const camera = cameraById(inputs.camera);
-    let [cameraLabel, Nw, Nh] = RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1];
-    const sensorPreset = (SENSORS[+inputs.sensor] || SENSORS[3])[1];
-    let s = typeof sensorPreset === "number" ? sensorPreset : sensorPreset === "pp" ? parseNum(inputs.pixelPitch) * Nw / 1e3 : parseNum(inputs.sensorWidth);
-    if (camera) {
-      cameraLabel = camera.name;
-      Nw = camera.Nw;
-      Nh = camera.Nh;
-      s = camera.sensorWidth;
-    }
-    const H = parseNum(inputs.cameraHeight), h = parseNum(inputs.planeHeight), zoneStart = parseNum(inputs.zoneStart), zoneDepth = parseNum(inputs.zoneDepth), zoneWidth = parseNum(inputs.zoneWidth), margin = (parseNum(inputs.margin) || 0) / 100, k = parseNum(inputs.lensFactor), speed = parseNum(inputs.speed), blurPx = parseNum(inputs.blurPx);
-    const fps = parseNum(inputs.fps), bpp = +inputs.codec, sceneFactor = +inputs.scene, analyticsFpsSet = parseNum(inputs.analyticsFps), analyticsFps = Math.min(analyticsFpsSet, fps), codec = bpp < 0.055 ? "h265" : "h264";
-    const Hc = H - h;
-    const common = {
-      type,
-      count,
-      cameraLabel,
-      Nw,
-      Nh,
-      s,
-      fps,
-      analyticsFps,
-      analyticsFpsSet,
-      codec,
-      bpp,
-      sceneFactor
-    };
-    if (![H, h, zoneDepth, zoneWidth, s, k].every(isFinite) || placement === "side" && !isFinite(zoneStart) || Hc <= 0 || zoneDepth <= 0 || zoneWidth <= 0 || !(s > 0))
-      return { ...common, err: true };
-    const x1 = placement === "top" ? -zoneDepth / 2 : zoneStart, x2 = x1 + zoneDepth;
-    const phi1 = Math.atan2(Hc, x1), phi2 = Math.atan2(Hc, x2);
-    const zoneAngle = phi1 - phi2, tilt = (phi1 + phi2) / 2;
-    const depthAt = (x) => x * Math.cos(tilt) + Hc * Math.sin(tilt);
-    const minDepth = Math.min(depthAt(x1), depthAt(x2));
-    const fitOrientation = (rotated2) => {
-      const frameWidthPx2 = rotated2 ? Nh : Nw, frameHeightPx2 = rotated2 ? Nw : Nh, sensorWidth = rotated2 ? s * Nh / Nw : s, aspect = frameWidthPx2 / frameHeightPx2;
-      let hfov2, f2, fNeeded2 = null;
-      if (mode === "auto") {
-        const hfovNeeded = 2 * Math.atan(zoneWidth * (1 + margin) / 2 / minDepth), vfovNeeded = zoneAngle * (1 + margin);
-        hfov2 = Math.max(
-          hfovNeeded,
-          2 * Math.atan(aspect * Math.tan(vfovNeeded / 2))
-        );
-        f2 = sensorWidth / (2 * Math.tan(hfov2 / 2));
-        fNeeded2 = f2;
-        if (camera && camera.focalMin > 0) {
-          const fClamped = Math.min(
-            camera.focalMax,
-            Math.max(camera.focalMin, f2)
-          );
-          if (Math.abs(fClamped - f2) > 1e-6) {
-            f2 = fClamped;
-            hfov2 = 2 * Math.atan(sensorWidth / (2 * f2));
-          }
-        }
-      } else if (mode === "focal") {
-        f2 = parseNum(inputs.focalLength);
-        hfov2 = 2 * Math.atan(sensorWidth / (2 * f2));
-      } else {
-        hfov2 = parseNum(inputs.hfov) * DEG;
-        f2 = sensorWidth / (2 * Math.tan(hfov2 / 2));
-      }
-      const vfov2 = 2 * Math.atan(Math.tan(hfov2 / 2) / aspect), fpx2 = frameWidthPx2 / (2 * Math.tan(hfov2 / 2));
-      return {
-        rotated: rotated2,
-        frameWidthPx: frameWidthPx2,
-        frameHeightPx: frameHeightPx2,
-        hfov: hfov2,
-        f: f2,
-        fNeeded: fNeeded2,
-        vfov: vfov2,
-        fpx: fpx2,
-        fits: 2 * minDepth * Math.tan(hfov2 / 2) >= zoneWidth && vfov2 >= zoneAngle
-      };
-    };
-    let fit;
-    if (inputs.orientation === "landscape") fit = fitOrientation(false);
-    else if (inputs.orientation === "portrait") fit = fitOrientation(true);
-    else {
-      const landscape = fitOrientation(false), portrait = fitOrientation(true);
-      fit = mode === "auto" ? portrait.fpx > landscape.fpx * 1.02 ? portrait : landscape : landscape.fits || !portrait.fits ? landscape : portrait;
-    }
-    const { rotated, hfov, f, fNeeded, vfov, fpx, frameWidthPx, frameHeightPx } = fit;
-    if (!isFinite(fpx) || fpx <= 0) return { ...common, err: true };
-    const frameWidthAt = (z) => 2 * z * Math.tan(hfov / 2);
-    const densityAt = (x) => {
-      const phi = Math.atan2(Hc, x), D = Math.hypot(Hc, x), delta = phi - tilt, z = D * Math.cos(delta);
-      return {
-        x,
-        D,
-        z,
-        phi,
-        across: fpx / z,
-        depth: fpx * Math.sin(phi) / (D * Math.cos(delta) ** 2)
-      };
-    };
-    const edge1 = densityAt(x1), edge2 = densityAt(x2), samples = [];
-    for (let i = 0; i <= 40; i++)
-      samples.push(densityAt(x1 + (x2 - x1) * i / 40));
-    const minAcross = Math.min(...samples.map((sample) => sample.across)), minDepthDensity = Math.min(...samples.map((sample) => sample.depth)), maxDensity = Math.max(
-      ...samples.map((sample) => Math.max(sample.across, sample.depth))
-    );
-    const cosTilt = Math.cos(tilt), sinTilt = Math.sin(tilt);
-    const project = (x, y, height) => {
-      const dh = height - Hc, z = x * cosTilt - dh * sinTilt;
-      if (z <= 1e-6) return null;
-      return [fpx * y / z, fpx * (x * sinTilt + dh * cosTilt) / z];
-    };
-    const boxSizePx = (x0, width, length, height) => {
-      const topHeight = Math.min(height, Hc * 0.98);
-      let uMin = 1e9, uMax = -1e9, vMin = 1e9, vMax = -1e9;
-      for (const x of [x0, x0 + length])
-        for (const y of [-width / 2, width / 2])
-          for (const pointHeight of [0, topHeight]) {
-            const point = project(x, y, pointHeight);
-            if (!point) return null;
-            uMin = Math.min(uMin, point[0]);
-            uMax = Math.max(uMax, point[0]);
-            vMin = Math.min(vMin, point[1]);
-            vMax = Math.max(vMax, point[1]);
-          }
-      return { widthPx: (uMax - uMin) * k, heightPx: (vMax - vMin) * k };
-    };
-    let roiUMin = 1e9, roiUMax = -1e9, roiVMin = 1e9, roiVMax = -1e9;
-    for (const x of [x1, x2])
-      for (const y of [-zoneWidth / 2, zoneWidth / 2]) {
-        const point = project(x, y, 0);
-        if (point) {
-          roiUMin = Math.min(roiUMin, point[0]);
-          roiUMax = Math.max(roiUMax, point[0]);
-          roiVMin = Math.min(roiVMin, point[1]);
-          roiVMax = Math.max(roiVMax, point[1]);
-        }
-      }
-    const roiW = Math.min(frameWidthPx, roiUMax - roiUMin), roiH = Math.min(frameHeightPx, roiVMax - roiVMin);
-    const describeFeed = (feed, inputSize, overlapPct) => {
-      const overlap = Math.min(0.9, Math.max(0, (overlapPct || 0) / 100));
-      let modelScale = 1, tiles = 1, tilesX = 1, tilesY = 1;
-      if (feed === "full")
-        modelScale = Math.min(
-          1,
-          inputSize / Math.max(frameWidthPx, frameHeightPx)
-        );
-      else if (feed === "roi")
-        modelScale = Math.min(1, inputSize / Math.max(roiW, roiH));
-      else {
-        const step = inputSize * (1 - overlap);
-        tilesX = roiW > inputSize ? Math.ceil((roiW - inputSize) / step) + 1 : 1;
-        tilesY = roiH > inputSize ? Math.ceil((roiH - inputSize) / step) + 1 : 1;
-        tiles = tilesX * tilesY;
-      }
-      return {
-        feed,
-        inputSize,
-        modelScale,
-        tiles,
-        tilesX,
-        tilesY,
-        text: feed === "tiles" ? t("feedTiles", tiles, tilesX, tilesY, inputSize) : feed === "roi" ? t("feedRoi", Math.round(roiW), Math.round(roiH), inputSize) : t("feedFull", frameWidthPx, frameHeightPx, inputSize)
-      };
-    };
-    const objs = type.objects.map((obj) => {
-      const width = parseNum(obj.width) / 100, length = parseNum(obj.length) / 100, height = parseNum(obj.height) / 100, requiredPx = parseNum(obj.requiredPx), inputSize = parseNum(obj.inputSize) || 640;
-      const feedInfo = describeFeed(obj.feed, inputSize, parseNum(obj.overlap));
-      if (![width, length, height].every((size) => isFinite(size) && size >= 0) || Math.max(width, length, height) <= 0 || !(requiredPx > 0))
-        return { ...obj, bad: true, feedInfo };
-      const travel = Math.max(0, x2 - x1 - length);
-      let worst = null;
-      for (let i = 0; i <= 40; i++) {
-        const x0 = x1 + travel * i / 40, box = boxSizePx(x0, width, length, height);
-        if (!box) continue;
-        const minSidePx = Math.min(box.widthPx, box.heightPx);
-        if (!worst || minSidePx < worst.minSidePx)
-          worst = { ...box, minSidePx, x0 };
-      }
-      if (!worst) return { ...obj, bad: true, feedInfo };
-      const modelPx = worst.minSidePx * feedInfo.modelScale, status2 = modelPx >= requiredPx ? "ok" : modelPx >= 0.75 * requiredPx ? "warn" : "bad";
-      return {
-        ...obj,
-        ...worst,
-        requiredPx,
-        feedInfo,
-        modelPx,
-        status: status2,
-        minSensorWidthPx: Nw * requiredPx / worst.minSidePx,
-        sensorOk: worst.minSidePx >= requiredPx
-      };
-    });
-    const notes = [];
-    const clamped = fNeeded != null && Math.abs(fNeeded - f) > 0.05;
-    if (mode !== "auto" || clamped) {
-      if (frameWidthAt(minDepth) < zoneWidth)
-        notes.push(
-          t(
-            "noteZoneWidth",
-            formatNumber(frameWidthAt(minDepth), 2),
-            formatNumber(zoneWidth, 2)
-          )
-        );
-      if (vfov < zoneAngle)
-        notes.push(
-          t(
-            "noteZoneDepth",
-            formatNumber(zoneAngle / DEG, 1),
-            formatNumber(vfov / DEG, 1)
-          )
-        );
-    }
-    if (clamped)
-      notes.unshift(
-        t(
-          fNeeded > f ? "noteFocalMax" : "noteFocalMin",
-          formatNumber(fNeeded, 1),
-          formatNumber(f, 1)
-        )
-      );
-    else if (mode !== "auto" && camera && camera.focalMin > 0 && (f < camera.focalMin * 0.98 || f > camera.focalMax * 1.02))
-      notes.push(
-        t(
-          "noteFocalOutOfRange",
-          formatNumber(f, 1),
-          camera.focalMin === camera.focalMax ? formatNumber(camera.focalMin, 1) : formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1)
-        )
-      );
-    if (hfov / DEG > 100)
-      notes.push(t("noteWideAngle", formatNumber(hfov / DEG, 0)));
-    if (tilt / DEG > 75 && x1 < 0) notes.push(t("noteTopView"));
-    const lowestRayAngle = Math.atan2(Hc, Math.max(Math.abs(x1), Math.abs(x2)));
-    if (lowestRayAngle / DEG < 15)
-      notes.push(t("noteLowRay", formatNumber(lowestRayAngle / DEG, 0)));
-    if (analyticsFpsSet > fps)
-      notes.push(
-        t(
-          "noteAnalyticsFps",
-          formatNumber(analyticsFpsSet, 0),
-          formatNumber(fps, 0)
-        )
-      );
-    const sensorPxText = (obj) => `${formatNumber(obj.widthPx, 1)} × ${formatNumber(obj.heightPx, 1)} px`, modelPxText = (obj) => `${formatNumber(obj.widthPx * obj.feedInfo.modelScale, 1)} × ${formatNumber(obj.heightPx * obj.feedInfo.modelScale, 1)} px`;
-    const valid = objs.filter((obj) => !obj.bad), failing = valid.filter((obj) => obj.status === "bad"), marginal = valid.filter((obj) => obj.status === "warn");
-    let status, pill, headline;
-    if (!valid.length) {
-      status = "warn";
-      pill = t("pillNoObjects");
-      headline = t("verdictNoObjects");
-    } else if (failing.length) {
-      status = "bad";
-      pill = t("pillBad");
-      headline = t(
-        "verdictBad",
-        failing.map(
-          (obj) => t(
-            "verdictItem",
-            obj.name || t("objDefault"),
-            modelPxText(obj),
-            formatNumber(obj.requiredPx, 0)
-          )
-        ).join("; ")
-      );
-      failing.filter((obj) => obj.sensorOk).forEach((obj) => {
-        const neededInput = Math.ceil(
-          obj.feedInfo.inputSize * obj.requiredPx / obj.modelPx / 32
-        ) * 32;
-        notes.push(
-          t(
-            "noteDownscale",
-            obj.name,
-            sensorPxText(obj),
-            obj.feedInfo.inputSize,
-            t(
-              obj.feed === "full" ? "adviceFull" : obj.feed === "roi" ? "adviceRoi" : "adviceTiles"
-            ),
-            formatNumber(neededInput, 0)
-          )
-        );
-      });
-      const lowResolution = failing.filter((obj) => !obj.sensorOk);
-      if (lowResolution.length) {
-        const worstObj = lowResolution.reduce(
-          (a, b) => a.minSensorWidthPx > b.minSensorWidthPx ? a : b
-        ), recommended = RESOLUTIONS.find(
-          (res) => res[1] >= worstObj.minSensorWidthPx
-        );
-        notes.unshift(
-          recommended ? t(
-            "noteResolution",
-            worstObj.name,
-            formatNumber(worstObj.minSensorWidthPx, 0),
-            recommended[0]
-          ) : t(
-            "noteResolutionNone",
-            worstObj.name,
-            formatNumber(worstObj.minSensorWidthPx, 0)
-          )
-        );
-      }
-    } else if (marginal.length) {
-      status = "warn";
-      pill = t("pillWarn");
-      headline = t(
-        "verdictWarn",
-        marginal.map(
-          (obj) => t(
-            "verdictItem",
-            obj.name || t("objDefault"),
-            modelPxText(obj),
-            formatNumber(obj.requiredPx, 0)
-          )
-        ).join("; ")
-      );
-    } else {
-      const smallest = valid.reduce((a, b) => a.modelPx < b.modelPx ? a : b);
-      status = "ok";
-      pill = t("pillOk");
-      headline = t("verdictOk", smallest.name, modelPxText(smallest));
-    }
-    if (notes.length && status === "ok") {
-      status = "warn";
-      pill = t("pillCheck");
-    }
-    const groups = [];
-    objs.filter((obj) => obj.feedInfo).forEach((obj) => {
-      const key = [
-        obj.model,
-        obj.feed,
-        obj.feedInfo.inputSize,
-        obj.feed === "tiles" ? obj.overlap : "",
-        obj.model === "custom" ? obj.fps + "@" + obj.ref : ""
-      ].join("|");
-      let group = groups.find((existing) => existing.key === key);
-      if (!group) {
-        group = {
-          key,
-          model: obj.model,
-          feed: obj.feed,
-          feedInfo: obj.feedInfo,
-          fps: obj.fps,
-          ref: obj.ref,
-          names: [],
-          type: type.name,
-          load: count * analyticsFps * obj.feedInfo.tiles
-        };
-        groups.push(group);
-      }
-      group.names.push(obj.name || t("objDefault"));
-    });
-    const shutterDenominator = speed * maxDensity / blurPx;
-    const bitrateMbps = Nw * Nh * fps * bpp * sceneFactor / 1e6;
-    return {
-      ...common,
-      err: false,
-      clamped,
-      fNeeded,
-      camera,
-      placement,
-      mode,
-      H,
-      h,
-      Hc,
-      zoneStart,
-      zoneDepth,
-      zoneWidth,
-      x1,
-      x2,
-      tilt,
-      zoneAngle,
-      hfov,
-      vfov,
-      f,
-      rotated,
-      frameWidthPx,
-      frameHeightPx,
-      fpx,
-      frameWidthAt,
-      depthAt,
-      edge1,
-      edge2,
-      minAcross,
-      minDepthDensity,
-      maxDensity,
-      objs,
-      valid,
-      notes,
-      status,
-      pill,
-      headline,
-      sensorPxText,
-      modelPxText,
-      groups,
-      shutterDenominator,
-      speed,
-      blurPx,
-      bitrateMbps,
-      k,
-      decUnits: count * frameWidthPx * frameHeightPx * fps / (1920 * 1080 * 30),
-      frameGB: frameWidthPx * frameHeightPx * 1.5 / 1e9
-    };
   }
 
   // src/js/draw-side.js
@@ -2392,29 +2619,34 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 
   // src/js/system-ui.js
   var modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
+  var cameraLabel = ({ type }) => {
+    const camera = cameraById(type.inputs.camera);
+    return camera ? camera.name : resolutionLabel(
+      RESOLUTIONS[+type.inputs.resolution] ?? DEFAULT_RESOLUTION
+    );
+  };
   var modelGflops = (id) => {
     const model = modelById(id);
     return model && model.gflops > 0 ? model.gflops : 0;
   };
   function computeSystem(results) {
-    const liveResults = results.filter(
-      (result) => !result.err && result.count > 0
-    );
+    const liveResults = results.filter((result) => result.ok && result.count > 0);
     const efficiency = parseNum(byId("efficiency").value), reserve = Math.max(0, parseNum(byId("reserve").value) || 0) / 100, maxLoad = 1 / (1 + reserve), BATCH_SIZE = 16;
     const groups = liveResults.flatMap(
-      (result) => result.groups.map((group) => ({ ...group, typeName: result.type.name }))
+      (result) => result.runGroups.map((group) => ({
+        ...group,
+        typeName: result.type.name,
+        names: group.objects.map(objectName)
+      }))
     );
     const engines = [
       ...new Map(
-        groups.map((group) => [
-          `${group.model}|${group.feedInfo.inputSize}`,
-          group
-        ])
+        groups.map((group) => [`${group.model}|${group.feed.inputSize}`, group])
       ).values()
     ];
     const engineMemoryGB = (engine) => {
       const gflops = modelGflops(engine.model);
-      return gflops ? 0.15 + BATCH_SIZE * engine.feedInfo.inputSize ** 2 * 3 * 2 * (gflops / 4) / 1e9 : 0.5;
+      return gflops ? 0.15 + BATCH_SIZE * engine.feed.inputSize ** 2 * 3 * 2 * (gflops / 4) / 1e9 : 0.5;
     };
     const evaluateGpu = (gpu, count) => {
       const runs = groups.map((group) => {
@@ -2422,10 +2654,10 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         const model = modelById(group.model);
         if (!model) return { ...group, bad: true };
         if (MODELS.includes(model)) {
-          const inputScale = (640 / group.feedInfo.inputSize) ** 2;
+          const inputScale = (640 / group.feed.inputSize) ** 2;
           framesPerSecond = 1e3 / model.latencyMs * inputScale * gpu.tflops / T4_TFLOPS;
         } else {
-          const refGpu = gpuById(model.refGpu) || GPU_CATALOG[0], inputScale = (model.inputSize / group.feedInfo.inputSize) ** 2;
+          const refGpu = gpuById(model.refGpu) || GPU_CATALOG[0], inputScale = (model.inputSize / group.feed.inputSize) ** 2;
           framesPerSecond = model.fps * inputScale * gpu.tflops / refGpu.tflops;
         }
         const capacity = framesPerSecond * efficiency;
@@ -2433,11 +2665,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       });
       const inferenceGpus = runs.filter((run) => !run.bad).reduce((sum, run) => sum + run.gpusNeeded, 0);
       const decodeGpus = liveResults.reduce(
-        (sum, result) => sum + result.decUnits / (decStreams(gpu, result.codec) * efficiency),
+        (sum, result) => sum + result.stream.decodeUnits / (decodableStreams(gpu, result.stream.codec) * efficiency),
         0
       );
       const memoryUseGB = 0.8 + engines.reduce((sum, engine) => sum + engineMemoryGB(engine), 0) + liveResults.reduce(
-        (sum, result) => sum + Math.ceil(result.count / count) * 20 * result.frameGB,
+        (sum, result) => sum + Math.ceil(result.count / count) * 20 * result.stream.frameGB,
         0
       ), memoryCapGB = gpu.memoryGB * (gpu.jetson ? 0.6 : 0.9);
       const inferenceLoad = inferenceGpus / count, decodeLoad = decodeGpus / count, memoryLoad = memoryUseGB / memoryCapGB, worstLoad = Math.max(inferenceLoad, decodeLoad, memoryLoad);
@@ -2488,7 +2720,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       } else chosen = evaluateGpu(gpu, +countChoice);
     }
     const decodeUnitsTotal = liveResults.reduce(
-      (sum, result) => sum + result.decUnits,
+      (sum, result) => sum + result.stream.decodeUnits,
       0
     );
     return {
@@ -2512,7 +2744,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       "resultTitleOf",
       result.type.name || t("untitled")
     );
-    if (result.err) {
+    if (!result.ok) {
       verdict.className = "verdict bad";
       verdict.innerHTML = `<span class="pill">${t("pillError")}</span><div>${t("inputError")}</div>`;
       ["kpis", "densityTable", "facts", "side"].forEach(
@@ -2521,14 +2753,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       return;
     }
     verdict.className = "verdict " + result.status;
-    verdict.innerHTML = `<span class="pill">${result.pill}</span><div>${escapeHtml(result.headline)}${result.notes.length ? "<ul>" + result.notes.map((note) => "<li>" + escapeHtml(note) + "</li>").join("") + "</ul>" : ""}</div>`;
-    const { hfov, vfov, f, rotated, tilt, frameWidthAt, depthAt, x1, x2 } = result;
+    verdict.innerHTML = `<span class="pill">${verdictPill(result.verdict, result.notes)}</span><div>${escapeHtml(verdictHeadline(result.verdict))}${result.notes.length ? "<ul>" + result.notes.map((note) => "<li>" + escapeHtml(noteText(note)) + "</li>").join("") + "</ul>" : ""}</div>`;
+    const { hfov, vfov, f, rotated } = result.lens, { tilt, frameWidthNear, frameWidthFar } = result.geometry;
     byId("kpis").innerHTML = [
       [
         t("kpiFocal"),
         withUnit(formatNumber(f, 1), "mm"),
         t(
-          result.clamped ? "kpiFocalLimit" : result.mode === "auto" ? "kpiFocalAuto" : "kpiFocalSet"
+          result.lens.clamped ? "kpiFocalLimit" : result.lens.mode === "auto" ? "kpiFocalAuto" : "kpiFocalSet"
         ) + (rotated ? t("kpiRotated") : "")
       ],
       [
@@ -2544,7 +2776,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       [
         t("kpiFrame"),
         withUnit(
-          formatNumber(frameWidthAt(depthAt(x1)), 1) + "–" + formatNumber(frameWidthAt(depthAt(x2)), 1),
+          formatNumber(frameWidthNear, 1) + "–" + formatNumber(frameWidthFar, 1),
           "m"
         ),
         t("kpiFrameSubtitle")
@@ -2552,41 +2784,42 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ].map(
       ([label, value, extra]) => `<div class="kpi"><span>${label}</span><strong>${value}</strong><em>${extra}</em></div>`
     ).join("");
-    result.objs.forEach((obj, i) => {
+    result.objects.forEach((item, i) => {
       const resultEl = byId(`objectResult-${i}`), dotEl = byId(`objectDot-${i}`);
       if (!resultEl) return;
-      if (obj.bad) {
+      if (!item.valid) {
         resultEl.className = "ores";
         resultEl.textContent = t("objectInvalid");
         if (dotEl) dotEl.className = "dot";
         return;
       }
-      resultEl.className = "ores " + obj.status;
-      if (dotEl) dotEl.className = "dot " + obj.status;
-      resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[obj.status])}</b><span>${t("objectAtModel", `<span class="mono">${result.modelPxText(obj)}</span>`, formatNumber(obj.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", result.sensorPxText(obj), escapeHtml(obj.feedInfo.text))}</span>`;
+      resultEl.className = "ores " + item.status;
+      if (dotEl) dotEl.className = "dot " + item.status;
+      resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
     });
-    const top = result.placement === "top";
+    const top = result.placement === "top", { near, far, minAcross } = result.density;
     byId("densityTable").innerHTML = `<tr><th>${t("densityHeader")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
-    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
+    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(near.D, 1), "m")}</td><td>${formatNumber(near.across, 0)}</td><td>${formatNumber(near.depth, 0)}</td></tr>
+    <tr><td class="txt">${t(top ? "edgeForward" : "edgeFar")}, ${withUnit(formatNumber(far.D, 1), "m")}</td><td>${formatNumber(far.across, 0)}</td><td>${formatNumber(far.depth, 0)}</td></tr>`;
     const doriLevels = [25, 62, 125, 250], doriNames = STR.dori;
     let doriLevel = -1;
     doriLevels.forEach((level, i) => {
-      if (result.minAcross >= level) doriLevel = i;
+      if (minAcross >= level) doriLevel = i;
     });
     const shutter = result.shutterDenominator;
-    byId("facts").innerHTML = `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
+    byId("facts").innerHTML = `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(cameraLabel(result))}</b></span>`;
+    const { H, h, Hc, x1, x2 } = result.geometry;
     drawSide({
-      H: result.H,
-      h: result.h,
-      x1: result.x1,
-      x2: result.x2,
-      tilt: result.tilt,
-      vfov: result.vfov,
-      Hc: result.Hc,
+      H,
+      h,
+      x1,
+      x2,
+      tilt,
+      vfov,
+      Hc,
       placement: result.placement,
-      frameWidthNear: frameWidthAt(depthAt(x1)),
-      frameWidthFar: frameWidthAt(depthAt(x2))
+      frameWidthNear,
+      frameWidthFar
     });
   }
   function renderTabs(results) {
@@ -2602,8 +2835,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         String(result.type.id === store.activeTypeId)
       );
       tab.setAttribute("aria-controls", "typeResult");
-      tab.innerHTML = `<span class="dot ${result.err ? "bad" : result.status}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
-      tab.title = result.err ? t("tabError") : t("tabObjects", STATUS_TEXT[result.status] || result.pill);
+      tab.innerHTML = `<span class="dot ${result.ok ? result.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
+      tab.title = result.ok ? t("tabObjects", STATUS_TEXT[result.status]) : t("tabError");
       tab.addEventListener("click", () => {
         if (store.activeTypeId === result.type.id) return;
         store.activeTypeId = result.type.id;
@@ -2647,13 +2880,15 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
     const percent = (share) => formatNumber(share * 100, 0) + "%";
     const cameraCount = results.reduce((sum, result) => sum + result.count, 0);
-    const allObjects = results.flatMap((result) => result.valid || []), okObjects = allObjects.filter((obj) => obj.status === "ok").length;
+    const allObjects = results.flatMap(
+      (result) => result.ok ? result.objects.filter((item) => item.valid) : []
+    ), okObjects = allObjects.filter((obj) => obj.status === "ok").length;
     const worstStatus = results.some(
-      (result) => result.err || result.status === "bad"
+      (result) => !result.ok || result.status === "bad"
     ) ? "bad" : results.some((result) => result.status === "warn") ? "warn" : "ok";
     const smallest = allObjects.length ? allObjects.reduce((a, b) => a.modelPx < b.modelPx ? a : b) : null;
     const totalMbps = liveResults.reduce(
-      (sum, result) => sum + result.bitrateMbps * result.count,
+      (sum, result) => sum + result.stream.bitrateMbps * result.count,
       0
     );
     const cameraCost = results.reduce((sum, result) => {
@@ -2676,9 +2911,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("systemOfTotal", okObjects, allObjects.length)}`,
         smallest ? t(
           "systemSmallest",
-          smallest.name,
+          smallest.object.name,
           formatNumber(
-            Math.min(smallest.widthPx, smallest.heightPx) * smallest.feedInfo.modelScale,
+            Math.min(smallest.widthPx, smallest.heightPx) * smallest.feed.modelScale,
             1
           )
         ) : t("systemNoObjects")
@@ -2718,7 +2953,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       t("donutAriaValue", percent(chosen.inferenceLoad), percent(maxLoad))
     );
     byId("legend").innerHTML = liveResults.length ? shown.map(
-      (run, i) => `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed]} ${run.feedInfo.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`
+      (run, i) => `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`
     ).join("") + (rest.length ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${percent(restShare)}</span></li>` : "") + `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSubtitle", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>` : `<li class="note">${t("noLoad")}</li>`;
     const decodeCapacity = chosen.count * system.decodeUnitsTotal / (chosen.decodeGpus || 1);
     const gauge = (label, load2, limit, center, sub) => `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load2, color: load2 > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
@@ -2748,7 +2983,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     byId("loadNote").hidden = !byId("loadNote").innerHTML;
     const archiveDays = parseNum(byId("archiveDays").value) || 0, archiveTB = totalMbps * 1e6 / 8 * 86400 * archiveDays / 1e12;
     byId("networkTable").innerHTML = `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` + results.map(
-      (result) => result.err ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.Nw} × ${result.Nh}</td><td>${formatNumber(result.fps, 0)}</td><td>${withUnit(formatNumber(result.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.bitrateMbps * result.count, 0), "mbps")}</td></tr>`
+      (result) => !result.ok ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.frame.width} × ${result.frame.height}</td><td>${formatNumber(result.stream.fps, 0)}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps * result.count, 0), "mbps")}</td></tr>`
     ).join("") + `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr><tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
     byId("assumptionsList").innerHTML = t(
       "assumptions",
@@ -3002,7 +3237,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   });
   var report = "";
   function calcAll() {
-    const results = store.cameraTypes.map(computeType);
+    const results = store.cameraTypes.map(
+      (type) => computeType(type, cameraById(type.inputs.camera))
+    );
     const activeIndex = Math.max(
       0,
       store.cameraTypes.findIndex((type) => type.id === store.activeTypeId)
@@ -3016,36 +3253,36 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     report = [
       t("appTitle"),
       ...results.flatMap(
-        (result) => result.err ? ["\n" + t("reportError", result.type.name, result.count)] : [
+        (result) => !result.ok ? ["\n" + t("reportError", result.type.name, result.count)] : [
           `
 ${result.type.name} × ${result.count}`,
           t("reportCamera", {
-            cameraLabel: result.cameraLabel,
-            rotated: result.rotated,
-            sensorWidth: formatNumber(result.s, 2),
-            focal: formatNumber(result.f, 1),
-            hfov: formatNumber(result.hfov / DEG, 0),
-            tilt: formatNumber(result.tilt / DEG, 0),
+            cameraLabel: cameraLabel(result),
+            rotated: result.lens.rotated,
+            sensorWidth: formatNumber(result.frame.sensorWidth, 2),
+            focal: formatNumber(result.lens.f, 1),
+            hfov: formatNumber(result.lens.hfov / DEG, 0),
+            tilt: formatNumber(result.geometry.tilt / DEG, 0),
             overCenter: result.placement === "top",
-            zoneStart: formatNumber(result.zoneStart, 2),
-            cameraHeight: formatNumber(result.H, 2),
-            zoneWidth: formatNumber(result.zoneWidth, 2),
-            zoneDepth: formatNumber(result.zoneDepth, 2)
+            zoneStart: formatNumber(result.geometry.zoneStart, 2),
+            cameraHeight: formatNumber(result.geometry.H, 2),
+            zoneWidth: formatNumber(result.geometry.zoneWidth, 2),
+            zoneDepth: formatNumber(result.geometry.zoneDepth, 2)
           }),
-          ...result.valid.map(
-            (obj) => t("reportObject", {
-              name: obj.name,
-              model: modelName(obj),
-              feed: obj.feedInfo.text,
-              sensorPx: result.sensorPxText(obj),
-              modelPx: result.modelPxText(obj),
-              requiredPx: formatNumber(obj.requiredPx, 0),
-              status: STATUS_TEXT[obj.status]
+          ...result.objects.filter((item) => item.valid).map(
+            (item) => t("reportObject", {
+              name: item.object.name,
+              model: modelName(item.object),
+              feed: feedText(item.feed),
+              sensorPx: sensorPxText(item),
+              modelPx: modelPxText(item),
+              requiredPx: formatNumber(item.requiredPx, 0),
+              status: STATUS_TEXT[item.status]
             })
           ),
           t(
             "reportStream",
-            formatNumber(result.bitrateMbps, 1),
+            formatNumber(result.stream.bitrateMbps, 1),
             Math.ceil(result.shutterDenominator)
           )
         ]
