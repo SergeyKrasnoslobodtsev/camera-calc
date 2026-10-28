@@ -1,1 +1,6 @@
-buildGpuSelect();buildCamSelect();load();writeForm(act());calcAll();route();
+buildGpuSelect();
+buildCamSelect();
+load();
+writeForm(act());
+calcAll();
+route();
