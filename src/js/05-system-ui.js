@@ -807,27 +807,27 @@ function calcAll() {
         : [
             `\n${result.type.name} × ${result.count}`,
             t("rCam", {
-              rl: result.cameraLabel,
-              rot: result.rotated,
-              s: formatNumber(result.s, 2),
-              f: formatNumber(result.f, 1),
-              hf: formatNumber(result.hfov / DEG, 0),
+              cameraLabel: result.cameraLabel,
+              rotated: result.rotated,
+              sensorWidth: formatNumber(result.s, 2),
+              focal: formatNumber(result.f, 1),
+              hfov: formatNumber(result.hfov / DEG, 0),
               tilt: formatNumber(result.tilt / DEG, 0),
-              top: result.placement === "top",
-              L0: formatNumber(result.zoneStart, 2),
-              H: formatNumber(result.H, 2),
-              Wz: formatNumber(result.zoneWidth, 2),
-              Dz: formatNumber(result.zoneDepth, 2),
+              overCenter: result.placement === "top",
+              zoneStart: formatNumber(result.zoneStart, 2),
+              cameraHeight: formatNumber(result.H, 2),
+              zoneWidth: formatNumber(result.zoneWidth, 2),
+              zoneDepth: formatNumber(result.zoneDepth, 2),
             }),
             ...result.valid.map((obj) =>
               t("rObj", {
                 name: obj.name,
                 model: modelName(obj),
                 feed: obj.feedInfo.text,
-                pxs: result.sensorPxText(obj),
-                pxm: result.modelPxText(obj),
-                req: formatNumber(obj.requiredPx, 0),
-                st: STATUS_TEXT[obj.status],
+                sensorPx: result.sensorPxText(obj),
+                modelPx: result.modelPxText(obj),
+                requiredPx: formatNumber(obj.requiredPx, 0),
+                status: STATUS_TEXT[obj.status],
               }),
             ),
             t(
@@ -848,14 +848,14 @@ function calcAll() {
       ),
     system.liveResults.length
       ? t("rCompute", {
-          n: chosen.count,
-          g: chosen.gpu.name,
+          gpuCount: chosen.count,
+          gpuName: chosen.gpu.name,
           cost: "$" + formatNumber(chosen.cost, 0),
-          uI: formatNumber(chosen.inferenceLoad * 100, 0),
-          uD: formatNumber(chosen.decodeLoad * 100, 0),
-          mem: formatNumber(chosen.memoryUseGB, 1),
-          cap: formatNumber(chosen.memoryCapGB, 0),
-          best:
+          inferenceLoad: formatNumber(chosen.inferenceLoad * 100, 0),
+          decodeLoad: formatNumber(chosen.decodeLoad * 100, 0),
+          memoryUsed: formatNumber(chosen.memoryUseGB, 1),
+          memoryCap: formatNumber(chosen.memoryCapGB, 0),
+          optimum:
             system.optimum && system.optimum !== chosen
               ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}`
               : "",

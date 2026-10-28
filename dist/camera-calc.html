@@ -929,15 +929,15 @@ const RU = {
   // отчёт
   rErr: (name, count) => `${name} × ${count}: ошибка в исходных данных`,
   rCam: (params) =>
-    `  Камера: ${params.rl}${params.rot ? " (повёрнута на 90°)" : ""}, матрица ${params.s} мм, f ${params.f} мм, HFOV ${params.hf}°, наклон ${params.tilt}°, ${params.top ? "над центром зоны" : `вынос ${params.L0} м`}, высота ${params.H} м, зона ${params.Wz} × ${params.Dz} м`,
+    `  Камера: ${params.cameraLabel}${params.rotated ? " (повёрнута на 90°)" : ""}, матрица ${params.sensorWidth} мм, f ${params.focal} мм, HFOV ${params.hfov}°, наклон ${params.tilt}°, ${params.overCenter ? "над центром зоны" : `вынос ${params.zoneStart} м`}, высота ${params.cameraHeight} м, зона ${params.zoneWidth} × ${params.zoneDepth} м`,
   rObj: (params) =>
-    `  ${params.name}: ${params.model}, ${params.feed}; на матрице ${params.pxs}, на входе модели ${params.pxm}, порог ${params.req}: ${params.st}`,
+    `  ${params.name}: ${params.model}, ${params.feed}; на матрице ${params.sensorPx}, на входе модели ${params.modelPx}, порог ${params.requiredPx}: ${params.status}`,
   rStream: (mbps, shutterDenominator) =>
     `  Поток ${mbps} Мбит/с на камеру, выдержка не длиннее 1/${shutterDenominator} с`,
   rSys: (cameraCount, mbps, cost) =>
     `Система: камер ${cameraCount}, ${mbps} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
   rCompute: (params) =>
-    `Вычислитель (оценка): ${params.n} × ${params.g}, ${params.cost}; инференс ${params.uI}%, декодер ${params.uD}%, видеопамять ${params.mem}/${params.cap} ГБ${params.best ? `; оптимум по цене: ${params.best}` : ""}`,
+    `Вычислитель (оценка): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; инференс ${params.inferenceLoad}%, декодер ${params.decodeLoad}%, видеопамять ${params.memoryUsed}/${params.memoryCap} ГБ${params.optimum ? `; оптимум по цене: ${params.optimum}` : ""}`,
   rNoCompute: "Вычислитель: нет данных",
   // уведомления
   stale: "Данные изменены в другой вкладке. Обновите страницу.",
@@ -964,8 +964,10 @@ const RU = {
   dH: (height) => `H ${height} м`,
   dh: (height) => `h ${height} м`,
   dAria: (params) =>
-    `Вид сбоку: камера на высоте ${params.H} м, наклон ${params.tilt}°, VFOV ${params.vf}°, зона от ${params.x1} до ${params.x2} м на высоте ${params.h} м` +
-    (params.wN ? `, ширина кадра ${params.wN}–${params.wF} м` : ""),
+    `Вид сбоку: камера на высоте ${params.H} м, наклон ${params.tilt}°, VFOV ${params.vfov}°, зона от ${params.x1} до ${params.x2} м на высоте ${params.h} м` +
+    (params.frameWidthNear
+      ? `, ширина кадра ${params.frameWidthNear}–${params.frameWidthFar} м`
+      : ""),
   // подсказки «?»
   tips: {
     tName:
@@ -1401,15 +1403,15 @@ const EN = {
   // отчёт
   rErr: (name, count) => `${name} × ${count}: input data error`,
   rCam: (params) =>
-    `  Camera: ${params.rl}${params.rot ? " (rotated 90°)" : ""}, sensor ${params.s} mm, f ${params.f} mm, HFOV ${params.hf}°, tilt ${params.tilt}°, ${params.top ? "overhead" : `zone offset ${params.L0} m`}, height ${params.H} m, zone ${params.Wz} × ${params.Dz} m`,
+    `  Camera: ${params.cameraLabel}${params.rotated ? " (rotated 90°)" : ""}, sensor ${params.sensorWidth} mm, f ${params.focal} mm, HFOV ${params.hfov}°, tilt ${params.tilt}°, ${params.overCenter ? "overhead" : `zone offset ${params.zoneStart} m`}, height ${params.cameraHeight} m, zone ${params.zoneWidth} × ${params.zoneDepth} m`,
   rObj: (params) =>
-    `  ${params.name}: ${params.model}, ${params.feed}; on sensor ${params.pxs}, at model input ${params.pxm}, threshold ${params.req}: ${params.st}`,
+    `  ${params.name}: ${params.model}, ${params.feed}; on sensor ${params.sensorPx}, at model input ${params.modelPx}, threshold ${params.requiredPx}: ${params.status}`,
   rStream: (mbps, shutterDenominator) =>
     `  Stream ${mbps} Mbps per camera, exposure time up to 1/${shutterDenominator} s`,
   rSys: (cameraCount, mbps, cost) =>
     `System: ${cameraCount} cameras, ${mbps} Mbps${cost ? `, camera cost ${cost}` : ""}`,
   rCompute: (params) =>
-    `Compute node (estimate): ${params.n} × ${params.g}, ${params.cost}; inference ${params.uI}%, decoder ${params.uD}%, GPU memory ${params.mem}/${params.cap} GB${params.best ? `; best price: ${params.best}` : ""}`,
+    `Compute node (estimate): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; inference ${params.inferenceLoad}%, decoder ${params.decodeLoad}%, GPU memory ${params.memoryUsed}/${params.memoryCap} GB${params.optimum ? `; best price: ${params.optimum}` : ""}`,
   rNoCompute: "Compute node: no data",
   // уведомления
   stale: "The data was changed in another tab. Reload the page.",
@@ -1435,8 +1437,10 @@ const EN = {
   dH: (height) => `H ${height} m`,
   dh: (height) => `h ${height} m`,
   dAria: (params) =>
-    `Side view: camera at ${params.H} m, tilt ${params.tilt}°, VFOV ${params.vf}°, zone from ${params.x1} to ${params.x2} m at ${params.h} m height` +
-    (params.wN ? `, frame width ${params.wN}–${params.wF} m` : ""),
+    `Side view: camera at ${params.H} m, tilt ${params.tilt}°, VFOV ${params.vfov}°, zone from ${params.x1} to ${params.x2} m at ${params.h} m height` +
+    (params.frameWidthNear
+      ? `, frame width ${params.frameWidthNear}–${params.frameWidthFar} m`
+      : ""),
   // подсказки «?»
   tips: {
     tName:
@@ -3338,27 +3342,27 @@ function calcAll() {
         : [
             `\n${result.type.name} × ${result.count}`,
             t("rCam", {
-              rl: result.cameraLabel,
-              rot: result.rotated,
-              s: formatNumber(result.s, 2),
-              f: formatNumber(result.f, 1),
-              hf: formatNumber(result.hfov / DEG, 0),
+              cameraLabel: result.cameraLabel,
+              rotated: result.rotated,
+              sensorWidth: formatNumber(result.s, 2),
+              focal: formatNumber(result.f, 1),
+              hfov: formatNumber(result.hfov / DEG, 0),
               tilt: formatNumber(result.tilt / DEG, 0),
-              top: result.placement === "top",
-              L0: formatNumber(result.zoneStart, 2),
-              H: formatNumber(result.H, 2),
-              Wz: formatNumber(result.zoneWidth, 2),
-              Dz: formatNumber(result.zoneDepth, 2),
+              overCenter: result.placement === "top",
+              zoneStart: formatNumber(result.zoneStart, 2),
+              cameraHeight: formatNumber(result.H, 2),
+              zoneWidth: formatNumber(result.zoneWidth, 2),
+              zoneDepth: formatNumber(result.zoneDepth, 2),
             }),
             ...result.valid.map((obj) =>
               t("rObj", {
                 name: obj.name,
                 model: modelName(obj),
                 feed: obj.feedInfo.text,
-                pxs: result.sensorPxText(obj),
-                pxm: result.modelPxText(obj),
-                req: formatNumber(obj.requiredPx, 0),
-                st: STATUS_TEXT[obj.status],
+                sensorPx: result.sensorPxText(obj),
+                modelPx: result.modelPxText(obj),
+                requiredPx: formatNumber(obj.requiredPx, 0),
+                status: STATUS_TEXT[obj.status],
               }),
             ),
             t(
@@ -3379,14 +3383,14 @@ function calcAll() {
       ),
     system.liveResults.length
       ? t("rCompute", {
-          n: chosen.count,
-          g: chosen.gpu.name,
+          gpuCount: chosen.count,
+          gpuName: chosen.gpu.name,
           cost: "$" + formatNumber(chosen.cost, 0),
-          uI: formatNumber(chosen.inferenceLoad * 100, 0),
-          uD: formatNumber(chosen.decodeLoad * 100, 0),
-          mem: formatNumber(chosen.memoryUseGB, 1),
-          cap: formatNumber(chosen.memoryCapGB, 0),
-          best:
+          inferenceLoad: formatNumber(chosen.inferenceLoad * 100, 0),
+          decodeLoad: formatNumber(chosen.decodeLoad * 100, 0),
+          memoryUsed: formatNumber(chosen.memoryUseGB, 1),
+          memoryCap: formatNumber(chosen.memoryCapGB, 0),
+          optimum:
             system.optimum && system.optimum !== chosen
               ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}`
               : "",
@@ -3889,12 +3893,13 @@ function drawSide({
     t("dAria", {
       H: formatNumber(H, 1),
       tilt: formatNumber(tilt / DEG, 0),
-      vf: formatNumber(vfov / DEG, 0),
+      vfov: formatNumber(vfov / DEG, 0),
       x1: formatNumber(x1, 1),
       x2: formatNumber(x2, 1),
       h: formatNumber(h, 2),
-      wN: isFinite(frameWidthNear) && formatNumber(frameWidthNear, 1),
-      wF: formatNumber(frameWidthFar, 1),
+      frameWidthNear:
+        isFinite(frameWidthNear) && formatNumber(frameWidthNear, 1),
+      frameWidthFar: formatNumber(frameWidthFar, 1),
     }),
   );
 }

@@ -162,12 +162,13 @@ function drawSide({
     t("dAria", {
       H: formatNumber(H, 1),
       tilt: formatNumber(tilt / DEG, 0),
-      vf: formatNumber(vfov / DEG, 0),
+      vfov: formatNumber(vfov / DEG, 0),
       x1: formatNumber(x1, 1),
       x2: formatNumber(x2, 1),
       h: formatNumber(h, 2),
-      wN: isFinite(frameWidthNear) && formatNumber(frameWidthNear, 1),
-      wF: formatNumber(frameWidthFar, 1),
+      frameWidthNear:
+        isFinite(frameWidthNear) && formatNumber(frameWidthNear, 1),
+      frameWidthFar: formatNumber(frameWidthFar, 1),
     }),
   );
 }
