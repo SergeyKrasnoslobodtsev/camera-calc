@@ -6,9 +6,9 @@
 
 ### Расчёт без DOM, без текстов и без глобального состояния
 
-**Статус:** предложено. Целевая структура одобрена владельцем 2026-10-28. Статус станет «принято», когда расчёт будет вынесен в `src/domain/` и пройдёт проверку из раздела «Подтверждение».
+**Статус:** принято 2026-10-28. Расчёт вынесен в `src/domain/` и прошёл проверку из раздела «Подтверждение».
 
-Для расчёта типа камер и справочников проверка выполнена (#35): `src/domain/compute-type/` и `src/domain/references/`, тесты `tests/domain/` проходят в `npm test`, `tests/golden.txt` не изменился. Подбор GPU и итоги системы ещё в `src/js/system-ui.js` (#47). Отличие от формулировки ниже: у заметок-советов (`downscale`, `resolution`, `resolutionNone`) и у вердикта в `values` есть ссылка на объект того же результата, а у `resolution` — запись разрешения; так текст берёт имя и размеры объекта без поиска по номеру.
+Для расчёта типа камер и справочников проверка выполнена (#35): `src/domain/compute-type/` и `src/domain/references/`, тесты `tests/domain/` проходят в `npm test`, `tests/golden.txt` не изменился. Для подбора GPU и итогов системы — тоже (#47): `src/domain/compute-system/`, тесты `tests/domain/compute-system.test.ts`, `tests/golden.txt` не изменился. Параметры системы приходят строками полей и разбираются при расчёте, как поля типа камер, до функций разбора (#48). В интерфейсе пока остаются производные для отрисовки: статистика объектов, ёмкость декодера для шкалы, доли запусков на кольце. Отличие от формулировки ниже: у заметок-советов (`downscale`, `resolution`, `resolutionNone`) и у вердикта в `values` есть ссылка на объект того же результата, а у `resolution` — запись разрешения; так текст берёт имя и размеры объекта без поиска по номеру.
 
 **Контекст.** `computeType` (`src/js/04-compute-type.js`) не обращается к DOM, но возвращает готовые фразы: описание подачи (`t("feedTiles", …)`), заметки, заголовок вердикта, функции `sensorPxText` и `modelPxText`. Он берёт данные из глобальных переменных через `cameraById` и `RESOLUTIONS`, а `RESOLUTIONS` собираются через `t()` (`src/js/01-data.js`). `computeSystem` (`src/js/05-system-ui.js`) сам читает поля формы `efficiency`, `reserve`, `gpu`, `gpuCount` и возвращает переведённое узкое место. Суммарный поток, стоимость камер и выбор сетевого порта считаются внутри отрисовки `renderSystem`. Из-за этого расчёт нельзя вызвать из Node без jsdom, а смена языка задевает расчёт.
 
@@ -80,6 +80,13 @@
 | `MAX_TOP_SHARE` — верх коробки не выше доли `Hc` | 0,98 | `compute-type/projection.ts` |
 | `MAX_OVERLAP` — наибольшее перекрытие тайлов | 0,9 | `compute-type/feed.ts` |
 | ширины дюймовых форматов матрицы | 4,8–11,2 мм | `references/sensors.ts` |
+| `BASE_MEMORY_GB` — видеопамять среды выполнения | 0,8 ГБ | `compute-system/gpu-load.ts` |
+| `ENGINE_BASE_GB`, `UNKNOWN_ENGINE_GB` — движок без активаций и движок с неизвестными GFLOPs | 0,15 ГБ, 0,5 ГБ | `compute-system/gpu-load.ts` |
+| `BATCH_SIZE`, `ENGINE_GFLOPS_DIVISOR` — батч и делитель GFLOPs в памяти активаций | 16, 4 | `compute-system/gpu-load.ts` |
+| `FRAMES_PER_STREAM` — декодированных кадров потока в памяти | 20 | `compute-system/gpu-load.ts` |
+| `MEMORY_USABLE_SHARE`, `JETSON_MEMORY_USABLE_SHARE` — доступная доля видеопамяти | 0,9, 0,6 | `compute-system/gpu-load.ts` |
+| `NETWORK_HEADROOM` — запас канала | 1,3 | `compute-system/totals.ts` |
+| `PORT_1G_LIMIT_MBPS`, `PORT_10G_LIMIT_MBPS` — поток с запасом, который помещается в порт | 900, 9000 Мбит/с | `compute-system/totals.ts` |
 
 ## Отброшенные альтернативы
 
