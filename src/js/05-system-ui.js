@@ -1,121 +1,152 @@
 // ---------- расчёт системы
-const mName = (o) => (modelById(o.model) || { name: "?" }).name;
-const gfOf = (id) => {
-  const m = modelById(id);
-  return m && m.gflops > 0 ? m.gflops : 0;
+const modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
+const modelGflops = (id) => {
+  const model = modelById(id);
+  return model && model.gflops > 0 ? model.gflops : 0;
 };
-function computeSystem(Rs) {
-  const live = Rs.filter((r) => !r.err && r.count > 0);
-  const kr = parseNum(byId("efficiency").value),
-    resv = Math.max(0, parseNum(byId("reserve").value) || 0) / 100,
-    uMax = 1 / (1 + resv),
-    BATCH = 16;
-  const groups = live.flatMap((r) =>
-    r.groups.map((g) => ({ ...g, typeName: r.type.name })),
+// Подбор GPU. Загрузка (load) — доля ресурса GPU, 1 = 100%.
+function computeSystem(results) {
+  const liveResults = results.filter(
+    (result) => !result.err && result.count > 0,
   );
+  const efficiency = parseNum(byId("efficiency").value),
+    reserve = Math.max(0, parseNum(byId("reserve").value) || 0) / 100,
+    maxLoad = 1 / (1 + reserve),
+    BATCH_SIZE = 16;
+  const groups = liveResults.flatMap((result) =>
+    result.groups.map((group) => ({ ...group, typeName: result.type.name })),
+  );
+  // движок — модель с конкретным входом; в памяти GPU каждый движок один раз
   const engines = [
     ...new Map(
-      groups.map((g) => [`${g.model}|${g.feedInfo.inputSize}`, g]),
+      groups.map((group) => [
+        `${group.model}|${group.feedInfo.inputSize}`,
+        group,
+      ]),
     ).values(),
   ];
-  const modMemGB = (g) => {
-    const gf = gfOf(g.model);
-    return gf
-      ? 0.15 + (BATCH * g.feedInfo.inputSize ** 2 * 3 * 2 * (gf / 4)) / 1e9
+  const engineMemoryGB = (engine) => {
+    const gflops = modelGflops(engine.model);
+    return gflops
+      ? 0.15 +
+          (BATCH_SIZE * engine.feedInfo.inputSize ** 2 * 3 * 2 * (gflops / 4)) /
+            1e9
       : 0.5;
   };
-  const evalGPU = (g, n) => {
-    const mods = groups.map((o) => {
-      let base;
-      const m = modelById(o.model);
-      if (!m) return { ...o, bad: true };
-      if (MODELS.includes(m)) {
-        const inScale = (640 / o.feedInfo.inputSize) ** 2;
-        base = ((1000 / m.latencyMs) * inScale * g.tflops) / T4_TFLOPS;
+  const evaluateGpu = (gpu, count) => {
+    const runs = groups.map((group) => {
+      let framesPerSecond;
+      const model = modelById(group.model);
+      if (!model) return { ...group, bad: true };
+      if (MODELS.includes(model)) {
+        const inputScale = (640 / group.feedInfo.inputSize) ** 2;
+        framesPerSecond =
+          ((1000 / model.latencyMs) * inputScale * gpu.tflops) / T4_TFLOPS;
       } else {
-        const rg = gpuById(m.refGpu) || GPU_CATALOG[0],
-          inScale = (m.inputSize / o.feedInfo.inputSize) ** 2;
-        base = (m.fps * inScale * g.tflops) / rg.tflops;
+        const refGpu = gpuById(model.refGpu) || GPU_CATALOG[0],
+          inputScale = (model.inputSize / group.feedInfo.inputSize) ** 2;
+        framesPerSecond = (model.fps * inputScale * gpu.tflops) / refGpu.tflops;
       }
-      const cap = base * kr;
-      return { ...o, cap, gpu: o.load / cap };
+      const capacity = framesPerSecond * efficiency;
+      return { ...group, capacity, gpusNeeded: group.load / capacity };
     });
-    const inf = mods.filter((o) => !o.bad).reduce((s, o) => s + o.gpu, 0);
-    const dec = live.reduce(
-      (s, r) => s + r.decUnits / (decStreams(g, r.codec) * kr),
+    const inferenceGpus = runs
+      .filter((run) => !run.bad)
+      .reduce((sum, run) => sum + run.gpusNeeded, 0);
+    const decodeGpus = liveResults.reduce(
+      (sum, result) =>
+        sum + result.decUnits / (decStreams(gpu, result.codec) * efficiency),
       0,
     );
-    const memUse =
+    const memoryUseGB =
         0.8 +
-        engines.reduce((s, e) => s + modMemGB(e), 0) +
-        live.reduce((s, r) => s + Math.ceil(r.count / n) * 20 * r.frameGB, 0),
-      memCap = g.memoryGB * (g.jetson ? 0.6 : 0.9);
-    const uI = inf / n,
-      uD = dec / n,
-      uM = memUse / memCap,
-      worst = Math.max(uI, uD, uM);
+        engines.reduce((sum, engine) => sum + engineMemoryGB(engine), 0) +
+        liveResults.reduce(
+          (sum, result) =>
+            sum + Math.ceil(result.count / count) * 20 * result.frameGB,
+          0,
+        ),
+      memoryCapGB = gpu.memoryGB * (gpu.jetson ? 0.6 : 0.9);
+    const inferenceLoad = inferenceGpus / count,
+      decodeLoad = decodeGpus / count,
+      memoryLoad = memoryUseGB / memoryCapGB,
+      worstLoad = Math.max(inferenceLoad, decodeLoad, memoryLoad);
     return {
-      g,
-      n,
-      mods,
-      inf,
-      dec,
-      uI,
-      uD,
-      uM,
-      memUse,
-      memCap,
-      worst,
-      ok: uI <= uMax && uD <= uMax && uM <= 1,
-      cost: n * priceOf(g),
-      bott: t(
-        uI >= uD && uI >= uM ? "bottInf" : uD >= uM ? "bottDec" : "bottMem",
+      gpu,
+      count,
+      runs,
+      inferenceGpus,
+      decodeGpus,
+      inferenceLoad,
+      decodeLoad,
+      memoryLoad,
+      memoryUseGB,
+      memoryCapGB,
+      worstLoad,
+      ok: inferenceLoad <= maxLoad && decodeLoad <= maxLoad && memoryLoad <= 1,
+      cost: count * priceOf(gpu),
+      bottleneck: t(
+        inferenceLoad >= decodeLoad && inferenceLoad >= memoryLoad
+          ? "bottInf"
+          : decodeLoad >= memoryLoad
+            ? "bottDec"
+            : "bottMem",
       ),
     };
   };
-  const cand = allGpus().filter(isOn),
-    all = [];
-  cand.forEach((g) => {
-    for (let n = 1; n <= 4; n++) all.push(evalGPU(g, n));
+  const candidates = allGpus().filter(isOn),
+    evaluations = [];
+  candidates.forEach((gpu) => {
+    for (let count = 1; count <= 4; count++)
+      evaluations.push(evaluateGpu(gpu, count));
   });
-  const okAll = all
-    .filter((e) => e.ok)
-    .sort((a, b) => a.cost - b.cost || a.n * a.g.tdpW - b.n * b.g.tdpW);
-  const best = okAll[0],
-    gSel = byId("gpu").value,
-    cSel = byId("gpuCount").value;
-  const minWorst = (arr) =>
-    arr.length
-      ? arr.reduce((a, b) => (a.worst < b.worst ? a : b))
-      : evalGPU(allGpus()[0], 1);
-  let E;
-  if (gSel === "auto" && cSel === "auto") E = best || minWorst(all);
-  else if (gSel === "auto") {
-    const n = +cSel;
-    E = okAll.find((e) => e.n === n) || minWorst(all.filter((e) => e.n === n));
+  // подходящие варианты от дешёвых к дорогим, при равной цене — по мощности
+  const fitting = evaluations
+    .filter((option) => option.ok)
+    .sort(
+      (a, b) => a.cost - b.cost || a.count * a.gpu.tdpW - b.count * b.gpu.tdpW,
+    );
+  const optimum = fitting[0],
+    gpuChoice = byId("gpu").value,
+    countChoice = byId("gpuCount").value;
+  const leastLoaded = (options) =>
+    options.length
+      ? options.reduce((a, b) => (a.worstLoad < b.worstLoad ? a : b))
+      : evaluateGpu(allGpus()[0], 1);
+  let chosen;
+  if (gpuChoice === "auto" && countChoice === "auto")
+    chosen = optimum || leastLoaded(evaluations);
+  else if (gpuChoice === "auto") {
+    const count = +countChoice;
+    chosen =
+      fitting.find((option) => option.count === count) ||
+      leastLoaded(evaluations.filter((option) => option.count === count));
   } else {
-    const g = gpuById(gSel) || GPU_CATALOG[0];
-    if (cSel === "auto") {
-      E = null;
-      for (let n = 1; n <= 4 && !E; n++) {
-        const e = evalGPU(g, n);
-        if (e.ok) E = e;
+    const gpu = gpuById(gpuChoice) || GPU_CATALOG[0];
+    if (countChoice === "auto") {
+      chosen = null;
+      for (let count = 1; count <= 4 && !chosen; count++) {
+        const option = evaluateGpu(gpu, count);
+        if (option.ok) chosen = option;
       }
-      E = E || evalGPU(g, 4);
-    } else E = evalGPU(g, +cSel);
+      chosen = chosen || evaluateGpu(gpu, 4);
+    } else chosen = evaluateGpu(gpu, +countChoice);
   }
-  const decTotal = live.reduce((s, r) => s + r.decUnits, 0);
+  const decodeUnitsTotal = liveResults.reduce(
+    (sum, result) => sum + result.decUnits,
+    0,
+  );
   return {
-    live,
-    kr,
-    uMax,
-    resv,
-    E,
-    best,
+    liveResults,
+    efficiency,
+    maxLoad,
+    reserve,
+    chosen,
+    optimum,
     engines,
-    decTotal,
+    decodeUnitsTotal,
     groups,
-    noCand: !cand.length,
+    noCandidates: !candidates.length,
   };
 }
 
@@ -279,8 +310,8 @@ function ring(cx, cy, r, w, segs, mark) {
 }
 
 // ---------- система
-function renderSystem(Rs, S) {
-  const { E, best, kr, uMax, live } = S;
+function renderSystem(Rs, system) {
+  const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
   const pc = (u) => formatNumber(u * 100, 0) + "%";
   const cams = Rs.reduce((s, r) => s + r.count, 0);
   const vAll = Rs.flatMap((r) => r.valid || []),
@@ -293,7 +324,7 @@ function renderSystem(Rs, S) {
   const smallest = vAll.length
     ? vAll.reduce((a, b) => (a.modelPx < b.modelPx ? a : b))
     : null;
-  const mbTot = live.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
+  const mbTot = liveResults.reduce((s, r) => s + r.bitrateMbps * r.count, 0);
   const camCost = Rs.reduce((s, r) => {
     const c = cameraById(r.type.inputs.camera);
     return s + (c && c.price > 0 ? c.price * r.count : 0);
@@ -329,9 +360,11 @@ function renderSystem(Rs, S) {
     ],
     [
       t("sCompute"),
-      live.length ? `${E.n} × ${escapeHtml(E.g.name)}` : "—",
-      live.length
-        ? `$${formatNumber(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - E.worst))) : t("insufficient")}`
+      liveResults.length
+        ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}`
+        : "—",
+      liveResults.length
+        ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", pc(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}`
         : t("sNoCams"),
     ],
     [
@@ -346,13 +379,13 @@ function renderSystem(Rs, S) {
     )
     .join("");
   // дашборд
-  const hot = E.uI > uMax;
-  byId("dsum").innerHTML = live.length
-    ? `<b>${E.n} × ${escapeHtml(E.g.name)}</b> · $${formatNumber(E.cost, 0)} · ${E.ok ? t(E === best ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - E.worst)))} · ${t("bottleneck", E.bott)}`
+  const hot = chosen.inferenceLoad > maxLoad;
+  byId("dsum").innerHTML = liveResults.length
+    ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", pc(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", chosen.bottleneck)}`
     : "";
-  const runs = E.mods
+  const runs = chosen.runs
     .filter((o) => !o.bad)
-    .map((o) => ({ ...o, u: o.gpu / E.n }))
+    .map((o) => ({ ...o, u: o.gpusNeeded / chosen.count }))
     .sort((a, b) => b.u - a.u);
   const COLS = [
     "var(--c1)",
@@ -366,50 +399,63 @@ function renderSystem(Rs, S) {
     restU = rest.reduce((s, o) => s + o.u, 0);
   const segs = shown.map((o, i) => ({ f: o.u, color: COLS[i] }));
   if (restU > 0) segs.push({ f: restU, color: "var(--c6)" });
-  byId("donut").innerHTML = live.length
-    ? ring(60, 60, 48, 14, segs, uMax) +
-      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${hot ? "var(--bad)" : "var(--fg)"}">${pc(E.uI)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
+  byId("donut").innerHTML = liveResults.length
+    ? ring(60, 60, 48, 14, segs, maxLoad) +
+      `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${hot ? "var(--bad)" : "var(--fg)"}">${pc(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCap")}</text>`
     : "";
   byId("donut").setAttribute(
     "aria-label",
-    t("donutAriaVal", pc(E.uI), pc(uMax)),
+    t("donutAriaVal", pc(chosen.inferenceLoad), pc(maxLoad)),
   );
-  byId("legend").innerHTML = live.length
+  byId("legend").innerHTML = liveResults.length
     ? shown
         .map(
           (o, i) =>
-            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${escapeHtml(mName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${escapeHtml(o.typeName)}: ${escapeHtml(o.names.join(", "))} · ${U(formatNumber(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
+            `<li><span class="sw" style="background:${COLS[i]}"></span><span>${escapeHtml(modelName(o))} · ${FEED_SHORT[o.feed]} ${o.feedInfo.inputSize}<span class="sub">${escapeHtml(o.typeName)}: ${escapeHtml(o.names.join(", "))} · ${U(formatNumber(o.load, 0), "fps")}</span></span><span class="pc">${pc(o.u)}</span></li>`,
         )
         .join("") +
       (rest.length
         ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${pc(restU)}</span></li>`
         : "") +
-      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSub", pc(uMax))}</span></span><span class="pc">${pc(Math.max(0, 1 - E.uI))}</span></li>`
+      `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSub", pc(maxLoad))}</span></span><span class="pc">${pc(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>`
     : `<li class="note">${t("noLoad")}</li>`;
-  const decCapN = (E.n * S.decTotal) / (E.dec || 1);
+  const decCapN =
+    (chosen.count * system.decodeUnitsTotal) / (chosen.decodeGpus || 1);
   const gauge = (label, u, lim, center, sub) =>
     `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ f: u, color: u > lim ? "var(--bad)" : "var(--meter)" }], lim < 1 ? lim : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
-  byId("gauges").innerHTML = live.length
+  byId("gauges").innerHTML = liveResults.length
     ? gauge(
         t("gDec"),
-        E.uD,
-        uMax,
-        pc(E.uD),
-        t("gDecSub", formatNumber(S.decTotal, 1), formatNumber(decCapN, 0)),
+        chosen.decodeLoad,
+        maxLoad,
+        pc(chosen.decodeLoad),
+        t(
+          "gDecSub",
+          formatNumber(system.decodeUnitsTotal, 1),
+          formatNumber(decCapN, 0),
+        ),
       ) +
       gauge(
         t("gMem"),
-        E.uM,
+        chosen.memoryLoad,
         1,
-        pc(E.uM),
-        t("gMemSub", formatNumber(E.memUse, 1), formatNumber(E.memCap, 0)),
+        pc(chosen.memoryLoad),
+        t(
+          "gMemSub",
+          formatNumber(chosen.memoryUseGB, 1),
+          formatNumber(chosen.memoryCapGB, 0),
+        ),
       )
     : "";
-  const warn = S.noCand ? t("noCand") : !best && live.length ? t("noFit") : "";
+  const warn = system.noCandidates
+    ? t("noCand")
+    : !optimum && liveResults.length
+      ? t("noFit")
+      : "";
   byId("loadNote").innerHTML = warn
     ? `<span style="color:var(--bad)">${escapeHtml(warn)}</span>`
-    : live.length && STR.gpuNotes[E.g.id]
-      ? escapeHtml(STR.gpuNotes[E.g.id])
+    : liveResults.length && STR.gpuNotes[chosen.gpu.id]
+      ? escapeHtml(STR.gpuNotes[chosen.gpu.id])
       : "";
   byId("loadNote").hidden = !byId("loadNote").innerHTML;
   // сеть
@@ -424,7 +470,7 @@ function renderSystem(Rs, S) {
     ).join("") +
     `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cams}</td><td></td><td></td><td></td><td>${U(formatNumber(mbTot, 0), "mbps")}</td></tr>` +
     `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${days > 0 ? t("nArchVal", formatNumber(tb, 1), formatNumber(days, 0)) : t("nArchOff")}</td></tr>`;
-  byId("assList").innerHTML = t("ass", formatNumber(kr, 2))
+  byId("assList").innerHTML = t("ass", formatNumber(efficiency, 2))
     .map((x) => `<li>${escapeHtml(x)}</li>`)
     .join("");
   return { cams, mbTot, camCost };
@@ -719,9 +765,9 @@ function calcAll() {
   syncFormUI(cameraTypes[i], Rs[i]);
   renderType(Rs[i]);
   renderTabs(Rs);
-  const S = computeSystem(Rs);
-  const sysTot = renderSystem(Rs, S);
-  const E = S.E;
+  const system = computeSystem(Rs);
+  const sysTot = renderSystem(Rs, system);
+  const chosen = system.chosen;
   report = [
     t("appTitle"),
     ...Rs.flatMap((r) =>
@@ -745,7 +791,7 @@ function calcAll() {
             ...r.valid.map((o) =>
               t("rObj", {
                 name: o.name,
-                model: mName(o),
+                model: modelName(o),
                 feed: o.feedInfo.text,
                 pxs: r.sensorPxText(o),
                 pxm: r.modelPxText(o),
@@ -767,18 +813,18 @@ function calcAll() {
         formatNumber(sysTot.mbTot, 0),
         sysTot.camCost ? "$" + formatNumber(sysTot.camCost, 0) : "",
       ),
-    S.live.length
+    system.liveResults.length
       ? t("rCompute", {
-          n: E.n,
-          g: E.g.name,
-          cost: "$" + formatNumber(E.cost, 0),
-          uI: formatNumber(E.uI * 100, 0),
-          uD: formatNumber(E.uD * 100, 0),
-          mem: formatNumber(E.memUse, 1),
-          cap: formatNumber(E.memCap, 0),
+          n: chosen.count,
+          g: chosen.gpu.name,
+          cost: "$" + formatNumber(chosen.cost, 0),
+          uI: formatNumber(chosen.inferenceLoad * 100, 0),
+          uD: formatNumber(chosen.decodeLoad * 100, 0),
+          mem: formatNumber(chosen.memoryUseGB, 1),
+          cap: formatNumber(chosen.memoryCapGB, 0),
           best:
-            S.best && S.best !== E
-              ? `${S.best.n} × ${S.best.g.name}, $${formatNumber(S.best.cost, 0)}`
+            system.optimum && system.optimum !== chosen
+              ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}`
               : "",
         })
       : t("rNoCompute"),
