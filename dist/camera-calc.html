@@ -534,7 +534,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <script>
 "use strict";
 (() => {
-  // src/js/i18n.js
+  // src/i18n/ru.ts
   var RU = {
     // шапка
     docTitle: "Калькулятор камер",
@@ -975,6 +975,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       archiveDays: "Сколько дней хранить видео. 0 — видео не записывается, хранятся только события аналитики."
     }
   };
+
+  // src/i18n/en.ts
   var EN = {
     // шапка
     docTitle: "Camera calculator",
@@ -1409,6 +1411,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       archiveDays: "How many days to keep video. 0 means video isn't recorded, and only analytics events are stored."
     }
   };
+
+  // src/i18n/index.ts
   var LANG_KEY = "camcalc-lang";
   var LANG = (() => {
     let saved = null;
@@ -1420,25 +1424,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   })();
   var STR = LANG === "en" ? EN : RU;
   var withUnit = (value, unit) => value + " " + STR.units[unit];
-  var t = (key, ...params) => {
+  function t(key, ...params) {
     const text = STR[key];
     return typeof text === "function" ? text(...params) : text;
-  };
-  function applyTranslations() {
-    document.documentElement.lang = LANG;
-    document.title = t("docTitle");
-    document.querySelectorAll("#formulas>[lang]").forEach((block) => block.hidden = block.lang !== LANG);
-    document.querySelectorAll("[data-t]").forEach((element) => element.textContent = t(element.dataset.t));
-    [
-      ["ta", "aria-label"],
-      ["tt", "title"],
-      ["tp", "placeholder"]
-    ].forEach(
-      ([dataKey, attr]) => document.querySelectorAll(`[data-${dataKey}]`).forEach(
-        (element) => element.setAttribute(attr, t(element.dataset[dataKey]))
-      )
-    );
   }
+  var formatNumber = (value, digits = 1) => isFinite(value) ? value.toLocaleString(LANG === "en" ? "en-US" : "ru-RU", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits
+  }).replace("-", "−") : "—";
 
   // src/js/store.js
   var store = {
@@ -1458,10 +1451,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   // src/js/data.js
   var byId = (id) => document.getElementById(id);
   var DEG = Math.PI / 180;
-  var formatNumber = (value, digits = 1) => isFinite(value) ? value.toLocaleString(LANG === "en" ? "en-US" : "ru-RU", {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits
-  }).replace("-", "−") : "—";
   var escapeHtml = (text) => String(text ?? "").replace(
     /[&<>"]/g,
     (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]
@@ -3472,6 +3461,21 @@ ${result.type.name} × ${result.count}`,
   });
 
   // src/js/init.js
+  function applyTranslations() {
+    document.documentElement.lang = LANG;
+    document.title = t("docTitle");
+    document.querySelectorAll("#formulas>[lang]").forEach((block) => block.hidden = block.lang !== LANG);
+    document.querySelectorAll("[data-t]").forEach((element) => element.textContent = t(element.dataset.t));
+    [
+      ["ta", "aria-label"],
+      ["tt", "title"],
+      ["tp", "placeholder"]
+    ].forEach(
+      ([dataKey, attr]) => document.querySelectorAll(`[data-${dataKey}]`).forEach(
+        (element) => element.setAttribute(attr, t(element.dataset[dataKey]))
+      )
+    );
+  }
   applyTranslations();
   buildGpuSelect();
   buildCameraSelect();

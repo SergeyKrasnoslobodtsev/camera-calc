@@ -1,5 +1,5 @@
-import { t } from "./i18n.js";
-import { DEG, byId, formatNumber } from "./data.js";
+import { formatNumber, t } from "../i18n/index.ts";
+import { DEG, byId } from "./data.js";
 // Обозначения как в compute-type.js:
 //   H — высота камеры, h — высота плоскости объектов, Hc = H − h — высота камеры над плоскостью, м;
 //   x1 и x2 — края зоны по полу от точки под камерой, м.

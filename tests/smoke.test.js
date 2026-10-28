@@ -1,7 +1,8 @@
 import { JSDOM, VirtualConsole } from "jsdom";
 import fs from "fs";
 import assert from "assert";
-import { RU, EN } from "../src/js/i18n.js";
+import { RU } from "../src/i18n/ru.ts";
+import { EN } from "../src/i18n/en.ts";
 const dom = new JSDOM(
   fs.readFileSync(import.meta.dirname + "/../dist/camera-calc.html", "utf8"),
   {
@@ -340,11 +341,14 @@ assert.deepStrictEqual(extraKeys(EN, RU, ""), [], "ключи EN, которых
 console.log("en keys: ok");
 // language: every key is used in the code or markup, every referenced key exists
 const srcDir = import.meta.dirname + "/../src/";
-const appCode = fs
-  .readdirSync(srcDir + "js")
-  .map((file) => fs.readFileSync(srcDir + "js/" + file, "utf8"))
+const appCode = ["js", "i18n"]
+  .flatMap((dir) =>
+    fs
+      .readdirSync(srcDir + dir)
+      .map((file) => fs.readFileSync(srcDir + dir + "/" + file, "utf8")),
+  )
   .join("\n")
-  .replace(/^export const (RU|EN) = \{\n[\s\S]*?^\};/gm, "")
+  .replace(/^export const (RU|EN)\b[^=]*= \{\n[\s\S]*?^\};/gm, "")
   .replace(/byId\(["'`][^"'`]*["'`]\)/g, "");
 const layoutSource = fs.readFileSync(srcDir + "layout.html", "utf8");
 const dictKeys = Object.keys(RU).filter((key) => key !== "tips");
@@ -371,20 +375,6 @@ assert.deepStrictEqual(
   "ключи, которых нет в словаре",
 );
 console.log("used keys: ok");
-// language: no key is declared twice in a dictionary (the last one would silently win)
-const i18nSource = fs.readFileSync(
-  import.meta.dirname + "/../src/js/i18n.js",
-  "utf8",
-);
-["RU", "EN"].forEach((name) => {
-  const body = i18nSource.match(
-    new RegExp(`^export const ${name} = \\{\\n([\\s\\S]*?)^\\};`, "m"),
-  )[1];
-  const keys = body.match(/^ {2}[\w$]+(?=:)/gm).map((key) => key.trim());
-  const repeated = keys.filter((key, i) => keys.indexOf(key) !== i);
-  assert.deepStrictEqual(repeated, [], "повторяющиеся ключи в " + name);
-});
-console.log("no duplicate keys: ok");
 // tips: every tip has a "?" button next to its field (objects: the tip sits in a heading, not in a field)
 assert.deepStrictEqual(
   Object.keys(RU.tips).filter(

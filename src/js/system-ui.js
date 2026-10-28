@@ -1,4 +1,11 @@
-import { LANG, LANG_KEY, STR, t, withUnit } from "./i18n.js";
+import {
+  LANG,
+  LANG_KEY,
+  STR,
+  formatNumber,
+  t,
+  withUnit,
+} from "../i18n/index.ts";
 import { store } from "./store.js";
 import {
   DEG,
@@ -12,7 +19,6 @@ import {
   decStreams,
   decText,
   escapeHtml,
-  formatNumber,
   gpuById,
   isOn,
   parseNum,

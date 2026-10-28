@@ -1,6 +1,6 @@
-import { STR, t } from "./i18n.js";
+import { STR, formatNumber, t } from "../i18n/index.ts";
 import { store } from "./store.js";
-import { RESOLUTIONS, SENSORS, byId, formatNumber, uid } from "./data.js";
+import { RESOLUTIONS, SENSORS, byId, uid } from "./data.js";
 import { renderObjects } from "./objects.js";
 // ---------- состояние
 export const OBJECT_PRESETS = [

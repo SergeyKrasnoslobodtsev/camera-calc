@@ -1,4 +1,4 @@
-import { STR, t, withUnit } from "./i18n.js";
+import { STR, formatNumber, t, withUnit } from "../i18n/index.ts";
 import { store } from "./store.js";
 import {
   FEEDS,
@@ -8,7 +8,6 @@ import {
   SENSORS,
   byId,
   escapeHtml,
-  formatNumber,
   parseNum,
 } from "./data.js";
 import { activeType } from "./state.js";

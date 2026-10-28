@@ -1,5 +1,5 @@
-import { t } from "./i18n.js";
-import { DEG, RESOLUTIONS, SENSORS, formatNumber, parseNum } from "./data.js";
+import { formatNumber, t } from "../i18n/index.ts";
+import { DEG, RESOLUTIONS, SENSORS, parseNum } from "./data.js";
 import { cameraById } from "./objects.js";
 // ---------- расчёт одного типа камер (без DOM)
 // Обозначения из формул (src/formulas.html):

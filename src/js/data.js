@@ -1,16 +1,7 @@
-import { LANG, STR, t } from "./i18n.js";
+import { STR, formatNumber, t } from "../i18n/index.ts";
 import { store } from "./store.js";
 export const byId = (id) => document.getElementById(id);
 export const DEG = Math.PI / 180;
-export const formatNumber = (value, digits = 1) =>
-  isFinite(value)
-    ? value
-        .toLocaleString(LANG === "en" ? "en-US" : "ru-RU", {
-          minimumFractionDigits: digits,
-          maximumFractionDigits: digits,
-        })
-        .replace("-", "−")
-    : "—";
 export const escapeHtml = (text) =>
   String(text ?? "").replace(
     /[&<>"]/g,
