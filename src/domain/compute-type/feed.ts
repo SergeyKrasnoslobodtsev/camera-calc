@@ -39,10 +39,7 @@ export function describeFeed(
       tilesY: 1,
     };
   // тайлы идут с шагом inputSize × (1 − перекрытие) и покрывают ROI без уменьшения
-  const overlap = Math.min(
-      MAX_OVERLAP,
-      Math.max(0, (overlapPercent || 0) / 100),
-    ),
+  const overlap = Math.min(MAX_OVERLAP, Math.max(0, overlapPercent / 100)),
     step = inputSize * (1 - overlap);
   const tilesAlong = (length: number) =>
     length > inputSize ? Math.ceil((length - inputSize) / step) + 1 : 1;

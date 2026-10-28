@@ -155,6 +155,10 @@ test("parseDetector: лишние поля не попадают в значен
   });
 });
 
+// значение разбора; разбор не прошёл — undefined
+const valueOf = <T>(parsed: ParseResult<T>) =>
+  parsed.ok ? parsed.value : undefined;
+
 // черновики: числа строками, как введены, в том числе пустые и недопустимые
 const sceneObject = {
   name: "",
@@ -169,11 +173,35 @@ const sceneObject = {
   overlap: 20,
 };
 
+// числа черновика разобраны: не число — NaN
+const sceneObjectValue = {
+  ...sceneObject,
+  width: 50,
+  height: NaN,
+  requiredPx: NaN,
+  inputSize: 640,
+};
+
 test("parseSceneObject: черновик с любыми строками в числовых полях", () => {
   assert.deepEqual(parseSceneObject(sceneObject), {
     ok: true,
-    value: sceneObject,
+    value: sceneObjectValue,
   });
+});
+
+test("parseSceneObject: числа — допустимое, пустое, десятичная запятая, подстановки", () => {
+  const parsed = (change: Record<string, unknown>) =>
+    valueOf(parseSceneObject({ ...sceneObject, ...change }));
+  assert.equal(parsed({ width: "12,5" })?.width, 12.5);
+  assert.equal(parsed({ width: "" })?.width, NaN);
+  assert.equal(parsed({ requiredPx: 24 })?.requiredPx, 24);
+  // без входа модели — 640, без перекрытия — 0
+  assert.equal(parsed({ inputSize: "1280" })?.inputSize, 1280);
+  assert.equal(parsed({ inputSize: "" })?.inputSize, 640);
+  assert.equal(parsed({ inputSize: "0" })?.inputSize, 640);
+  assert.equal(parsed({ overlap: "12,5" })?.overlap, 12.5);
+  assert.equal(parsed({ overlap: "" })?.overlap, 0);
+  assert.equal(parsed({ overlap: "abc" })?.overlap, 0);
 });
 
 test("parseSceneObject: правило каждого поля", () => {
@@ -227,14 +255,62 @@ const cameraType = {
   inputs,
   objects: [sceneObject],
 };
+const cameraTypeValue = {
+  ...cameraType,
+  count: 10,
+  inputs: {
+    ...inputs,
+    cameraHeight: 4,
+    planeHeight: 0.9,
+    zoneStart: 1.5,
+    zoneDepth: 3,
+    zoneWidth: NaN,
+    margin: 10,
+    resolution: 1,
+    sensor: 3,
+    sensorWidth: 5.4,
+    pixelPitch: 2,
+    focalLength: 6,
+    hfov: 50,
+    analyticsFps: 5,
+    codec: 0.04,
+    scene: 1,
+    lensFactor: 0.6,
+    speed: 1,
+    blurPx: 2,
+  },
+  objects: [sceneObjectValue],
+};
 
 test("parseCameraType: черновик типа, nameKey сохраняется", () => {
   assert.deepEqual(parseCameraType(cameraType), {
     ok: true,
-    value: cameraType,
+    value: cameraTypeValue,
   });
   const builtin = { ...cameraType, nameKey: "typeNames.0", objects: [] };
-  assert.deepEqual(parseCameraType(builtin), { ok: true, value: builtin });
+  assert.deepEqual(parseCameraType(builtin), {
+    ok: true,
+    value: { ...cameraTypeValue, nameKey: "typeNames.0", objects: [] },
+  });
+});
+
+test("parseCameraType: числа — допустимое, пустое, десятичная запятая, подстановки", () => {
+  const parsed = (change: Record<string, unknown>) =>
+    valueOf(parseCameraType({ ...cameraType, ...change }));
+  const parsedInputs = (change: Record<string, unknown>) =>
+    parsed({ inputs: { ...inputs, ...change } })?.inputs;
+  assert.equal(parsedInputs({ cameraHeight: "4,5" })?.cameraHeight, 4.5);
+  assert.equal(parsedInputs({ cameraHeight: "" })?.cameraHeight, NaN);
+  assert.equal(parsedInputs({ hfov: 60 })?.hfov, 60);
+  // число камер — целое, не меньше 0
+  assert.equal(parsed({ count: "2,6" })?.count, 3);
+  assert.equal(parsed({ count: "" })?.count, 0);
+  assert.equal(parsed({ count: "-3" })?.count, 0);
+  // запас кадра без значения — 0
+  assert.equal(parsedInputs({ margin: "" })?.margin, 0);
+  // индексы и значения списков — Number: пустая строка — 0
+  assert.equal(parsedInputs({ resolution: "" })?.resolution, 0);
+  assert.equal(parsedInputs({ codec: "0.07" })?.codec, 0.07);
 });
 
 test("parseCameraType: правило каждого поля, ошибки inputs и объектов с путём", () => {
@@ -273,7 +349,7 @@ test("parseCameraType: лишние поля типа, inputs и объекто�
       inputs: { ...inputs, mg: "10" },
       objects: [{ ...sceneObject, fps: 5, ref: "x" }],
     }),
-    { ok: true, value: cameraType },
+    { ok: true, value: cameraTypeValue },
   );
 });
 
@@ -288,11 +364,32 @@ const settings = {
 test("parseSystemSettings: черновик, правило каждого поля, лишние поля", () => {
   assert.deepEqual(parseSystemSettings({ ...settings, kr: "1" }), {
     ok: true,
-    value: settings,
+    value: {
+      efficiency: 0.6,
+      reserve: 0,
+      archiveDays: 0,
+      gpu: "auto",
+      gpuCount: "auto",
+    },
   });
   for (const field of Object.keys(settings))
     assert.deepEqual(
       errorsOf(parseSystemSettings({ ...settings, [field]: 0.6 })),
       [`${field}:required`],
     );
+});
+
+test("parseSystemSettings: числа — допустимое, пустое, десятичная запятая, подстановки", () => {
+  const parsed = (change: Record<string, unknown>) =>
+    valueOf(parseSystemSettings({ ...settings, ...change }));
+  assert.equal(parsed({ efficiency: "0,5" })?.efficiency, 0.5);
+  assert.equal(parsed({ efficiency: "" })?.efficiency, NaN);
+  // запас без значения и отрицательный — 0
+  assert.equal(parsed({ reserve: "12,5" })?.reserve, 12.5);
+  assert.equal(parsed({ reserve: "-5" })?.reserve, 0);
+  // архив без значения — 0
+  assert.equal(parsed({ archiveDays: "30" })?.archiveDays, 30);
+  assert.equal(parsed({ archiveDays: "" })?.archiveDays, 0);
+  assert.equal(parsed({ gpuCount: "2" })?.gpuCount, 2);
+  assert.equal(parsed({ gpu: "rtx4090" })?.gpu, "rtx4090");
 });

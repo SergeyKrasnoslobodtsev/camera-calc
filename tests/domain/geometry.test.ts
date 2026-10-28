@@ -20,10 +20,10 @@ const close = (actual: number, expected: number, message?: string) =>
 
 const inputs = (changes: Partial<CameraTypeInputs>) =>
   ({
-    resolution: "1",
-    sensor: "3",
-    pixelPitch: "2",
-    sensorWidth: "6.1",
+    resolution: 1,
+    sensor: 3,
+    pixelPitch: 2,
+    sensorWidth: 6.1,
     ...changes,
   }) as CameraTypeInputs;
 
@@ -34,14 +34,11 @@ test("кадр: формат матрицы, размер пикселя, сво
     sensorWidth: 5.4,
   });
   // 2 мкм × 2560 px = 5,12 мм
-  close(resolveFrame(inputs({ sensor: "7" }), undefined).sensorWidth, 5.12);
-  assert.equal(
-    resolveFrame(inputs({ sensor: "8" }), undefined).sensorWidth,
-    6.1,
-  );
+  close(resolveFrame(inputs({ sensor: 7 }), undefined).sensorWidth, 5.12);
+  assert.equal(resolveFrame(inputs({ sensor: 8 }), undefined).sensorWidth, 6.1);
   // неизвестные индексы — разрешение и формат по умолчанию
   assert.deepEqual(
-    resolveFrame(inputs({ resolution: "99", sensor: "99" }), undefined),
+    resolveFrame(inputs({ resolution: 99, sensor: 99 }), undefined),
     {
       width: 2560,
       height: 1440,

@@ -3,7 +3,6 @@ import type { TypeResult } from "../compute-type/index.ts";
 import type { CustomDetector } from "../entities/detector.ts";
 import type { Gpu } from "../entities/gpu.ts";
 import type { SystemSettings } from "../entities/system-settings.ts";
-import { parseNum } from "../parse-num.ts";
 import {
   evaluateGpu,
   type GpuOption,
@@ -54,9 +53,8 @@ export function computeSystem(
   const liveResults = results.filter(
     (result): result is LiveResult => result.ok && result.count > 0,
   );
-  const efficiency = parseNum(settings.efficiency),
-    reserve = Math.max(0, parseNum(settings.reserve) || 0) / 100,
-    maxLoad = 1 / (1 + reserve);
+  const { efficiency } = settings,
+    maxLoad = 1 / (1 + settings.reserve / 100);
   const groups = liveResults.flatMap((result) =>
     result.runGroups.map((group) => ({ ...group, typeName: result.type.name })),
   );
@@ -93,7 +91,7 @@ export function computeSystem(
     if (settings.gpu === "auto") {
       if (settings.gpuCount === "auto")
         return optimum || leastLoaded(evaluations);
-      const count = +settings.gpuCount;
+      const count = settings.gpuCount;
       return (
         fitting.find((option) => option.count === count) ||
         leastLoaded(evaluations.filter((option) => option.count === count))
@@ -101,7 +99,7 @@ export function computeSystem(
     }
     const gpu =
       catalog.gpus.find((item) => item.id === settings.gpu) || catalog.gpus[0];
-    if (settings.gpuCount !== "auto") return evaluate(gpu, +settings.gpuCount);
+    if (settings.gpuCount !== "auto") return evaluate(gpu, settings.gpuCount);
     // наименьшее число карт, которого хватает, иначе наибольшее
     const options = GPU_COUNTS.map((count) => evaluate(gpu, count));
     return options.find((option) => option.ok) || options[options.length - 1];

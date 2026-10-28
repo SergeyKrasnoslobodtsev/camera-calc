@@ -731,8 +731,9 @@ byId("detectorForm").addEventListener("submit", (event) => {
 // ---------- главный цикл
 let report = "";
 export function calcAll() {
+  // черновики в store всегда проходят разбор: их дают форма, шаблоны и загрузка через разбор
   const results = store.cameraTypes.map((type) =>
-    computeType(type, cameraById(type.inputs.camera)),
+    computeType(parseCameraType(type).value, cameraById(type.inputs.camera)),
   );
   const activeIndex = Math.max(
     0,
@@ -741,7 +742,7 @@ export function calcAll() {
   syncFormUI(store.cameraTypes[activeIndex], results[activeIndex]);
   renderType(results[activeIndex]);
   renderTabs(results);
-  const settings = readSystemSettings();
+  const settings = parseSystemSettings(readSystemSettings()).value;
   const gpus = allGpus().map((gpu) => ({ ...gpu, price: priceOf(gpu) }));
   const system = computeSystem(results, settings, {
     gpus,
@@ -906,17 +907,22 @@ function parseSaved(saved) {
       rejected++;
       return [];
     });
+  // тип камер и параметры системы хранятся черновиком: разбор решает, принять ли запись
+  const asDraft = (parse) => (item) => {
+    const parsed = parse(item);
+    return parsed.ok ? { ok: true, value: item } : parsed;
+  };
   const list = (items) => (Array.isArray(items) ? items : []);
   // параметры системы — одна запись, если она есть
   const [system] = parseAll(
     saved.system == null ? [] : [savedSystem(saved.system)],
-    parseSystemSettings,
+    asDraft(parseSystemSettings),
   );
   return {
     customGpus: parseAll(list(saved.customGpus), parseGpu),
     customCameras: parseAll(list(saved.customCameras), parseCamera),
     customDetectors: parseAll(list(saved.customDetectors), parseDetector),
-    types: parseAll(list(saved.types).map(savedType), parseCameraType),
+    types: parseAll(list(saved.types).map(savedType), asDraft(parseCameraType)),
     system,
     rejected, // после всех parseAll выше
   };

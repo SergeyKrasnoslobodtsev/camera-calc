@@ -1,7 +1,6 @@
 import type { TypeResult } from "../compute-type/index.ts";
 import type { Camera } from "../entities/camera.ts";
 import type { SystemSettings } from "../entities/system-settings.ts";
-import { parseNum } from "../parse-num.ts";
 
 // Канал с запасом: поток × NETWORK_HEADROOM должен быть меньше предела порта, Мбит/с.
 // Значения без источника, см. decisions/domain.md.
@@ -48,7 +47,7 @@ export function systemTotals(
     return sum + (price > 0 ? price * result.count : 0);
   }, 0);
   const portMbps = totalMbps * NETWORK_HEADROOM;
-  const archiveDays = parseNum(settings.archiveDays) || 0;
+  const { archiveDays } = settings;
   return {
     cameraCount,
     totalMbps,

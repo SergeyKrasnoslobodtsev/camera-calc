@@ -1,10 +1,8 @@
 // Тип камер — группа одинаковых камер с общей геометрией, матрицей, потоком и объектами.
-// Пока значения хранятся так, как их дала форма или шаблон, и разбираются при расчёте (parseNum).
+// В store и в сохранении тип хранится черновиком: числа — строки из формы или числа из шаблона.
+// Разбор переводит черновик в числа для расчёта.
 
 import { readFields, result, type ParseResult } from "./parse-result.ts";
-
-// значение поля: строка из формы или число из шаблона
-export type FormValue = string | number;
 
 export type Placement = "side" | "top";
 export type LensMode = "auto" | "focal" | "angle";
@@ -13,26 +11,26 @@ export type FeedMode = "full" | "roi" | "tiles";
 
 export type CameraTypeInputs = {
   camera: string; // id камеры из шаблона, "" — ручная настройка матрицы
-  cameraHeight: FormValue; // H, м
-  planeHeight: FormValue; // h, м
-  zoneStart: FormValue; // вынос до зоны, м
-  zoneDepth: FormValue; // м
-  zoneWidth: FormValue; // м
-  margin: FormValue; // запас кадра, %
-  resolution: FormValue; // индекс в RESOLUTIONS
-  sensor: FormValue; // индекс в SENSORS
-  sensorWidth: FormValue; // мм
-  pixelPitch: FormValue; // мкм
+  cameraHeight: number; // H, м
+  planeHeight: number; // h, м
+  zoneStart: number; // вынос до зоны, м
+  zoneDepth: number; // м
+  zoneWidth: number; // м
+  margin: number; // запас кадра, %
+  resolution: number; // индекс в RESOLUTIONS
+  sensor: number; // индекс в SENSORS
+  sensorWidth: number; // мм
+  pixelPitch: number; // мкм
   orientation: Orientation;
-  focalLength: FormValue; // мм
-  hfov: FormValue; // °
-  fps: FormValue; // частота потока, кадр/с
-  analyticsFps: FormValue; // частота для аналитики, кадр/с
-  codec: FormValue; // бит на пиксель кадра: 0.04 — H.265, 0.07 — H.264
-  scene: FormValue; // множитель битрейта от движения в сцене
-  lensFactor: FormValue; // k — доля разрешения, которая доходит до модели
-  speed: FormValue; // скорость движения, м/с
-  blurPx: FormValue; // допустимый смаз, px
+  focalLength: number; // мм
+  hfov: number; // °
+  fps: number; // частота потока, кадр/с
+  analyticsFps: number; // частота для аналитики, кадр/с
+  codec: number; // бит на пиксель кадра: 0.04 — H.265, 0.07 — H.264
+  scene: number; // множитель битрейта от движения в сцене
+  lensFactor: number; // k — доля разрешения, которая доходит до модели
+  speed: number; // скорость движения, м/с
+  blurPx: number; // допустимый смаз, px
   lensMode: LensMode;
   placement: Placement;
 };
@@ -40,24 +38,27 @@ export type CameraTypeInputs = {
 export type SceneObject = {
   name: string;
   nameKey?: string; // ключ встроенного названия в словаре i18n
-  width: FormValue; // см, поперёк взгляда камеры
-  length: FormValue; // см, вдоль
-  height: FormValue; // см
-  requiredPx: FormValue; // порог на меньшую сторону объекта на входе модели, px
+  width: number; // см, поперёк взгляда камеры
+  length: number; // см, вдоль
+  height: number; // см
+  requiredPx: number; // порог на меньшую сторону объекта на входе модели, px
   model: string; // id модели из каталога или своего детектора
   feed: FeedMode;
-  inputSize: FormValue; // сторона входа модели, px
-  overlap: FormValue; // перекрытие тайлов, %
+  inputSize: number; // сторона входа модели, px
+  overlap: number; // перекрытие тайлов, %
 };
 
 export type CameraType = {
   id: string;
   name: string;
   nameKey?: string;
-  count: FormValue;
+  count: number; // целое ≥ 0
   inputs: CameraTypeInputs;
   objects: SceneObject[];
 };
+
+// вход модели, если в объекте не задан, px
+const DEFAULT_INPUT_SIZE = 640;
 
 const PLACEMENTS: readonly Placement[] = ["side", "top"];
 const LENS_MODES: readonly LensMode[] = ["auto", "focal", "angle"];
@@ -72,24 +73,27 @@ const withNameKey = <T extends { nameKey?: string }>(
   return item;
 };
 
-// Черновик объекта: числа — как введены, проверяются при расчёте; подача — из списка
+// Объект из черновика: числа разбираются, недопустимые — NaN, их отсекает расчёт; подача — из списка.
+// Без входа модели — DEFAULT_INPUT_SIZE, без перекрытия — 0.
 export function parseSceneObject(raw: unknown): ParseResult<SceneObject> {
   const read = readFields(raw);
   const object: SceneObject = {
     name: read.string("name"),
-    width: read.formValue("width"),
-    length: read.formValue("length"),
-    height: read.formValue("height"),
-    requiredPx: read.formValue("requiredPx"),
+    width: read.number("width"),
+    length: read.number("length"),
+    height: read.number("height"),
+    requiredPx: read.number("requiredPx"),
     model: read.text("model"),
     feed: read.oneOf("feed", FEED_MODES),
-    inputSize: read.formValue("inputSize"),
-    overlap: read.formValue("overlap"),
+    inputSize: read.number("inputSize") || DEFAULT_INPUT_SIZE,
+    overlap: read.number("overlap") || 0,
   };
   return result(read.errors, withNameKey(object, read.record.nameKey));
 }
 
-// Черновик типа камер: проверяется устройство записи и значения из списков, числа — при расчёте.
+// Тип камер из черновика: числа разбираются, как у объекта. Число камер — целое, не меньше 0,
+// запас кадра без значения — 0. Индексы и значения списков (resolution, sensor, codec, scene)
+// переводятся в число Number: пустая строка — 0.
 // Ошибки объектов и полей inputs — с путём, например "objects.0.feed", "inputs.placement".
 export function parseCameraType(raw: unknown): ParseResult<CameraType> {
   const read = readFields(raw);
@@ -103,29 +107,29 @@ export function parseCameraType(raw: unknown): ParseResult<CameraType> {
   const type: CameraType = {
     id: read.text("id"),
     name: read.string("name"),
-    count: read.formValue("count"),
+    count: Math.max(0, Math.round(read.number("count")) || 0),
     inputs: {
       camera: inputs.string("camera"),
-      cameraHeight: inputs.formValue("cameraHeight"),
-      planeHeight: inputs.formValue("planeHeight"),
-      zoneStart: inputs.formValue("zoneStart"),
-      zoneDepth: inputs.formValue("zoneDepth"),
-      zoneWidth: inputs.formValue("zoneWidth"),
-      margin: inputs.formValue("margin"),
-      resolution: inputs.formValue("resolution"),
-      sensor: inputs.formValue("sensor"),
-      sensorWidth: inputs.formValue("sensorWidth"),
-      pixelPitch: inputs.formValue("pixelPitch"),
+      cameraHeight: inputs.number("cameraHeight"),
+      planeHeight: inputs.number("planeHeight"),
+      zoneStart: inputs.number("zoneStart"),
+      zoneDepth: inputs.number("zoneDepth"),
+      zoneWidth: inputs.number("zoneWidth"),
+      margin: inputs.number("margin") || 0,
+      resolution: Number(inputs.formValue("resolution")),
+      sensor: Number(inputs.formValue("sensor")),
+      sensorWidth: inputs.number("sensorWidth"),
+      pixelPitch: inputs.number("pixelPitch"),
       orientation: inputs.oneOf("orientation", ORIENTATIONS),
-      focalLength: inputs.formValue("focalLength"),
-      hfov: inputs.formValue("hfov"),
-      fps: inputs.formValue("fps"),
-      analyticsFps: inputs.formValue("analyticsFps"),
-      codec: inputs.formValue("codec"),
-      scene: inputs.formValue("scene"),
-      lensFactor: inputs.formValue("lensFactor"),
-      speed: inputs.formValue("speed"),
-      blurPx: inputs.formValue("blurPx"),
+      focalLength: inputs.number("focalLength"),
+      hfov: inputs.number("hfov"),
+      fps: inputs.number("fps"),
+      analyticsFps: inputs.number("analyticsFps"),
+      codec: Number(inputs.formValue("codec")),
+      scene: Number(inputs.formValue("scene")),
+      lensFactor: inputs.number("lensFactor"),
+      speed: inputs.number("speed"),
+      blurPx: inputs.number("blurPx"),
       lensMode: inputs.oneOf("lensMode", LENS_MODES),
       placement: inputs.oneOf("placement", PLACEMENTS),
     },

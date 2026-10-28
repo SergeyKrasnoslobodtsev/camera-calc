@@ -45,9 +45,9 @@ const catalog = (gpus = [small, big]): SystemCatalog => ({
   detectors: [detector],
 });
 const settings = (changes: Partial<SystemSettings> = {}): SystemSettings => ({
-  efficiency: "1",
-  reserve: "0",
-  archiveDays: "0",
+  efficiency: 1,
+  reserve: 0,
+  archiveDays: 0,
   gpu: "auto",
   gpuCount: "auto",
   ...changes,
@@ -94,7 +94,7 @@ test("инференс: свой детектор — замер × (вход з
   // на big (260 TFLOPS) при входе 320: 100 × 4 × 4 = 1600 кадр/с, × 0,5 = 800
   const { chosen } = computeSystem(
     [computed({ groups: [{ model: "d", inputSize: 320, load: 400 }] })],
-    settings({ efficiency: "0.5", gpu: "big", gpuCount: "1" }),
+    settings({ efficiency: 0.5, gpu: "big", gpuCount: 1 }),
     catalog(),
   );
   const [run] = chosen.runs;
@@ -107,7 +107,7 @@ test("инференс: модель каталога — 1000 / задержк�
   // YOLO26s: 2,5 мс на T4 — 400 кадр/с; small равна T4 по TFLOPS
   const { chosen } = computeSystem(
     [computed({ groups: [{ model: "y26s", inputSize: 640, load: 100 }] })],
-    settings({ gpu: "small", gpuCount: "1" }),
+    settings({ gpu: "small", gpuCount: 1 }),
     catalog(),
   );
   assert.equal(chosen.inferenceLoad, 0.25);
@@ -116,7 +116,7 @@ test("инференс: модель каталога — 1000 / задержк�
 test("неизвестная модель не нагружает инференс", () => {
   const { chosen } = computeSystem(
     [computed({ groups: [{ model: "нет", inputSize: 640, load: 100 }] })],
-    settings({ gpu: "small", gpuCount: "1" }),
+    settings({ gpu: "small", gpuCount: 1 }),
     catalog(),
   );
   assert.equal(chosen.runs[0].unknownModel, true);
@@ -127,7 +127,7 @@ test("декодер: потоки 1080p@30 / (ёмкость GPU × эффек�
   // 5 потоков на 10 потоков H.265 — половина одной карты, на двух картах — четверть
   const { chosen, decodeUnitsTotal } = computeSystem(
     [computed({ decodeUnits: 3 }), computed({ decodeUnits: 2 })],
-    settings({ gpu: "small", gpuCount: "2" }),
+    settings({ gpu: "small", gpuCount: 2 }),
     catalog(),
   );
   assert.equal(decodeUnitsTotal, 5);
@@ -145,7 +145,7 @@ test("память: база + движок один раз на модель и
   ];
   const { chosen } = computeSystem(
     results,
-    settings({ gpu: "small", gpuCount: "2" }),
+    settings({ gpu: "small", gpuCount: 2 }),
     catalog(),
   );
   near(chosen.memoryUseGB, 2.1);
@@ -154,7 +154,7 @@ test("память: база + движок один раз на модель и
   const jetson = gpu({ id: "jetson", jetson: true });
   const onJetson = computeSystem(
     results,
-    settings({ gpu: "jetson", gpuCount: "1" }),
+    settings({ gpu: "jetson", gpuCount: 1 }),
     catalog([jetson]),
   );
   assert.equal(onJetson.chosen.memoryCapGB, 6);
@@ -162,11 +162,8 @@ test("память: база + движок один раз на модель и
 
 test("узкое место — ресурс с наибольшей загрузкой", () => {
   const bottleneck = (result: TypeResult) =>
-    computeSystem(
-      [result],
-      settings({ gpu: "small", gpuCount: "1" }),
-      catalog(),
-    ).chosen.bottleneck;
+    computeSystem([result], settings({ gpu: "small", gpuCount: 1 }), catalog())
+      .chosen.bottleneck;
   assert.equal(
     bottleneck(
       computed({ groups: [{ model: "d", inputSize: 640, load: 90 }] }),
@@ -183,7 +180,7 @@ const load150 = [
 ];
 
 test("оптимум — самый дешёвый вариант в пределах запаса", () => {
-  const system = computeSystem(load150, settings({ reserve: "25" }), catalog());
+  const system = computeSystem(load150, settings({ reserve: 25 }), catalog());
   assert.equal(system.maxLoad, 0.8);
   assert.deepEqual(
     [system.optimum?.gpu.id, system.optimum?.count, system.optimum?.cost],
@@ -191,7 +188,7 @@ test("оптимум — самый дешёвый вариант в преде�
   );
   assert.equal(system.chosen, system.optimum);
   // запас 50 %: 75 % больше 1 / 1,5, подходит только big
-  const strict = computeSystem(load150, settings({ reserve: "50" }), catalog());
+  const strict = computeSystem(load150, settings({ reserve: 50 }), catalog());
   assert.equal(strict.chosen.gpu.id, "big");
 });
 
@@ -217,13 +214,9 @@ test("выбор GPU и количества в параметрах", () => {
   // GPU задан — наименьшее число карт, которого хватает
   assert.deepEqual(chosen({ gpu: "small" }), ["small", 2, true]);
   // число задано — самый дешёвый подходящий GPU с этим числом
-  assert.deepEqual(chosen({ gpuCount: "1" }), ["big", 1, true]);
+  assert.deepEqual(chosen({ gpuCount: 1 }), ["big", 1, true]);
   // задано всё — вариант как есть, даже если не хватает
-  assert.deepEqual(chosen({ gpu: "small", gpuCount: "1" }), [
-    "small",
-    1,
-    false,
-  ]);
+  assert.deepEqual(chosen({ gpu: "small", gpuCount: 1 }), ["small", 1, false]);
 });
 
 test("ничего не подходит: наименее загруженный вариант или наибольшее число карт", () => {
@@ -272,7 +265,7 @@ test("итоги: камеры, поток, стоимость камер, PoE �
   ];
   const totals = systemTotals(
     [inputError(2, "c"), computed({ count: 3, camera: "c", bitrateMbps: 100 })],
-    settings({ archiveDays: "10" }),
+    settings({ archiveDays: 10 }),
     cameras,
   );
   // камеры и их стоимость — по всем типам, поток — только по типам без ошибки
@@ -283,10 +276,6 @@ test("итоги: камеры, поток, стоимость камер, PoE �
   // 300 Мбит/с = 37,5 МБ/с × 86 400 с × 10 сут
   assert.equal(totals.archiveDays, 10);
   near(totals.archiveTB, 32.4);
-  assert.equal(
-    systemTotals([], settings({ archiveDays: "" }), []).archiveTB,
-    0,
-  );
 });
 
 test("порт: поток × 1,3 меньше 900 Мбит/с — 1 Гбит/с, меньше 9000 — 10 Гбит/с", () => {

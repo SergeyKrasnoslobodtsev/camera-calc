@@ -6,7 +6,6 @@
 import { DEG } from "../angles.ts";
 import type { Camera } from "../entities/camera.ts";
 import type { CameraType, Placement } from "../entities/camera-type.ts";
-import { parseNum } from "../parse-num.ts";
 import { resolveFrame, type Frame } from "./frame.ts";
 import { fitLens, frameWidthAt, type LensFit } from "./lens.ts";
 import {
@@ -84,15 +83,12 @@ export function computeType(
   type: CameraType,
   camera: Camera | undefined,
 ): TypeResult {
-  const { inputs } = type;
-  const count = Math.max(0, Math.round(parseNum(type.count)) || 0);
+  const { inputs, count } = type;
   const frame = resolveFrame(inputs, camera);
-  const H = parseNum(inputs.cameraHeight),
-    h = parseNum(inputs.planeHeight),
-    zoneStart = parseNum(inputs.zoneStart),
-    zoneDepth = parseNum(inputs.zoneDepth),
-    zoneWidth = parseNum(inputs.zoneWidth),
-    k = parseNum(inputs.lensFactor);
+  const H = inputs.cameraHeight,
+    h = inputs.planeHeight,
+    { zoneStart, zoneDepth, zoneWidth } = inputs,
+    k = inputs.lensFactor;
   const Hc = H - h;
   const error: InputError = { ok: false, type, count, frame };
   if (
@@ -115,9 +111,9 @@ export function computeType(
     zone,
     {
       mode: inputs.lensMode,
-      focalLength: parseNum(inputs.focalLength),
-      hfov: parseNum(inputs.hfov) * DEG,
-      margin: (parseNum(inputs.margin) || 0) / 100,
+      focalLength: inputs.focalLength,
+      hfov: inputs.hfov * DEG,
+      margin: inputs.margin / 100,
       zoneWidth,
       focalRange,
     },
@@ -142,10 +138,10 @@ export function computeType(
     count,
     frameWidthPx: lens.frameWidthPx,
     frameHeightPx: lens.frameHeightPx,
-    fps: parseNum(inputs.fps),
-    analyticsFpsSet: parseNum(inputs.analyticsFps),
-    bitsPerPixel: +inputs.codec,
-    sceneFactor: +inputs.scene,
+    fps: inputs.fps,
+    analyticsFpsSet: inputs.analyticsFps,
+    bitsPerPixel: inputs.codec,
+    sceneFactor: inputs.scene,
   });
   const clamped = isClamped(lens);
   const assessment = assessObjects(
@@ -184,9 +180,9 @@ export function computeType(
     density,
     stream,
     shutterDenominator: shutterDenominator(
-      parseNum(inputs.speed),
+      inputs.speed,
       density.max,
-      parseNum(inputs.blurPx),
+      inputs.blurPx,
     ),
     objects,
     ...assessment,
