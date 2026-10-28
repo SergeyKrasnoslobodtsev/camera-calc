@@ -940,39 +940,43 @@ const EN = {
 // язык: выбор из localStorage, иначе язык браузера
 const LANG_KEY = "camcalc-lang";
 const LANG = (() => {
-  let l = null;
+  let saved = null;
   try {
-    l = localStorage.getItem(LANG_KEY);
-  } catch (e) {}
-  return l === "ru" || l === "en"
-    ? l
+    saved = localStorage.getItem(LANG_KEY);
+  } catch (error) {}
+  return saved === "ru" || saved === "en"
+    ? saved
     : /^ru\b/i.test(navigator.language || "")
       ? "ru"
       : "en";
 })();
 const STR = LANG === "en" ? EN : RU;
-const U = (x, u) => x + "\u00a0" + STR.u[u];
-const t = (k, ...a) => {
-  const v = STR[k];
-  return typeof v === "function" ? v(...a) : v;
+// \u0447\u0438\u0441\u043b\u043e \u0438 \u0435\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u0435\u0440\u0430\u0437\u0440\u044b\u0432\u043d\u044b\u0439 \u043f\u0440\u043e\u0431\u0435\u043b; unit \u2014 \u043a\u043b\u044e\u0447 \u0441\u043b\u043e\u0432\u0430\u0440\u044f STR.u
+const withUnit = (value, unit) => value + "\u00a0" + STR.u[unit];
+// t \u2014 \u0442\u0435\u043a\u0441\u0442 \u043f\u043e \u043a\u043b\u044e\u0447\u0443 \u0441\u043b\u043e\u0432\u0430\u0440\u044f; \u0435\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u2014 \u0444\u0443\u043d\u043a\u0446\u0438\u044f, \u0432\u044b\u0437\u044b\u0432\u0430\u0435\u0442\u0441\u044f \u0441 params
+const t = (key, ...params) => {
+  const text = STR[key];
+  return typeof text === "function" ? text(...params) : text;
 };
-function applyT() {
+function applyTranslations() {
   document.documentElement.lang = LANG;
   document.title = t("docTitle");
   document
     .querySelectorAll("#formulas>[lang]")
-    .forEach((el) => (el.hidden = el.lang !== LANG));
+    .forEach((block) => (block.hidden = block.lang !== LANG));
   document
     .querySelectorAll("[data-t]")
-    .forEach((el) => (el.textContent = t(el.dataset.t)));
+    .forEach((element) => (element.textContent = t(element.dataset.t)));
   [
     ["ta", "aria-label"],
     ["tt", "title"],
     ["tp", "placeholder"],
-  ].forEach(([d, attr]) =>
+  ].forEach(([dataKey, attr]) =>
     document
-      .querySelectorAll(`[data-${d}]`)
-      .forEach((el) => el.setAttribute(attr, t(el.dataset[d]))),
+      .querySelectorAll(`[data-${dataKey}]`)
+      .forEach((element) =>
+        element.setAttribute(attr, t(element.dataset[dataKey])),
+      ),
   );
 }
-applyT();
+applyTranslations();

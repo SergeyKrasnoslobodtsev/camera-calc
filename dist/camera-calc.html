@@ -1474,42 +1474,46 @@ const EN = {
 // язык: выбор из localStorage, иначе язык браузера
 const LANG_KEY = "camcalc-lang";
 const LANG = (() => {
-  let l = null;
+  let saved = null;
   try {
-    l = localStorage.getItem(LANG_KEY);
-  } catch (e) {}
-  return l === "ru" || l === "en"
-    ? l
+    saved = localStorage.getItem(LANG_KEY);
+  } catch (error) {}
+  return saved === "ru" || saved === "en"
+    ? saved
     : /^ru\b/i.test(navigator.language || "")
       ? "ru"
       : "en";
 })();
 const STR = LANG === "en" ? EN : RU;
-const U = (x, u) => x + "\u00a0" + STR.u[u];
-const t = (k, ...a) => {
-  const v = STR[k];
-  return typeof v === "function" ? v(...a) : v;
+// \u0447\u0438\u0441\u043b\u043e \u0438 \u0435\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u0435\u0440\u0430\u0437\u0440\u044b\u0432\u043d\u044b\u0439 \u043f\u0440\u043e\u0431\u0435\u043b; unit \u2014 \u043a\u043b\u044e\u0447 \u0441\u043b\u043e\u0432\u0430\u0440\u044f STR.u
+const withUnit = (value, unit) => value + "\u00a0" + STR.u[unit];
+// t \u2014 \u0442\u0435\u043a\u0441\u0442 \u043f\u043e \u043a\u043b\u044e\u0447\u0443 \u0441\u043b\u043e\u0432\u0430\u0440\u044f; \u0435\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u2014 \u0444\u0443\u043d\u043a\u0446\u0438\u044f, \u0432\u044b\u0437\u044b\u0432\u0430\u0435\u0442\u0441\u044f \u0441 params
+const t = (key, ...params) => {
+  const text = STR[key];
+  return typeof text === "function" ? text(...params) : text;
 };
-function applyT() {
+function applyTranslations() {
   document.documentElement.lang = LANG;
   document.title = t("docTitle");
   document
     .querySelectorAll("#formulas>[lang]")
-    .forEach((el) => (el.hidden = el.lang !== LANG));
+    .forEach((block) => (block.hidden = block.lang !== LANG));
   document
     .querySelectorAll("[data-t]")
-    .forEach((el) => (el.textContent = t(el.dataset.t)));
+    .forEach((element) => (element.textContent = t(element.dataset.t)));
   [
     ["ta", "aria-label"],
     ["tt", "title"],
     ["tp", "placeholder"],
-  ].forEach(([d, attr]) =>
+  ].forEach(([dataKey, attr]) =>
     document
-      .querySelectorAll(`[data-${d}]`)
-      .forEach((el) => el.setAttribute(attr, t(el.dataset[d]))),
+      .querySelectorAll(`[data-${dataKey}]`)
+      .forEach((element) =>
+        element.setAttribute(attr, t(element.dataset[dataKey])),
+      ),
   );
 }
-applyT();
+applyTranslations();
 const byId = (id) => document.getElementById(id);
 const DEG = Math.PI / 180;
 const formatNumber = (value, digits = 1) =>
@@ -1972,16 +1976,18 @@ function syncFormUI(type, result) {
   if (result && isFinite(result.s) && (camera || sensorPreset !== null))
     byId("sensorWidth").value = +result.s.toFixed(2);
   byId("sumGeo").textContent =
-    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${U(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
+    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("sumCam").textContent =
     (camera
       ? `${camera.Nw} × ${camera.Nh}`
       : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
           " · ",
         )[0]) +
-    (result && !result.err ? `, f ${U(formatNumber(result.f, 1), "mm")}` : "");
+    (result && !result.err
+      ? `, f ${withUnit(formatNumber(result.f, 1), "mm")}`
+      : "");
   byId("sumStr").textContent =
-    `${U(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
+    `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }
 // ---------- расчёт одного типа камер (без DOM)
 // Обозначения из формул (src/formulas.html):
@@ -2688,7 +2694,7 @@ function renderType(result) {
   byId("kpis").innerHTML = [
     [
       t("kF"),
-      U(formatNumber(f, 1), "mm"),
+      withUnit(formatNumber(f, 1), "mm"),
       t(
         result.clamped
           ? "kFLimit"
@@ -2709,7 +2715,7 @@ function renderType(result) {
     ],
     [
       t("kFrame"),
-      U(
+      withUnit(
         formatNumber(frameWidthAt(depthAt(x1)), 1) +
           "–" +
           formatNumber(frameWidthAt(depthAt(x2)), 1),
@@ -2740,8 +2746,8 @@ function renderType(result) {
   const top = result.placement === "top";
   byId("dens").innerHTML =
     `<tr><th>${t("densHead")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
-    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${U(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
-    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${U(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
+    <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(result.edge1.D, 1), "m")}</td><td>${formatNumber(result.edge1.across, 0)}</td><td>${formatNumber(result.edge1.depth, 0)}</td></tr>
+    <tr><td class="txt">${t(top ? "edgeFwd" : "edgeFar")}, ${withUnit(formatNumber(result.edge2.D, 1), "m")}</td><td>${formatNumber(result.edge2.across, 0)}</td><td>${formatNumber(result.edge2.depth, 0)}</td></tr>`;
   const doriLevels = [25, 62, 125, 250],
     doriNames = STR.dori;
   let doriLevel = -1;
@@ -2750,7 +2756,7 @@ function renderType(result) {
   });
   const shutter = result.shutterDenominator;
   byId("facts").innerHTML =
-    `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${U(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? U("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
+    `<span>DORI: <b>${doriLevel < 0 ? t("doriBelow") : doriNames[doriLevel]}</b> (${withUnit(formatNumber(result.minAcross, 0), "pxm")})</span><span>${t("exposure")} <b class="mono">${isFinite(shutter) && shutter > 0 ? withUnit("1/" + Math.ceil(shutter), "s") : "—"}</b></span><span>${t("camera")}: <b>${escapeHtml(result.cameraLabel)}</b></span>`;
   drawSide({
     H: result.H,
     h: result.h,
@@ -2856,10 +2862,10 @@ function renderSystem(results, system) {
   }, 0);
   const port =
     totalMbps * 1.3 < 900
-      ? U(1, "gbps")
+      ? withUnit(1, "gbps")
       : totalMbps * 1.3 < 9000
-        ? U(10, "gbps")
-        : "> " + U(10, "gbps");
+        ? withUnit(10, "gbps")
+        : "> " + withUnit(10, "gbps");
   byId("sysKpis").innerHTML = [
     [
       t("sCams"),
@@ -2899,7 +2905,7 @@ function renderSystem(results, system) {
     ],
     [
       t("sNet"),
-      `${U(formatNumber(totalMbps, 0), "mbps")}`,
+      `${withUnit(formatNumber(totalMbps, 0), "mbps")}`,
       t("sPort", port, formatNumber(cameraCount * 15.4, 0)),
     ],
   ]
@@ -2944,7 +2950,7 @@ function renderSystem(results, system) {
     ? shown
         .map(
           (run, i) =>
-            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed]} ${run.feedInfo.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${U(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
+            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed]} ${run.feedInfo.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.names.join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
         )
         .join("") +
       (rest.length
@@ -3000,10 +3006,10 @@ function renderSystem(results, system) {
       .map((result) =>
         result.err
           ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabErr")}</td></tr>`
-          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.Nw} × ${result.Nh}</td><td>${formatNumber(result.fps, 0)}</td><td>${U(formatNumber(result.bitrateMbps, 1), "mbps")}</td><td>${U(formatNumber(result.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
+          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.Nw} × ${result.Nh}</td><td>${formatNumber(result.fps, 0)}</td><td>${withUnit(formatNumber(result.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
       )
       .join("") +
-    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${U(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
+    `<tr class="total"><td class="txt">${t("nTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
     `<tr><td class="txt dim">${t("nArch")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("nArchVal", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("nArchOff")}</td></tr>`;
   byId("assList").innerHTML = t("ass", formatNumber(efficiency, 2))
     .map((item) => `<li>${escapeHtml(item)}</li>`)
@@ -3038,7 +3044,7 @@ function buildGpuSelect() {
 function renderGpuView() {
   const row = (
     gpu,
-  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gJet") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${U(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? U(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
+  ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gJet") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gOwn") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
     <td><input id="pr-${gpu.id}" value="${escapeHtml(gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gPriceAria", gpu.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gon-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gOnAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("delAria", gpu.name))}">${t("del")}</button></td>` : "<td></td>"}</tr>`;
@@ -3146,7 +3152,7 @@ function renderCamView() {
     allCameras()
       .map(
         (camera) =>
-          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cOwn" : "cBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${U(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? U(formatNumber(camera.focalMin, 1), "mm") : U(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cAny")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("delAria", camera.name))}">${t("del")}</button>` : ""}</td></tr>`,
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cOwn" : "cBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cAny")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("delAria", camera.name))}">${t("del")}</button>` : ""}</td></tr>`,
       )
       .join("");
   document.querySelectorAll("[data-delc]").forEach((button) =>

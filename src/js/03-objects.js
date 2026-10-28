@@ -129,14 +129,16 @@ function syncFormUI(type, result) {
   if (result && isFinite(result.s) && (camera || sensorPreset !== null))
     byId("sensorWidth").value = +result.s.toFixed(2);
   byId("sumGeo").textContent =
-    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${U(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${U(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
+    `${t(inputs.placement === "top" ? "sumTop" : "sumSide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("sumCam").textContent =
     (camera
       ? `${camera.Nw} × ${camera.Nh}`
       : (RESOLUTIONS[+inputs.resolution] || RESOLUTIONS[1])[0].split(
           " · ",
         )[0]) +
-    (result && !result.err ? `, f ${U(formatNumber(result.f, 1), "mm")}` : "");
+    (result && !result.err
+      ? `, f ${withUnit(formatNumber(result.f, 1), "mm")}`
+      : "");
   byId("sumStr").textContent =
-    `${U(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
+    `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }
