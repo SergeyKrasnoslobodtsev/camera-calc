@@ -244,11 +244,11 @@ function renderType(result) {
     x1: result.x1,
     x2: result.x2,
     tilt: result.tilt,
-    vf: result.vfov,
+    vfov: result.vfov,
     Hc: result.Hc,
-    pos: result.placement,
-    wN: frameWidthAt(depthAt(x1)),
-    wF: frameWidthAt(depthAt(x2)),
+    placement: result.placement,
+    frameWidthNear: frameWidthAt(depthAt(x1)),
+    frameWidthFar: frameWidthAt(depthAt(x2)),
   });
 }
 
