@@ -21,6 +21,18 @@ function openPage(savedState) {
   }).window;
 }
 
+// отчёт так, как его получает пользователь: кнопка «Копировать отчёт» пишет его в буфер обмена;
+// запись не завершается, чтобы уведомление «Отчёт скопирован» не заменило другие
+function reportOf(window) {
+  let copied;
+  Object.defineProperty(window.navigator, "clipboard", {
+    value: { writeText: (text) => ((copied = text), new Promise(() => {})) },
+    configurable: true,
+  });
+  window.document.getElementById("copyBtn").click();
+  return copied;
+}
+
 function results(window) {
   const doc = window.document;
   const clean = (node) => node.textContent.replace(/\s+/g, " ").trim();
@@ -32,7 +44,7 @@ function results(window) {
       .map((row) => "  " + [...row.children].map(clean).join(" | "))
       .join("\n");
   return [
-    window.eval("report"),
+    reportOf(window),
     "",
     "KPI системы: " + text("systemKpis"),
     "Сводка: " + text("loadSummary"),
@@ -50,7 +62,8 @@ function results(window) {
 }
 
 // Состояние встроенного примера, от него строятся остальные конфигурации.
-const example = JSON.parse(openPage().eval("JSON.stringify(snapshot())"));
+// Страница сохраняет его в localStorage сразу после первого расчёта.
+const example = JSON.parse(openPage().localStorage.getItem("camcalc4"));
 const [sideType, topType] = example.types;
 const withType = (type, changes) => ({
   ...type,
