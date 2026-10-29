@@ -45,6 +45,7 @@ export const reportOf = () => {
 export const importFile = (text) => {
   const input = document.getElementById("importFile");
   Object.defineProperty(input, "files", {
+    // oxlint-disable-next-line unicorn/no-thenable -- синхронный then нужен намеренно
     value: [{ text: () => ({ then: (onRead) => onRead(text) }) }],
     configurable: true,
   });

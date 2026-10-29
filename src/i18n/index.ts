@@ -22,7 +22,7 @@ export const LANG: Lang = (() => {
   let saved = null;
   try {
     saved = localStorage.getItem(LANG_KEY);
-  } catch (error) {}
+  } catch {}
   return saved === "ru" || saved === "en"
     ? saved
     : /^ru\b/i.test(navigator.language || "")
