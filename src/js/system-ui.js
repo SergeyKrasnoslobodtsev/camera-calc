@@ -25,6 +25,7 @@ import { parseCamera } from "../domain/entities/camera.ts";
 import { parseCameraType } from "../domain/entities/camera-type.ts";
 import { parseDetector } from "../domain/entities/detector.ts";
 import { parseGpu } from "../domain/entities/gpu.ts";
+import { onlyValueErrors } from "../domain/entities/parse-result.ts";
 import { parseSystemSettings } from "../domain/entities/system-settings.ts";
 import { parseNum } from "../domain/parse-num.ts";
 import { GPU_CATALOG } from "../domain/references/gpu-catalog.ts";
@@ -247,8 +248,9 @@ function ring(cx, cy, r, width, segments, mark) {
 }
 
 // ---------- система
+// system — null, если в параметрах системы или в цене карты ошибка: подбор GPU не выполнен
 function renderSystem(results, system, totals) {
-  const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
+  const { chosen, optimum, efficiency, maxLoad, liveResults } = system ?? {};
   const { cameraCount, totalMbps, cameraCost } = totals;
   const percent = (share) => formatNumber(share * 100, 0) + "%";
   const allObjects = results.flatMap((result) =>
@@ -295,12 +297,14 @@ function renderSystem(results, system, totals) {
     ],
     [
       t("systemCompute"),
-      liveResults.length
+      system && liveResults.length
         ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}`
         : "—",
-      liveResults.length
-        ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}`
-        : t("systemNoCameras"),
+      !system
+        ? t("tabError")
+        : liveResults.length
+          ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}`
+          : t("systemNoCameras"),
     ],
     [
       t("systemNetwork"),
@@ -313,7 +317,35 @@ function renderSystem(results, system, totals) {
         `<div class="sk"><span>${label}</span><strong>${value}</strong><em>${escapeHtml(extra)}</em></div>`,
     )
     .join("");
+  // сеть
+  const { archiveDays, archiveTB } = totals;
+  byId("networkTable").innerHTML =
+    `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
+    results
+      .map((result) =>
+        !result.ok
+          ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>`
+          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.frame.width} × ${result.frame.height}</td><td>${formatNumber(result.stream.fps, 0)}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
+      )
+      .join("") +
+    `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
+    `<tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${!(archiveDays >= 0) ? t("tabError") : archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
+  byId("assumptionsList").innerHTML = t(
+    "assumptions",
+    system ? formatNumber(efficiency, 2) : "—",
+  )
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("");
   // дашборд
+  if (!system) {
+    ["loadSummary", "donut", "legend", "gauges"].forEach(
+      (id) => (byId(id).innerHTML = ""),
+    );
+    byId("loadNote").innerHTML =
+      `<span style="color:var(--bad)">${escapeHtml(t("systemInputError"))}</span>`;
+    byId("loadNote").hidden = false;
+    return;
+  }
   const overloaded = chosen.inferenceLoad > maxLoad;
   byId("loadSummary").innerHTML = liveResults.length
     ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", bottleneckText(chosen.bottleneck))}`
@@ -396,25 +428,6 @@ function renderSystem(results, system, totals) {
       ? escapeHtml(STR.gpuNotes[chosen.gpu.id])
       : "";
   byId("loadNote").hidden = !byId("loadNote").innerHTML;
-  // сеть
-  const { archiveDays, archiveTB } = totals;
-  byId("networkTable").innerHTML =
-    `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` +
-    results
-      .map((result) =>
-        !result.ok
-          ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>`
-          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.frame.width} × ${result.frame.height}</td><td>${formatNumber(result.stream.fps, 0)}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
-      )
-      .join("") +
-    `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
-    `<tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
-  byId("assumptionsList").innerHTML = t(
-    "assumptions",
-    formatNumber(efficiency, 2),
-  )
-    .map((item) => `<li>${escapeHtml(item)}</li>`)
-    .join("");
 }
 
 // ---------- шаблоны: видеокарты
@@ -445,7 +458,7 @@ function renderGpuView() {
   const row = (
     gpu,
   ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(store.gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(store.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
   const headers = STR.gpuTableHeader,
@@ -501,6 +514,7 @@ const GPU_FORM_ERRORS = {
   "decodeStreams.h264": "errorDecoderStreams",
   "decodeStreams.h265": "errorDecoderStreams",
   memoryGB: "errorMemory",
+  tdpW: "errorTdp",
   price: "errorPrice",
 };
 byId("gpuForm").addEventListener("submit", (event) => {
@@ -523,9 +537,9 @@ byId("gpuForm").addEventListener("submit", (event) => {
             h265: decode,
           },
         }
-      : { nvdec: Math.round(decode) }),
+      : { nvdec: decode }),
     memoryGB: parseNum(byId("gpuFormMemory").value),
-    tdpW: tdpW > 0 ? tdpW : 0,
+    tdpW: isNaN(tdpW) ? 0 : tdpW,
     price: parseNum(byId("gpuFormPrice").value),
     custom: true,
   });
@@ -593,31 +607,33 @@ const CAMERA_FORM_ERRORS = {
   Nw: "errorFrame",
   Nh: "errorFrame",
   sensorWidth: "errorSensorWidth",
+  focalMin: "errorFocal",
   focalMax: "errorFocalRange",
+  price: "errorCameraPrice",
 };
 byId("cameraForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const name = byId("cameraFormName").value.trim(),
-    Nw = Math.round(parseNum(byId("cameraFormWidth").value)),
-    Nh = Math.round(parseNum(byId("cameraFormHeight").value)),
+    Nw = parseNum(byId("cameraFormWidth").value),
+    Nh = parseNum(byId("cameraFormHeight").value),
     pixelPitchUm = parseNum(byId("cameraFormPixelPitch").value);
   let sensorWidth = parseNum(byId("cameraFormSensorWidth").value);
   let focalMin = parseNum(byId("cameraFormFocalMin").value),
     focalMax = parseNum(byId("cameraFormFocalMax").value);
   const price = parseNum(byId("cameraFormPrice").value);
-  if (!(sensorWidth > 0) && pixelPitchUm > 0 && Nw > 0)
+  if (isNaN(sensorWidth) && pixelPitchUm > 0 && Nw > 0)
     sensorWidth = +((pixelPitchUm * Nw) / 1000).toFixed(3);
-  if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
-  if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
+  if (focalMin > 0 && isNaN(focalMax)) focalMax = focalMin;
+  if (focalMax > 0 && isNaN(focalMin)) focalMin = focalMax;
   const parsed = parseCamera({
     id: "m" + uid(),
     name,
     Nw,
     Nh,
     sensorWidth,
-    focalMin: focalMin > 0 ? focalMin : 0,
-    focalMax: focalMax > 0 ? focalMax : 0,
-    price: price > 0 ? price : 0,
+    focalMin: isNaN(focalMin) ? 0 : focalMin,
+    focalMax: isNaN(focalMax) ? 0 : focalMax,
+    price: isNaN(price) ? 0 : price,
     custom: true,
   });
   const errorEl = byId("cameraFormError");
@@ -694,7 +710,11 @@ function renderDetView() {
 byId("detectorFormInput").innerHTML = INPUTS.map(
   (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`,
 ).join("");
-const DETECTOR_FORM_ERRORS = { name: "errorName", fps: "errorFps" };
+const DETECTOR_FORM_ERRORS = {
+  name: "errorName",
+  fps: "errorFps",
+  gflops: "errorGflops",
+};
 byId("detectorForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const name = byId("detectorFormName").value.trim(),
@@ -705,7 +725,7 @@ byId("detectorForm").addEventListener("submit", (event) => {
     fps: parseNum(byId("detectorFormFps").value),
     inputSize: +byId("detectorFormInput").value,
     refGpu: byId("detectorFormRefGpu").value,
-    gflops: gflops > 0 ? gflops : 0,
+    gflops: isNaN(gflops) ? 0 : gflops,
     custom: true,
   });
   const errorEl = byId("detectorFormError");
@@ -731,10 +751,14 @@ byId("detectorForm").addEventListener("submit", (event) => {
 // ---------- главный цикл
 let report = "";
 export function calcAll() {
-  // черновики в store всегда проходят разбор: их дают форма, шаблоны и загрузка через разбор
-  const results = store.cameraTypes.map((type) =>
-    computeType(parseCameraType(type).value, cameraById(type.inputs.camera)),
-  );
+  // черновик с недопустимым числом — ошибка ввода; камеры типа считаются, если их число допустимо
+  const results = store.cameraTypes.map((type) => {
+    const parsed = parseCameraType(type);
+    if (parsed.ok)
+      return computeType(parsed.value, cameraById(type.inputs.camera));
+    const countOk = !parsed.errors.some((error) => error.field === "count");
+    return { ok: false, type, count: countOk ? parseNum(type.count) : 0 };
+  });
   const activeIndex = Math.max(
     0,
     store.cameraTypes.findIndex((type) => type.id === store.activeTypeId),
@@ -742,16 +766,24 @@ export function calcAll() {
   syncFormUI(store.cameraTypes[activeIndex], results[activeIndex]);
   renderType(results[activeIndex]);
   renderTabs(results);
-  const settings = parseSystemSettings(readSystemSettings()).value;
+  const settings = parseSystemSettings(readSystemSettings());
   const gpus = allGpus().map((gpu) => ({ ...gpu, price: priceOf(gpu) }));
-  const system = computeSystem(results, settings, {
-    gpus,
-    candidates: gpus.filter(isOn),
-    detectors: store.customDetectors,
-  });
-  const totals = systemTotals(results, settings, allCameras());
+  const system =
+    settings.ok && gpus.every((gpu) => gpu.price > 0)
+      ? computeSystem(results, settings.value, {
+          gpus,
+          candidates: gpus.filter(isOn),
+          detectors: store.customDetectors,
+        })
+      : null;
+  // архив при ошибке в параметрах не считается: NaN суток — ошибка в строке архива
+  const totals = systemTotals(
+    results,
+    settings.ok ? settings.value : { archiveDays: NaN },
+    allCameras(),
+  );
   renderSystem(results, system, totals);
-  const chosen = system.chosen;
+  const chosen = system?.chosen;
   report = [
     t("appTitle"),
     ...results.flatMap((result) =>
@@ -799,21 +831,23 @@ export function calcAll() {
         formatNumber(totals.totalMbps, 0),
         totals.cameraCost ? "$" + formatNumber(totals.cameraCost, 0) : "",
       ),
-    system.liveResults.length
-      ? t("reportCompute", {
-          gpuCount: chosen.count,
-          gpuName: chosen.gpu.name,
-          cost: "$" + formatNumber(chosen.cost, 0),
-          inferenceLoad: formatNumber(chosen.inferenceLoad * 100, 0),
-          decodeLoad: formatNumber(chosen.decodeLoad * 100, 0),
-          memoryUsed: formatNumber(chosen.memoryUseGB, 1),
-          memoryCap: formatNumber(chosen.memoryCapGB, 0),
-          optimum:
-            system.optimum && system.optimum !== chosen
-              ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}`
-              : "",
-        })
-      : t("reportNoCompute"),
+    !system
+      ? t("reportComputeError")
+      : system.liveResults.length
+        ? t("reportCompute", {
+            gpuCount: chosen.count,
+            gpuName: chosen.gpu.name,
+            cost: "$" + formatNumber(chosen.cost, 0),
+            inferenceLoad: formatNumber(chosen.inferenceLoad * 100, 0),
+            decodeLoad: formatNumber(chosen.decodeLoad * 100, 0),
+            memoryUsed: formatNumber(chosen.memoryUseGB, 1),
+            memoryCap: formatNumber(chosen.memoryCapGB, 0),
+            optimum:
+              system.optimum && system.optimum !== chosen
+                ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}`
+                : "",
+          })
+        : t("reportNoCompute"),
   ].join("\n");
   save();
 }
@@ -907,10 +941,13 @@ function parseSaved(saved) {
       rejected++;
       return [];
     });
-  // тип камер и параметры системы хранятся черновиком: разбор решает, принять ли запись
+  // тип камер и параметры системы хранятся черновиком: разбор решает, принять ли запись;
+  // недопустимое число черновик не отклоняет, его покажет расчёт
   const asDraft = (parse) => (item) => {
     const parsed = parse(item);
-    return parsed.ok ? { ok: true, value: item } : parsed;
+    return parsed.ok || onlyValueErrors(parsed.errors)
+      ? { ok: true, value: item }
+      : parsed;
   };
   const list = (items) => (Array.isArray(items) ? items : []);
   // параметры системы — одна запись, если она есть

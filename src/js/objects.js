@@ -55,10 +55,10 @@ export function renderObjects() {
         : "");
     card.innerHTML = `<div class="ohdr"><span class="dot" id="objectDot-${i}" aria-hidden="true"></span><input id="objectName-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="objectWidth-${i}">${t("objectWidth")}</label><input id="objectWidth-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="objectLength-${i}">${t("objectLength")}</label><input id="objectLength-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="objectHeight-${i}">${t("objectHeight")}</label><input id="objectHeight-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectWidth-${i}">${t("objectWidth")}</label><input id="objectWidth-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectLength-${i}">${t("objectLength")}</label><input id="objectLength-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectHeight-${i}">${t("objectHeight")}</label><input id="objectHeight-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f c2"><label for="objectModel-${i}">${t("objectModel")}</label><select id="objectModel-${i}">${modelOptions}</select></div>
         <div class="f"><label for="objectFeed-${i}">${t("objectFeed")}</label><select id="objectFeed-${i}">${Object.entries(
           FEEDS,
@@ -66,7 +66,7 @@ export function renderObjects() {
           .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
         <div class="f"><label for="objectInput-${i}">${t("objectInput")}</label><select id="objectInput-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
-        <div class="f" id="objectOverlapBox-${i}"><label for="objectOverlap-${i}">${t("objectOverlap")}</label><input id="objectOverlap-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="objectOverlapBox-${i}"><label for="objectOverlap-${i}">${t("objectOverlap")}</label><input id="objectOverlap-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
       </div>
       <div class="ores" id="objectResult-${i}" aria-live="polite"></div>`;
     list.append(card);
@@ -121,7 +121,7 @@ export function syncFormUI(type, result) {
   byId("hfovBox").hidden = inputs.lensMode !== "angle";
   byId("zoneStartBox").hidden = inputs.placement === "top";
   const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR,
-    sensorWidth = result?.frame.sensorWidth;
+    sensorWidth = result?.frame?.sensorWidth;
   byId("resolution").disabled = !!camera;
   byId("sensor").disabled = !!camera;
   byId("pixelPitchBox").hidden = !!camera || sensor.kind !== "pixelPitch";

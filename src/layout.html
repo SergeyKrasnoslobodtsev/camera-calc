@@ -325,17 +325,17 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     <div class="colhead typehead">
       <h2 id="parametersTitle" data-t="parametersTitle"></h2>
       <div class="f"><label for="typeName" data-t="typeName"></label><input id="typeName"></div>
-      <div class="f"><label for="typeCount" data-t="typeCount"></label><input id="typeCount" type="number" step="1" inputmode="numeric"></div>
+      <div class="f"><label for="typeCount" data-t="typeCount"></label><input id="typeCount" type="number" min="0" step="1" inputmode="numeric"></div>
     </div>
     <details class="sec" open>
       <summary><span data-t="sectionGeometry"></span> <span class="sumv" id="summaryGeometry"></span></summary>
       <div class="fs">
-        <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="zoneStartBox"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f" id="zoneStartBox"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f full"><span data-tip="placement" data-t="placement"></span>
           <div class="seg" role="radiogroup" data-ta="placement">
             <label><input type="radio" name="placement" id="placementSide" value="side"><span data-t="placementSide"></span></label>
@@ -350,8 +350,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cameraSelect"></label><a class="inlink" href="#tpl-cams" data-t="addCameraLink"></a></div><select id="camera"></select></div>
         <div class="f full"><label for="resolution" data-t="resolution"></label><select id="resolution"></select></div>
         <div class="f"><label for="sensor" data-t="sensor"></label><select id="sensor"></select></div>
-        <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full" id="pixelPitchBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f full" id="pixelPitchBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f full"><label for="orientation" data-t="orientation"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orientationLandscape"></option><option value="portrait" data-t="orientationPortrait"></option></select></div>
         <div class="f full"><span data-tip="lensMode" data-t="lensMode"></span>
           <div class="seg three" role="radiogroup" data-ta="lensModeAria">
@@ -360,20 +360,20 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
             <label><input type="radio" name="lensMode" id="lensModeAngle" value="angle"><span data-t="lensModeAngle"></span></label>
           </div>
         </div>
-        <div class="f" id="focalLengthBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="hfovBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="focalLengthBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f" id="hfovBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" min="0" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <details class="sec">
       <summary><span data-t="sectionStream"></span> <span class="sumv" id="summaryStream"></span></summary>
       <div class="fs">
-        <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
         <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="sceneLow"></option><option value="1" data-t="sceneMid"></option><option value="1.5" data-t="sceneHigh"></option></select></div>
-        <div class="f"><label for="lensFactor" data-t="lensFactor"></label><input id="lensFactor" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="speed" data-t="speed"></label><input id="speed" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="lensFactor" data-t="lensFactor"></label><input id="lensFactor" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="speed" data-t="speed"></label><input id="speed" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" min="0" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <div class="colfoot"><button type="button" class="sm" id="duplicateTypeBtn" data-t="duplicateTypeBtn"></button><button type="button" class="sm danger" id="deleteTypeBtn" data-t="deleteTypeBtn"></button></div>
@@ -396,7 +396,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <div class="bottom">
   <section class="panel net" aria-labelledby="networkTitle">
     <div class="rowhead"><h2 id="networkTitle" data-t="networkTitle"></h2>
-      <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" step="1" inputmode="numeric" value="0"></div></div>
+      <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" min="0" step="1" inputmode="numeric" value="0"></div></div>
     <div class="tbl"><table id="networkTable"></table></div>
   </section>
   <section class="panel assum" aria-labelledby="assumptionsTitle">
@@ -423,8 +423,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="tbl" style="padding:4px 8px 8px"><table id="catalogTable"></table></div>
       <div class="mine" id="customGpus"></div>
       <div class="params">
-        <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" step="any" inputmode="decimal" value="0.6"></div>
-        <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" step="any" inputmode="decimal" value="20"></div>
+        <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" min="0" step="any" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" min="0" step="any" inputmode="decimal" value="20"></div>
       </div>
     </section>
     <section class="panel newc" aria-labelledby="gpuFormTitle">
@@ -432,11 +432,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <form id="gpuForm" autocomplete="off" novalidate>
         <div class="f full"><label for="gpuFormName" data-t="gpuFormName"></label><input id="gpuFormName" data-tp="gpuFormNamePlaceholder" style="font-family:var(--sans)"></div>
         <div class="f"><label for="gpuFormArchitecture" data-t="gpuFormArchitecture"></label><select id="gpuFormArchitecture"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="gpuFormJetson"></option></select></div>
-        <div class="f"><label for="gpuFormTflops" data-t="gpuFormTflops"></label><input id="gpuFormTflops" type="number" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
-        <div class="f"><label for="gpuFormDecoders" id="gpuFormDecodersLabel" data-t="gpuFormDecoders"></label><input id="gpuFormDecoders" type="number" step="any" inputmode="decimal" placeholder="2"></div>
-        <div class="f"><label for="gpuFormMemory" data-t="gpuFormMemory"></label><input id="gpuFormMemory" type="number" step="any" inputmode="decimal" placeholder="48"></div>
-        <div class="f"><label for="gpuFormTdp" data-t="gpuFormTdp"></label><input id="gpuFormTdp" type="number" step="1" inputmode="numeric" placeholder="300"></div>
-        <div class="f"><label for="gpuFormPrice" data-t="gpuFormPrice"></label><input id="gpuFormPrice" type="number" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
+        <div class="f"><label for="gpuFormTflops" data-t="gpuFormTflops"></label><input id="gpuFormTflops" type="number" min="0" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
+        <div class="f"><label for="gpuFormDecoders" id="gpuFormDecodersLabel" data-t="gpuFormDecoders"></label><input id="gpuFormDecoders" type="number" min="0" step="any" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="gpuFormMemory" data-t="gpuFormMemory"></label><input id="gpuFormMemory" type="number" min="0" step="any" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="gpuFormTdp" data-t="gpuFormTdp"></label><input id="gpuFormTdp" type="number" min="0" step="1" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="gpuFormPrice" data-t="gpuFormPrice"></label><input id="gpuFormPrice" type="number" min="0" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
         <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="gpuFormEnabled" checked><span data-t="gpuFormEnabled"></span></label>
         <div class="hint"><b data-t="hintWhere"></b><span data-t="gpuFormHint1"></span><span data-t="gpuFormHint2"></span></div>
         <div class="err" id="gpuFormError" hidden></div>
@@ -454,13 +454,13 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="colhead"><h2 id="cameraFormTitle" data-t="cameraFormTitle"></h2></div>
       <form id="cameraForm" autocomplete="off" novalidate>
         <div class="f full"><label for="cameraFormName" data-t="typeName"></label><input id="cameraFormName" data-tp="cameraFormNamePlaceholder" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="cameraFormWidth" data-t="cameraFormWidth"></label><input id="cameraFormWidth" type="number" step="1" inputmode="numeric" placeholder="2560"></div>
-        <div class="f"><label for="cameraFormHeight" data-t="cameraFormHeight"></label><input id="cameraFormHeight" type="number" step="1" inputmode="numeric" placeholder="1440"></div>
-        <div class="f"><label for="cameraFormSensorWidth" data-t="cameraFormSensorWidth"></label><input id="cameraFormSensorWidth" type="number" step="any" inputmode="decimal" placeholder="5.4"></div>
-        <div class="f"><label for="cameraFormPixelPitch" data-t="cameraFormPixelPitch"></label><input id="cameraFormPixelPitch" type="number" step="any" inputmode="decimal" placeholder="2.0"></div>
-        <div class="f"><label for="cameraFormFocalMin" data-t="cameraFormFocalMin"></label><input id="cameraFormFocalMin" type="number" step="any" inputmode="decimal" placeholder="2.8"></div>
-        <div class="f"><label for="cameraFormFocalMax" data-t="cameraFormFocalMax"></label><input id="cameraFormFocalMax" type="number" step="any" inputmode="decimal" placeholder="12"></div>
-        <div class="f"><label for="cameraFormPrice" data-t="cameraFormPrice"></label><input id="cameraFormPrice" type="number" step="1" inputmode="numeric" data-tp="optional"></div>
+        <div class="f"><label for="cameraFormWidth" data-t="cameraFormWidth"></label><input id="cameraFormWidth" type="number" min="0" step="1" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="cameraFormHeight" data-t="cameraFormHeight"></label><input id="cameraFormHeight" type="number" min="0" step="1" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="cameraFormSensorWidth" data-t="cameraFormSensorWidth"></label><input id="cameraFormSensorWidth" type="number" min="0" step="any" inputmode="decimal" placeholder="5.4"></div>
+        <div class="f"><label for="cameraFormPixelPitch" data-t="cameraFormPixelPitch"></label><input id="cameraFormPixelPitch" type="number" min="0" step="any" inputmode="decimal" placeholder="2.0"></div>
+        <div class="f"><label for="cameraFormFocalMin" data-t="cameraFormFocalMin"></label><input id="cameraFormFocalMin" type="number" min="0" step="any" inputmode="decimal" placeholder="2.8"></div>
+        <div class="f"><label for="cameraFormFocalMax" data-t="cameraFormFocalMax"></label><input id="cameraFormFocalMax" type="number" min="0" step="any" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="cameraFormPrice" data-t="cameraFormPrice"></label><input id="cameraFormPrice" type="number" min="0" step="1" inputmode="numeric" data-tp="optional"></div>
         <div class="hint"><b data-t="hintWhere"></b><span data-t="cameraFormHint1"></span><span data-t="cameraFormHint2"></span></div>
         <div class="err" id="cameraFormError" hidden></div>
         <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addCameraBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
@@ -476,10 +476,10 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="colhead"><h2 id="detectorFormTitle" data-t="detectorFormTitle"></h2></div>
       <form id="detectorForm" autocomplete="off" novalidate>
         <div class="f full"><label for="detectorFormName" data-t="typeName"></label><input id="detectorFormName" data-tp="detectorFormNamePlaceholder" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="detectorFormFps" data-t="detectorFormFps"></label><input id="detectorFormFps" type="number" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
+        <div class="f"><label for="detectorFormFps" data-t="detectorFormFps"></label><input id="detectorFormFps" type="number" min="0" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
         <div class="f"><label for="detectorFormInput" data-t="detectorFormInput"></label><select id="detectorFormInput" style="font-family:var(--mono)"></select></div>
         <div class="f full"><label for="detectorFormRefGpu" data-t="detectorFormRefGpu"></label><select id="detectorFormRefGpu"></select></div>
-        <div class="f full"><label for="detectorFormGflops" data-t="detectorFormGflops"></label><input id="detectorFormGflops" type="number" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
+        <div class="f full"><label for="detectorFormGflops" data-t="detectorFormGflops"></label><input id="detectorFormGflops" type="number" min="0" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
         <div class="hint"><b data-t="hintHow"></b><span data-t="detectorFormHint1"></span><span data-t="detectorFormHint2"></span></div>
         <div class="err" id="detectorFormError" hidden></div>
         <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addDetectorBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>

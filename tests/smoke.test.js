@@ -600,3 +600,90 @@ const fractional = [...d9.querySelectorAll('input[inputmode="numeric"]')]
   .map((el) => el.id);
 assert.deepStrictEqual(fractional, [], "целые поля принимают дробь");
 console.log("integer fields: ok");
+// input check: min="0" on number fields, errors instead of silent substitution
+const noMin = [...d9.querySelectorAll('input[type="number"]')]
+  .filter((el) => el.min !== "0")
+  .map((el) => el.id);
+assert.ok(
+  d9.getElementById("gpuPrice-l40s") && d9.getElementById("objectWidth-0"),
+  "нет полей цены или объекта",
+);
+assert.deepStrictEqual(noMin, [], "числовые поля без min=0");
+const enter = (win, id, value) => {
+  const field = win.document.getElementById(id);
+  field.value = value;
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+};
+const open = (win, hash) => {
+  win.location.hash = hash;
+  win.dispatchEvent(new win.HashChangeEvent("hashchange"));
+};
+[
+  ["typeCount", "1.5"],
+  ["cameraHeight", "-1"],
+].forEach(([id, value]) => {
+  const typed = page(null);
+  enter(typed, id, value);
+  // тот же черновик из сохранения: строка сохраняется, расчёт показывает ошибку
+  const loaded = page(typed.localStorage.getItem("camcalc4"));
+  [typed, loaded].forEach((win) => {
+    assert.strictEqual(win.document.getElementById(id).value, value, id);
+    assert.match(
+      win.document.getElementById("verdict").textContent,
+      new RegExp(RU.pillError),
+      `${id} ${value}: вердикт`,
+    );
+    assert.match(
+      reportOf(win),
+      /× \d+: ошибка в исходных данных/,
+      `${id} ${value}: отчёт`,
+    );
+  });
+});
+console.log("type input errors: ok");
+[
+  ["efficiency", ""],
+  ["reserve", "-5"],
+  ["gpuPrice-l40s", "-5"],
+  ["gpuPrice-l40s", ""],
+].forEach(([id, value]) => {
+  const win = page(null);
+  open(win, "#tpl-gpus");
+  enter(win, id, value);
+  open(win, "");
+  assert.strictEqual(
+    win.document.getElementById("loadNote").textContent,
+    RU.systemInputError,
+    `${id} «${value}»: системный блок`,
+  );
+  const report = reportOf(win);
+  assert.ok(report.includes(RU.reportComputeError), `${id} «${value}»: отчёт`);
+  assert.ok(
+    !/Вычислитель \(оценка\): \d+ ×/.test(report),
+    `${id} «${value}»: подбор`,
+  );
+});
+console.log("system input errors: ok");
+const camForm = page(null);
+open(camForm, "#tpl-cams");
+const cameraRows = () =>
+  camForm.document.querySelectorAll("#cameraTable tr").length;
+const rowsBefore = cameraRows();
+enter(camForm, "cameraFormName", "Дробный кадр");
+enter(camForm, "cameraFormWidth", "1920.5");
+enter(camForm, "cameraFormHeight", "1080");
+enter(camForm, "cameraFormSensorWidth", "5.6");
+camForm.document
+  .getElementById("cameraForm")
+  .dispatchEvent(new camForm.Event("submit", { cancelable: true }));
+assert.strictEqual(
+  cameraRows(),
+  rowsBefore,
+  "камера с дробным кадром добавлена",
+);
+assert.strictEqual(
+  camForm.document.getElementById("cameraFormError").textContent,
+  RU.cameraFormError(RU.errorFrame),
+  "нет ошибки дробного кадра",
+);
+console.log("template fraction: ok");

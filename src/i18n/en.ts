@@ -42,6 +42,8 @@ export const EN: Dictionary = {
   gaugeMemorySubtitle: (used, capacity) => `${used} of ${capacity} GB`,
   noCandidates:
     'No GPU is selected for auto-selection. Select GPUs in "Templates".',
+  systemInputError:
+    'Unable to select a GPU: a system setting or a GPU price has an invalid value. Check the derating factor, growth headroom, archive retention, and prices in "Templates".',
   noFit:
     "No GPU can handle the load, even 4 of them. Lower the analytics frame rate, use zone crop instead of tiles, choose a lighter model, or split the cameras across several servers.",
   // результат
@@ -55,7 +57,7 @@ export const EN: Dictionary = {
   sideAria: "Diagram: camera, field of view, and monitored zone, side view",
   pillError: "Input error",
   inputError:
-    "Check the input data: the camera height must be greater than the target plane height, and the zone and sensor sizes must be greater than zero.",
+    "Check the input data: required fields must be filled in, numbers must not be negative, the camera count must be a whole number, the camera height must be greater than the target plane height, and the zone and sensor sizes must be greater than zero.",
   kpiFocal: "Focal length",
   kpiFocalLimit: "lens limit",
   kpiFocalAuto: "selected",
@@ -333,6 +335,7 @@ export const EN: Dictionary = {
   errorDecoderStreams: "decoder streams",
   errorDecoders: "NVDEC count",
   errorMemory: "memory",
+  errorTdp: "TDP",
   errorPrice: "price (needed for comparison in auto-selection)",
   gpuAdded: (name) => `"${name}" added`,
   gpuDeleted: "GPU deleted",
@@ -368,7 +371,9 @@ export const EN: Dictionary = {
   cameraFormError: (fields) => `Enter: ${fields}.`,
   errorFrame: "frame size in pixels",
   errorSensorWidth: "sensor width or pixel size",
+  errorFocal: "focal length",
   errorFocalRange: 'focal length "from" not greater than "to"',
+  errorCameraPrice: "price",
   cameraAdded: (name) => `"${name}" added`,
   cameraDeleted: "Camera deleted",
   detectorsTitle: (count) => `Detectors · ${count}`,
@@ -395,6 +400,7 @@ export const EN: Dictionary = {
     "For other GPUs the benchmark is scaled by FP16, for another input size by the square of its side.",
   addDetectorBtn: "Add detector",
   errorFps: "benchmark",
+  errorGflops: "GFLOPs per frame",
   detectorAdded: (name) => `"${name}" added`,
   detectorDeleted: "Detector deleted",
   // отчёт
@@ -410,6 +416,7 @@ export const EN: Dictionary = {
   reportCompute: (params) =>
     `Compute node (estimate): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; inference ${params.inferenceLoad}%, decoder ${params.decodeLoad}%, GPU memory ${params.memoryUsed}/${params.memoryCap} GB${params.optimum ? `; best price: ${params.optimum}` : ""}`,
   reportNoCompute: "Compute node: no data",
+  reportComputeError: "Compute node: input data error",
   // уведомления
   stale: "The data was changed in another tab. Reload the page.",
   typeCopied: "Type copied",
