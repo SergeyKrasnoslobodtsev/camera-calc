@@ -81,6 +81,6 @@ export const exampleTypes = () => [
       analyticsFps: "2",
       fps: "10",
     },
-    [detector("nutM8", "roi")],
+    [detector("nutM8", "tiles")],
   ),
 ];
