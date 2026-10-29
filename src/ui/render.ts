@@ -2,7 +2,6 @@
 import { activeType, computed, state } from "../app/store.ts";
 import { syncFormUI } from "./object-cards.ts";
 import { renderSystem } from "./system-panel.ts";
-import { renderTabs } from "./tabs.ts";
 import { applyTheme } from "./theme.ts";
 import { renderType } from "./type-result.ts";
 
@@ -11,7 +10,6 @@ export function renderResults() {
   const activeIndex = state.cameraTypes.indexOf(activeType());
   syncFormUI(activeType(), results[activeIndex]);
   renderType(results[activeIndex]);
-  renderTabs(results);
   renderSystem(results, system, totals);
   applyTheme();
 }

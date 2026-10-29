@@ -1,13 +1,17 @@
 // Точка входа: подключает интерфейс к состоянию, загружает сохранение и показывает страницу.
 // Модули ui навешивают обработчики при импорте; подсказки — последними, когда разметка полей готова.
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { t } from "./i18n/index.ts";
 import { loadSaved, save, watchOtherTabs } from "./app/persistence.ts";
 import { activeType, restore, state, subscribe } from "./app/store.ts";
+import { byId } from "./ui/dom.ts";
 import { buildCameraSelect } from "./ui/object-cards.ts";
 import { renderResults } from "./ui/render.ts";
 import { route } from "./ui/router.ts";
 import { buildGpuSelect, writeSystemForm } from "./ui/system-panel.ts";
+import { Tabs } from "./ui/tabs.tsx";
 import { toast } from "./ui/toast.ts";
 import { applyTranslations } from "./ui/translations.ts";
 import { writeForm } from "./ui/type-form.ts";
@@ -28,3 +32,8 @@ buildCameraSelect();
 writeSystemForm();
 writeForm(activeType());
 route();
+createRoot(byId("tabs")).render(
+  <StrictMode>
+    <Tabs />
+  </StrictMode>,
+);
