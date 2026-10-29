@@ -227,25 +227,20 @@ export const EN: Dictionary = {
   // объекты
   objectsTitle: "Objects and models",
   addObject: "+ Object",
-  presets: "Templates:",
   addModelLink: "+ Custom model",
   objectsFooter:
     "Objects with the same model and input mode count as one inference run.",
-  objectName: "Object name",
+  objectTarget: "Detection object",
   objectDelete: "Delete object",
-  objectWidth: "Width, cm",
-  objectLength: "Length, cm",
-  objectHeight: "Height, cm",
-  objectRequiredPx: "Threshold, px",
   objectModel: "Model",
   objectFeed: "Input mode",
   objectInput: "Model input, px",
   objectOverlap: "Overlap, %",
   ultralytics: "Ultralytics catalog",
   customModels: "Custom models",
+  customObjects: "Custom objects",
   feeds: { roi: "Zone crop", tiles: "Tiles", full: "Full frame" },
   feedsShort: { roi: "crop", tiles: "tiles", full: "full frame" },
-  presetNames: ["Person", "Hand", "Tray cell", "Part", "M8 nut"],
   typeNames: ["Workstation", "Cart"],
   // справочники
   units: {
@@ -261,6 +256,12 @@ export const EN: Dictionary = {
   },
   megapixels: (megapixels) => `${megapixels} MP`,
   sensorFormat: (format, widthMm) => `${format} ≈ ${widthMm} mm`,
+  builtinObjectNames: {
+    person: "Person",
+    hand: "Hand",
+    car: "Car",
+    nutM8: "M8 nut",
+  },
   builtinCameraNames: {
     k4: "Generic 4 MP · 1/2.7″ · 2.8–12 mm",
     k8: "Generic 8 MP · 1/1.8″ · 2.8–12 mm",

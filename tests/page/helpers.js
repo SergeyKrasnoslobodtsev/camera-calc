@@ -92,6 +92,6 @@ export async function addTemplates() {
     ...document.getElementById("objectModel-1").options,
   ].find((o) => o.text === "Детектор деталей");
   choose("objectModel-1", customModelOption.value);
-  const ex = JSON.parse(localStorage.getItem("camcalc4"));
+  const ex = JSON.parse(localStorage.getItem("camcalc5"));
   return { ex, exp: JSON.stringify(ex, null, 1) };
 }

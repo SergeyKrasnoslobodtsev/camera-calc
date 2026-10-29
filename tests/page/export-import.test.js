@@ -84,11 +84,11 @@ test("экспорт: файл JSON с сохранением", async () => {
 
 test("импорт: файл, который не принят, данные не меняет", async () => {
   await openPage({ saved: exp });
-  const before = localStorage.getItem("camcalc4");
+  const before = localStorage.getItem("camcalc5");
   importFile("{битый");
   assert.strictEqual(T("toast"), "Файл не является сохранением калькулятора.");
   assert.strictEqual(
-    localStorage.getItem("camcalc4"),
+    localStorage.getItem("camcalc5"),
     before,
     "битый файл изменил данные",
   );
@@ -99,6 +99,8 @@ test("импорт: файл, который не принят, данные н�
     "{}",
     JSON.stringify({ ...ex, types: [{ name: "Тип", objects: "x" }] }),
     JSON.stringify({ types: ex.types }),
+    // файл без своих объектов детекции: формат до camcalc5
+    JSON.stringify({ ...ex, customObjects: undefined }),
     // запись, которую не приняла бы форма: GPU без цены, неизвестная подача объекта
     JSON.stringify({ ...ex, customGpus: [gpuWithoutPrice] }),
     JSON.stringify({
@@ -119,11 +121,43 @@ test("импорт: файл, который не принят, данные н�
       s,
     );
     assert.strictEqual(
-      localStorage.getItem("camcalc4"),
+      localStorage.getItem("camcalc5"),
       before,
       "файл изменил данные: " + s,
     );
   }
+});
+
+test("загрузка: свой объект детекции; объект детекции, которого нет, — «Человек»", async () => {
+  const [type, ...otherTypes] = ex.types;
+  const saved = {
+    ...ex,
+    customObjects: [
+      {
+        id: "box",
+        name: "Коробка",
+        width: 40,
+        length: 30,
+        height: 20,
+        requiredPx: 32,
+        custom: true,
+      },
+    ],
+    types: [
+      {
+        ...type,
+        objects: [
+          { ...type.objects[0], target: "box" },
+          { ...type.objects[1], target: "missing" },
+        ],
+      },
+      ...otherTypes,
+    ],
+  };
+  await openPage({ saved: JSON.stringify(saved) });
+  const target = (i) => document.getElementById(`objectTarget-${i}`).value;
+  assert.deepStrictEqual([target(0), target(1)], ["box", "person"]);
+  assert.match(reportOf(), /\n {2}Коробка: /, "в отчёте нет своего объекта");
 });
 
 test("импорт: выбор файла только после подтверждения", async () => {
@@ -141,7 +175,7 @@ test("импорт: выбор файла только после подтвер
 test("импорт: файл не читается", async () => {
   await openPage({ saved: exp });
   const inp = document.getElementById("importFile"),
-    kept = localStorage.getItem("camcalc4");
+    kept = localStorage.getItem("camcalc5");
   Object.defineProperty(inp, "files", {
     value: [{ text: () => Promise.reject(new Error("NotReadableError")) }],
   });
@@ -149,14 +183,14 @@ test("импорт: файл не читается", async () => {
   await waitFor(() =>
     assert.strictEqual(T("toast"), "Не удалось прочитать файл."),
   );
-  assert.strictEqual(localStorage.getItem("camcalc4"), kept);
+  assert.strictEqual(localStorage.getItem("camcalc5"), kept);
 });
 
 test("экспорт → импорт: те же итоги и отчёт", async () => {
   await openPage();
   importFile(exp);
   assert.strictEqual(reloads.count, 1, "импорт не перезагрузил страницу");
-  await openPage({ saved: localStorage.getItem("camcalc4") });
+  await openPage({ saved: localStorage.getItem("camcalc5") });
   assert.ok(
     [...document.getElementById("camera").options].some((o) =>
       o.text.startsWith("Тест-камера"),
@@ -209,13 +243,13 @@ test("данные изменены в другой вкладке: вкладк
     ...ex,
     types: [{ ...ex.types[0], name: "Из другой вкладки" }],
   });
-  localStorage.setItem("camcalc4", other);
+  localStorage.setItem("camcalc5", other);
   act(() => {
-    window.dispatchEvent(new StorageEvent("storage", { key: "camcalc4" }));
+    window.dispatchEvent(new StorageEvent("storage", { key: "camcalc5" }));
   });
   enter("efficiency", "0.5");
   assert.strictEqual(
-    localStorage.getItem("camcalc4"),
+    localStorage.getItem("camcalc5"),
     other,
     "вкладка затёрла данные другой вкладки",
   );

@@ -1,8 +1,8 @@
-// Объекты активного типа: карточки, добавление нового объекта и объектов-пресетов.
+// Объекты активного типа: карточки и добавление нового объекта.
 import { useRef } from "react";
 import { flushSync } from "react-dom";
-import { displayName, t } from "../../../i18n/index.ts";
-import { NEW_OBJECT, OBJECT_PRESETS } from "../../../app/examples.ts";
+import { t } from "../../../i18n/index.ts";
+import { NEW_OBJECT } from "../../../app/examples.ts";
 import { activeType, addObject, state } from "../../../app/store.ts";
 import { useComputed } from "../../hooks/useComputed.ts";
 import { ObjectCard } from "./ObjectCard.tsx";
@@ -13,12 +13,10 @@ export function ObjectList() {
   const result = results[state.cameraTypes.indexOf(type)];
   const list = useRef<HTMLDivElement>(null);
 
-  // новая карточка отрисовывается сразу, чтобы выделить её название для ввода
+  // новая карточка отрисовывается сразу, чтобы перевести фокус на выбор объекта детекции
   const addNew = () => {
     flushSync(() => addObject(NEW_OBJECT));
-    const name = list.current?.lastElementChild?.querySelector("input");
-    name?.focus();
-    name?.select();
+    list.current?.lastElementChild?.querySelector("select")?.focus();
   };
 
   return (
@@ -61,17 +59,6 @@ export function ObjectList() {
           ))}
         </div>
         <div className="presets">
-          <span>{t("presets")}</span>
-          {OBJECT_PRESETS.map((preset) => (
-            <button
-              key={preset.nameKey}
-              type="button"
-              className="chip"
-              onClick={() => addObject(preset)}
-            >
-              {displayName(preset)}
-            </button>
-          ))}
           <a
             className="inlink"
             href="#tpl-models"

@@ -48,7 +48,7 @@ function results() {
 // Состояние встроенного примера, от него строятся остальные конфигурации.
 // Страница сохраняет его в localStorage сразу после первого расчёта.
 await openPage();
-const example = JSON.parse(localStorage.getItem("camcalc4"));
+const example = JSON.parse(localStorage.getItem("camcalc5"));
 const [sideType, topType] = example.types;
 const withType = (type, changes) => ({
   ...type,

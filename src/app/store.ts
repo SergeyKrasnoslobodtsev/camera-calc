@@ -12,25 +12,23 @@ import {
   parseCameraType,
   type CameraTypeInputs,
 } from "../domain/entities/camera-type.ts";
+import type { DetectionObject } from "../domain/entities/detection-object.ts";
 import type { CustomModel } from "../domain/entities/model.ts";
 import type { Gpu } from "../domain/entities/gpu.ts";
 import { parseSystemSettings } from "../domain/entities/system-settings.ts";
 import { parseNum } from "../domain/parse-num.ts";
 import { BUILTIN_CAMERAS } from "../domain/references/builtin-cameras.ts";
+import { BUILTIN_DETECTION_OBJECTS } from "../domain/references/detection-objects.ts";
 import { GPU_CATALOG } from "../domain/references/gpu-catalog.ts";
 import { MODELS } from "../domain/references/models.ts";
 import { DEFAULT_SYSTEM, exampleTypes, makeType, uid } from "./examples.ts";
 
 // Черновики хранят значения полей формы как введены: строки из полей или числа из шаблона.
 // Встроенное название задаёт nameKey (ключ словаря), своё — name; изменённое название убирает nameKey.
+// Объект типа — детектор: что ищет (объект детекции target) и какой моделью; названия своего нет.
 type DraftNumber = string | number;
 export type ObjectDraft = {
-  name: string;
-  nameKey?: string;
-  width: DraftNumber; // см
-  length: DraftNumber;
-  height: DraftNumber;
-  requiredPx: DraftNumber;
+  target: string; // id объекта детекции: встроенного или своего
   model: string;
   feed: string;
   inputSize: DraftNumber;
@@ -57,6 +55,7 @@ export type State = {
   gpuEnabled: Record<string, boolean>; // участие в подборе по id GPU, нет записи — участвует
   customCameras: Camera[];
   customModels: CustomModel[];
+  customObjects: DetectionObject[];
   system: SystemDraft;
   light: boolean; // светлая тема
 };
@@ -80,6 +79,7 @@ export const state: State = {
   gpuEnabled: {},
   customCameras: [],
   customModels: [],
+  customObjects: [],
   system: { ...DEFAULT_SYSTEM },
   light: false,
 };
@@ -100,6 +100,26 @@ export const cameraById = (id: string) =>
 export const modelById = (id: string) =>
   MODELS.find((model) => model.id === id) ||
   state.customModels.find((customModel) => customModel.id === id);
+export const allDetectionObjects = (): DetectionObject[] => [
+  ...BUILTIN_DETECTION_OBJECTS,
+  ...state.customObjects,
+];
+export const detectionObjectById = (id: string) =>
+  allDetectionObjects().find((detectionObject) => detectionObject.id === id);
+// черновик типа для разбора: объекты получают название, габариты и порог своего объекта детекции
+export const withTargets = (
+  type: TypeDraft,
+  detectionObjects: readonly DetectionObject[],
+) => ({
+  ...type,
+  objects: type.objects.map((object) => ({
+    name: "",
+    ...detectionObjects.find(
+      (detectionObject) => detectionObject.id === object.target,
+    ),
+    ...object,
+  })),
+});
 export const activeType = () =>
   state.cameraTypes.find((type) => type.id === state.activeTypeId) ||
   state.cameraTypes[0];
@@ -108,7 +128,7 @@ export const activeType = () =>
 function compute(): Computed {
   // черновик с недопустимым числом — ошибка ввода; камеры типа считаются, если их число допустимо
   const results = state.cameraTypes.map((type): TypeOutcome => {
-    const parsed = parseCameraType(type);
+    const parsed = parseCameraType(withTargets(type, allDetectionObjects()));
     if (parsed.ok)
       return computeType(parsed.value, cameraById(type.inputs.camera));
     const countOk = !parsed.errors.some((error) => error.field === "count");
@@ -207,12 +227,10 @@ export function addObject(object: ObjectDraft) {
 }
 export function updateObject(
   index: number,
-  field: Exclude<keyof ObjectDraft, "nameKey">,
+  field: keyof ObjectDraft,
   value: string,
 ) {
-  const object = activeType().objects[index];
-  object[field] = value;
-  if (field === "name") delete object.nameKey;
+  activeType().objects[index][field] = value;
   commit();
 }
 export function deleteObject(index: number) {
@@ -271,6 +289,22 @@ export function deleteModel(id: string) {
   state.cameraTypes.forEach((type) =>
     type.objects.forEach((object) => {
       if (object.model === id) object.model = "y26s";
+    }),
+  );
+  commit();
+}
+export function addDetectionObject(detectionObject: DetectionObject) {
+  state.customObjects.push(detectionObject);
+  commit();
+}
+// объекты с удалённым объектом детекции переходят на «Человек»
+export function deleteDetectionObject(id: string) {
+  state.customObjects = state.customObjects.filter(
+    (detectionObject) => detectionObject.id !== id,
+  );
+  state.cameraTypes.forEach((type) =>
+    type.objects.forEach((object) => {
+      if (object.target === id) object.target = "person";
     }),
   );
   commit();

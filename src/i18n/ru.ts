@@ -245,31 +245,20 @@ export const RU = {
   // объекты
   objectsTitle: "Объекты и модели",
   addObject: "+ Объект",
-  presets: "Шаблоны:",
   addModelLink: "+ Своя модель",
   objectsFooter:
     "Объекты с одной моделью и одной подачей считаются одним запуском.",
-  objectName: "Название объекта",
+  objectTarget: "Объект детекции",
   objectDelete: "Удалить объект",
-  objectWidth: "Ширина, см",
-  objectLength: "Длина, см",
-  objectHeight: "Высота, см",
-  objectRequiredPx: "Порог, px",
   objectModel: "Модель",
   objectFeed: "Подача",
   objectInput: "Вход модели, px",
   objectOverlap: "Перекрытие, %",
   ultralytics: "Каталог Ultralytics",
   customModels: "Свои модели",
+  customObjects: "Свои объекты",
   feeds: { roi: "Вырез зоны", tiles: "Тайлы", full: "Весь кадр" },
   feedsShort: { roi: "вырез", tiles: "тайлы", full: "весь кадр" },
-  presetNames: [
-    "Человек",
-    "Кисть руки",
-    "Ячейка ложемента",
-    "Деталь",
-    "Гайка M8",
-  ],
   typeNames: ["Рабочее место", "Тележка"],
   // справочники
   units: {
@@ -285,6 +274,12 @@ export const RU = {
   },
   megapixels: (megapixels: Value) => `${megapixels} Мп`,
   sensorFormat: (format: Value, widthMm: Value) => `${format} ≈ ${widthMm} мм`,
+  builtinObjectNames: {
+    person: "Человек",
+    hand: "Кисть руки",
+    car: "Легковая машина",
+    nutM8: "Гайка M8",
+  },
   builtinCameraNames: {
     k4: "Типовая 4 Мп · 1/2.7″ · 2,8–12 мм",
     k8: "Типовая 8 Мп · 1/1.8″ · 2,8–12 мм",

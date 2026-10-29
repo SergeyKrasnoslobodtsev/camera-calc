@@ -1,42 +1,19 @@
-// Начальные данные: встроенный пример, объекты-пресеты, значения полей по умолчанию.
+// Начальные данные: встроенный пример, новый объект, значения полей по умолчанию.
 // Встроенные названия хранятся ключом словаря (nameKey), текст на языке интерфейса подставляет ui.
 import type { ObjectDraft, SystemDraft, TypeDraft } from "./store.ts";
 
 export const uid = () => Math.random().toString(36).slice(2, 9);
 
-// Объект-пресет: размеры, см; порог, px; модель, подача и вход модели
-const preset = (
-  index: number,
-  [width, length, height, requiredPx]: number[],
-  feed: string,
-): ObjectDraft => ({
-  name: "",
-  nameKey: `presetNames.${index}`,
-  width,
-  length,
-  height,
-  requiredPx,
+// объект типа: что ищет, подача; модель YOLO26s, вход 640
+const detector = (target: string, feed: string): ObjectDraft => ({
+  target,
   model: "y26s",
   feed,
   inputSize: 640,
   overlap: 20,
 });
-export const OBJECT_PRESETS: readonly ObjectDraft[] = [
-  preset(0, [50, 30, 170, 32], "roi"),
-  preset(1, [9, 18, 4, 20], "tiles"),
-  preset(2, [8, 8, 2, 20], "roi"),
-  preset(3, [25, 6, 6, 20], "roi"),
-  preset(4, [1.3, 1.3, 0.7, 10], "tiles"),
-];
-// объект, который добавляет кнопка «Добавить объект»
-export const NEW_OBJECT: ObjectDraft = {
-  ...OBJECT_PRESETS[0],
-  nameKey: "objDefault",
-  width: 10,
-  length: 10,
-  height: 10,
-  requiredPx: 20,
-};
+// объект, который добавляет кнопка «Добавить объект» и с которым создаётся новый тип
+export const NEW_OBJECT = detector("person", "roi");
 
 export const DEFAULT_INPUTS: TypeDraft["inputs"] = {
   camera: "",
@@ -89,8 +66,8 @@ export const makeType = (
 
 export const exampleTypes = () => [
   makeType({ nameKey: "typeNames.0" }, 10, {}, [
-    OBJECT_PRESETS[0],
-    OBJECT_PRESETS[1],
+    NEW_OBJECT,
+    detector("hand", "tiles"),
   ]),
   makeType(
     { nameKey: "typeNames.1" },
@@ -104,6 +81,6 @@ export const exampleTypes = () => [
       analyticsFps: "2",
       fps: "10",
     },
-    [OBJECT_PRESETS[2]],
+    [detector("nutM8", "roi")],
   ),
 ];

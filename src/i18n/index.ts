@@ -60,7 +60,7 @@ export const formatNumber = (value: number, digits = 1) =>
         .replace("-", "−")
     : "—";
 
-// название для показа: встроенное на текущем языке по ключу словаря nameKey (например "presetNames.0"),
+// название для показа: встроенное на текущем языке по ключу словаря nameKey (например "typeNames.0"),
 // иначе своё; nameKey есть, пока пользователь не изменил название
 export function displayName(item: { name?: string; nameKey?: string }) {
   const builtin = item.nameKey

@@ -2,6 +2,7 @@
 // загрузка пропускает записи, которые не прошли разбор, импорт отклоняет такой файл целиком.
 import { parseCamera } from "../domain/entities/camera.ts";
 import { parseCameraType } from "../domain/entities/camera-type.ts";
+import { parseDetectionObject } from "../domain/entities/detection-object.ts";
 import { parseModel } from "../domain/entities/model.ts";
 import { parseGpu } from "../domain/entities/gpu.ts";
 import {
@@ -9,12 +10,18 @@ import {
   type ParseResult,
 } from "../domain/entities/parse-result.ts";
 import { parseSystemSettings } from "../domain/entities/system-settings.ts";
+import { BUILTIN_DETECTION_OBJECTS } from "../domain/references/detection-objects.ts";
 import { GPU_CATALOG } from "../domain/references/gpu-catalog.ts";
 import { MODELS } from "../domain/references/models.ts";
 import { DEFAULT_INPUTS, DEFAULT_SYSTEM, uid } from "./examples.ts";
-import type { State, SystemDraft, TypeDraft } from "./store.ts";
+import {
+  withTargets,
+  type State,
+  type SystemDraft,
+  type TypeDraft,
+} from "./store.ts";
 
-const STORAGE_KEY = "camcalc4";
+const STORAGE_KEY = "camcalc5";
 // варианты поля «Количество GPU» в разметке
 const GPU_COUNT_CHOICES = ["auto", "1", "2", "3", "4"];
 
@@ -28,6 +35,7 @@ const snapshot = (state: State) => ({
   customGpus: state.customGpus,
   customCameras: state.customCameras,
   customModels: state.customModels,
+  customObjects: state.customObjects,
   light: state.light,
 });
 export const exportText = (state: State) =>
@@ -68,12 +76,7 @@ const isObject = (value: unknown): value is Record<string, any> =>
 const savedObject = (object: unknown) =>
   isObject(object)
     ? {
-        name: object.name,
-        nameKey: object.nameKey,
-        width: withDot(object.width),
-        length: withDot(object.length),
-        height: withDot(object.height),
-        requiredPx: withDot(object.requiredPx),
+        target: object.target,
         model: object.model,
         feed: object.feed,
         inputSize: object.inputSize,
@@ -128,6 +131,23 @@ function parseSaved(saved: Record<string, any>) {
         : parsed;
     };
   const list = (items: unknown) => (Array.isArray(items) ? items : []);
+  const customObjects = parseAll(
+    list(saved.customObjects),
+    parseDetectionObject,
+  );
+  // объект типа с объектом детекции, которого нет, переходит на «Человек»
+  const detectionObjects = [...BUILTIN_DETECTION_OBJECTS, ...customObjects];
+  const withKnownTarget = (type: unknown) => {
+    if (isObject(type) && Array.isArray(type.objects))
+      type.objects.forEach((object: unknown) => {
+        if (
+          isObject(object) &&
+          !detectionObjects.some((item) => item.id === object.target)
+        )
+          object.target = "person";
+      });
+    return type;
+  };
   // параметры системы — одна запись, если она есть
   const [system] = parseAll(
     saved.system == null ? [] : [savedSystem(saved.system)],
@@ -137,9 +157,20 @@ function parseSaved(saved: Record<string, any>) {
     customGpus: parseAll(list(saved.customGpus), parseGpu),
     customCameras: parseAll(list(saved.customCameras), parseCamera),
     customModels: parseAll(list(saved.customModels), parseModel),
+    customObjects,
+    // тип разбирается с габаритами объектов детекции, а хранится черновиком со ссылками;
+    // тип, где объекты — не список записей, разбирается как есть, и разбор его отклоняет
     types: parseAll(
-      list(saved.types).map(savedType),
-      asDraft<TypeDraft>(parseCameraType),
+      list(saved.types).map(savedType).map(withKnownTarget),
+      asDraft<TypeDraft>((type) =>
+        parseCameraType(
+          isObject(type) &&
+            Array.isArray(type.objects) &&
+            type.objects.every(isObject)
+            ? withTargets(type as TypeDraft, detectionObjects)
+            : type,
+        ),
+      ),
     ),
     system,
     rejected, // после всех parseAll выше
@@ -147,7 +178,8 @@ function parseSaved(saved: Record<string, any>) {
 }
 
 // Сохранение из localStorage: части, которых в нём нет или которые не прошли разбор, не возвращаются.
-// Ссылки на то, чего нет (модель объекта, карта, число карт не из списка), заменяются значением по умолчанию.
+// Ссылки на то, чего нет (объект детекции и модель объекта, карта, число карт не из списка),
+// заменяются значением по умолчанию.
 export function loadSaved(): Partial<State> {
   const loaded: Partial<State> = {};
   try {
@@ -166,6 +198,8 @@ export function loadSaved(): Partial<State> {
       }));
     if (Array.isArray(saved.customModels))
       loaded.customModels = parsed.customModels;
+    if (Array.isArray(saved.customObjects))
+      loaded.customObjects = parsed.customObjects;
     if (isObject(saved.gpuPrices))
       loaded.gpuPrices = allWithDot(saved.gpuPrices);
     if (isObject(saved.gpuEnabled)) loaded.gpuEnabled = saved.gpuEnabled;
@@ -209,8 +243,8 @@ export function importText(text: string): "ok" | "badFile" | "saveFail" {
     !isObject(saved) ||
     !Array.isArray(saved.types) ||
     !saved.types.length ||
-    !["customGpus", "customCameras", "customModels"].every((key) =>
-      Array.isArray(saved[key]),
+    !["customGpus", "customCameras", "customModels", "customObjects"].every(
+      (key) => Array.isArray(saved[key]),
     ) ||
     !isObject(saved.gpuPrices) ||
     !isObject(saved.gpuEnabled) ||
