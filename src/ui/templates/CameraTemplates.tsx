@@ -18,7 +18,10 @@ import { CatalogSection } from "./CatalogSection.tsx";
 const camerasInUse = (cameraId: string) =>
   state.cameraTypes
     .filter((type) => type.inputs.camera === cameraId)
-    .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
+    .reduce((sum, type) => {
+      const count = parseNum(type.count);
+      return sum + (Number.isInteger(count) && count >= 0 ? count : 0);
+    }, 0);
 
 const millimeters = (value: number) => formatNumber(value, 1);
 function lensText({ focalMin, focalMax }: Camera) {
