@@ -91,7 +91,7 @@ sequenceDiagram
 Отсутствие присваиваний полям состояния вне `src/app/` проверяется поиском:
 
 ```bash
-grep -rnE "(state|type|obj|object|detector|gpu|camera|inputs)(\.[A-Za-z_]+|\[[^]]+\])+ *(=[^=>]|\+\+|--|\+=|-=)|\.(push|splice|pop|shift|unshift|sort|reverse)\(|delete [a-z]" src/js
+grep -rnE "(state|type|obj|object|detector|gpu|camera|inputs)(\.[A-Za-z_]+|\[[^]]+\])+ *(=[^=>]|\+\+|--|\+=|-=)|\.(push|splice|pop|shift|unshift|sort|reverse)\(|delete [a-z]" src/ui src/main.ts
 ```
 
-Он находит только сортировку и `push` локальных массивов при отрисовке колец в `system-ui.js`.
+Он находит только сортировку и `push` локальных массивов при отрисовке кольца в `src/ui/system-panel.ts`.

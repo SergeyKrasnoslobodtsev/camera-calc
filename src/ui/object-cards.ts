@@ -7,19 +7,25 @@ import {
   RESOLUTIONS,
 } from "../domain/references/resolutions.ts";
 import { DEFAULT_SENSOR, SENSORS } from "../domain/references/sensors.ts";
+import { NEW_OBJECT, OBJECT_PRESETS } from "../app/examples.ts";
 import {
   activeResult,
   activeType,
+  addObject,
   allCameras,
   cameraById,
   deleteObject,
   state,
   updateObject,
+  type TypeDraft,
+  type TypeOutcome,
 } from "../app/store.ts";
-import { FEEDS, INPUTS, byId, escapeHtml } from "./data.js";
+import { byId, escapeHtml, type Field } from "./dom.ts";
+// размеры входа модели, px
+export const INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
 // ---------- шаблоны камер
 export function buildCameraSelect() {
-  const select = byId("camera"),
+  const select = byId<HTMLSelectElement>("camera"),
     current = select.value;
   select.innerHTML =
     `<option value="">${t("cameraManual")}</option>` +
@@ -53,7 +59,7 @@ export function renderObjects() {
         <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f c2"><label for="objectModel-${i}">${t("objectModel")}</label><select id="objectModel-${i}">${modelOptions}</select></div>
         <div class="f"><label for="objectFeed-${i}">${t("objectFeed")}</label><select id="objectFeed-${i}">${Object.entries(
-          FEEDS,
+          STR.feeds,
         )
           .map(([feed, label]) => `<option value="${feed}">${label}</option>`)
           .join("")}</select></div>
@@ -66,36 +72,41 @@ export function renderObjects() {
     const syncOverlapBox = () => {
       byId(`objectOverlapBox-${i}`).hidden = obj.feed !== "tiles";
     };
-    [
-      ["objectName", "name"],
-      ["objectWidth", "width"],
-      ["objectLength", "length"],
-      ["objectHeight", "height"],
-      ["objectRequired", "requiredPx"],
-      ["objectOverlap", "overlap"],
-    ].forEach(([idPrefix, field]) => {
-      const input = byId(`${idPrefix}-${i}`);
-      input.value = field === "name" ? displayName(obj) : (obj[field] ?? "");
+    (
+      [
+        ["objectName", "name"],
+        ["objectWidth", "width"],
+        ["objectLength", "length"],
+        ["objectHeight", "height"],
+        ["objectRequired", "requiredPx"],
+        ["objectOverlap", "overlap"],
+      ] as const
+    ).forEach(([idPrefix, field]) => {
+      const input = byId<HTMLInputElement>(`${idPrefix}-${i}`);
+      input.value =
+        field === "name" ? displayName(obj) : String(obj[field] ?? "");
       input.addEventListener("input", (event) => {
         event.stopPropagation();
-        updateObject(i, field, event.target.value);
+        updateObject(i, field, input.value);
       });
     });
-    [
-      ["objectModel", "model"],
-      ["objectFeed", "feed"],
-      ["objectInput", "inputSize"],
-    ].forEach(([idPrefix, field]) => {
-      const select = byId(`${idPrefix}-${i}`);
+    (
+      [
+        ["objectModel", "model"],
+        ["objectFeed", "feed"],
+        ["objectInput", "inputSize"],
+      ] as const
+    ).forEach(([idPrefix, field]) => {
+      const select = byId<HTMLSelectElement>(`${idPrefix}-${i}`);
       select.value = String(obj[field]);
       if (select.selectedIndex < 0) select.selectedIndex = 0;
       select.addEventListener("change", (event) => {
         event.stopPropagation();
-        updateObject(i, field, event.target.value);
+        updateObject(i, field, select.value);
         syncOverlapBox();
       });
     });
-    card.querySelector(".odel").addEventListener("click", () => {
+    card.querySelector(".odel")!.addEventListener("click", () => {
       deleteObject(i);
       renderObjects();
     });
@@ -103,11 +114,10 @@ export function renderObjects() {
   });
   renderObjectResults(activeResult());
 }
-const STATUS_TEXT = STR.status;
-const capitalize = (text) =>
+const capitalize = (text: string) =>
   text ? text[0].toUpperCase() + text.slice(1) : text;
 // результат каждого объекта в его карточке
-export function renderObjectResults(result) {
+export function renderObjectResults(result: TypeOutcome) {
   if (!result.ok) return;
   result.objects.forEach((item, i) => {
     const resultEl = byId(`objectResult-${i}`),
@@ -121,24 +131,25 @@ export function renderObjectResults(result) {
     }
     resultEl.className = "ores " + item.status;
     if (dotEl) dotEl.className = "dot " + item.status;
-    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
+    resultEl.innerHTML = `<b>${capitalize(STR.status[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
   });
 }
-export function syncFormUI(type, result) {
+export function syncFormUI(type: TypeDraft, result: TypeOutcome | undefined) {
   const inputs = type.inputs,
     camera = cameraById(inputs.camera);
   byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
   byId("hfovBox").hidden = inputs.lensMode !== "angle";
   byId("zoneStartBox").hidden = inputs.placement === "top";
   const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR,
-    sensorWidth = result?.frame?.sensorWidth;
-  byId("resolution").disabled = !!camera;
-  byId("sensor").disabled = !!camera;
+    sensorWidth = result && "frame" in result ? result.frame.sensorWidth : NaN;
+  byId<Field>("resolution").disabled = !!camera;
+  byId<Field>("sensor").disabled = !!camera;
   byId("pixelPitchBox").hidden = !!camera || sensor.kind !== "pixelPitch";
-  byId("sensorWidth").readOnly = !!camera || sensor.kind !== "custom";
+  const sensorWidthInput = byId<HTMLInputElement>("sensorWidth");
+  sensorWidthInput.readOnly = !!camera || sensor.kind !== "custom";
   // ширину матрицы из камеры или по формату показываем в поле, своя остаётся как введена
   if (isFinite(sensorWidth) && (camera || sensor.kind !== "custom"))
-    byId("sensorWidth").value = +sensorWidth.toFixed(2);
+    sensorWidthInput.value = String(+sensorWidth.toFixed(2));
   byId("summaryGeometry").textContent =
     `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
   byId("summaryCamera").textContent =
@@ -152,3 +163,23 @@ export function syncFormUI(type, result) {
   byId("summaryStream").textContent =
     `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
 }
+
+// ---------- добавление объектов
+OBJECT_PRESETS.forEach((preset) => {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip";
+  chip.textContent = displayName(preset);
+  chip.addEventListener("click", () => {
+    addObject(preset);
+    renderObjects();
+  });
+  byId("presets").append(chip);
+});
+byId("addObject").addEventListener("click", () => {
+  addObject(NEW_OBJECT);
+  renderObjects();
+  const lastIndex = activeType().objects.length - 1;
+  byId<HTMLInputElement>(`objectName-${lastIndex}`).focus();
+  byId<HTMLInputElement>(`objectName-${lastIndex}`).select();
+});

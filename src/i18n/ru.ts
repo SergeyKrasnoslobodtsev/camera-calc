@@ -155,7 +155,7 @@ export const RU = {
   objDefault: "Объект",
   // система
   systemCameras: "Камеры",
-  systemTypes: (count: Value, names: Value) =>
+  systemTypes: (count: Value, names?: Value) =>
     `Типов: ${count}${names ? ` (${names})` : ""}`,
   systemCameraCost: (cost: Value) => ` · стоимость камер ${cost}`,
   systemObjects: "Объекты различимы",

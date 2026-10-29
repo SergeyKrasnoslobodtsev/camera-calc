@@ -7,7 +7,7 @@
   "scripts": {
     "build": "node build.ts",
     "test": "tsc && node --test tests/domain/ && node tests/smoke.test.js && node tests/golden.test.js",
-    "format": "prettier --write src/js src/domain src/i18n tests"
+    "format": "prettier --write src/main.ts src/ui src/app src/domain src/i18n tests"
   },
   "devDependencies": {
     "@types/node": "26.6.6",

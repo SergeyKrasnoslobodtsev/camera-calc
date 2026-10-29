@@ -1,7 +1,8 @@
 import { formatNumber, t } from "../i18n/index.ts";
 import { DEG } from "../domain/angles.ts";
-import { byId } from "./data.js";
-// Обозначения как в compute-type.js:
+import type { Placement } from "../domain/entities/camera-type.ts";
+import { byId } from "./dom.ts";
+// Схема «вид сбоку» (SVG). Обозначения как в domain/compute-type:
 //   H — высота камеры, h — высота плоскости объектов, Hc = H − h — высота камеры над плоскостью, м;
 //   x1 и x2 — края зоны по полу от точки под камерой, м.
 // Переменные с окончанием X/Y — координаты на схеме, px.
@@ -16,6 +17,17 @@ export function drawSide({
   placement,
   frameWidthNear,
   frameWidthFar,
+}: {
+  H: number;
+  h: number;
+  x1: number;
+  x2: number;
+  tilt: number;
+  vfov: number;
+  Hc: number;
+  placement: Placement;
+  frameWidthNear: number;
+  frameWidthFar: number;
 }) {
   const viewWidth = 680,
     viewHeight = 510,
@@ -26,7 +38,7 @@ export function drawSide({
   // углы краёв поля зрения ниже горизонта: ближний круче, дальний положе
   const nearEdgeAngle = tilt + vfov / 2,
     farEdgeAngle = tilt - vfov / 2;
-  const planeHitX = (angle) =>
+  const planeHitX = (angle: number) =>
     angle > 0.02 && angle < Math.PI - 0.02 ? Hc / Math.tan(angle) : NaN;
   const forwardHit = planeHitX(farEdgeAngle),
     backHit = planeHitX(nearEdgeAngle);
@@ -51,9 +63,9 @@ export function drawSide({
   const offsetX =
     marginLeft +
     (viewWidth - marginLeft - marginRight - (xMax - xMin) * scale) / 2;
-  const toX = (x) => offsetX + (x - xMin) * scale,
-    toY = (y) => viewHeight - marginBottom - y * scale;
-  const coord = (value) => (+value).toFixed(1);
+  const toX = (x: number) => offsetX + (x - xMin) * scale,
+    toY = (y: number) => viewHeight - marginBottom - y * scale;
+  const coord = (value: number) => value.toFixed(1);
   const cameraX = toX(0),
     cameraY = toY(H),
     planeY = toY(h),
@@ -61,7 +73,7 @@ export function drawSide({
     leftX = toX(xMin),
     rightX = toX(xMax);
   // конец луча: точка на плоскости или на краю схемы
-  const rayEnd = (angle) => {
+  const rayEnd = (angle: number) => {
     const hit = planeHitX(angle);
     if (isFinite(hit) && hit >= xMin && hit <= xMax) return [toX(hit), planeY];
     const edge = Math.cos(angle) >= 0 ? xMax : xMin;
@@ -108,7 +120,7 @@ export function drawSide({
   const axisLength = (planeY - cameraY) / Math.max(Math.sin(tilt), 0.05);
   const fovArcRadius = Math.max(40, Math.min(150, axisLength * 0.55)),
     tiltArcRadius = Math.max(28, Math.min(70, fovArcRadius * 0.47));
-  const pointAt = (radius, angle) => [
+  const pointAt = (radius: number, angle: number) => [
     cameraX + radius * Math.cos(angle),
     cameraY + radius * Math.sin(angle),
   ];
@@ -139,7 +151,7 @@ export function drawSide({
   // размеры по полу
   const dimLineY = floorY + 26,
     dimTextY = floorY + 47;
-  const addDimension = (startX, endX, label) => {
+  const addDimension = (startX: number, endX: number, label: string) => {
     svg += `<line x1="${coord(startX)}" y1="${coord(dimLineY)}" x2="${coord(endX)}" y2="${coord(dimLineY)}" stroke="var(--muted)"/><line x1="${coord(startX)}" y1="${coord(dimLineY - 6)}" x2="${coord(startX)}" y2="${coord(dimLineY + 6)}" stroke="var(--muted)"/><line x1="${coord(endX)}" y1="${coord(dimLineY - 6)}" x2="${coord(endX)}" y2="${coord(dimLineY + 6)}" stroke="var(--muted)"/><text x="${coord((startX + endX) / 2)}" y="${coord(dimTextY)}" text-anchor="middle">${label}</text>`;
   };
   svg += `<line x1="${coord(zoneStartX)}" y1="${coord(planeY + 6)}" x2="${coord(zoneStartX)}" y2="${coord(dimLineY - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/><line x1="${coord(zoneEndX)}" y1="${coord(planeY + 6)}" x2="${coord(zoneEndX)}" y2="${coord(dimLineY - 6)}" stroke="var(--line)" stroke-dasharray="3 4"/>`;
@@ -164,7 +176,7 @@ export function drawSide({
   );
   if (x1 <= 0.05)
     svg += `<text x="${coord(cameraX)}" y="${coord(dimTextY + 20)}" text-anchor="middle">${t(placement === "top" ? "diagramOverCenter" : "diagramOverZone")}</text>`;
-  const side = byId("side");
+  const side = byId<SVGSVGElement>("side");
   side.innerHTML = svg;
   side.setAttribute(
     "aria-label",

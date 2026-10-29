@@ -1,3 +1,4 @@
+// Подсказки «?» у полей: открываются наведением или фокусом, закрепляются щелчком.
 import { STR, t } from "../i18n/index.ts";
 const popover = document.createElement("div");
 popover.className = "pop";
@@ -6,12 +7,12 @@ popover.setAttribute("role", "tooltip");
 popover.hidden = true;
 document.body.append(popover);
 // кнопка «?», для которой открыта подсказка; pinned — открыта щелчком, а не наведением
-let popoverOwner = null,
+let popoverOwner: HTMLButtonElement | null = null,
   pinned = false;
-function showTip(button, pin) {
+function showTip(button: HTMLButtonElement, pin: boolean) {
   popoverOwner = button;
   pinned = !!pin;
-  popover.textContent = STR.tips[button.dataset.key];
+  popover.textContent = STR.tips[button.dataset.key as keyof typeof STR.tips];
   popover.hidden = false;
   document
     .querySelectorAll(".tipbtn[aria-expanded=true]")
@@ -79,7 +80,7 @@ Object.keys(STR.tips).forEach((key) => {
   });
 });
 document.addEventListener("click", (event) => {
-  if (!popover.hidden && !popover.contains(event.target)) hideTip();
+  if (!popover.hidden && !popover.contains(event.target as Node)) hideTip();
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") hideTip();
