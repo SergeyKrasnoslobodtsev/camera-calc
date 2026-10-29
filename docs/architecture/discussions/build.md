@@ -2,6 +2,29 @@
 
 Ход поиска подхода: вопрос, гипотеза, условия замера, числа, вывод. Новые записи сверху. Подтверждённые выводы переносятся в [`../decisions/build.md`](../decisions/build.md).
 
+## 2026-10-29 — сборка и линтер для интерфейса на React
+
+**Статус:** принято → [`../decisions/build.md`](../decisions/build.md#сборка-на-vite-в-один-html), [`../decisions/build.md`](../decisions/build.md#линтер-oxlint)
+
+**Вопрос.** Интерфейс переходит на React (#65). Чем собирать `.tsx`: своим `build.ts` на esbuild или Vite. Каким линтером проверять правила хуков React.
+
+**Варианты.**
+
+- Сборка: `build.ts` на esbuild — esbuild собирает JSX сам, сборка остаётся своим скриптом. Vite с `vite-plugin-singlefile` — распространённый сборщик для React-проектов, даёт сервер разработки; вставку формул нужно перенести в конфигурацию Vite.
+- Линтер: ESLint с `typescript-eslint` и `eslint-plugin-react-hooks`; Oxlint, в котором правила хуков встроены.
+
+**Условия замера.** Vite 8.3.5, `@vitejs/plugin-react` 6.1.2, `vite-plugin-singlefile` 2.3.4, TypeScript 7.0.2, jsdom 24, Node v26.12.1, macOS. Проверки: `npm test`, открытие `dist/index.html` по `file://` в Chrome 156 без окна (`--headless=new --dump-dom`).
+
+**Результат.**
+
+- Vite собирает страницу в один файл `dist/index.html`. Внешние ссылки — только шрифты Google Fonts, как раньше. Из `file://` Chrome отрисовал вкладки и вердикт, ошибок JavaScript в логе нет.
+- Скрипт Vite встраивает как `<script type="module">`. jsdom 24 такой скрипт не выполняет: без доработки тестов страница в тесте пустая. Тесты добавляют текст скрипта в конец страницы обычным `<script>` (`tests/page.js`) — браузер тоже выполняет модульный скрипт после разбора страницы.
+- React отрисовывает не сразу, поэтому тесты ждут отрисовку (`settle` в `tests/page.js`). Одного `setTimeout` после загрузки мало: первую отрисовку React планирует из микрозадачи, и его задача встаёт в очередь позже задачи теста. Это нашлось потому, что вкладки в тесте оказались пустыми, а проверка «example names follow lang» всё равно прошла.
+- `typescript-eslint` 8.72.1 требует `typescript` версии `>=4.8.4 <6.1.0`. В пакете TypeScript 7.0.2 в `lib/` только `tsc.js` и `getExePath.js` — JavaScript API, на котором работает `typescript-eslint`, нет.
+- Oxlint 1.90.0 не зависит от пакета `typescript`. На пробном компоненте правило `rules-of-hooks` дало ошибку на условный `useState`, `exhaustive-deps` — предупреждение на пропущенную зависимость `useEffect`. На текущем коде — 12 замечаний категории `correctness`, все в коде до перехода на React (`no-unused-vars`, `no-unused-expressions`, `no-thenable`).
+
+**Вывод.** Владелец выбрал Vite и Oxlint, имя страницы `dist/index.html` — для GitHub Pages (#66).
+
 ## 2026-10-28 — как проверять типы сущностей
 
 **Статус:** принято → [`../decisions/build.md`](../decisions/build.md#typescript-и-проверка-типов-tsc)

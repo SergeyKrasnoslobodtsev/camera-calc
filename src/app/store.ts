@@ -141,7 +141,11 @@ export let computed = compute();
 export const activeResult = () =>
   computed.results[state.cameraTypes.indexOf(activeType())];
 const listeners: (() => void)[] = [];
-export const subscribe = (listener: () => void) => listeners.push(listener);
+// возвращает отписку, как ждёт useSyncExternalStore из React
+export const subscribe = (listener: () => void) => {
+  listeners.push(listener);
+  return () => void listeners.splice(listeners.indexOf(listener), 1);
+};
 function commit() {
   computed = compute();
   listeners.forEach((listener) => listener());

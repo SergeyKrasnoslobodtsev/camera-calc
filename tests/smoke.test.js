@@ -3,21 +3,23 @@ import fs from "fs";
 import assert from "assert";
 import { RU } from "../src/i18n/ru.ts";
 import { EN } from "../src/i18n/en.ts";
+import { runModuleScripts, settle } from "./page.js";
 const dom = new JSDOM(
-  fs.readFileSync(import.meta.dirname + "/../dist/camera-calc.html", "utf8"),
+  fs.readFileSync(import.meta.dirname + "/../dist/index.html", "utf8"),
   {
     runScripts: "dangerously",
     url: "https://x.test/",
     pretendToBeVisual: true,
     beforeParse(w) {
-      w.scrollTo = () => {};
+      // как в Chrome: scrollTo возвращает Promise, а не undefined
+      w.scrollTo = () => Promise.resolve();
       w.localStorage.setItem("camcalc-lang", "ru");
     },
   },
 );
+await runModuleScripts(dom.window);
 const d = dom.window.document,
   w = dom.window;
-w.scrollTo = () => {};
 w.addEventListener("error", (e) => console.log("ERR", e.message));
 const T = (id) => d.getElementById(id).textContent.replace(/\s+/g, " ").trim();
 const tbl = (id) =>
@@ -37,6 +39,22 @@ const go = (h) => {
 const set = (id, v) => (d.getElementById(id).value = v);
 const fire = (id, ev = "input") =>
   d.getElementById(id).dispatchEvent(new w.Event(ev, { bubbles: true }));
+// ввод в поле: значение — через сеттер прототипа, иначе React не заметит ввод в своё поле
+const enter = (win, id, value) => {
+  const field = win.document.getElementById(id);
+  Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(field),
+    "value",
+  ).set.call(field, value);
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+};
+// отправка формы; событие всплывает, как в браузере, и доходит до обработчика React на корне страницы
+const submit = (win, id) =>
+  win.document
+    .getElementById(id)
+    .dispatchEvent(
+      new win.Event("submit", { bubbles: true, cancelable: true }),
+    );
 // отчёт так, как его получает пользователь: кнопка «Копировать отчёт» пишет его в буфер обмена;
 // запись не завершается, чтобы уведомление «Отчёт скопирован» не заменило другие
 const reportOf = (win) => {
@@ -55,7 +73,7 @@ const importFile = (win, text) => {
     value: [{ text: () => ({ then: (onRead) => onRead(text) }) }],
     configurable: true,
   });
-  input.dispatchEvent(new win.Event("change"));
+  input.dispatchEvent(new win.Event("change", { bubbles: true }));
 };
 console.log("SYS:", T("systemKpis"));
 console.log("DSUM:", T("loadSummary"));
@@ -81,6 +99,7 @@ console.log(
 );
 // templates: cameras
 go("#tpl-cams");
+await settle(w);
 console.log(
   "tpl visible",
   !d.getElementById("viewTemplates").hidden,
@@ -90,39 +109,41 @@ console.log(
   !d.getElementById("templatePage-gpus").hidden,
 );
 console.log(tbl("cameraTable"));
-set("cameraFormName", "Тест-камера 8 Мп");
-set("cameraFormWidth", "3840");
-set("cameraFormHeight", "2160");
-set("cameraFormPixelPitch", "2");
-set("cameraFormFocalMin", "6");
-set("cameraFormFocalMax", "6");
-set("cameraFormPrice", "300");
-d.getElementById("cameraForm").dispatchEvent(
-  new w.Event("submit", { cancelable: true }),
-);
+enter(w, "cameraFormName", "Тест-камера 8 Мп");
+enter(w, "cameraFormWidth", "3840");
+enter(w, "cameraFormHeight", "2160");
+enter(w, "cameraFormPixelPitch", "2");
+enter(w, "cameraFormFocalMin", "6");
+enter(w, "cameraFormFocalMax", "6");
+enter(w, "cameraFormPrice", "300");
+submit(w, "cameraForm");
+await settle(w);
 console.log("after add cam rows", d.querySelectorAll("#cameraTable tr").length);
 // detectors
 go("#tpl-dets");
-set("detectorFormName", "Детектор деталей");
-set("detectorFormFps", "900");
+enter(w, "detectorFormName", "Детектор деталей");
+enter(w, "detectorFormFps", "900");
 set("detectorFormInput", "640");
+fire("detectorFormInput", "change");
 set("detectorFormRefGpu", "l40s");
-d.getElementById("detectorForm").dispatchEvent(
-  new w.Event("submit", { cancelable: true }),
-);
+fire("detectorFormRefGpu", "change");
+await settle(w);
+submit(w, "detectorForm");
+await settle(w);
 console.log("det first row:", tbl("detectorTable").split("\n")[1]);
-d.getElementById("detectorForm").dispatchEvent(
-  new w.Event("submit", { cancelable: true }),
-);
+submit(w, "detectorForm");
+await settle(w);
 console.log("det err:", T("detectorFormError"));
 // back to main, apply camera to type 1 and detector to object 2
 go("");
+await settle(w);
 const camSel = d.getElementById("camera");
 const custom = [...camSel.options].find((o) =>
   o.text.startsWith("Тест-камера"),
 );
 camSel.value = custom.value;
 fire("camera", "change");
+await settle(w);
 console.log(
   "res disabled",
   d.getElementById("resolution").disabled,
@@ -134,6 +155,7 @@ const om = d.getElementById("objectModel-1");
 const det = [...om.options].find((o) => o.text === "Детектор деталей");
 om.value = det.value;
 om.dispatchEvent(new w.Event("change", { bubbles: true }));
+await settle(w);
 console.log(
   "LEGEND det:",
   [...d.querySelectorAll("#legend li")]
@@ -150,21 +172,22 @@ const page = (seed, lang = "ru", nav) => {
     if (/navigation/.test(e.message)) reloads++;
     else console.error(e);
   });
-  return new JSDOM(
-    fs.readFileSync(import.meta.dirname + "/../dist/camera-calc.html", "utf8"),
+  const { window } = new JSDOM(
+    fs.readFileSync(import.meta.dirname + "/../dist/index.html", "utf8"),
     {
       runScripts: "dangerously",
       url: "https://x.test/",
       pretendToBeVisual: true,
       virtualConsole: vc,
       beforeParse(w) {
-        w.scrollTo = () => {};
+        w.scrollTo = () => Promise.resolve();
         if (seed) w.localStorage.setItem("camcalc4", seed);
         if (lang) w.localStorage.setItem("camcalc-lang", lang);
         if (nav) Object.defineProperty(w.navigator, "language", { value: nav });
       },
     },
-  ).window;
+  );
+  return runModuleScripts(window);
 };
 let blob = null,
   href = "",
@@ -224,13 +247,15 @@ const gpuWithoutPrice = {
 };
 const before = w.localStorage.getItem("camcalc4");
 importFile(w, "{битый");
+await settle(w);
 assert.strictEqual(T("toast"), "Файл не является сохранением калькулятора.");
 assert.strictEqual(
   w.localStorage.getItem("camcalc4"),
   before,
   "битый файл изменил данные",
 );
-[
+// файлы, которые не приняла бы загрузка: данные не меняются, показывается ошибка
+const brokenSaves = [
   '{"types":[null]}',
   '{"types":[]}',
   "{}",
@@ -247,9 +272,10 @@ assert.strictEqual(
       },
     ],
   }),
-].forEach((s) => {
-  d.getElementById("toast").textContent = "";
+];
+for (const s of brokenSaves) {
   importFile(w, s);
+  await settle(w);
   assert.strictEqual(
     T("toast"),
     "Файл не является сохранением калькулятора.",
@@ -260,19 +286,21 @@ assert.strictEqual(
     before,
     "файл изменил данные: " + s,
   );
-});
+}
 let picks = 0;
 d.getElementById("importFile").click = () => picks++;
 d.getElementById("importBtn").click();
+await settle(w);
 assert.strictEqual(T("importBtn"), "Заменить все данные");
 assert.strictEqual(picks, 0, "выбор файла без подтверждения");
 d.getElementById("importBtn").click();
 assert.strictEqual(picks, 1, "второе нажатие не открыло выбор файла");
+await settle(w);
 assert.strictEqual(T("importBtn"), "Импорт");
-const w2 = page();
+const w2 = await page();
 importFile(w2, exp);
 assert.strictEqual(reloads, 1, "импорт не перезагрузил страницу");
-const w3 = page(w2.localStorage.getItem("camcalc4")),
+const w3 = await page(w2.localStorage.getItem("camcalc4")),
   T3 = (id) =>
     w3.document.getElementById(id).textContent.replace(/\s+/g, " ").trim();
 assert.ok(
@@ -291,18 +319,16 @@ console.log("export/import: ok");
 // unreadable file
 const inp = d.getElementById("importFile"),
   kept = w.localStorage.getItem("camcalc4");
-d.getElementById("toast").textContent = "";
 Object.defineProperty(inp, "files", {
   value: [{ text: () => Promise.reject(new Error("NotReadableError")) }],
 });
-inp.dispatchEvent(new w.Event("change"));
-setTimeout(() => {
-  assert.strictEqual(T("toast"), "Не удалось прочитать файл.");
-  assert.strictEqual(w.localStorage.getItem("camcalc4"), kept);
-  console.log("unreadable file: ok");
-}, 0);
+inp.dispatchEvent(new w.Event("change", { bubbles: true }));
+await settle(w);
+assert.strictEqual(T("toast"), "Не удалось прочитать файл.");
+assert.strictEqual(w.localStorage.getItem("camcalc4"), kept);
+console.log("unreadable file: ok");
 // invalid select values on load
-const w4 = page(
+const w4 = await page(
   JSON.stringify({
     ...ex,
     system: { ...ex.system, gpuCount: "8", gpu: "nope" },
@@ -318,7 +344,7 @@ assert.deepStrictEqual(
 );
 console.log("invalid select on load: ok");
 // сохранение с недопустимой записью загружается без неё
-const w4b = page(
+const w4b = await page(
   JSON.stringify({
     ...ex,
     customGpus: [gpuWithoutPrice, { ...gpuWithoutPrice, id: "c2", price: 900 }],
@@ -333,7 +359,7 @@ assert.deepStrictEqual(
 );
 console.log("invalid record on load: ok");
 // data changed in another tab
-const w5 = page(exp),
+const w5 = await page(exp),
   d5 = w5.document,
   other = JSON.stringify({
     ...ex,
@@ -341,10 +367,8 @@ const w5 = page(exp),
   });
 w5.localStorage.setItem("camcalc4", other);
 w5.dispatchEvent(new w5.StorageEvent("storage", { key: "camcalc4" }));
-d5.getElementById("efficiency").value = "0.5";
-d5.getElementById("efficiency").dispatchEvent(
-  new w5.Event("input", { bubbles: true }),
-);
+enter(w5, "efficiency", "0.5");
+await settle(w5);
 assert.strictEqual(
   w5.localStorage.getItem("camcalc4"),
   other,
@@ -381,14 +405,14 @@ const appCode = ["ui", "app", "i18n", "domain"]
   .flatMap((dir) =>
     fs
       .readdirSync(srcDir + dir, { recursive: true, encoding: "utf8" })
-      .filter((file) => /\.ts$/.test(file))
+      .filter((file) => /\.tsx?$/.test(file))
       .map((file) => fs.readFileSync(srcDir + dir + "/" + file, "utf8")),
   )
-  .concat(fs.readFileSync(srcDir + "main.ts", "utf8"))
+  .concat(fs.readFileSync(srcDir + "main.tsx", "utf8"))
   .join("\n")
   .replace(/^export const (RU|EN)\b[^=]*= \{\n[\s\S]*?^\};/gm, "")
   .replace(/byId(<[^>]*>)?\(["'`][^"'`]*["'`]\)/g, "");
-const layoutSource = fs.readFileSync(srcDir + "layout.html", "utf8");
+const layoutSource = fs.readFileSync(srcDir + "../index.html", "utf8");
 const dictKeys = Object.keys(RU).filter((key) => key !== "tips");
 const markupKeys = [...layoutSource.matchAll(/data-t[atp]?="([^"]+)"/g)].map(
   (match) => match[1],
@@ -425,14 +449,16 @@ assert.deepStrictEqual(
 );
 console.log("tip buttons: ok");
 // notes: an object too small for the camera resolution gets the full hint
-const tooSmall = JSON.parse(page(null, "ru").localStorage.getItem("camcalc4"));
+const tooSmall = JSON.parse(
+  (await page(null, "ru")).localStorage.getItem("camcalc4"),
+);
 tooSmall.types[0].objects[0].width = 8;
-[
+for (const [lang, hint] of [
   ["ru", /^Для «.+» требуется не меньше [\d\s]+\spx по горизонтали \(.+\)/],
   ["en", /^".+" requires at least [\d,]+ px horizontally \(.+\)/],
-].forEach(([lang, hint]) => {
+]) {
   const notes = [
-    ...page(JSON.stringify(tooSmall), lang).document.querySelectorAll(
+    ...(await page(JSON.stringify(tooSmall), lang)).document.querySelectorAll(
       "#verdict li",
     ),
   ].map((li) => li.textContent);
@@ -440,15 +466,15 @@ tooSmall.types[0].objects[0].width = 8;
     notes.some((note) => hint.test(note)),
     "нет подсказки о разрешении, " + lang + ": " + notes.join(" | "),
   );
-});
+}
 console.log("resolution hint: ok");
 // language: EN report has no Cyrillic except user names, numbers match RU
-const w6 = page(exp, "en"),
+const w6 = await page(exp, "en"),
   d6 = w6.document;
 assert.strictEqual(d6.documentElement.lang, "en");
 assert.ok(
-  !d6.querySelector("#formulas>[lang=en]").hidden &&
-    d6.querySelector("#formulas>[lang=ru]").hidden,
+  d6.querySelector("#formulas>[lang=en]") &&
+    !d6.querySelector("#formulas>[lang=ru]"),
   "EN: не тот блок формул",
 );
 const builtinRu = [...RU.typeNames, ...RU.presetNames, RU.objDefault];
@@ -479,11 +505,11 @@ assert.deepStrictEqual(
 console.log("en report: ok");
 // language: first open follows browser, choice survives reload
 assert.strictEqual(
-  page(null, null, "ru-RU").document.documentElement.lang,
+  (await page(null, null, "ru-RU")).document.documentElement.lang,
   "ru",
   "язык браузера ru не учтён",
 );
-const w7 = page(null, null),
+const w7 = await page(null, null),
   r0 = reloads;
 assert.strictEqual(w7.document.documentElement.lang, "en");
 assert.strictEqual(w7.document.getElementById("langBtn").textContent, "RU");
@@ -493,7 +519,7 @@ assert.strictEqual(
   r0 + 1,
   "переключение языка не перезагрузило страницу",
 );
-const w8 = page(null, w7.localStorage.getItem("camcalc-lang"), "en-US");
+const w8 = await page(null, w7.localStorage.getItem("camcalc-lang"), "en-US");
 assert.strictEqual(
   w8.document.documentElement.lang,
   "ru",
@@ -505,7 +531,10 @@ assert.strictEqual(
 );
 console.log("lang persists: ok");
 // language: example names saved on RU are shown in EN after switching
-const w10 = page(page(null, "ru").localStorage.getItem("camcalc4"), "en"),
+const w10 = await page(
+    (await page(null, "ru")).localStorage.getItem("camcalc4"),
+    "en",
+  ),
   d10 = w10.document;
 const shown = [
   reportOf(w10),
@@ -524,12 +553,9 @@ assert.ok(
 );
 console.log("example names follow lang: ok");
 // language: a name typed by the user is kept as is, even if it matches a built-in one
-const w11 = page(null, "ru");
-w11.document.getElementById("typeName").value = "Тележка";
-w11.document
-  .getElementById("typeName")
-  .dispatchEvent(new w11.Event("input", { bubbles: true }));
-const d12 = page(w11.localStorage.getItem("camcalc4"), "en").document;
+const w11 = await page(null, "ru");
+enter(w11, "typeName", "Тележка");
+const d12 = (await page(w11.localStorage.getItem("camcalc4"), "en")).document;
 assert.strictEqual(
   d12.getElementById("typeName").value,
   "Тележка",
@@ -537,9 +563,10 @@ assert.strictEqual(
 );
 console.log("user names kept: ok");
 // copy of a type: right after the source, with a suffix, the same objects
-const w13 = page(null, "ru"),
+const w13 = await page(null, "ru"),
   d13 = w13.document;
 d13.getElementById("duplicateTypeBtn").click();
+await settle(w13);
 assert.deepStrictEqual(
   [...d13.querySelectorAll("#tabs .tab b")].map((b) => b.textContent),
   [RU.typeNames[0], RU.typeNames[0] + RU.copySuffix, RU.typeNames[1]],
@@ -552,14 +579,11 @@ assert.strictEqual(
 );
 console.log("type copy: ok");
 // numbers: EN price "1,999" is not read as 1.999
-const w9 = page(null, "en"),
+const w9 = await page(null, "en"),
   d9 = w9.document;
 w9.location.hash = "#tpl-gpus";
 w9.dispatchEvent(new w9.HashChangeEvent("hashchange"));
-d9.getElementById("gpuPrice-l40s").value = "1,999";
-d9.getElementById("gpuPrice-l40s").dispatchEvent(
-  new w9.Event("input", { bubbles: true }),
-);
+enter(w9, "gpuPrice-l40s", "1,999");
 // при цене 1.999 L40S стала бы самой дешёвой и попала бы в отчёт за $2
 assert.notStrictEqual(
   reportOf(w9).match(/× L40S, (\$[\d,]+);/)?.[1],
@@ -583,9 +607,9 @@ const withNumbers = (H, w, kr) => {
   st.system.efficiency = kr;
   return JSON.stringify(st);
 };
-["ru", "en"].forEach((lang) => {
-  const comma = page(withNumbers("4,5", "50,5", "0,5"), lang),
-    dot = page(withNumbers("4.5", "50.5", "0.5"), lang);
+for (const lang of ["ru", "en"]) {
+  const comma = await page(withNumbers("4,5", "50,5", "0,5"), lang),
+    dot = await page(withNumbers("4.5", "50.5", "0.5"), lang);
   assert.strictEqual(
     comma.document.getElementById("cameraHeight").value,
     "4.5",
@@ -601,7 +625,7 @@ const withNumbers = (H, w, kr) => {
     reportOf(dot),
     "сохранение с запятой: другой отчёт, " + lang,
   );
-});
+}
 console.log("legacy comma: ok");
 // numbers: integer fields reject fractions
 const tCount = d9.getElementById("typeCount");
@@ -625,23 +649,19 @@ assert.ok(
   "нет полей цены или объекта",
 );
 assert.deepStrictEqual(noMin, [], "числовые поля без min=0");
-const enter = (win, id, value) => {
-  const field = win.document.getElementById(id);
-  field.value = value;
-  field.dispatchEvent(new win.Event("input", { bubbles: true }));
-};
 const open = (win, hash) => {
   win.location.hash = hash;
   win.dispatchEvent(new win.HashChangeEvent("hashchange"));
 };
-[
+for (const [id, value] of [
   ["typeCount", "1.5"],
   ["cameraHeight", "-1"],
-].forEach(([id, value]) => {
-  const typed = page(null);
+]) {
+  const typed = await page(null);
   enter(typed, id, value);
+  await settle(typed);
   // тот же черновик из сохранения: строка сохраняется, расчёт показывает ошибку
-  const loaded = page(typed.localStorage.getItem("camcalc4"));
+  const loaded = await page(typed.localStorage.getItem("camcalc4"));
   [typed, loaded].forEach((win) => {
     assert.strictEqual(win.document.getElementById(id).value, value, id);
     assert.match(
@@ -655,18 +675,19 @@ const open = (win, hash) => {
       `${id} ${value}: отчёт`,
     );
   });
-});
+}
 console.log("type input errors: ok");
-[
+for (const [id, value] of [
   ["efficiency", ""],
   ["reserve", "-5"],
   ["gpuPrice-l40s", "-5"],
   ["gpuPrice-l40s", ""],
-].forEach(([id, value]) => {
-  const win = page(null);
+]) {
+  const win = await page(null);
   open(win, "#tpl-gpus");
   enter(win, id, value);
   open(win, "");
+  await settle(win);
   assert.strictEqual(
     win.document.getElementById("loadNote").textContent,
     RU.systemInputError,
@@ -678,9 +699,9 @@ console.log("type input errors: ok");
     !/Вычислитель \(оценка\): \d+ ×/.test(report),
     `${id} «${value}»: подбор`,
   );
-});
+}
 console.log("system input errors: ok");
-const camForm = page(null);
+const camForm = await page(null);
 open(camForm, "#tpl-cams");
 const cameraRows = () =>
   camForm.document.querySelectorAll("#cameraTable tr").length;
@@ -689,9 +710,8 @@ enter(camForm, "cameraFormName", "Дробный кадр");
 enter(camForm, "cameraFormWidth", "1920.5");
 enter(camForm, "cameraFormHeight", "1080");
 enter(camForm, "cameraFormSensorWidth", "5.6");
-camForm.document
-  .getElementById("cameraForm")
-  .dispatchEvent(new camForm.Event("submit", { cancelable: true }));
+submit(camForm, "cameraForm");
+await settle(camForm);
 assert.strictEqual(
   cameraRows(),
   rowsBefore,

@@ -6,7 +6,7 @@
 
 | Файл | Что внутри |
 |---|---|
-| `store.ts` | Объект состояния `state`, результаты расчёта `computed`, подписка `subscribe`, действия и выборки (`activeType`, `allGpus`, `cameraById` и т. п.) |
+| `store.ts` | Объект состояния `state`, результаты расчёта `computed`, подписка `subscribe` (возвращает отписку), действия и выборки (`activeType`, `allGpus`, `cameraById` и т. п.) |
 | `persistence.ts` | Сохранение в `localStorage`, загрузка `loadSaved`, импорт `importText`, экспорт `exportText`, слежение за другими вкладками |
 | `examples.ts` | Начальные данные: встроенный пример, объекты-пресеты, значения полей типа и параметров системы по умолчанию, `uid` |
 
@@ -91,7 +91,7 @@ sequenceDiagram
 Отсутствие присваиваний полям состояния вне `src/app/` проверяется поиском:
 
 ```bash
-grep -rnE "(state|type|obj|object|detector|gpu|camera|inputs)(\.[A-Za-z_]+|\[[^]]+\])+ *(=[^=>]|\+\+|--|\+=|-=)|\.(push|splice|pop|shift|unshift|sort|reverse)\(|delete [a-z]" src/ui src/main.ts
+grep -rnE "(state|type|obj|object|detector|gpu|camera|inputs)(\.[A-Za-z_]+|\[[^]]+\])+ *(=[^=>]|\+\+|--|\+=|-=)|\.(push|splice|pop|shift|unshift|sort|reverse)\(|delete [a-z]" src/ui src/main.tsx
 ```
 
 Он находит только сортировку и `push` локальных массивов при отрисовке кольца в `src/ui/system-panel.ts`.

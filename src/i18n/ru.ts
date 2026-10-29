@@ -310,7 +310,6 @@ export const RU = {
   importTitle: "Заменить все данные содержимым файла",
   importConfirm: "Заменить все данные",
   catalogTitle: (count: Value) => `Каталог GPU · ${count}`,
-  catalogTitleNoCount: "Каталог GPU",
   catalogNote: "Характеристики из даташитов NVIDIA",
   efficiency: "Коэффициент реальности",
   reserve: "Запас под рост, %",
@@ -364,7 +363,6 @@ export const RU = {
   gpuAdded: (name: Value) => `«${name}» добавлен`,
   gpuDeleted: "GPU удалён",
   camerasTitle: (count: Value) => `Камеры · ${count}`,
-  camerasTitleNoCount: "Камеры",
   camerasNote: "Выбираются в параметрах типа, раздел «Матрица и объектив»",
   cameraTableHeader: [
     "Камера",
@@ -401,7 +399,6 @@ export const RU = {
   cameraAdded: (name: Value) => `«${name}» добавлена`,
   cameraDeleted: "Камера удалена",
   detectorsTitle: (count: Value) => `Детекторы · ${count}`,
-  detectorsTitleNoCount: "Детекторы",
   detectorsNote: "Выбираются в карточке объекта, поле «Модель»",
   detectorTableHeader: ["Модель", "Вход", "GFLOPs", "Скорость", "Объекты"],
   detectorCustom: "Свой",

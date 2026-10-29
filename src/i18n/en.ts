@@ -286,7 +286,6 @@ export const EN: Dictionary = {
   importTitle: "Replace all data with the file contents",
   importConfirm: "Replace all data",
   catalogTitle: (count) => `GPU catalog · ${count}`,
-  catalogTitleNoCount: "GPU catalog",
   catalogNote: "Specs from NVIDIA datasheets",
   efficiency: "Derating factor",
   reserve: "Growth headroom, %",
@@ -340,7 +339,6 @@ export const EN: Dictionary = {
   gpuAdded: (name) => `"${name}" added`,
   gpuDeleted: "GPU deleted",
   camerasTitle: (count) => `Cameras · ${count}`,
-  camerasTitleNoCount: "Cameras",
   camerasNote: 'Selected in the type parameters, "Sensor and lens" section',
   cameraTableHeader: [
     "Camera",
@@ -377,7 +375,6 @@ export const EN: Dictionary = {
   cameraAdded: (name) => `"${name}" added`,
   cameraDeleted: "Camera deleted",
   detectorsTitle: (count) => `Detectors · ${count}`,
-  detectorsTitleNoCount: "Detectors",
   detectorsNote: 'Selected in the object card, "Model" field',
   detectorTableHeader: ["Model", "Input", "GFLOPs", "Speed", "Objects"],
   detectorCustom: "Custom",
