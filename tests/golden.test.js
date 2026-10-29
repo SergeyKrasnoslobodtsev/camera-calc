@@ -3,15 +3,16 @@
 import { JSDOM } from "jsdom";
 import fs from "fs";
 import assert from "assert";
+import { runModuleScripts } from "./page.js";
 
 const html = fs.readFileSync(
-  import.meta.dirname + "/../dist/camera-calc.html",
+  import.meta.dirname + "/../dist/index.html",
   "utf8",
 );
 const goldenPath = import.meta.dirname + "/golden.txt";
 
 function openPage(savedState) {
-  return new JSDOM(html, {
+  const { window } = new JSDOM(html, {
     runScripts: "dangerously",
     url: "https://x.test/",
     pretendToBeVisual: true,
@@ -21,7 +22,8 @@ function openPage(savedState) {
       if (savedState)
         window.localStorage.setItem("camcalc4", JSON.stringify(savedState));
     },
-  }).window;
+  });
+  return runModuleScripts(window);
 }
 
 // отчёт так, как его получает пользователь: кнопка «Копировать отчёт» пишет его в буфер обмена;
@@ -66,7 +68,7 @@ function results(window) {
 
 // Состояние встроенного примера, от него строятся остальные конфигурации.
 // Страница сохраняет его в localStorage сразу после первого расчёта.
-const example = JSON.parse(openPage().localStorage.getItem("camcalc4"));
+const example = JSON.parse((await openPage()).localStorage.getItem("camcalc4"));
 const [sideType, topType] = example.types;
 const withType = (type, changes) => ({
   ...type,
@@ -191,9 +193,14 @@ const configs = {
   },
 };
 
-const actual = Object.entries(configs)
-  .map(([name, state]) => `===== ${name}\n${results(openPage(state))}\n`)
-  .join("\n");
+const actual = (
+  await Promise.all(
+    Object.entries(configs).map(
+      async ([name, state]) =>
+        `===== ${name}\n${results(await openPage(state))}\n`,
+    ),
+  )
+).join("\n");
 
 if (process.argv.includes("--update")) {
   fs.writeFileSync(goldenPath, actual);

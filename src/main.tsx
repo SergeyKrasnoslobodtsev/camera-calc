@@ -1,5 +1,6 @@
 // Точка входа: подключает интерфейс к состоянию, загружает сохранение и показывает страницу.
 // Модули ui навешивают обработчики при импорте; подсказки — последними, когда разметка полей готова.
+import "./styles.css";
 import { t } from "./i18n/index.ts";
 import { loadSaved, save, watchOtherTabs } from "./app/persistence.ts";
 import { activeType, restore, state, subscribe } from "./app/store.ts";

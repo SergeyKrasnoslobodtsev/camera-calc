@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1 data-t="appTitle"></h1>
+  <div class="acts">
+    <button type="button" id="themeBtn" aria-pressed="false" data-t="themeLight"></button>
+    <button type="button" id="langBtn" data-t="langBtn" data-ta="langAria"></button>
+    <a class="btn" href="#tpl-gpus" id="templatesBtn" data-t="templatesBtn"></a>
+    <button type="button" id="resetBtn" data-t="resetBtn"></button>
+    <button type="button" id="copyBtn" class="primary" data-t="copyBtn"></button>
+  </div>
+</header>
+
+<div id="viewMain" style="display:flex;flex-direction:column;gap:14px">
+<nav class="tabs" role="tablist" data-ta="tabsAria" id="tabs"></nav>
+
+<div class="first">
+<section class="syswrap" aria-labelledby="systemTitle">
+  <h2 id="systemTitle" data-t="systemTitle"></h2>
+  <div class="sys" id="systemKpis"></div>
+</section>
+
+<section class="panel dash" aria-labelledby="loadTitle">
+  <div class="dhead">
+    <h2 id="loadTitle" data-t="loadTitle"></h2>
+    <a class="inlink" href="#tpl-gpus" data-t="addGpuLink"></a>
+  </div>
+  <div class="dsel">
+    <div class="f"><label for="gpu" data-t="gpu"></label><select id="gpu"></select></div>
+    <div class="f"><label for="gpuCount" data-t="gpuCount"></label><select id="gpuCount"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+  </div>
+  <div class="dsum" id="loadSummary"></div>
+  <div class="donutbox">
+    <svg id="donut" viewBox="0 0 120 120" role="img" data-ta="donutAria"></svg>
+    <ul class="legend" id="legend"></ul>
+  </div>
+  <div class="gauges" id="gauges"></div>
+  <p class="note" id="loadNote"></p>
+</section>
+
+<section class="panel res" aria-labelledby="resultTitle" role="tabpanel" id="typeResult">
+  <div class="reshead">
+    <h2 id="resultTitle" data-t="resultTitle"></h2>
+    <div class="verdict" id="verdict"></div>
+  </div>
+  <div class="resbody">
+    <figure class="sidefig">
+      <figcaption><span class="figt" data-t="sideFigure"></span>
+        <span class="figl"><span><i class="lg-fov" aria-hidden="true"></i><span data-t="legendFov"></span></span><span><i class="lg-ax" aria-hidden="true"></i><span data-t="legendAxis"></span></span><span><i class="lg-zone" aria-hidden="true"></i><span data-t="legendZone"></span></span></span>
+      </figcaption>
+      <svg id="side" viewBox="0 0 680 510" role="img" data-ta="sideAria"></svg>
+    </figure>
+    <div class="rcol">
+      <div class="kpis" id="kpis"></div>
+      <table id="densityTable"></table>
+      <div class="facts" id="facts"></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="work">
+  <form class="panel col" id="typeForm" autocomplete="off" aria-labelledby="parametersTitle">
+    <div class="colhead typehead">
+      <h2 id="parametersTitle" data-t="parametersTitle"></h2>
+      <div class="f"><label for="typeName" data-t="typeName"></label><input id="typeName"></div>
+      <div class="f"><label for="typeCount" data-t="typeCount"></label><input id="typeCount" type="number" min="0" step="1" inputmode="numeric"></div>
+    </div>
+    <details class="sec" open>
+      <summary><span data-t="sectionGeometry"></span> <span class="sumv" id="summaryGeometry"></span></summary>
+      <div class="fs">
+        <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f" id="zoneStartBox"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f full"><span data-tip="placement" data-t="placement"></span>
+          <div class="seg" role="radiogroup" data-ta="placement">
+            <label><input type="radio" name="placement" id="placementSide" value="side"><span data-t="placementSide"></span></label>
+            <label><input type="radio" name="placement" id="placementTop" value="top"><span data-t="placementTop"></span></label>
+          </div>
+        </div>
+      </div>
+    </details>
+    <details class="sec" open>
+      <summary><span data-t="sectionCamera"></span> <span class="sumv" id="summaryCamera"></span></summary>
+      <div class="fs">
+        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cameraSelect"></label><a class="inlink" href="#tpl-cams" data-t="addCameraLink"></a></div><select id="camera"></select></div>
+        <div class="f full"><label for="resolution" data-t="resolution"></label><select id="resolution"></select></div>
+        <div class="f"><label for="sensor" data-t="sensor"></label><select id="sensor"></select></div>
+        <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f full" id="pixelPitchBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f full"><label for="orientation" data-t="orientation"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orientationLandscape"></option><option value="portrait" data-t="orientationPortrait"></option></select></div>
+        <div class="f full"><span data-tip="lensMode" data-t="lensMode"></span>
+          <div class="seg three" role="radiogroup" data-ta="lensModeAria">
+            <label><input type="radio" name="lensMode" id="lensModeAuto" value="auto"><span data-t="lensModeAuto"></span></label>
+            <label><input type="radio" name="lensMode" id="lensModeFocal" value="focal"><span data-t="lensModeFocal"></span></label>
+            <label><input type="radio" name="lensMode" id="lensModeAngle" value="angle"><span data-t="lensModeAngle"></span></label>
+          </div>
+        </div>
+        <div class="f" id="focalLengthBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f" id="hfovBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" min="0" step="any" inputmode="decimal"></div>
+      </div>
+    </details>
+    <details class="sec">
+      <summary><span data-t="sectionStream"></span> <span class="sumv" id="summaryStream"></span></summary>
+      <div class="fs">
+        <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
+        <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="sceneLow"></option><option value="1" data-t="sceneMid"></option><option value="1.5" data-t="sceneHigh"></option></select></div>
+        <div class="f"><label for="lensFactor" data-t="lensFactor"></label><input id="lensFactor" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="speed" data-t="speed"></label><input id="speed" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" min="0" step="any" inputmode="decimal"></div>
+      </div>
+    </details>
+    <div class="colfoot"><button type="button" class="sm" id="duplicateTypeBtn" data-t="duplicateTypeBtn"></button><button type="button" class="sm danger" id="deleteTypeBtn" data-t="deleteTypeBtn"></button></div>
+  </form>
+
+  <section class="panel col" aria-labelledby="objectsTitle">
+    <div class="colhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2 id="objectsTitle"><span data-tip="objects" data-t="objectsTitle"></span></h2>
+      <button type="button" class="primary sm" id="addObject" data-t="addObject"></button>
+    </div>
+    <div class="olist">
+      <div id="objectList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="presets"><span data-t="presets"></span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto" data-t="addDetectorLink"></a></div>
+    </div>
+    <div class="colfoot" data-t="objectsFooter"></div>
+  </section>
+
+</div>
+
+<div class="bottom">
+  <section class="panel net" aria-labelledby="networkTitle">
+    <div class="rowhead"><h2 id="networkTitle" data-t="networkTitle"></h2>
+      <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" min="0" step="1" inputmode="numeric" value="0"></div></div>
+    <div class="tbl"><table id="networkTable"></table></div>
+  </section>
+  <section class="panel assum" aria-labelledby="assumptionsTitle">
+    <h2 id="assumptionsTitle" data-t="assumptionsTitle"></h2>
+    <ul id="assumptionsList"></ul>
+    <details class="how" style="margin-top:auto"><summary data-t="formulas"></summary><div class="formulas" id="formulas"></div></details>
+  </section>
+</div>
+</div>
+
+<div id="viewTemplates" hidden style="flex-direction:column;gap:14px">
+  <div class="tplhead">
+    <div style="display:flex;flex-direction:column;gap:4px"><a href="#" style="font-size:13px;text-decoration:none" data-t="back"></a><h2 class="h2big" style="font-size:22px" data-t="templatesTitle"></h2></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <nav class="tpltabs" data-ta="templatesNav"><a href="#tpl-gpus" id="templateTab-gpus" data-t="templateTabGpus"></a><a href="#tpl-cams" id="templateTab-cams" data-t="templateTabCameras"></a><a href="#tpl-dets" id="templateTab-dets" data-t="templateTabDetectors"></a></nav>
+      <button type="button" id="exportBtn" data-tt="exportTitle" data-t="exportBtn"></button>
+      <button type="button" id="importBtn" data-tt="importTitle" data-t="importBtn"></button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+  </div>
+  <div class="gpage" id="templatePage-gpus">
+    <section class="panel cat" aria-labelledby="catalogTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catalogTitle" data-t="catalogTitleNoCount"></h2><span class="note" data-t="catalogNote"></span></div>
+      <div class="tbl" style="padding:4px 8px 8px"><table id="catalogTable"></table></div>
+      <div class="mine" id="customGpus"></div>
+      <div class="params">
+        <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" min="0" step="any" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" min="0" step="any" inputmode="decimal" value="20"></div>
+      </div>
+    </section>
+    <section class="panel newc" aria-labelledby="gpuFormTitle">
+      <div class="colhead"><h2 id="gpuFormTitle" data-t="gpuFormTitle"></h2></div>
+      <form id="gpuForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="gpuFormName" data-t="gpuFormName"></label><input id="gpuFormName" data-tp="gpuFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="gpuFormArchitecture" data-t="gpuFormArchitecture"></label><select id="gpuFormArchitecture"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="gpuFormJetson"></option></select></div>
+        <div class="f"><label for="gpuFormTflops" data-t="gpuFormTflops"></label><input id="gpuFormTflops" type="number" min="0" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
+        <div class="f"><label for="gpuFormDecoders" id="gpuFormDecodersLabel" data-t="gpuFormDecoders"></label><input id="gpuFormDecoders" type="number" min="0" step="any" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="gpuFormMemory" data-t="gpuFormMemory"></label><input id="gpuFormMemory" type="number" min="0" step="any" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="gpuFormTdp" data-t="gpuFormTdp"></label><input id="gpuFormTdp" type="number" min="0" step="1" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="gpuFormPrice" data-t="gpuFormPrice"></label><input id="gpuFormPrice" type="number" min="0" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
+        <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="gpuFormEnabled" checked><span data-t="gpuFormEnabled"></span></label>
+        <div class="hint"><b data-t="hintWhere"></b><span data-t="gpuFormHint1"></span><span data-t="gpuFormHint2"></span></div>
+        <div class="err" id="gpuFormError" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addGpuBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="gpage" id="templatePage-cams" hidden>
+    <section class="panel cat" aria-labelledby="camerasTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="camerasTitle" data-t="camerasTitleNoCount"></h2><span class="note" data-t="camerasNote"></span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="cameraTable"></table></div>
+    </section>
+    <section class="panel newc" aria-labelledby="cameraFormTitle">
+      <div class="colhead"><h2 id="cameraFormTitle" data-t="cameraFormTitle"></h2></div>
+      <form id="cameraForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="cameraFormName" data-t="typeName"></label><input id="cameraFormName" data-tp="cameraFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="cameraFormWidth" data-t="cameraFormWidth"></label><input id="cameraFormWidth" type="number" min="0" step="1" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="cameraFormHeight" data-t="cameraFormHeight"></label><input id="cameraFormHeight" type="number" min="0" step="1" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="cameraFormSensorWidth" data-t="cameraFormSensorWidth"></label><input id="cameraFormSensorWidth" type="number" min="0" step="any" inputmode="decimal" placeholder="5.4"></div>
+        <div class="f"><label for="cameraFormPixelPitch" data-t="cameraFormPixelPitch"></label><input id="cameraFormPixelPitch" type="number" min="0" step="any" inputmode="decimal" placeholder="2.0"></div>
+        <div class="f"><label for="cameraFormFocalMin" data-t="cameraFormFocalMin"></label><input id="cameraFormFocalMin" type="number" min="0" step="any" inputmode="decimal" placeholder="2.8"></div>
+        <div class="f"><label for="cameraFormFocalMax" data-t="cameraFormFocalMax"></label><input id="cameraFormFocalMax" type="number" min="0" step="any" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="cameraFormPrice" data-t="cameraFormPrice"></label><input id="cameraFormPrice" type="number" min="0" step="1" inputmode="numeric" data-tp="optional"></div>
+        <div class="hint"><b data-t="hintWhere"></b><span data-t="cameraFormHint1"></span><span data-t="cameraFormHint2"></span></div>
+        <div class="err" id="cameraFormError" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addCameraBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
+      </form>
+    </section>
+  </div>
+  <div class="gpage" id="templatePage-dets" hidden>
+    <section class="panel cat" aria-labelledby="detectorsTitle">
+      <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="detectorsTitle" data-t="detectorsTitleNoCount"></h2><span class="note" data-t="detectorsNote"></span></div>
+      <div class="tbl" style="padding:4px 8px 12px"><table id="detectorTable"></table></div>
+    </section>
+    <section class="panel newc" aria-labelledby="detectorFormTitle">
+      <div class="colhead"><h2 id="detectorFormTitle" data-t="detectorFormTitle"></h2></div>
+      <form id="detectorForm" autocomplete="off" novalidate>
+        <div class="f full"><label for="detectorFormName" data-t="typeName"></label><input id="detectorFormName" data-tp="detectorFormNamePlaceholder" style="font-family:var(--sans)"></div>
+        <div class="f"><label for="detectorFormFps" data-t="detectorFormFps"></label><input id="detectorFormFps" type="number" min="0" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
+        <div class="f"><label for="detectorFormInput" data-t="detectorFormInput"></label><select id="detectorFormInput" style="font-family:var(--mono)"></select></div>
+        <div class="f full"><label for="detectorFormRefGpu" data-t="detectorFormRefGpu"></label><select id="detectorFormRefGpu"></select></div>
+        <div class="f full"><label for="detectorFormGflops" data-t="detectorFormGflops"></label><input id="detectorFormGflops" type="number" min="0" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
+        <div class="hint"><b data-t="hintHow"></b><span data-t="detectorFormHint1"></span><span data-t="detectorFormHint2"></span></div>
+        <div class="err" id="detectorFormError" hidden></div>
+        <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addDetectorBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
+      </form>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
