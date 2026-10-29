@@ -49,3 +49,12 @@ export const formatNumber = (value: number, digits = 1) =>
         })
         .replace("-", "−")
     : "—";
+
+// название для показа: встроенное на текущем языке по ключу словаря nameKey (например "presetNames.0"),
+// иначе своё; nameKey есть, пока пользователь не изменил название
+export function displayName(item: { name: string; nameKey?: string }) {
+  const builtin = item.nameKey
+    ?.split(".")
+    .reduce<unknown>((node, part) => (node as any)?.[part], STR);
+  return typeof builtin === "string" ? builtin : item.name;
+}

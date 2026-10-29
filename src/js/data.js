@@ -1,22 +1,12 @@
 import { STR, formatNumber, t } from "../i18n/index.ts";
-import { parseNum } from "../domain/parse-num.ts";
-import { GPU_CATALOG } from "../domain/references/gpu-catalog.ts";
-import { store } from "./store.js";
 export const byId = (id) => document.getElementById(id);
 export const escapeHtml = (text) =>
   String(text ?? "").replace(
     /[&<>"]/g,
     (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char],
   );
-export const uid = () => Math.random().toString(36).slice(2, 9);
 
-// ---------- GPU: каталог и свои карты, правки цен и участие в подборе
-export const allGpus = () => [...GPU_CATALOG, ...store.customGpus];
-export const gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
-// правка цены из поля; недопустимая — NaN, подбор GPU показывает ошибку
-export const priceOf = (gpu) =>
-  gpu.id in store.gpuPrices ? parseNum(store.gpuPrices[gpu.id]) : gpu.price;
-export const isOn = (gpu) => store.gpuEnabled[gpu.id] !== false;
+// ---------- GPU
 export const decText = (gpu) =>
   gpu.decodeStreams
     ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0))

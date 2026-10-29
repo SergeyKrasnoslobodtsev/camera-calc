@@ -12,13 +12,13 @@ import type {
   NetworkPort,
 } from "../domain/compute-system/index.ts";
 import type { Resolution } from "../domain/references/resolutions.ts";
-import { formatNumber, t, withUnit } from "./index.ts";
+import { displayName, formatNumber, t, withUnit } from "./index.ts";
 
 export const resolutionLabel = ({ megapixels, width, height }: Resolution) =>
   `${t("megapixels", megapixels)} · ${width} × ${height}`;
 
 export const objectName = ({ object }: ObjectResult) =>
-  object.name || t("objDefault");
+  displayName(object) || t("objDefault");
 
 const sizePx = (width: number, height: number) =>
   `${formatNumber(width, 1)} × ${formatNumber(height, 1)}\u00a0px`;
@@ -93,7 +93,7 @@ export function noteText(note: Note): string {
       const { object, neededInputSize } = note.values;
       return t(
         "noteDownscale",
-        object.object.name,
+        displayName(object.object),
         sensorPxText(object),
         object.feed.inputSize,
         t(
@@ -109,14 +109,14 @@ export function noteText(note: Note): string {
     case "resolution":
       return t(
         "noteResolution",
-        note.values.object.object.name,
+        displayName(note.values.object.object),
         formatNumber(note.values.object.minSensorWidthPx, 0),
         resolutionLabel(note.values.resolution),
       );
     case "resolutionNone":
       return t(
         "noteResolutionNone",
-        note.values.object.object.name,
+        displayName(note.values.object.object),
         formatNumber(note.values.object.minSensorWidthPx, 0),
       );
   }
@@ -145,7 +145,7 @@ export function verdictHeadline(verdict: Verdict): string {
     case "ok":
       return t(
         "verdictOk",
-        verdict.object.object.name,
+        displayName(verdict.object.object),
         modelPxText(verdict.object),
       );
   }

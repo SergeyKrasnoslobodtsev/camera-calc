@@ -2,6 +2,7 @@ import {
   LANG,
   LANG_KEY,
   STR,
+  displayName,
   formatNumber,
   t,
   withUnit,
@@ -19,14 +20,9 @@ import {
   verdictPill,
 } from "../i18n/domain-text.ts";
 import { DEG } from "../domain/angles.ts";
-import { computeType } from "../domain/compute-type/index.ts";
-import { computeSystem, systemTotals } from "../domain/compute-system/index.ts";
 import { parseCamera } from "../domain/entities/camera.ts";
-import { parseCameraType } from "../domain/entities/camera-type.ts";
 import { parseDetector } from "../domain/entities/detector.ts";
 import { parseGpu } from "../domain/entities/gpu.ts";
-import { onlyValueErrors } from "../domain/entities/parse-result.ts";
-import { parseSystemSettings } from "../domain/entities/system-settings.ts";
 import { parseNum } from "../domain/parse-num.ts";
 import { GPU_CATALOG } from "../domain/references/gpu-catalog.ts";
 import { MODELS } from "../domain/references/models.ts";
@@ -34,35 +30,40 @@ import {
   DEFAULT_RESOLUTION,
   RESOLUTIONS,
 } from "../domain/references/resolutions.ts";
-import { store } from "./store.js";
+import { NEW_OBJECT, OBJECT_PRESETS, uid } from "../app/examples.ts";
+import { exportText, importText } from "../app/persistence.ts";
 import {
-  FEED_SHORT,
-  INPUTS,
+  activeType,
+  addCamera,
+  addDetector,
+  addGpu,
+  addObject,
+  addType,
+  allCameras,
   allGpus,
-  byId,
-  decText,
-  escapeHtml,
+  cameraById,
+  computed,
+  deleteActiveType,
+  deleteCamera,
+  deleteDetector,
+  deleteGpu,
+  duplicateActiveType,
   gpuById,
   isOn,
-  priceOf,
-  uid,
-} from "./data.js";
-import {
-  DEFAULT_INPUTS,
-  OBJECT_PRESETS,
-  activeType,
-  builtinName,
-  exampleTypes,
-  makeObject,
-  makeType,
-  readForm,
-  writeForm,
-} from "./state.js";
-import {
-  allCameras,
-  buildCameraSelect,
-  cameraById,
   modelById,
+  resetToExample,
+  selectType,
+  setGpuEnabled,
+  setGpuPrice,
+  state,
+  toggleTheme,
+  updateSystem,
+} from "../app/store.ts";
+import { FEED_SHORT, INPUTS, byId, decText, escapeHtml } from "./data.js";
+import { readForm, writeForm } from "./state.js";
+import {
+  buildCameraSelect,
+  renderObjectResults,
   renderObjects,
   syncFormUI,
 } from "./objects.js";
@@ -73,20 +74,18 @@ const modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
 const cameraLabel = ({ type }) => {
   const camera = cameraById(type.inputs.camera);
   return camera
-    ? camera.name
+    ? displayName(camera)
     : resolutionLabel(
         RESOLUTIONS[+type.inputs.resolution] ?? DEFAULT_RESOLUTION,
       );
 };
 // ---------- отрисовка типа
 const STATUS_TEXT = STR.status;
-const capitalize = (text) =>
-  text ? text[0].toUpperCase() + text.slice(1) : text;
 function renderType(result) {
   const verdict = byId("verdict");
   byId("resultTitle").textContent = t(
     "resultTitleOf",
-    result.type.name || t("untitled"),
+    displayName(result.type) || t("untitled"),
   );
   if (!result.ok) {
     verdict.className = "verdict bad";
@@ -136,20 +135,7 @@ function renderType(result) {
         `<div class="kpi"><span>${label}</span><strong>${value}</strong><em>${extra}</em></div>`,
     )
     .join("");
-  result.objects.forEach((item, i) => {
-    const resultEl = byId(`objectResult-${i}`),
-      dotEl = byId(`objectDot-${i}`);
-    if (!resultEl) return;
-    if (!item.valid) {
-      resultEl.className = "ores";
-      resultEl.textContent = t("objectInvalid");
-      if (dotEl) dotEl.className = "dot";
-      return;
-    }
-    resultEl.className = "ores " + item.status;
-    if (dotEl) dotEl.className = "dot " + item.status;
-    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
-  });
+  renderObjectResults(result);
   const top = result.placement === "top",
     { near, far, minAcross } = result.density;
   byId("densityTable").innerHTML =
@@ -191,18 +177,17 @@ function renderTabs(results) {
     tab.setAttribute("role", "tab");
     tab.setAttribute(
       "aria-selected",
-      String(result.type.id === store.activeTypeId),
+      String(result.type.id === state.activeTypeId),
     );
     tab.setAttribute("aria-controls", "typeResult");
-    tab.innerHTML = `<span class="dot ${result.ok ? result.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(result.type.name || t("untitled"))}</b><small>× ${result.count}</small>`;
+    tab.innerHTML = `<span class="dot ${result.ok ? result.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(displayName(result.type) || t("untitled"))}</b><small>× ${result.count}</small>`;
     tab.title = result.ok
       ? t("tabObjects", STATUS_TEXT[result.status])
       : t("tabError");
     tab.addEventListener("click", () => {
-      if (store.activeTypeId === result.type.id) return;
-      store.activeTypeId = result.type.id;
+      if (state.activeTypeId === result.type.id) return;
+      selectType(result.type.id);
       writeForm(activeType());
-      calcAll();
     });
     nav.append(tab);
   });
@@ -211,13 +196,8 @@ function renderTabs(results) {
   addButton.className = "tab ghost";
   addButton.textContent = t("addType");
   addButton.addEventListener("click", () => {
-    const type = makeType(t("newType", store.cameraTypes.length + 1), 1, {}, [
-      OBJECT_PRESETS[0],
-    ]);
-    store.cameraTypes.push(type);
-    store.activeTypeId = type.id;
-    writeForm(type);
-    calcAll();
+    addType(t("newType", state.cameraTypes.length + 1), [OBJECT_PRESETS[0]]);
+    writeForm(activeType());
   });
   nav.append(addButton);
 }
@@ -277,7 +257,7 @@ function renderSystem(results, system, totals) {
         : t(
             "systemTypes",
             results.length,
-            results.map((result) => result.type.name).join(", "),
+            results.map((result) => displayName(result.type)).join(", "),
           ),
     ],
     [
@@ -286,7 +266,7 @@ function renderSystem(results, system, totals) {
       smallest
         ? t(
             "systemSmallest",
-            smallest.object.name,
+            displayName(smallest.object),
             formatNumber(
               Math.min(smallest.widthPx, smallest.heightPx) *
                 smallest.feed.modelScale,
@@ -324,8 +304,8 @@ function renderSystem(results, system, totals) {
     results
       .map((result) =>
         !result.ok
-          ? `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>`
-          : `<tr><td class="txt">${escapeHtml(result.type.name)}</td><td>${result.count}</td><td>${result.frame.width} × ${result.frame.height}</td><td>${formatNumber(result.stream.fps, 0)}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
+          ? `<tr><td class="txt">${escapeHtml(displayName(result.type))}</td><td>${result.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>`
+          : `<tr><td class="txt">${escapeHtml(displayName(result.type))}</td><td>${result.count}</td><td>${result.frame.width} × ${result.frame.height}</td><td>${formatNumber(result.stream.fps, 0)}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result.stream.bitrateMbps * result.count, 0), "mbps")}</td></tr>`,
       )
       .join("") +
     `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr>` +
@@ -381,7 +361,7 @@ function renderSystem(results, system, totals) {
     ? shown
         .map(
           (run, i) =>
-            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.objects.map(objectName).join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
+            `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(displayName(run.type))}: ${escapeHtml(run.objects.map(objectName).join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`,
         )
         .join("") +
       (rest.length
@@ -432,8 +412,7 @@ function renderSystem(results, system, totals) {
 
 // ---------- шаблоны: видеокарты
 export function buildGpuSelect() {
-  const select = byId("gpu"),
-    current = select.value || "auto";
+  const select = byId("gpu");
   select.innerHTML =
     `<option value="auto">${t("gpuAuto")}</option>` +
     allGpus()
@@ -442,7 +421,7 @@ export function buildGpuSelect() {
           `<option value="${gpu.id}">${escapeHtml(gpu.name)}${gpu.custom ? t("gpuCustomMark") : ""}</option>`,
       )
       .join("");
-  select.value = allGpus().some((gpu) => gpu.id === current) ? current : "auto";
+  select.value = state.system.gpu;
   const refSelect = byId("detectorFormRefGpu");
   if (refSelect) {
     const refCurrent = refSelect.value;
@@ -458,7 +437,7 @@ function renderGpuView() {
   const row = (
     gpu,
   ) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(store.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(state.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
   const headers = STR.gpuTableHeader,
@@ -468,31 +447,22 @@ function renderGpuView() {
       .join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
   byId("catalogTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
   byId("catalogTable").innerHTML = head + GPU_CATALOG.map(row).join("");
-  byId("customGpus").innerHTML = store.customGpus.length
-    ? `<strong style="font-weight:600">${t("customGpusTitle", store.customGpus.length)}</strong><div class="tbl"><table>${head}${store.customGpus.map(row).join("")}</table></div>`
+  byId("customGpus").innerHTML = state.customGpus.length
+    ? `<strong style="font-weight:600">${t("customGpusTitle", state.customGpus.length)}</strong><div class="tbl"><table>${head}${state.customGpus.map(row).join("")}</table></div>`
     : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
   allGpus().forEach((gpu) => {
-    byId(`gpuPrice-${gpu.id}`).addEventListener("input", (event) => {
-      store.gpuPrices[gpu.id] = event.target.value;
-      calcAll();
-    });
-    byId(`gpuEnabled-${gpu.id}`).addEventListener("change", (event) => {
-      store.gpuEnabled[gpu.id] = event.target.checked;
-      calcAll();
-    });
+    byId(`gpuPrice-${gpu.id}`).addEventListener("input", (event) =>
+      setGpuPrice(gpu.id, event.target.value),
+    );
+    byId(`gpuEnabled-${gpu.id}`).addEventListener("change", (event) =>
+      setGpuEnabled(gpu.id, event.target.checked),
+    );
   });
   document.querySelectorAll("[data-delg]").forEach((button) =>
     button.addEventListener("click", () => {
-      const id = button.dataset.delg;
-      store.customGpus = store.customGpus.filter((gpu) => gpu.id !== id);
-      delete store.gpuPrices[id];
-      delete store.gpuEnabled[id];
-      store.customDetectors.forEach((detector) => {
-        if (detector.refGpu === id) detector.refGpu = "5090";
-      });
+      deleteGpu(button.dataset.delg);
       buildGpuSelect();
       renderGpuView();
-      calcAll();
       toast(t("gpuDeleted"));
     }),
   );
@@ -553,9 +523,7 @@ byId("gpuForm").addEventListener("submit", (event) => {
     return;
   }
   errorEl.hidden = true;
-  const gpu = parsed.value;
-  store.customGpus.push(gpu);
-  store.gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
+  addGpu(parsed.value, byId("gpuFormEnabled").checked);
   [
     "gpuFormName",
     "gpuFormTflops",
@@ -566,14 +534,13 @@ byId("gpuForm").addEventListener("submit", (event) => {
   ].forEach((id) => (byId(id).value = ""));
   buildGpuSelect();
   renderGpuView();
-  calcAll();
   toast(t("gpuAdded", name));
 });
 
 // ---------- шаблоны: камеры
 function renderCamView() {
   const used = (id) =>
-    store.cameraTypes
+    state.cameraTypes
       .filter((type) => type.inputs.camera === id)
       .reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
   byId("camerasTitle").textContent = t("camerasTitle", allCameras().length);
@@ -582,22 +549,15 @@ function renderCamView() {
     allCameras()
       .map(
         (camera) =>
-          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cameraCustom" : "cameraBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cameraAnyLens")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("deleteAria", camera.name))}">${t("deleteBtn")}</button>` : ""}</td></tr>`,
+          `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(displayName(camera))}</b><span class="sub">${t(camera.custom ? "cameraCustom" : "cameraBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? (camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm")) : t("cameraAnyLens")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("deleteAria", displayName(camera)))}">${t("deleteBtn")}</button>` : ""}</td></tr>`,
       )
       .join("");
   document.querySelectorAll("[data-delc]").forEach((button) =>
     button.addEventListener("click", () => {
-      const id = button.dataset.delc;
-      store.customCameras = store.customCameras.filter(
-        (camera) => camera.id !== id,
-      );
-      store.cameraTypes.forEach((type) => {
-        if (type.inputs.camera === id) type.inputs.camera = "";
-      });
+      deleteCamera(button.dataset.delc);
       buildCameraSelect();
       writeForm(activeType());
       renderCamView();
-      calcAll();
       toast(t("cameraDeleted"));
     }),
   );
@@ -646,7 +606,7 @@ byId("cameraForm").addEventListener("submit", (event) => {
     return;
   }
   errorEl.hidden = true;
-  store.customCameras.push(parsed.value);
+  addCamera(parsed.value);
   [
     "cameraFormName",
     "cameraFormWidth",
@@ -659,7 +619,6 @@ byId("cameraForm").addEventListener("submit", (event) => {
   ].forEach((id) => (byId(id).value = ""));
   buildCameraSelect();
   renderCamView();
-  save();
   toast(t("cameraAdded", name));
 });
 
@@ -667,18 +626,18 @@ byId("cameraForm").addEventListener("submit", (event) => {
 function renderDetView() {
   byId("detectorsTitle").textContent = t(
     "detectorsTitle",
-    MODELS.length + store.customDetectors.length,
+    MODELS.length + state.customDetectors.length,
   );
   const used = (id) =>
-    store.cameraTypes.reduce(
+    state.cameraTypes.reduce(
       (sum, type) =>
         sum + type.objects.filter((obj) => obj.model === id).length,
       0,
     );
   byId("detectorTable").innerHTML =
     `<tr>${STR.detectorTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` +
-    (store.customDetectors.length
-      ? store.customDetectors
+    (state.customDetectors.length
+      ? state.customDetectors
           .map((detector) => {
             const refGpu = gpuById(detector.refGpu);
             return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(detector.name)}</b><span class="sub">${t("detectorCustom")}</span></td><td>${detector.inputSize}</td><td>${detector.gflops > 0 ? formatNumber(detector.gflops, 1) : "—"}</td><td>${t("detectorSpeed", formatNumber(detector.fps, 0), escapeHtml(refGpu ? refGpu.name : "?"))}</td><td>${used(detector.id)}</td><td><button type="button" class="sm" data-deld="${detector.id}" aria-label="${escapeHtml(t("deleteAria", detector.name))}">${t("deleteBtn")}</button></td></tr>`;
@@ -691,18 +650,9 @@ function renderDetView() {
     ).join("");
   document.querySelectorAll("[data-deld]").forEach((button) =>
     button.addEventListener("click", () => {
-      const id = button.dataset.deld;
-      store.customDetectors = store.customDetectors.filter(
-        (detector) => detector.id !== id,
-      );
-      store.cameraTypes.forEach((type) =>
-        type.objects.forEach((obj) => {
-          if (obj.model === id) obj.model = "y26s";
-        }),
-      );
+      deleteDetector(button.dataset.deld);
       renderObjects();
       renderDetView();
-      calcAll();
       toast(t("detectorDeleted"));
     }),
   );
@@ -738,59 +688,36 @@ byId("detectorForm").addEventListener("submit", (event) => {
     return;
   }
   errorEl.hidden = true;
-  store.customDetectors.push(parsed.value);
+  addDetector(parsed.value);
   ["detectorFormName", "detectorFormFps", "detectorFormGflops"].forEach(
     (id) => (byId(id).value = ""),
   );
   renderObjects();
   renderDetView();
-  calcAll();
   toast(t("detectorAdded", name));
 });
 
-// ---------- главный цикл
-let report = "";
-export function calcAll() {
-  // черновик с недопустимым числом — ошибка ввода; камеры типа считаются, если их число допустимо
-  const results = store.cameraTypes.map((type) => {
-    const parsed = parseCameraType(type);
-    if (parsed.ok)
-      return computeType(parsed.value, cameraById(type.inputs.camera));
-    const countOk = !parsed.errors.some((error) => error.field === "count");
-    return { ok: false, type, count: countOk ? parseNum(type.count) : 0 };
-  });
-  const activeIndex = Math.max(
-    0,
-    store.cameraTypes.findIndex((type) => type.id === store.activeTypeId),
-  );
-  syncFormUI(store.cameraTypes[activeIndex], results[activeIndex]);
+// ---------- отрисовка результатов: подписчик store
+export function renderResults() {
+  const { results, system, totals } = computed;
+  const activeIndex = state.cameraTypes.indexOf(activeType());
+  syncFormUI(activeType(), results[activeIndex]);
   renderType(results[activeIndex]);
   renderTabs(results);
-  const settings = parseSystemSettings(readSystemSettings());
-  const gpus = allGpus().map((gpu) => ({ ...gpu, price: priceOf(gpu) }));
-  const system =
-    settings.ok && gpus.every((gpu) => gpu.price > 0)
-      ? computeSystem(results, settings.value, {
-          gpus,
-          candidates: gpus.filter(isOn),
-          detectors: store.customDetectors,
-        })
-      : null;
-  // архив при ошибке в параметрах не считается: NaN суток — ошибка в строке архива
-  const totals = systemTotals(
-    results,
-    settings.ok ? settings.value : { archiveDays: NaN },
-    allCameras(),
-  );
   renderSystem(results, system, totals);
+  applyTheme();
+}
+// текст отчёта для кнопки «Копировать отчёт»
+function reportText() {
+  const { results, system, totals } = computed;
   const chosen = system?.chosen;
-  report = [
+  return [
     t("appTitle"),
     ...results.flatMap((result) =>
       !result.ok
-        ? ["\n" + t("reportError", result.type.name, result.count)]
+        ? ["\n" + t("reportError", displayName(result.type), result.count)]
         : [
-            `\n${result.type.name} × ${result.count}`,
+            `\n${displayName(result.type)} × ${result.count}`,
             t("reportCamera", {
               cameraLabel: cameraLabel(result),
               rotated: result.lens.rotated,
@@ -808,7 +735,7 @@ export function calcAll() {
               .filter((item) => item.valid)
               .map((item) =>
                 t("reportObject", {
-                  name: item.object.name,
+                  name: displayName(item.object),
                   model: modelName(item.object),
                   feed: feedText(item.feed),
                   sensorPx: sensorPxText(item),
@@ -849,178 +776,19 @@ export function calcAll() {
           })
         : t("reportNoCompute"),
   ].join("\n");
-  save();
 }
 const SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
-const readSystemSettings = () =>
-  Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value]));
-const snapshot = () => ({
-  types: store.cameraTypes,
-  activeTypeId: store.activeTypeId,
-  system: readSystemSettings(),
-  gpuPrices: store.gpuPrices,
-  gpuEnabled: store.gpuEnabled,
-  customGpus: store.customGpus,
-  customCameras: store.customCameras,
-  customDetectors: store.customDetectors,
-  light: document.documentElement.classList.contains("light"),
-});
-let stale = false;
-const STALE_MSG = t("stale");
-addEventListener("storage", (event) => {
-  if (event.key === "camcalc4") {
-    stale = true;
-    toast(STALE_MSG);
-  }
-});
-function save() {
-  if (stale) {
-    toast(STALE_MSG);
-    return;
-  }
-  try {
-    localStorage.setItem("camcalc4", JSON.stringify(snapshot()));
-  } catch (error) {}
-}
-// старые сохранения: числа с десятичной запятой → нейтральный вид 1.5
-const withDot = (value) =>
-  typeof value === "string" ? value.replace(",", ".") : value;
-const allWithDot = (values) =>
-  Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [key, withDot(value)]),
-  );
-const shownName = (item) =>
-  (item.nameKey && builtinName(item.nameKey)) || item.name;
-const isObject = (value) => value && typeof value === "object";
-// Тип из сохранения или файла: недостающие поля — по умолчанию, встроенное название — на текущем языке.
-// Не объект остаётся как есть, его отклонит разбор.
-const savedObject = (obj) =>
-  isObject(obj)
-    ? {
-        ...makeObject([
-          shownName(obj),
-          withDot(obj.width),
-          withDot(obj.length),
-          withDot(obj.height),
-          withDot(obj.requiredPx),
-          obj.model,
-          obj.feed,
-          obj.inputSize,
-          obj.nameKey,
-        ]),
-        overlap: withDot(obj.overlap ?? 20),
-      }
-    : obj;
-const savedType = (type) =>
-  isObject(type)
-    ? {
-        id: type.id || uid(),
-        name: shownName(type),
-        nameKey: type.nameKey,
-        count: withDot(type.count),
-        inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
-        objects: Array.isArray(type.objects)
-          ? type.objects.map(savedObject)
-          : (type.objects ?? []),
-      }
-    : type;
-// параметры системы, которых нет в сохранении, — из полей формы
-const savedSystem = (system) =>
-  isObject(system)
-    ? Object.fromEntries(
-        SYSTEM_IDS.map((id) => [id, withDot(system[id] ?? byId(id).value)]),
-      )
-    : system;
-// записи сохранения или файла импорта, которые прошли разбор; rejected — сколько записей не прошли
-function parseSaved(saved) {
-  let rejected = 0;
-  const parseAll = (items, parse) =>
-    items.flatMap((item) => {
-      const parsed = parse(item);
-      if (parsed.ok) return [parsed.value];
-      rejected++;
-      return [];
-    });
-  // тип камер и параметры системы хранятся черновиком: разбор решает, принять ли запись;
-  // недопустимое число черновик не отклоняет, его покажет расчёт
-  const asDraft = (parse) => (item) => {
-    const parsed = parse(item);
-    return parsed.ok || onlyValueErrors(parsed.errors)
-      ? { ok: true, value: item }
-      : parsed;
-  };
-  const list = (items) => (Array.isArray(items) ? items : []);
-  // параметры системы — одна запись, если она есть
-  const [system] = parseAll(
-    saved.system == null ? [] : [savedSystem(saved.system)],
-    asDraft(parseSystemSettings),
-  );
-  return {
-    customGpus: parseAll(list(saved.customGpus), parseGpu),
-    customCameras: parseAll(list(saved.customCameras), parseCamera),
-    customDetectors: parseAll(list(saved.customDetectors), parseDetector),
-    types: parseAll(list(saved.types).map(savedType), asDraft(parseCameraType)),
-    system,
-    rejected, // после всех parseAll выше
-  };
-}
-export function load() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("camcalc4") || "null");
-    if (!saved) return;
-    const parsed = parseSaved(saved);
-    if (Array.isArray(saved.customGpus))
-      store.customGpus = parsed.customGpus.map((gpu) => ({
-        ...gpu,
-        custom: true,
-      }));
-    if (Array.isArray(saved.customCameras))
-      store.customCameras = parsed.customCameras.map((camera) => ({
-        ...camera,
-        custom: true,
-      }));
-    if (Array.isArray(saved.customDetectors))
-      store.customDetectors = parsed.customDetectors;
-    if (saved.gpuPrices && typeof saved.gpuPrices === "object")
-      store.gpuPrices = allWithDot(saved.gpuPrices);
-    if (saved.gpuEnabled && typeof saved.gpuEnabled === "object")
-      store.gpuEnabled = saved.gpuEnabled;
-    if (saved.light) setTheme(true);
-    buildGpuSelect();
-    buildCameraSelect();
-    if (parsed.types.length) {
-      store.cameraTypes = parsed.types;
-      store.cameraTypes.forEach((type) =>
-        type.objects.forEach((obj) => {
-          if (!modelById(obj.model)) obj.model = "y26s";
-        }),
-      );
-      store.activeTypeId = store.cameraTypes.some(
-        (type) => type.id === saved.activeTypeId,
-      )
-        ? saved.activeTypeId
-        : store.cameraTypes[0].id;
-    }
-    if (parsed.system)
-      SYSTEM_IDS.forEach((id) => {
-        const field = byId(id);
-        field.value = parsed.system[id];
-        if (field.tagName === "SELECT" && field.selectedIndex < 0)
-          field.value = "auto";
-      });
-  } catch (error) {}
+export function writeSystemForm() {
+  SYSTEM_IDS.forEach((id) => (byId(id).value = state.system[id]));
 }
 
 // ---------- события
-function setTheme(light) {
-  document.documentElement.classList.toggle("light", light);
-  byId("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
-  byId("themeBtn").setAttribute("aria-pressed", String(light));
+function applyTheme() {
+  document.documentElement.classList.toggle("light", state.light);
+  byId("themeBtn").textContent = t(state.light ? "themeDark" : "themeLight");
+  byId("themeBtn").setAttribute("aria-pressed", String(state.light));
 }
-byId("themeBtn").addEventListener("click", () => {
-  setTheme(!document.documentElement.classList.contains("light"));
-  save();
-});
+byId("themeBtn").addEventListener("click", toggleTheme);
 byId("langBtn").lang = LANG === "en" ? "ru" : "en";
 byId("langBtn").addEventListener("click", () => {
   try {
@@ -1035,65 +803,38 @@ OBJECT_PRESETS.forEach((preset) => {
   const chip = document.createElement("button");
   chip.type = "button";
   chip.className = "chip";
-  chip.textContent = preset[0];
+  chip.textContent = displayName(preset);
   chip.addEventListener("click", () => {
-    activeType().objects.push(makeObject(preset));
+    addObject(preset);
     renderObjects();
-    calcAll();
   });
   byId("presets").append(chip);
 });
 byId("addObject").addEventListener("click", () => {
-  const type = activeType();
-  type.objects.push(
-    makeObject([
-      t("objDefault"),
-      10,
-      10,
-      10,
-      20,
-      "y26s",
-      "roi",
-      640,
-      "objDefault",
-    ]),
-  );
+  addObject(NEW_OBJECT);
   renderObjects();
-  calcAll();
-  const lastIndex = type.objects.length - 1;
+  const lastIndex = activeType().objects.length - 1;
   byId(`objectName-${lastIndex}`).focus();
   byId(`objectName-${lastIndex}`).select();
 });
-byId("typeForm").addEventListener("input", () => {
-  readForm();
-  calcAll();
-});
-byId("typeForm").addEventListener("change", () => {
-  readForm();
-  calcAll();
-});
+byId("typeForm").addEventListener("input", readForm);
+byId("typeForm").addEventListener("change", readForm);
 byId("typeForm").addEventListener("submit", (event) => event.preventDefault());
 SYSTEM_IDS.forEach((id) => {
-  byId(id).addEventListener("input", calcAll);
-  byId(id).addEventListener("change", calcAll);
+  const update = () => updateSystem(id, byId(id).value);
+  byId(id).addEventListener("input", update);
+  byId(id).addEventListener("change", update);
 });
 byId("duplicateTypeBtn").addEventListener("click", () => {
   readForm();
-  const source = activeType(),
-    copy = JSON.parse(JSON.stringify(source));
-  copy.id = uid();
-  copy.name = source.name + t("copySuffix");
-  delete copy.nameKey;
-  store.cameraTypes.splice(store.cameraTypes.indexOf(source) + 1, 0, copy);
-  store.activeTypeId = copy.id;
-  writeForm(copy);
-  calcAll();
+  duplicateActiveType(displayName(activeType()) + t("copySuffix"));
+  writeForm(activeType());
   toast(t("typeCopied"));
 });
 let deleteTimer = null;
 byId("deleteTypeBtn").addEventListener("click", () => {
   const button = byId("deleteTypeBtn");
-  if (store.cameraTypes.length < 2) {
+  if (state.cameraTypes.length < 2) {
     toast(t("lastType"));
     return;
   }
@@ -1108,16 +849,11 @@ byId("deleteTypeBtn").addEventListener("click", () => {
   clearTimeout(deleteTimer);
   deleteTimer = null;
   button.textContent = t("deleteTypeBtn");
-  const index = store.cameraTypes.findIndex(
-    (type) => type.id === store.activeTypeId,
-  );
-  store.cameraTypes.splice(index, 1);
-  store.activeTypeId = store.cameraTypes[Math.max(0, index - 1)].id;
+  deleteActiveType();
   writeForm(activeType());
-  calcAll();
   toast(t("typeDeleted"));
 });
-function toast(message) {
+export function toast(message) {
   const toastEl = byId("toast");
   toastEl.textContent = message;
   toastEl.hidden = false;
@@ -1125,22 +861,14 @@ function toast(message) {
   toast.timer = setTimeout(() => (toastEl.hidden = true), 1800);
 }
 byId("resetBtn").addEventListener("click", () => {
-  store.cameraTypes = exampleTypes();
-  store.activeTypeId = store.cameraTypes[0].id;
-  byId("efficiency").value = "0.6";
-  byId("reserve").value = "20";
-  byId("archiveDays").value = "0";
-  byId("gpuCount").value = "auto";
-  store.gpuPrices = {};
-  store.gpuEnabled = {};
+  resetToExample();
   buildGpuSelect();
-  byId("gpu").value = "auto";
+  writeSystemForm();
   writeForm(activeType());
-  calcAll();
   toast(t("exampleLoaded"));
 });
 byId("copyBtn").addEventListener("click", () => {
-  navigator.clipboard.writeText(report).then(
+  navigator.clipboard.writeText(reportText()).then(
     () => toast(t("reportCopied")),
     () => toast(t("copyFail")),
   );
@@ -1148,7 +876,7 @@ byId("copyBtn").addEventListener("click", () => {
 byId("exportBtn").addEventListener("click", () => {
   const link = document.createElement("a");
   link.href = URL.createObjectURL(
-    new Blob([JSON.stringify(snapshot(), null, 1)], {
+    new Blob([exportText(state)], {
       type: "application/json",
     }),
   );
@@ -1158,33 +886,6 @@ byId("exportBtn").addEventListener("click", () => {
   link.remove();
   setTimeout(() => URL.revokeObjectURL(link.href), 0);
 });
-function importText(text) {
-  let saved;
-  try {
-    saved = JSON.parse(text);
-  } catch (error) {}
-  if (
-    !isObject(saved) ||
-    !Array.isArray(saved.types) ||
-    !saved.types.length ||
-    !["customGpus", "customCameras", "customDetectors"].every((key) =>
-      Array.isArray(saved[key]),
-    ) ||
-    !isObject(saved.gpuPrices) ||
-    !isObject(saved.gpuEnabled) ||
-    parseSaved(saved).rejected
-  ) {
-    toast(t("badFile"));
-    return;
-  }
-  try {
-    localStorage.setItem("camcalc4", JSON.stringify(saved));
-  } catch (error) {
-    toast(t("saveFail"));
-    return;
-  }
-  location.reload();
-}
 let importTimer = null;
 byId("importBtn").addEventListener("click", () => {
   const button = byId("importBtn");
@@ -1204,7 +905,15 @@ byId("importBtn").addEventListener("click", () => {
 byId("importFile").addEventListener("change", (event) => {
   const file = event.target.files[0];
   event.target.value = "";
-  if (file) file.text().then(importText, () => toast(t("readFail")));
+  if (file)
+    file.text().then(
+      (text) => {
+        const status = importText(text);
+        if (status === "ok") location.reload();
+        else toast(t(status));
+      },
+      () => toast(t("readFail")),
+    );
 });
 const TEMPLATE_VIEWS = {
   "tpl-gpus": renderGpuView,
@@ -1227,7 +936,7 @@ export function route() {
       else link.removeAttribute("aria-current");
     });
     TEMPLATE_VIEWS[hash]();
-  } else if (hash === "") (writeForm(activeType()), calcAll());
+  } else if (hash === "") writeForm(activeType());
   try {
     window.scrollTo(0, 0);
   } catch (error) {}

@@ -377,7 +377,7 @@ assert.deepStrictEqual(extraKeys(EN, RU, ""), [], "ключи EN, которых
 console.log("en keys: ok");
 // language: every key is used in the code or markup, every referenced key exists
 const srcDir = import.meta.dirname + "/../src/";
-const appCode = ["js", "i18n", "domain"]
+const appCode = ["js", "app", "i18n", "domain"]
   .flatMap((dir) =>
     fs
       .readdirSync(srcDir + dir, { recursive: true, encoding: "utf8" })
@@ -535,6 +535,21 @@ assert.strictEqual(
   "EN: название пользователя переведено",
 );
 console.log("user names kept: ok");
+// copy of a type: right after the source, with a suffix, the same objects
+const w13 = page(null, "ru"),
+  d13 = w13.document;
+d13.getElementById("duplicateTypeBtn").click();
+assert.deepStrictEqual(
+  [...d13.querySelectorAll("#tabs .tab b")].map((b) => b.textContent),
+  [RU.typeNames[0], RU.typeNames[0] + RU.copySuffix, RU.typeNames[1]],
+  "копия типа",
+);
+assert.strictEqual(
+  d13.querySelectorAll("#objectList .ocard").length,
+  2,
+  "объекты копии",
+);
+console.log("type copy: ok");
 // numbers: EN price "1,999" is not read as 1.999
 const w9 = page(null, "en"),
   d9 = w9.document;

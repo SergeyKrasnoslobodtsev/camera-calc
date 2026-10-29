@@ -56,7 +56,7 @@ export function computeSystem(
   const { efficiency } = settings,
     maxLoad = 1 / (1 + settings.reserve / 100);
   const groups = liveResults.flatMap((result) =>
-    result.runGroups.map((group) => ({ ...group, typeName: result.type.name })),
+    result.runGroups.map((group) => ({ ...group, type: result.type })),
   );
   const engines = [
     ...new Map(
