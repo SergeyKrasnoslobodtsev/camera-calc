@@ -1,7 +1,7 @@
 // Расчёт типа камер совпадает с прежней реализацией. Фикстура снята один раз со старого
 // computeType (src/js/compute-type.js в коммите 7cca661) на 30 конфигурациях: числа без
 // округления, тексты на русском. Новый расчёт сравнивается с ней с относительным допуском 1e-9.
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {

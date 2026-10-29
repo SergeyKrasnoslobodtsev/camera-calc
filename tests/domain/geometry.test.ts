@@ -1,5 +1,5 @@
 // Кадр, зона, объектив и плотность пикселей на случаях, которые считаются вручную.
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { DEG } from "../../src/domain/angles.ts";
 import { resolveFrame } from "../../src/domain/compute-type/frame.ts";

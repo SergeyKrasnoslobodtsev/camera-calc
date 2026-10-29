@@ -1,5 +1,5 @@
 // Функции разбора сущностей: допустимые данные, каждое правило поля, лишние поля.
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { parseCamera } from "../../src/domain/entities/camera.ts";
 import {

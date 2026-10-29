@@ -9,10 +9,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "oxlint",
-    "test": "tsc && node --test tests/domain/ && node tests/smoke.test.js && node tests/golden.test.js",
+    "test": "tsc && vitest run",
     "format": "prettier --write vite.config.ts src/main.tsx src/styles.css src/ui src/app src/domain src/i18n tests"
   },
   "devDependencies": {
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
     "@types/node": "26.6.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
@@ -22,7 +24,8 @@
     "prettier": "3.9.10",
     "typescript": "7.0.2",
     "vite": "8.3.5",
-    "vite-plugin-singlefile": "2.3.4"
+    "vite-plugin-singlefile": "2.3.4",
+    "vitest": "5.0.5"
   },
   "dependencies": {
     "react": "19.3.1",

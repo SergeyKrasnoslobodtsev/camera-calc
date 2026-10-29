@@ -1,6 +1,6 @@
 // Подача в модель, статусы объектов, вердикт, советы и группы запусков.
 // Камера строго вниз на высоте Hc = 2 м с fpx = 1000: плоский объект 10 × 10 см даёт рамку 50 × 50 px.
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { describeFeed } from "../../src/domain/compute-type/feed.ts";
 import { runGroups } from "../../src/domain/compute-type/run-groups.ts";

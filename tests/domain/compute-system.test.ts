@@ -1,6 +1,6 @@
 // Подбор GPU и итоги системы. Свой детектор d — 100 кадр/с на входе 640 на GPU small,
 // поэтому нагрузка в кадрах в секунду сразу переводится в долю GPU.
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import {
   computeSystem,

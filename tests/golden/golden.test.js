@@ -1,45 +1,24 @@
-// Тест-эталон: результаты расчёта для набора конфигураций сравниваются с tests/golden.txt.
-// Обновить эталон после намеренного изменения расчёта: node tests/golden.test.js --update
-import { JSDOM } from "jsdom";
-import fs from "fs";
-import assert from "assert";
-import { runModuleScripts } from "./page.js";
-
-const html = fs.readFileSync(
-  import.meta.dirname + "/../dist/index.html",
-  "utf8",
-);
-const goldenPath = import.meta.dirname + "/golden.txt";
-
-function openPage(savedState) {
-  const { window } = new JSDOM(html, {
-    runScripts: "dangerously",
-    url: "https://x.test/",
-    pretendToBeVisual: true,
-    beforeParse(window) {
-      window.scrollTo = () => {};
-      window.localStorage.setItem("camcalc-lang", "ru");
-      if (savedState)
-        window.localStorage.setItem("camcalc4", JSON.stringify(savedState));
-    },
-  });
-  return runModuleScripts(window);
-}
+// @vitest-environment jsdom
+// Тест-эталон: результаты расчёта для набора конфигураций сравниваются с tests/golden/golden.txt.
+// Обновить эталон после намеренного изменения расчёта: npx vitest run tests/golden -u
+import { expect, test } from "vitest";
+import { fireEvent } from "@testing-library/react";
+import { openPage } from "../page/open-page.tsx";
 
 // отчёт так, как его получает пользователь: кнопка «Копировать отчёт» пишет его в буфер обмена;
 // запись не завершается, чтобы уведомление «Отчёт скопирован» не заменило другие
-function reportOf(window) {
+function reportOf() {
   let copied;
-  Object.defineProperty(window.navigator, "clipboard", {
+  Object.defineProperty(navigator, "clipboard", {
     value: { writeText: (text) => ((copied = text), new Promise(() => {})) },
     configurable: true,
   });
-  window.document.getElementById("copyBtn").click();
+  fireEvent.click(document.getElementById("copyBtn"));
   return copied;
 }
 
-function results(window) {
-  const doc = window.document;
+function results() {
+  const doc = document;
   const clean = (node) => node.textContent.replace(/\s+/g, " ").trim();
   const text = (id) => clean(doc.getElementById(id));
   const items = (selector) =>
@@ -49,7 +28,7 @@ function results(window) {
       .map((row) => "  " + [...row.children].map(clean).join(" | "))
       .join("\n");
   return [
-    reportOf(window),
+    reportOf(),
     "",
     "KPI системы: " + text("systemKpis"),
     "Сводка: " + text("loadSummary"),
@@ -68,7 +47,8 @@ function results(window) {
 
 // Состояние встроенного примера, от него строятся остальные конфигурации.
 // Страница сохраняет его в localStorage сразу после первого расчёта.
-const example = JSON.parse((await openPage()).localStorage.getItem("camcalc4"));
+await openPage();
+const example = JSON.parse(localStorage.getItem("camcalc4"));
 const [sideType, topType] = example.types;
 const withType = (type, changes) => ({
   ...type,
@@ -193,23 +173,12 @@ const configs = {
   },
 };
 
-const actual = (
-  await Promise.all(
-    Object.entries(configs).map(
-      async ([name, state]) =>
-        `===== ${name}\n${results(await openPage(state))}\n`,
-    ),
-  )
-).join("\n");
-
-if (process.argv.includes("--update")) {
-  fs.writeFileSync(goldenPath, actual);
-  console.log("golden: эталон обновлён");
-} else {
-  assert.strictEqual(
-    actual,
-    fs.readFileSync(goldenPath, "utf8"),
-    "результаты расчёта отличаются от tests/golden.txt",
-  );
-  console.log("golden: ok");
-}
+// страницы открываются по очереди: у теста одно окно
+test("результаты расчёта совпадают с tests/golden/golden.txt", async () => {
+  const sections = [];
+  for (const [name, state] of Object.entries(configs)) {
+    await openPage({ saved: JSON.stringify(state) });
+    sections.push(`===== ${name}\n${results()}\n`);
+  }
+  await expect(sections.join("\n")).toMatchFileSnapshot("golden.txt");
+});

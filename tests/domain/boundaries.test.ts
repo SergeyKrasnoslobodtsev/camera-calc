@@ -1,5 +1,5 @@
 // Границы модуля domain: без DOM и браузерного хранилища, импорты только внутри src/domain.
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
