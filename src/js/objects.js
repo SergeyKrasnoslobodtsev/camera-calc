@@ -1,30 +1,23 @@
-import { formatNumber, t, withUnit } from "../i18n/index.ts";
+import { STR, displayName, formatNumber, t, withUnit } from "../i18n/index.ts";
+import { feedText, modelPxText, sensorPxText } from "../i18n/domain-text.ts";
 import { parseNum } from "../domain/parse-num.ts";
-import { BUILTIN_CAMERAS } from "../domain/references/builtin-cameras.ts";
 import { MODELS } from "../domain/references/models.ts";
 import {
   DEFAULT_RESOLUTION,
   RESOLUTIONS,
 } from "../domain/references/resolutions.ts";
 import { DEFAULT_SENSOR, SENSORS } from "../domain/references/sensors.ts";
-import { store } from "./store.js";
+import {
+  activeResult,
+  activeType,
+  allCameras,
+  cameraById,
+  deleteObject,
+  state,
+  updateObject,
+} from "../app/store.ts";
 import { FEEDS, INPUTS, byId, escapeHtml } from "./data.js";
-import { activeType, builtinName } from "./state.js";
-import { calcAll } from "./system-ui.js";
-// ---------- шаблоны камер и детекторов
-// встроенные камеры — с названием на текущем языке
-export const allCameras = () => [
-  ...BUILTIN_CAMERAS.map((camera) => ({
-    ...camera,
-    name: builtinName(camera.nameKey),
-  })),
-  ...store.customCameras,
-];
-export const cameraById = (id) =>
-  allCameras().find((camera) => camera.id === id);
-export const modelById = (id) =>
-  MODELS.find((model) => model.id === id) ||
-  store.customDetectors.find((detector) => detector.id === id);
+// ---------- шаблоны камер
 export function buildCameraSelect() {
   const select = byId("camera"),
     current = select.value;
@@ -33,7 +26,7 @@ export function buildCameraSelect() {
     allCameras()
       .map(
         (camera) =>
-          `<option value="${camera.id}">${escapeHtml(camera.name)}</option>`,
+          `<option value="${camera.id}">${escapeHtml(displayName(camera))}</option>`,
       )
       .join("");
   select.value = cameraById(current) ? current : "";
@@ -45,13 +38,12 @@ export function renderObjects() {
     list = byId("objectList");
   list.innerHTML = "";
   type.objects.forEach((obj, i) => {
-    if (!modelById(obj.model)) obj.model = "y26s";
     const card = document.createElement("article");
     card.className = "ocard";
     const modelOptions =
       `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` +
-      (store.customDetectors.length
-        ? `<optgroup label="${t("customDetectors")}">${store.customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
+      (state.customDetectors.length
+        ? `<optgroup label="${t("customDetectors")}">${state.customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>`
         : "");
     card.innerHTML = `<div class="ohdr"><span class="dot" id="objectDot-${i}" aria-hidden="true"></span><input id="objectName-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
@@ -83,12 +75,10 @@ export function renderObjects() {
       ["objectOverlap", "overlap"],
     ].forEach(([idPrefix, field]) => {
       const input = byId(`${idPrefix}-${i}`);
-      input.value = obj[field] ?? "";
+      input.value = field === "name" ? displayName(obj) : (obj[field] ?? "");
       input.addEventListener("input", (event) => {
         event.stopPropagation();
-        obj[field] = event.target.value;
-        if (field === "name") delete obj.nameKey;
-        calcAll();
+        updateObject(i, field, event.target.value);
       });
     });
     [
@@ -101,17 +91,37 @@ export function renderObjects() {
       if (select.selectedIndex < 0) select.selectedIndex = 0;
       select.addEventListener("change", (event) => {
         event.stopPropagation();
-        obj[field] = event.target.value;
+        updateObject(i, field, event.target.value);
         syncOverlapBox();
-        calcAll();
       });
     });
     card.querySelector(".odel").addEventListener("click", () => {
-      type.objects.splice(i, 1);
+      deleteObject(i);
       renderObjects();
-      calcAll();
     });
     syncOverlapBox();
+  });
+  renderObjectResults(activeResult());
+}
+const STATUS_TEXT = STR.status;
+const capitalize = (text) =>
+  text ? text[0].toUpperCase() + text.slice(1) : text;
+// результат каждого объекта в его карточке
+export function renderObjectResults(result) {
+  if (!result.ok) return;
+  result.objects.forEach((item, i) => {
+    const resultEl = byId(`objectResult-${i}`),
+      dotEl = byId(`objectDot-${i}`);
+    if (!resultEl) return;
+    if (!item.valid) {
+      resultEl.className = "ores";
+      resultEl.textContent = t("objectInvalid");
+      if (dotEl) dotEl.className = "dot";
+      return;
+    }
+    resultEl.className = "ores " + item.status;
+    if (dotEl) dotEl.className = "dot " + item.status;
+    resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
   });
 }
 export function syncFormUI(type, result) {

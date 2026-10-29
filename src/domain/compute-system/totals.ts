@@ -25,10 +25,16 @@ export type SystemTotals = {
   archiveTB: number;
 };
 
-// cameras — камеры шаблонов, из них берётся цена камеры типа
+// Тип камер для итогов: результат расчёта или тип, черновик которого не прошёл разбор.
+// От него нужны число камер, камера из шаблона и, если расчёт удался, поток.
+export type TotalsSource =
+  | Extract<TypeResult, { ok: true }>
+  | { ok: false; count: number; type: { inputs: { camera: string } } };
+
+// cameras — камеры шаблонов, из них берётся цена камеры типа; settings — от параметров нужна только глубина архива
 export function systemTotals(
-  results: TypeResult[],
-  settings: SystemSettings,
+  results: readonly TotalsSource[],
+  settings: Pick<SystemSettings, "archiveDays">,
   cameras: readonly Camera[],
 ): SystemTotals {
   const cameraCount = results.reduce((sum, result) => sum + result.count, 0);

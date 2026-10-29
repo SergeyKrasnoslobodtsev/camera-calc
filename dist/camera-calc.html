@@ -557,7 +557,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     gpuCustomMark: " (свой)",
     donutAria: "Загрузка инференса",
     donutCaption: "инференс",
-    donutAriaValue: (load2, threshold) => `Загрузка инференса ${load2}, порог ${threshold}`,
+    donutAriaValue: (load, threshold) => `Загрузка инференса ${load}, порог ${threshold}`,
     bottleneckInference: "инференс",
     bottleneckDecoder: "декодирование",
     bottleneckMemory: "видеопамять",
@@ -1005,7 +1005,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     gpuCustomMark: " (custom)",
     donutAria: "Inference load",
     donutCaption: "inference",
-    donutAriaValue: (load2, threshold) => `Inference load ${load2}, threshold ${threshold}`,
+    donutAriaValue: (load, threshold) => `Inference load ${load}, threshold ${threshold}`,
     bottleneckInference: "inference",
     bottleneckDecoder: "decoding",
     bottleneckMemory: "GPU memory",
@@ -1444,141 +1444,612 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     minimumFractionDigits: digits,
     maximumFractionDigits: digits
   }).replace("-", "−") : "—";
+  function displayName(item) {
+    const builtin = item.nameKey?.split(".").reduce((node, part) => node?.[part], STR);
+    return typeof builtin === "string" ? builtin : item.name;
+  }
 
-  // src/i18n/domain-text.ts
-  var resolutionLabel = ({ megapixels, width, height }) => `${t("megapixels", megapixels)} · ${width} × ${height}`;
-  var objectName = ({ object }) => object.name || t("objDefault");
-  var sizePx = (width, height) => `${formatNumber(width, 1)} × ${formatNumber(height, 1)} px`;
-  var sensorPxText = ({ widthPx, heightPx }) => sizePx(widthPx, heightPx);
-  var modelPxText = ({ widthPx, heightPx, feed }) => sizePx(widthPx * feed.modelScale, heightPx * feed.modelScale);
-  function feedText({
-    mode,
-    inputSize,
-    source,
-    tiles,
-    tilesX,
-    tilesY
-  }) {
-    if (mode === "tiles") return t("feedTiles", tiles, tilesX, tilesY, inputSize);
-    return t(
-      mode === "roi" ? "feedRoi" : "feedFull",
-      Math.round(source.width),
-      Math.round(source.height),
-      inputSize
-    );
-  }
-  function noteText(note) {
-    switch (note.code) {
-      case "zoneWidth":
-        return t(
-          "noteZoneWidth",
-          formatNumber(note.values.frameWidth, 2),
-          formatNumber(note.values.zoneWidth, 2)
+  // src/domain/parse-num.ts
+  var parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
+
+  // src/domain/entities/parse-result.ts
+  var onlyValueErrors = (errors) => errors.every(
+    (error) => ["positive", "nonNegative", "integer"].includes(error.code)
+  );
+  var isRecord = (value) => typeof value === "object" && value !== null;
+  function readFields(raw, prefix = "") {
+    const record = isRecord(raw) ? raw : {};
+    const errors = [];
+    const check = (ok, field, code) => {
+      if (!ok) errors.push({ field: prefix + field, code });
+    };
+    const formValue = (field, value = record[field]) => {
+      check(
+        typeof value === "string" || Number.isFinite(value),
+        field,
+        "required"
+      );
+      return value;
+    };
+    const draftNumber = (field, value, ok, code) => {
+      const count = errors.length;
+      const number = parseNum(formValue(field, value));
+      if (errors.length === count) check(ok(number), field, code);
+      return number;
+    };
+    return {
+      record,
+      errors,
+      string(field, value = record[field]) {
+        check(typeof value === "string", field, "required");
+        return String(value ?? "");
+      },
+      formValue,
+      // число из поля формы в черновике: пустое или не число — NaN, его отсекает расчёт, если поле нужно;
+      // отрицательное — ошибка
+      number(field, value = record[field]) {
+        return draftNumber(
+          field,
+          value,
+          (number) => !(number < 0),
+          "nonNegative"
         );
-      case "zoneDepth":
-        return t(
-          "noteZoneDepth",
-          formatNumber(note.values.requiredAngle, 1),
-          formatNumber(note.values.availableAngle, 1)
+      },
+      // число из поля формы в черновике, которое нужно всегда: пустое, не число или отрицательное — ошибка
+      requiredNumber(field, value = record[field]) {
+        return draftNumber(field, value, (number) => number >= 0, "nonNegative");
+      },
+      text(field, value = record[field]) {
+        check(
+          typeof value === "string" && value.trim() !== "",
+          field,
+          "required"
         );
-      case "focalMax":
-      case "focalMin":
-        return t(
-          note.code === "focalMax" ? "noteFocalMax" : "noteFocalMin",
-          formatNumber(note.values.requiredFocal, 1),
-          formatNumber(note.values.focal, 1)
+        return String(value ?? "");
+      },
+      positive(field, value = record[field]) {
+        check(Number.isFinite(value) && value > 0, field, "positive");
+        return value;
+      },
+      nonNegative(field, value = record[field]) {
+        check(
+          Number.isFinite(value) && value >= 0,
+          field,
+          "nonNegative"
         );
-      case "focalOutOfRange": {
-        const { focal, focalMin, focalMax } = note.values;
-        return t(
-          "noteFocalOutOfRange",
-          formatNumber(focal, 1),
-          focalMin === focalMax ? formatNumber(focalMin, 1) : formatNumber(focalMin, 1) + "–" + formatNumber(focalMax, 1)
+        return value;
+      },
+      oneOf(field, list, value = record[field]) {
+        check(list.includes(value), field, "oneOf");
+        return value;
+      },
+      // целое, если это число: остальное проверяют positive и nonNegative
+      integer(field, value) {
+        check(
+          !Number.isFinite(value) || Number.isInteger(value),
+          field,
+          "integer"
         );
+      },
+      order(field, ok) {
+        check(ok, field, "order");
       }
-      case "wideAngle":
-        return t("noteWideAngle", formatNumber(note.values.hfov, 0));
-      case "topView":
-        return t("noteTopView");
-      case "lowRay":
-        return t("noteLowRay", formatNumber(note.values.angle, 0));
-      case "analyticsFps":
-        return t(
-          "noteAnalyticsFps",
-          formatNumber(note.values.analyticsFps, 0),
-          formatNumber(note.values.streamFps, 0)
-        );
-      case "downscale": {
-        const { object, neededInputSize } = note.values;
-        return t(
-          "noteDownscale",
-          object.object.name,
-          sensorPxText(object),
-          object.feed.inputSize,
-          t(
-            object.feed.mode === "full" ? "adviceFull" : object.feed.mode === "roi" ? "adviceRoi" : "adviceTiles"
-          ),
-          formatNumber(neededInputSize, 0)
-        );
-      }
-      case "resolution":
-        return t(
-          "noteResolution",
-          note.values.object.object.name,
-          formatNumber(note.values.object.minSensorWidthPx, 0),
-          resolutionLabel(note.values.resolution)
-        );
-      case "resolutionNone":
-        return t(
-          "noteResolutionNone",
-          note.values.object.object.name,
-          formatNumber(note.values.object.minSensorWidthPx, 0)
-        );
-    }
+    };
   }
-  var verdictItems = (objects) => objects.map(
-    (result2) => t(
-      "verdictItem",
-      objectName(result2),
-      modelPxText(result2),
-      formatNumber(result2.requiredPx, 0)
-    )
-  ).join("; ");
-  function verdictHeadline(verdict) {
-    switch (verdict.code) {
-      case "noObjects":
-        return t("verdictNoObjects");
-      case "bad":
-        return t("verdictBad", verdictItems(verdict.objects));
-      case "warn":
-        return t("verdictWarn", verdictItems(verdict.objects));
-      case "ok":
-        return t(
-          "verdictOk",
-          verdict.object.object.name,
-          modelPxText(verdict.object)
-        );
-    }
+  var result = (errors, value) => errors.length ? { ok: false, errors } : { ok: true, value };
+
+  // src/domain/entities/camera.ts
+  function parseCamera(raw) {
+    const read = readFields(raw);
+    const camera = {
+      id: read.text("id"),
+      name: read.text("name"),
+      Nw: read.positive("Nw"),
+      Nh: read.positive("Nh"),
+      sensorWidth: read.positive("sensorWidth"),
+      focalMin: read.nonNegative("focalMin"),
+      focalMax: read.nonNegative("focalMax")
+    };
+    read.integer("Nw", camera.Nw);
+    read.integer("Nh", camera.Nh);
+    read.order("focalMax", camera.focalMin <= camera.focalMax);
+    if (read.record.price !== void 0) camera.price = read.nonNegative("price");
+    if (read.record.custom === true) camera.custom = true;
+    return result(read.errors, camera);
   }
-  function verdictPill(verdict, notes) {
-    switch (verdict.code) {
-      case "noObjects":
-        return t("pillNoObjects");
-      case "bad":
-        return t("pillBad");
-      case "warn":
-        return t("pillWarn");
-      case "ok":
-        return t(notes.length ? "pillCheck" : "pillOk");
-    }
-  }
-  var BOTTLENECK_KEYS = {
-    inference: "bottleneckInference",
-    decoder: "bottleneckDecoder",
-    memory: "bottleneckMemory"
+
+  // src/domain/entities/camera-type.ts
+  var DEFAULT_INPUT_SIZE = 640;
+  var PLACEMENTS = ["side", "top"];
+  var LENS_MODES = ["auto", "focal", "angle"];
+  var ORIENTATIONS = ["auto", "landscape", "portrait"];
+  var FEED_MODES = ["full", "roi", "tiles"];
+  var withNameKey = (item, nameKey) => {
+    if (typeof nameKey === "string") item.nameKey = nameKey;
+    return item;
   };
-  var bottleneckText = (bottleneck) => t(BOTTLENECK_KEYS[bottleneck]);
-  var portText = (port) => port === "1G" ? withUnit(1, "gbps") : port === "10G" ? withUnit(10, "gbps") : "> " + withUnit(10, "gbps");
+  function parseSceneObject(raw) {
+    const read = readFields(raw);
+    const object = {
+      name: read.string("name"),
+      width: read.number("width"),
+      length: read.number("length"),
+      height: read.number("height"),
+      requiredPx: read.number("requiredPx"),
+      model: read.text("model"),
+      feed: read.oneOf("feed", FEED_MODES),
+      inputSize: read.number("inputSize") || DEFAULT_INPUT_SIZE,
+      overlap: read.requiredNumber("overlap")
+    };
+    return result(read.errors, withNameKey(object, read.record.nameKey));
+  }
+  function parseCameraType(raw) {
+    const read = readFields(raw);
+    const inputs = readFields(read.record.inputs, "inputs.");
+    const rawObjects = read.record.objects;
+    if (!Array.isArray(rawObjects))
+      read.errors.push({ field: "objects", code: "required" });
+    const objects = (Array.isArray(rawObjects) ? rawObjects : []).map(
+      parseSceneObject
+    );
+    const count = read.requiredNumber("count");
+    read.integer("count", count);
+    const type = {
+      id: read.text("id"),
+      name: read.string("name"),
+      count,
+      inputs: {
+        camera: inputs.string("camera"),
+        cameraHeight: inputs.number("cameraHeight"),
+        planeHeight: inputs.number("planeHeight"),
+        zoneStart: inputs.number("zoneStart"),
+        zoneDepth: inputs.number("zoneDepth"),
+        zoneWidth: inputs.number("zoneWidth"),
+        margin: inputs.requiredNumber("margin"),
+        resolution: Number(inputs.formValue("resolution")),
+        sensor: Number(inputs.formValue("sensor")),
+        sensorWidth: inputs.number("sensorWidth"),
+        pixelPitch: inputs.number("pixelPitch"),
+        orientation: inputs.oneOf("orientation", ORIENTATIONS),
+        focalLength: inputs.number("focalLength"),
+        hfov: inputs.number("hfov"),
+        fps: inputs.number("fps"),
+        analyticsFps: inputs.number("analyticsFps"),
+        codec: Number(inputs.formValue("codec")),
+        scene: Number(inputs.formValue("scene")),
+        lensFactor: inputs.number("lensFactor"),
+        speed: inputs.number("speed"),
+        blurPx: inputs.number("blurPx"),
+        lensMode: inputs.oneOf("lensMode", LENS_MODES),
+        placement: inputs.oneOf("placement", PLACEMENTS)
+      },
+      objects: objects.flatMap((object) => object.ok ? [object.value] : [])
+    };
+    const errors = [
+      ...read.errors,
+      ...inputs.errors,
+      ...objects.flatMap(
+        (object, i) => object.ok ? [] : object.errors.map((error) => ({
+          ...error,
+          field: `objects.${i}.${error.field}`
+        }))
+      )
+    ];
+    return result(errors, withNameKey(type, read.record.nameKey));
+  }
+
+  // src/domain/entities/detector.ts
+  function parseDetector(raw) {
+    const read = readFields(raw);
+    const detector = {
+      id: read.text("id"),
+      name: read.text("name"),
+      fps: read.positive("fps"),
+      inputSize: read.positive("inputSize"),
+      refGpu: read.text("refGpu"),
+      gflops: read.nonNegative("gflops"),
+      custom: true
+    };
+    return result(read.errors, detector);
+  }
+
+  // src/domain/entities/gpu.ts
+  var ARCHS = [
+    "Turing",
+    "Hopper",
+    "Ampere",
+    "Ada",
+    "Blackwell"
+  ];
+  function parseGpu(raw) {
+    const read = readFields(raw);
+    const jetson = read.record.jetson === true;
+    const streams = read.record.decodeStreams;
+    const gpu = {
+      id: read.text("id"),
+      name: read.text("name"),
+      arch: read.oneOf("arch", ARCHS),
+      tflops: read.positive("tflops"),
+      ...jetson ? {
+        decodeStreams: {
+          h264: read.positive("decodeStreams.h264", streams?.h264),
+          h265: read.positive("decodeStreams.h265", streams?.h265)
+        }
+      } : { nvdec: read.positive("nvdec") },
+      memoryGB: read.positive("memoryGB"),
+      tdpW: read.nonNegative("tdpW"),
+      price: read.positive("price")
+    };
+    if (!jetson) read.integer("nvdec", gpu.nvdec);
+    if (jetson) gpu.jetson = true;
+    if (read.record.custom === true) gpu.custom = true;
+    return result(read.errors, gpu);
+  }
+
+  // src/domain/entities/system-settings.ts
+  function parseSystemSettings(raw) {
+    const read = readFields(raw);
+    const gpuCount = read.string("gpuCount");
+    const archiveDays = read.nonNegative(
+      "archiveDays",
+      parseNum(read.string("archiveDays"))
+    );
+    read.integer("archiveDays", archiveDays);
+    const settings = {
+      efficiency: read.positive(
+        "efficiency",
+        parseNum(read.string("efficiency"))
+      ),
+      reserve: read.nonNegative("reserve", parseNum(read.string("reserve"))),
+      archiveDays,
+      gpu: read.string("gpu"),
+      gpuCount: gpuCount === "auto" ? "auto" : Number(gpuCount)
+    };
+    return result(read.errors, settings);
+  }
+
+  // src/domain/references/gpu-catalog.ts
+  var GPU_CATALOG = [
+    {
+      id: "5090",
+      name: "GeForce RTX 5090",
+      arch: "Blackwell",
+      tflops: 209.5,
+      nvdec: 2,
+      memoryGB: 32,
+      tdpW: 575,
+      price: 5e3
+    },
+    {
+      id: "pro6000",
+      name: "RTX PRO 6000 Blackwell",
+      arch: "Blackwell",
+      tflops: 500,
+      nvdec: 4,
+      memoryGB: 96,
+      tdpW: 600,
+      price: 13250
+    },
+    {
+      id: "l40s",
+      name: "L40S",
+      arch: "Ada",
+      tflops: 362,
+      nvdec: 3,
+      memoryGB: 48,
+      tdpW: 350,
+      price: 9e3
+    },
+    {
+      id: "h100nvl",
+      name: "H100 NVL",
+      arch: "Hopper",
+      tflops: 835.5,
+      nvdec: 7,
+      memoryGB: 94,
+      tdpW: 400,
+      price: 27500
+    },
+    {
+      id: "h200nvl",
+      name: "H200 NVL",
+      arch: "Hopper",
+      tflops: 835.5,
+      nvdec: 7,
+      memoryGB: 141,
+      tdpW: 600,
+      price: 32e3
+    },
+    {
+      id: "agx",
+      name: "Jetson AGX Orin 64GB",
+      arch: "Ampere",
+      tflops: 42.6,
+      decodeStreams: { h265: 22, h264: 11.6 },
+      memoryGB: 64,
+      tdpW: 60,
+      price: 3499,
+      jetson: true
+    }
+  ];
+  var NVDEC_FPS = {
+    Turing: { h264: 771, h265: 1316 },
+    Hopper: { h264: 771, h265: 1316 },
+    Ampere: { h264: 748, h265: 1415 },
+    Ada: { h264: 903, h265: 1641 },
+    Blackwell: { h264: 2172, h265: 1872 }
+  };
+  var REFERENCE_STREAM_FPS = 30;
+  var decodableStreams = (gpu, codec) => gpu.decodeStreams ? gpu.decodeStreams[codec] : gpu.nvdec * NVDEC_FPS[gpu.arch][codec] / REFERENCE_STREAM_FPS;
+
+  // src/domain/references/models.ts
+  var MODELS = [
+    { id: "y26n", name: "YOLO26n", gflops: 5.5, latencyMs: 1.7 },
+    { id: "y26s", name: "YOLO26s", gflops: 20.9, latencyMs: 2.5 },
+    { id: "y26m", name: "YOLO26m", gflops: 68.4, latencyMs: 4.7 },
+    { id: "y26l", name: "YOLO26l", gflops: 86.8, latencyMs: 6.2 },
+    { id: "y26x", name: "YOLO26x", gflops: 194.4, latencyMs: 11.8 },
+    { id: "y26np", name: "YOLO26n-pose", gflops: 7.6, latencyMs: 1.8 },
+    { id: "y26sp", name: "YOLO26s-pose", gflops: 24.1, latencyMs: 2.7 },
+    { id: "y26mp", name: "YOLO26m-pose", gflops: 73.3, latencyMs: 5 },
+    { id: "y26lp", name: "YOLO26l-pose", gflops: 91.7, latencyMs: 6.5 },
+    { id: "y26xp", name: "YOLO26x-pose", gflops: 202.3, latencyMs: 12.2 },
+    { id: "y11n", name: "YOLO11n", gflops: 6.5, latencyMs: 1.5 },
+    { id: "y11s", name: "YOLO11s", gflops: 21.6, latencyMs: 2.5 },
+    { id: "y11m", name: "YOLO11m", gflops: 68.1, latencyMs: 4.7 },
+    { id: "y11l", name: "YOLO11l", gflops: 87.2, latencyMs: 6.2 },
+    { id: "y11x", name: "YOLO11x", gflops: 195.3, latencyMs: 11.3 }
+  ];
+  var T4_TFLOPS = 65;
+
+  // src/app/examples.ts
+  var uid = () => Math.random().toString(36).slice(2, 9);
+  var preset = (index, [width, length, height, requiredPx], feed) => ({
+    name: "",
+    nameKey: `presetNames.${index}`,
+    width,
+    length,
+    height,
+    requiredPx,
+    model: "y26s",
+    feed,
+    inputSize: 640,
+    overlap: 20
+  });
+  var OBJECT_PRESETS = [
+    preset(0, [50, 30, 170, 32], "roi"),
+    preset(1, [9, 18, 4, 20], "tiles"),
+    preset(2, [8, 8, 2, 20], "roi"),
+    preset(3, [25, 6, 6, 20], "roi"),
+    preset(4, [1.3, 1.3, 0.7, 10], "tiles")
+  ];
+  var NEW_OBJECT = {
+    ...OBJECT_PRESETS[0],
+    nameKey: "objDefault",
+    width: 10,
+    length: 10,
+    height: 10,
+    requiredPx: 20
+  };
+  var DEFAULT_INPUTS = {
+    camera: "",
+    cameraHeight: "4",
+    planeHeight: "0.9",
+    zoneStart: "1.5",
+    zoneDepth: "3",
+    zoneWidth: "3",
+    margin: "10",
+    resolution: "1",
+    sensor: "3",
+    sensorWidth: "5.4",
+    pixelPitch: "2.0",
+    orientation: "auto",
+    focalLength: "6",
+    hfov: "50",
+    fps: "12",
+    analyticsFps: "5",
+    codec: "0.04",
+    scene: "1",
+    lensFactor: "0.6",
+    speed: "1",
+    blurPx: "2",
+    lensMode: "auto",
+    placement: "side"
+  };
+  var DEFAULT_SYSTEM = {
+    efficiency: "0.6",
+    reserve: "20",
+    archiveDays: "0",
+    gpu: "auto",
+    gpuCount: "auto"
+  };
+  var makeType = (name, count, inputs, objects) => ({
+    id: uid(),
+    name: "",
+    ...name,
+    count: String(count),
+    inputs: { ...DEFAULT_INPUTS, ...inputs },
+    objects: objects.map((object) => ({ ...object }))
+  });
+  var exampleTypes = () => [
+    makeType({ nameKey: "typeNames.0" }, 10, {}, [
+      OBJECT_PRESETS[0],
+      OBJECT_PRESETS[1]
+    ]),
+    makeType(
+      { nameKey: "typeNames.1" },
+      10,
+      {
+        placement: "top",
+        cameraHeight: "2.6",
+        planeHeight: "1.1",
+        zoneDepth: "0.8",
+        zoneWidth: "1.4",
+        analyticsFps: "2",
+        fps: "10"
+      },
+      [OBJECT_PRESETS[2]]
+    )
+  ];
+
+  // src/app/persistence.ts
+  var STORAGE_KEY = "camcalc4";
+  var GPU_COUNT_CHOICES = ["auto", "1", "2", "3", "4"];
+  var snapshot = (state2) => ({
+    types: state2.cameraTypes,
+    activeTypeId: state2.activeTypeId,
+    system: state2.system,
+    gpuPrices: state2.gpuPrices,
+    gpuEnabled: state2.gpuEnabled,
+    customGpus: state2.customGpus,
+    customCameras: state2.customCameras,
+    customDetectors: state2.customDetectors,
+    light: state2.light
+  });
+  var exportText = (state2) => JSON.stringify(snapshot(state2), null, 1);
+  var stale = false;
+  function watchOtherTabs(onStale) {
+    addEventListener("storage", (event) => {
+      if (event.key === STORAGE_KEY) {
+        stale = true;
+        onStale();
+      }
+    });
+  }
+  function save(state2) {
+    if (stale) return false;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot(state2)));
+    } catch (error) {
+    }
+    return true;
+  }
+  var withDot = (value) => typeof value === "string" ? value.replace(",", ".") : value;
+  var allWithDot = (values) => Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [key, withDot(value)])
+  );
+  var isObject = (value) => typeof value === "object" && value !== null;
+  var savedObject = (object) => isObject(object) ? {
+    name: object.name,
+    nameKey: object.nameKey,
+    width: withDot(object.width),
+    length: withDot(object.length),
+    height: withDot(object.height),
+    requiredPx: withDot(object.requiredPx),
+    model: object.model,
+    feed: object.feed,
+    inputSize: object.inputSize,
+    overlap: withDot(object.overlap ?? 20)
+  } : object;
+  var savedType = (type) => isObject(type) ? {
+    id: type.id || uid(),
+    name: type.name,
+    nameKey: type.nameKey,
+    count: withDot(type.count),
+    inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
+    objects: Array.isArray(type.objects) ? type.objects.map(savedObject) : type.objects ?? []
+  } : type;
+  var savedSystem = (system) => isObject(system) ? Object.fromEntries(
+    Object.entries(DEFAULT_SYSTEM).map(([field, value]) => [
+      field,
+      withDot(system[field] ?? value)
+    ])
+  ) : system;
+  function parseSaved(saved) {
+    let rejected = 0;
+    const parseAll = (items, parse) => items.flatMap((item) => {
+      const parsed = parse(item);
+      if (parsed.ok) return [parsed.value];
+      rejected++;
+      return [];
+    });
+    const asDraft = (parse) => (item) => {
+      const parsed = parse(item);
+      return parsed.ok || onlyValueErrors(parsed.errors) ? { ok: true, value: item } : parsed;
+    };
+    const list = (items) => Array.isArray(items) ? items : [];
+    const [system] = parseAll(
+      saved.system == null ? [] : [savedSystem(saved.system)],
+      asDraft(parseSystemSettings)
+    );
+    return {
+      customGpus: parseAll(list(saved.customGpus), parseGpu),
+      customCameras: parseAll(list(saved.customCameras), parseCamera),
+      customDetectors: parseAll(list(saved.customDetectors), parseDetector),
+      types: parseAll(
+        list(saved.types).map(savedType),
+        asDraft(parseCameraType)
+      ),
+      system,
+      rejected
+      // после всех parseAll выше
+    };
+  }
+  function loadSaved() {
+    const loaded = {};
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (!isObject(saved)) return loaded;
+      const parsed = parseSaved(saved);
+      if (Array.isArray(saved.customGpus))
+        loaded.customGpus = parsed.customGpus.map((gpu) => ({
+          ...gpu,
+          custom: true
+        }));
+      if (Array.isArray(saved.customCameras))
+        loaded.customCameras = parsed.customCameras.map((camera) => ({
+          ...camera,
+          custom: true
+        }));
+      if (Array.isArray(saved.customDetectors))
+        loaded.customDetectors = parsed.customDetectors;
+      if (isObject(saved.gpuPrices))
+        loaded.gpuPrices = allWithDot(saved.gpuPrices);
+      if (isObject(saved.gpuEnabled)) loaded.gpuEnabled = saved.gpuEnabled;
+      if (saved.light) loaded.light = true;
+      if (parsed.types.length) {
+        const models = [...MODELS, ...loaded.customDetectors ?? []];
+        parsed.types.forEach(
+          (type) => type.objects.forEach((object) => {
+            if (!models.some((model) => model.id === object.model))
+              object.model = "y26s";
+          })
+        );
+        loaded.cameraTypes = parsed.types;
+        loaded.activeTypeId = parsed.types.some(
+          (type) => type.id === saved.activeTypeId
+        ) ? saved.activeTypeId : parsed.types[0].id;
+      }
+      if (parsed.system) {
+        const gpus = [...GPU_CATALOG, ...loaded.customGpus ?? []];
+        const { gpu, gpuCount } = parsed.system;
+        loaded.system = {
+          ...parsed.system,
+          gpu: gpus.some((item) => item.id === gpu) ? gpu : "auto",
+          gpuCount: GPU_COUNT_CHOICES.includes(gpuCount) ? gpuCount : "auto"
+        };
+      }
+    } catch (error) {
+    }
+    return loaded;
+  }
+  function importText(text) {
+    let saved;
+    try {
+      saved = JSON.parse(text);
+    } catch (error) {
+    }
+    if (!isObject(saved) || !Array.isArray(saved.types) || !saved.types.length || !["customGpus", "customCameras", "customDetectors"].every(
+      (key) => Array.isArray(saved[key])
+    ) || !isObject(saved.gpuPrices) || !isObject(saved.gpuEnabled) || parseSaved(saved).rejected)
+      return "badFile";
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    } catch (error) {
+      return "saveFail";
+    }
+    return "ok";
+  }
 
   // src/domain/angles.ts
   var DEG = Math.PI / 180;
@@ -2087,100 +2558,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     };
   }
 
-  // src/domain/references/gpu-catalog.ts
-  var GPU_CATALOG = [
-    {
-      id: "5090",
-      name: "GeForce RTX 5090",
-      arch: "Blackwell",
-      tflops: 209.5,
-      nvdec: 2,
-      memoryGB: 32,
-      tdpW: 575,
-      price: 5e3
-    },
-    {
-      id: "pro6000",
-      name: "RTX PRO 6000 Blackwell",
-      arch: "Blackwell",
-      tflops: 500,
-      nvdec: 4,
-      memoryGB: 96,
-      tdpW: 600,
-      price: 13250
-    },
-    {
-      id: "l40s",
-      name: "L40S",
-      arch: "Ada",
-      tflops: 362,
-      nvdec: 3,
-      memoryGB: 48,
-      tdpW: 350,
-      price: 9e3
-    },
-    {
-      id: "h100nvl",
-      name: "H100 NVL",
-      arch: "Hopper",
-      tflops: 835.5,
-      nvdec: 7,
-      memoryGB: 94,
-      tdpW: 400,
-      price: 27500
-    },
-    {
-      id: "h200nvl",
-      name: "H200 NVL",
-      arch: "Hopper",
-      tflops: 835.5,
-      nvdec: 7,
-      memoryGB: 141,
-      tdpW: 600,
-      price: 32e3
-    },
-    {
-      id: "agx",
-      name: "Jetson AGX Orin 64GB",
-      arch: "Ampere",
-      tflops: 42.6,
-      decodeStreams: { h265: 22, h264: 11.6 },
-      memoryGB: 64,
-      tdpW: 60,
-      price: 3499,
-      jetson: true
-    }
-  ];
-  var NVDEC_FPS = {
-    Turing: { h264: 771, h265: 1316 },
-    Hopper: { h264: 771, h265: 1316 },
-    Ampere: { h264: 748, h265: 1415 },
-    Ada: { h264: 903, h265: 1641 },
-    Blackwell: { h264: 2172, h265: 1872 }
-  };
-  var REFERENCE_STREAM_FPS = 30;
-  var decodableStreams = (gpu, codec) => gpu.decodeStreams ? gpu.decodeStreams[codec] : gpu.nvdec * NVDEC_FPS[gpu.arch][codec] / REFERENCE_STREAM_FPS;
-
-  // src/domain/references/models.ts
-  var MODELS = [
-    { id: "y26n", name: "YOLO26n", gflops: 5.5, latencyMs: 1.7 },
-    { id: "y26s", name: "YOLO26s", gflops: 20.9, latencyMs: 2.5 },
-    { id: "y26m", name: "YOLO26m", gflops: 68.4, latencyMs: 4.7 },
-    { id: "y26l", name: "YOLO26l", gflops: 86.8, latencyMs: 6.2 },
-    { id: "y26x", name: "YOLO26x", gflops: 194.4, latencyMs: 11.8 },
-    { id: "y26np", name: "YOLO26n-pose", gflops: 7.6, latencyMs: 1.8 },
-    { id: "y26sp", name: "YOLO26s-pose", gflops: 24.1, latencyMs: 2.7 },
-    { id: "y26mp", name: "YOLO26m-pose", gflops: 73.3, latencyMs: 5 },
-    { id: "y26lp", name: "YOLO26l-pose", gflops: 91.7, latencyMs: 6.5 },
-    { id: "y26xp", name: "YOLO26x-pose", gflops: 202.3, latencyMs: 12.2 },
-    { id: "y11n", name: "YOLO11n", gflops: 6.5, latencyMs: 1.5 },
-    { id: "y11s", name: "YOLO11s", gflops: 21.6, latencyMs: 2.5 },
-    { id: "y11m", name: "YOLO11m", gflops: 68.1, latencyMs: 4.7 },
-    { id: "y11l", name: "YOLO11l", gflops: 87.2, latencyMs: 6.2 },
-    { id: "y11x", name: "YOLO11x", gflops: 195.3, latencyMs: 11.3 }
-  ];
-  var T4_TFLOPS = 65;
-
   // src/domain/compute-system/gpu-load.ts
   var CATALOG_INPUT_PX = 640;
   var BASE_MEMORY_GB = 0.8;
@@ -2295,7 +2672,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     );
     const { efficiency } = settings, maxLoad = 1 / (1 + settings.reserve / 100);
     const groups = liveResults.flatMap(
-      (result2) => result2.runGroups.map((group) => ({ ...group, typeName: result2.type.name }))
+      (result2) => result2.runGroups.map((group) => ({ ...group, type: result2.type }))
     );
     const engines = [
       ...new Map(
@@ -2346,296 +2723,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     };
   }
 
-  // src/domain/parse-num.ts
-  var parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
-
-  // src/domain/entities/parse-result.ts
-  var onlyValueErrors = (errors) => errors.every(
-    (error) => ["positive", "nonNegative", "integer"].includes(error.code)
-  );
-  var isRecord = (value) => typeof value === "object" && value !== null;
-  function readFields(raw, prefix = "") {
-    const record = isRecord(raw) ? raw : {};
-    const errors = [];
-    const check = (ok, field, code) => {
-      if (!ok) errors.push({ field: prefix + field, code });
-    };
-    const formValue = (field, value = record[field]) => {
-      check(
-        typeof value === "string" || Number.isFinite(value),
-        field,
-        "required"
-      );
-      return value;
-    };
-    const draftNumber = (field, value, ok, code) => {
-      const count = errors.length;
-      const number = parseNum(formValue(field, value));
-      if (errors.length === count) check(ok(number), field, code);
-      return number;
-    };
-    return {
-      record,
-      errors,
-      string(field, value = record[field]) {
-        check(typeof value === "string", field, "required");
-        return String(value ?? "");
-      },
-      formValue,
-      // число из поля формы в черновике: пустое или не число — NaN, его отсекает расчёт, если поле нужно;
-      // отрицательное — ошибка
-      number(field, value = record[field]) {
-        return draftNumber(
-          field,
-          value,
-          (number) => !(number < 0),
-          "nonNegative"
-        );
-      },
-      // число из поля формы в черновике, которое нужно всегда: пустое, не число или отрицательное — ошибка
-      requiredNumber(field, value = record[field]) {
-        return draftNumber(field, value, (number) => number >= 0, "nonNegative");
-      },
-      text(field, value = record[field]) {
-        check(
-          typeof value === "string" && value.trim() !== "",
-          field,
-          "required"
-        );
-        return String(value ?? "");
-      },
-      positive(field, value = record[field]) {
-        check(Number.isFinite(value) && value > 0, field, "positive");
-        return value;
-      },
-      nonNegative(field, value = record[field]) {
-        check(
-          Number.isFinite(value) && value >= 0,
-          field,
-          "nonNegative"
-        );
-        return value;
-      },
-      oneOf(field, list, value = record[field]) {
-        check(list.includes(value), field, "oneOf");
-        return value;
-      },
-      // целое, если это число: остальное проверяют positive и nonNegative
-      integer(field, value) {
-        check(
-          !Number.isFinite(value) || Number.isInteger(value),
-          field,
-          "integer"
-        );
-      },
-      order(field, ok) {
-        check(ok, field, "order");
-      }
-    };
-  }
-  var result = (errors, value) => errors.length ? { ok: false, errors } : { ok: true, value };
-
-  // src/domain/entities/camera.ts
-  function parseCamera(raw) {
-    const read = readFields(raw);
-    const camera = {
-      id: read.text("id"),
-      name: read.text("name"),
-      Nw: read.positive("Nw"),
-      Nh: read.positive("Nh"),
-      sensorWidth: read.positive("sensorWidth"),
-      focalMin: read.nonNegative("focalMin"),
-      focalMax: read.nonNegative("focalMax")
-    };
-    read.integer("Nw", camera.Nw);
-    read.integer("Nh", camera.Nh);
-    read.order("focalMax", camera.focalMin <= camera.focalMax);
-    if (read.record.price !== void 0) camera.price = read.nonNegative("price");
-    if (read.record.custom === true) camera.custom = true;
-    return result(read.errors, camera);
-  }
-
-  // src/domain/entities/camera-type.ts
-  var DEFAULT_INPUT_SIZE = 640;
-  var PLACEMENTS = ["side", "top"];
-  var LENS_MODES = ["auto", "focal", "angle"];
-  var ORIENTATIONS = ["auto", "landscape", "portrait"];
-  var FEED_MODES = ["full", "roi", "tiles"];
-  var withNameKey = (item, nameKey) => {
-    if (typeof nameKey === "string") item.nameKey = nameKey;
-    return item;
-  };
-  function parseSceneObject(raw) {
-    const read = readFields(raw);
-    const object = {
-      name: read.string("name"),
-      width: read.number("width"),
-      length: read.number("length"),
-      height: read.number("height"),
-      requiredPx: read.number("requiredPx"),
-      model: read.text("model"),
-      feed: read.oneOf("feed", FEED_MODES),
-      inputSize: read.number("inputSize") || DEFAULT_INPUT_SIZE,
-      overlap: read.requiredNumber("overlap")
-    };
-    return result(read.errors, withNameKey(object, read.record.nameKey));
-  }
-  function parseCameraType(raw) {
-    const read = readFields(raw);
-    const inputs = readFields(read.record.inputs, "inputs.");
-    const rawObjects = read.record.objects;
-    if (!Array.isArray(rawObjects))
-      read.errors.push({ field: "objects", code: "required" });
-    const objects = (Array.isArray(rawObjects) ? rawObjects : []).map(
-      parseSceneObject
-    );
-    const count = read.requiredNumber("count");
-    read.integer("count", count);
-    const type = {
-      id: read.text("id"),
-      name: read.string("name"),
-      count,
-      inputs: {
-        camera: inputs.string("camera"),
-        cameraHeight: inputs.number("cameraHeight"),
-        planeHeight: inputs.number("planeHeight"),
-        zoneStart: inputs.number("zoneStart"),
-        zoneDepth: inputs.number("zoneDepth"),
-        zoneWidth: inputs.number("zoneWidth"),
-        margin: inputs.requiredNumber("margin"),
-        resolution: Number(inputs.formValue("resolution")),
-        sensor: Number(inputs.formValue("sensor")),
-        sensorWidth: inputs.number("sensorWidth"),
-        pixelPitch: inputs.number("pixelPitch"),
-        orientation: inputs.oneOf("orientation", ORIENTATIONS),
-        focalLength: inputs.number("focalLength"),
-        hfov: inputs.number("hfov"),
-        fps: inputs.number("fps"),
-        analyticsFps: inputs.number("analyticsFps"),
-        codec: Number(inputs.formValue("codec")),
-        scene: Number(inputs.formValue("scene")),
-        lensFactor: inputs.number("lensFactor"),
-        speed: inputs.number("speed"),
-        blurPx: inputs.number("blurPx"),
-        lensMode: inputs.oneOf("lensMode", LENS_MODES),
-        placement: inputs.oneOf("placement", PLACEMENTS)
-      },
-      objects: objects.flatMap((object) => object.ok ? [object.value] : [])
-    };
-    const errors = [
-      ...read.errors,
-      ...inputs.errors,
-      ...objects.flatMap(
-        (object, i) => object.ok ? [] : object.errors.map((error) => ({
-          ...error,
-          field: `objects.${i}.${error.field}`
-        }))
-      )
-    ];
-    return result(errors, withNameKey(type, read.record.nameKey));
-  }
-
-  // src/domain/entities/detector.ts
-  function parseDetector(raw) {
-    const read = readFields(raw);
-    const detector = {
-      id: read.text("id"),
-      name: read.text("name"),
-      fps: read.positive("fps"),
-      inputSize: read.positive("inputSize"),
-      refGpu: read.text("refGpu"),
-      gflops: read.nonNegative("gflops"),
-      custom: true
-    };
-    return result(read.errors, detector);
-  }
-
-  // src/domain/entities/gpu.ts
-  var ARCHS = [
-    "Turing",
-    "Hopper",
-    "Ampere",
-    "Ada",
-    "Blackwell"
-  ];
-  function parseGpu(raw) {
-    const read = readFields(raw);
-    const jetson = read.record.jetson === true;
-    const streams = read.record.decodeStreams;
-    const gpu = {
-      id: read.text("id"),
-      name: read.text("name"),
-      arch: read.oneOf("arch", ARCHS),
-      tflops: read.positive("tflops"),
-      ...jetson ? {
-        decodeStreams: {
-          h264: read.positive("decodeStreams.h264", streams?.h264),
-          h265: read.positive("decodeStreams.h265", streams?.h265)
-        }
-      } : { nvdec: read.positive("nvdec") },
-      memoryGB: read.positive("memoryGB"),
-      tdpW: read.nonNegative("tdpW"),
-      price: read.positive("price")
-    };
-    if (!jetson) read.integer("nvdec", gpu.nvdec);
-    if (jetson) gpu.jetson = true;
-    if (read.record.custom === true) gpu.custom = true;
-    return result(read.errors, gpu);
-  }
-
-  // src/domain/entities/system-settings.ts
-  function parseSystemSettings(raw) {
-    const read = readFields(raw);
-    const gpuCount = read.string("gpuCount");
-    const archiveDays = read.nonNegative(
-      "archiveDays",
-      parseNum(read.string("archiveDays"))
-    );
-    read.integer("archiveDays", archiveDays);
-    const settings = {
-      efficiency: read.positive(
-        "efficiency",
-        parseNum(read.string("efficiency"))
-      ),
-      reserve: read.nonNegative("reserve", parseNum(read.string("reserve"))),
-      archiveDays,
-      gpu: read.string("gpu"),
-      gpuCount: gpuCount === "auto" ? "auto" : Number(gpuCount)
-    };
-    return result(read.errors, settings);
-  }
-
-  // src/js/store.js
-  var store = {
-    cameraTypes: [],
-    // типы камер, заполняет state.js
-    activeTypeId: null,
-    customGpus: [],
-    // свои карты: {id,name,arch,tflops,nvdec|decodeStreams,memoryGB,tdpW,price,jetson,custom:true}
-    gpuPrices: {},
-    // правки цен по id
-    gpuEnabled: {},
-    // участие в подборе по id
-    customCameras: [],
-    customDetectors: []
-  };
-
-  // src/js/data.js
-  var byId = (id) => document.getElementById(id);
-  var escapeHtml = (text) => String(text ?? "").replace(
-    /[&<>"]/g,
-    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]
-  );
-  var uid = () => Math.random().toString(36).slice(2, 9);
-  var allGpus = () => [...GPU_CATALOG, ...store.customGpus];
-  var gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
-  var priceOf = (gpu) => gpu.id in store.gpuPrices ? parseNum(store.gpuPrices[gpu.id]) : gpu.price;
-  var isOn = (gpu) => store.gpuEnabled[gpu.id] !== false;
-  var decText = (gpu) => gpu.decodeStreams ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0)) : `${gpu.nvdec} NVDEC`;
-  var FEEDS = STR.feeds;
-  var FEED_SHORT = STR.feedsShort;
-  var INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
-
   // src/domain/references/builtin-cameras.ts
   var BUILTIN_CAMERAS = [
     {
@@ -2658,20 +2745,341 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     }
   ];
 
-  // src/js/objects.js
+  // src/app/store.ts
+  var examples = exampleTypes();
+  var state = {
+    cameraTypes: examples,
+    activeTypeId: examples[0].id,
+    customGpus: [],
+    gpuPrices: {},
+    gpuEnabled: {},
+    customCameras: [],
+    customDetectors: [],
+    system: { ...DEFAULT_SYSTEM },
+    light: false
+  };
+  var allGpus = () => [...GPU_CATALOG, ...state.customGpus];
+  var gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
+  var priceOf = (gpu) => gpu.id in state.gpuPrices ? parseNum(state.gpuPrices[gpu.id]) : gpu.price;
+  var isOn = (gpu) => state.gpuEnabled[gpu.id] !== false;
   var allCameras = () => [
-    ...BUILTIN_CAMERAS.map((camera) => ({
-      ...camera,
-      name: builtinName(camera.nameKey)
-    })),
-    ...store.customCameras
+    ...BUILTIN_CAMERAS,
+    ...state.customCameras
   ];
   var cameraById = (id) => allCameras().find((camera) => camera.id === id);
-  var modelById = (id) => MODELS.find((model) => model.id === id) || store.customDetectors.find((detector) => detector.id === id);
+  var modelById = (id) => MODELS.find((model) => model.id === id) || state.customDetectors.find((detector) => detector.id === id);
+  var activeType = () => state.cameraTypes.find((type) => type.id === state.activeTypeId) || state.cameraTypes[0];
+  function compute() {
+    const results = state.cameraTypes.map((type) => {
+      const parsed = parseCameraType(type);
+      if (parsed.ok)
+        return computeType(parsed.value, cameraById(type.inputs.camera));
+      const countOk = !parsed.errors.some((error) => error.field === "count");
+      return { ok: false, type, count: countOk ? parseNum(type.count) : 0 };
+    });
+    const settings = parseSystemSettings(state.system);
+    const gpus = allGpus().map((gpu) => ({ ...gpu, price: priceOf(gpu) }));
+    const system = settings.ok && gpus.every((gpu) => gpu.price > 0) ? computeSystem(
+      results.filter((result2) => result2.ok),
+      settings.value,
+      {
+        gpus,
+        candidates: gpus.filter(isOn),
+        detectors: state.customDetectors
+      }
+    ) : null;
+    const totals = systemTotals(
+      results,
+      settings.ok ? settings.value : { archiveDays: NaN },
+      allCameras()
+    );
+    return { results, system, totals };
+  }
+  var computed = compute();
+  var activeResult = () => computed.results[state.cameraTypes.indexOf(activeType())];
+  var listeners = [];
+  var subscribe = (listener) => listeners.push(listener);
+  function commit() {
+    computed = compute();
+    listeners.forEach((listener) => listener());
+  }
+  function selectType(id) {
+    if (state.activeTypeId === id) return;
+    state.activeTypeId = id;
+    commit();
+  }
+  function addType(name, objects) {
+    const type = makeType({ name }, 1, {}, objects);
+    state.cameraTypes.push(type);
+    state.activeTypeId = type.id;
+    commit();
+  }
+  function duplicateActiveType(name) {
+    const source = activeType();
+    const copy = {
+      ...JSON.parse(JSON.stringify(source)),
+      id: uid(),
+      name
+    };
+    delete copy.nameKey;
+    state.cameraTypes.splice(state.cameraTypes.indexOf(source) + 1, 0, copy);
+    state.activeTypeId = copy.id;
+    commit();
+  }
+  function deleteActiveType() {
+    if (state.cameraTypes.length < 2) return;
+    const index = state.cameraTypes.indexOf(activeType());
+    state.cameraTypes.splice(index, 1);
+    state.activeTypeId = state.cameraTypes[Math.max(0, index - 1)].id;
+    commit();
+  }
+  function updateActiveType(fields) {
+    const type = activeType();
+    if (fields.name !== void 0) {
+      type.name = fields.name;
+      delete type.nameKey;
+    }
+    type.count = fields.count;
+    type.inputs = fields.inputs;
+    commit();
+  }
+  function addObject(object) {
+    activeType().objects.push({ ...object });
+    commit();
+  }
+  function updateObject(index, field, value) {
+    const object = activeType().objects[index];
+    object[field] = value;
+    if (field === "name") delete object.nameKey;
+    commit();
+  }
+  function deleteObject(index) {
+    activeType().objects.splice(index, 1);
+    commit();
+  }
+  function setGpuPrice(id, value) {
+    state.gpuPrices[id] = value;
+    commit();
+  }
+  function setGpuEnabled(id, enabled) {
+    state.gpuEnabled[id] = enabled;
+    commit();
+  }
+  function addGpu(gpu, enabled) {
+    state.customGpus.push(gpu);
+    state.gpuEnabled[gpu.id] = enabled;
+    commit();
+  }
+  function deleteGpu(id) {
+    state.customGpus = state.customGpus.filter((gpu) => gpu.id !== id);
+    delete state.gpuPrices[id];
+    delete state.gpuEnabled[id];
+    state.customDetectors.forEach((detector) => {
+      if (detector.refGpu === id) detector.refGpu = "5090";
+    });
+    if (state.system.gpu === id) state.system.gpu = "auto";
+    commit();
+  }
+  function addCamera(camera) {
+    state.customCameras.push(camera);
+    commit();
+  }
+  function deleteCamera(id) {
+    state.customCameras = state.customCameras.filter(
+      (camera) => camera.id !== id
+    );
+    state.cameraTypes.forEach((type) => {
+      if (type.inputs.camera === id) type.inputs.camera = "";
+    });
+    commit();
+  }
+  function addDetector(detector) {
+    state.customDetectors.push(detector);
+    commit();
+  }
+  function deleteDetector(id) {
+    state.customDetectors = state.customDetectors.filter(
+      (detector) => detector.id !== id
+    );
+    state.cameraTypes.forEach(
+      (type) => type.objects.forEach((object) => {
+        if (object.model === id) object.model = "y26s";
+      })
+    );
+    commit();
+  }
+  function updateSystem(field, value) {
+    state.system[field] = value;
+    commit();
+  }
+  function toggleTheme() {
+    state.light = !state.light;
+    commit();
+  }
+  function resetToExample() {
+    state.cameraTypes = exampleTypes();
+    state.activeTypeId = state.cameraTypes[0].id;
+    state.system = { ...DEFAULT_SYSTEM };
+    state.gpuPrices = {};
+    state.gpuEnabled = {};
+    commit();
+  }
+  function restore(saved) {
+    Object.assign(state, saved);
+    commit();
+  }
+
+  // src/i18n/domain-text.ts
+  var resolutionLabel = ({ megapixels, width, height }) => `${t("megapixels", megapixels)} · ${width} × ${height}`;
+  var objectName = ({ object }) => displayName(object) || t("objDefault");
+  var sizePx = (width, height) => `${formatNumber(width, 1)} × ${formatNumber(height, 1)} px`;
+  var sensorPxText = ({ widthPx, heightPx }) => sizePx(widthPx, heightPx);
+  var modelPxText = ({ widthPx, heightPx, feed }) => sizePx(widthPx * feed.modelScale, heightPx * feed.modelScale);
+  function feedText({
+    mode,
+    inputSize,
+    source,
+    tiles,
+    tilesX,
+    tilesY
+  }) {
+    if (mode === "tiles") return t("feedTiles", tiles, tilesX, tilesY, inputSize);
+    return t(
+      mode === "roi" ? "feedRoi" : "feedFull",
+      Math.round(source.width),
+      Math.round(source.height),
+      inputSize
+    );
+  }
+  function noteText(note) {
+    switch (note.code) {
+      case "zoneWidth":
+        return t(
+          "noteZoneWidth",
+          formatNumber(note.values.frameWidth, 2),
+          formatNumber(note.values.zoneWidth, 2)
+        );
+      case "zoneDepth":
+        return t(
+          "noteZoneDepth",
+          formatNumber(note.values.requiredAngle, 1),
+          formatNumber(note.values.availableAngle, 1)
+        );
+      case "focalMax":
+      case "focalMin":
+        return t(
+          note.code === "focalMax" ? "noteFocalMax" : "noteFocalMin",
+          formatNumber(note.values.requiredFocal, 1),
+          formatNumber(note.values.focal, 1)
+        );
+      case "focalOutOfRange": {
+        const { focal, focalMin, focalMax } = note.values;
+        return t(
+          "noteFocalOutOfRange",
+          formatNumber(focal, 1),
+          focalMin === focalMax ? formatNumber(focalMin, 1) : formatNumber(focalMin, 1) + "–" + formatNumber(focalMax, 1)
+        );
+      }
+      case "wideAngle":
+        return t("noteWideAngle", formatNumber(note.values.hfov, 0));
+      case "topView":
+        return t("noteTopView");
+      case "lowRay":
+        return t("noteLowRay", formatNumber(note.values.angle, 0));
+      case "analyticsFps":
+        return t(
+          "noteAnalyticsFps",
+          formatNumber(note.values.analyticsFps, 0),
+          formatNumber(note.values.streamFps, 0)
+        );
+      case "downscale": {
+        const { object, neededInputSize } = note.values;
+        return t(
+          "noteDownscale",
+          displayName(object.object),
+          sensorPxText(object),
+          object.feed.inputSize,
+          t(
+            object.feed.mode === "full" ? "adviceFull" : object.feed.mode === "roi" ? "adviceRoi" : "adviceTiles"
+          ),
+          formatNumber(neededInputSize, 0)
+        );
+      }
+      case "resolution":
+        return t(
+          "noteResolution",
+          displayName(note.values.object.object),
+          formatNumber(note.values.object.minSensorWidthPx, 0),
+          resolutionLabel(note.values.resolution)
+        );
+      case "resolutionNone":
+        return t(
+          "noteResolutionNone",
+          displayName(note.values.object.object),
+          formatNumber(note.values.object.minSensorWidthPx, 0)
+        );
+    }
+  }
+  var verdictItems = (objects) => objects.map(
+    (result2) => t(
+      "verdictItem",
+      objectName(result2),
+      modelPxText(result2),
+      formatNumber(result2.requiredPx, 0)
+    )
+  ).join("; ");
+  function verdictHeadline(verdict) {
+    switch (verdict.code) {
+      case "noObjects":
+        return t("verdictNoObjects");
+      case "bad":
+        return t("verdictBad", verdictItems(verdict.objects));
+      case "warn":
+        return t("verdictWarn", verdictItems(verdict.objects));
+      case "ok":
+        return t(
+          "verdictOk",
+          displayName(verdict.object.object),
+          modelPxText(verdict.object)
+        );
+    }
+  }
+  function verdictPill(verdict, notes) {
+    switch (verdict.code) {
+      case "noObjects":
+        return t("pillNoObjects");
+      case "bad":
+        return t("pillBad");
+      case "warn":
+        return t("pillWarn");
+      case "ok":
+        return t(notes.length ? "pillCheck" : "pillOk");
+    }
+  }
+  var BOTTLENECK_KEYS = {
+    inference: "bottleneckInference",
+    decoder: "bottleneckDecoder",
+    memory: "bottleneckMemory"
+  };
+  var bottleneckText = (bottleneck) => t(BOTTLENECK_KEYS[bottleneck]);
+  var portText = (port) => port === "1G" ? withUnit(1, "gbps") : port === "10G" ? withUnit(10, "gbps") : "> " + withUnit(10, "gbps");
+
+  // src/js/data.js
+  var byId = (id) => document.getElementById(id);
+  var escapeHtml = (text) => String(text ?? "").replace(
+    /[&<>"]/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]
+  );
+  var decText = (gpu) => gpu.decodeStreams ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0)) : `${gpu.nvdec} NVDEC`;
+  var FEEDS = STR.feeds;
+  var FEED_SHORT = STR.feedsShort;
+  var INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
+
+  // src/js/objects.js
   function buildCameraSelect() {
     const select = byId("camera"), current = select.value;
     select.innerHTML = `<option value="">${t("cameraManual")}</option>` + allCameras().map(
-      (camera) => `<option value="${camera.id}">${escapeHtml(camera.name)}</option>`
+      (camera) => `<option value="${camera.id}">${escapeHtml(displayName(camera))}</option>`
     ).join("");
     select.value = cameraById(current) ? current : "";
   }
@@ -2679,10 +3087,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const type = activeType(), list = byId("objectList");
     list.innerHTML = "";
     type.objects.forEach((obj, i) => {
-      if (!modelById(obj.model)) obj.model = "y26s";
       const card = document.createElement("article");
       card.className = "ocard";
-      const modelOptions = `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` + (store.customDetectors.length ? `<optgroup label="${t("customDetectors")}">${store.customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>` : "");
+      const modelOptions = `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` + (state.customDetectors.length ? `<optgroup label="${t("customDetectors")}">${state.customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>` : "");
       card.innerHTML = `<div class="ohdr"><span class="dot" id="objectDot-${i}" aria-hidden="true"></span><input id="objectName-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
         <div class="f"><label for="objectWidth-${i}">${t("objectWidth")}</label><input id="objectWidth-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
@@ -2710,12 +3117,10 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         ["objectOverlap", "overlap"]
       ].forEach(([idPrefix, field]) => {
         const input = byId(`${idPrefix}-${i}`);
-        input.value = obj[field] ?? "";
+        input.value = field === "name" ? displayName(obj) : obj[field] ?? "";
         input.addEventListener("input", (event) => {
           event.stopPropagation();
-          obj[field] = event.target.value;
-          if (field === "name") delete obj.nameKey;
-          calcAll();
+          updateObject(i, field, event.target.value);
         });
       });
       [
@@ -2728,17 +3133,34 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         if (select.selectedIndex < 0) select.selectedIndex = 0;
         select.addEventListener("change", (event) => {
           event.stopPropagation();
-          obj[field] = event.target.value;
+          updateObject(i, field, event.target.value);
           syncOverlapBox();
-          calcAll();
         });
       });
       card.querySelector(".odel").addEventListener("click", () => {
-        type.objects.splice(i, 1);
+        deleteObject(i);
         renderObjects();
-        calcAll();
       });
       syncOverlapBox();
+    });
+    renderObjectResults(activeResult());
+  }
+  var STATUS_TEXT = STR.status;
+  var capitalize = (text) => text ? text[0].toUpperCase() + text.slice(1) : text;
+  function renderObjectResults(result2) {
+    if (!result2.ok) return;
+    result2.objects.forEach((item, i) => {
+      const resultEl = byId(`objectResult-${i}`), dotEl = byId(`objectDot-${i}`);
+      if (!resultEl) return;
+      if (!item.valid) {
+        resultEl.className = "ores";
+        resultEl.textContent = t("objectInvalid");
+        if (dotEl) dotEl.className = "dot";
+        return;
+      }
+      resultEl.className = "ores " + item.status;
+      if (dotEl) dotEl.className = "dot " + item.status;
+      resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
     });
   }
   function syncFormUI(type, result2) {
@@ -2762,39 +3184,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   }
 
   // src/js/state.js
-  var OBJECT_PRESETS = [
-    [50, 30, 170, 32, "y26s", "roi", 640],
-    [9, 18, 4, 20, "y26s", "tiles", 640],
-    [8, 8, 2, 20, "y26s", "roi", 640],
-    [25, 6, 6, 20, "y26s", "roi", 640],
-    [1.3, 1.3, 0.7, 10, "y26s", "tiles", 640]
-  ].map((preset, i) => [STR.presetNames[i], ...preset, `presetNames.${i}`]);
-  var builtinName = (key) => {
-    const value = String(key).split(".").reduce((node, part) => node?.[part], STR);
-    return typeof value === "string" ? value : void 0;
-  };
-  var makeObject = ([
-    name,
-    width,
-    length,
-    height,
-    requiredPx,
-    model,
-    feed,
-    inputSize,
-    nameKey
-  ]) => ({
-    name,
-    nameKey,
-    width,
-    length,
-    height,
-    requiredPx,
-    model,
-    feed,
-    inputSize,
-    overlap: 20
-  });
   var INPUT_IDS = [
     "camera",
     "cameraHeight",
@@ -2818,66 +3207,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     "speed",
     "blurPx"
   ];
-  var DEFAULT_INPUTS = {
-    camera: "",
-    cameraHeight: "4",
-    planeHeight: "0.9",
-    zoneStart: "1.5",
-    zoneDepth: "3",
-    zoneWidth: "3",
-    margin: "10",
-    resolution: "1",
-    sensor: "3",
-    sensorWidth: "5.4",
-    pixelPitch: "2.0",
-    orientation: "auto",
-    focalLength: "6",
-    hfov: "50",
-    fps: "12",
-    analyticsFps: "5",
-    codec: "0.04",
-    scene: "1",
-    lensFactor: "0.6",
-    speed: "1",
-    blurPx: "2",
-    lensMode: "auto",
-    placement: "side"
-  };
-  var makeType = (name, count, overrides, objects, nameKey) => ({
-    id: uid(),
-    name,
-    nameKey,
-    count: String(count),
-    inputs: { ...DEFAULT_INPUTS, ...overrides },
-    objects: objects.map(makeObject)
-  });
-  var exampleTypes = () => [
-    makeType(
-      STR.typeNames[0],
-      10,
-      {},
-      [OBJECT_PRESETS[0], OBJECT_PRESETS[1]],
-      "typeNames.0"
-    ),
-    makeType(
-      STR.typeNames[1],
-      10,
-      {
-        placement: "top",
-        cameraHeight: "2.6",
-        planeHeight: "1.1",
-        zoneDepth: "0.8",
-        zoneWidth: "1.4",
-        analyticsFps: "2",
-        fps: "10"
-      },
-      [OBJECT_PRESETS[2]],
-      "typeNames.1"
-    )
-  ];
-  store.cameraTypes = exampleTypes();
-  store.activeTypeId = store.cameraTypes[0].id;
-  var activeType = () => store.cameraTypes.find((type) => type.id === store.activeTypeId) || store.cameraTypes[0];
   RESOLUTIONS.forEach(
     (resolution, i) => byId("resolution").add(new Option(resolutionLabel(resolution), i))
   );
@@ -2890,7 +3219,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     )
   );
   function writeForm(type) {
-    byId("typeName").value = type.name;
+    byId("typeName").value = displayName(type);
     byId("typeCount").value = type.count;
     INPUT_IDS.forEach((id) => {
       byId(id).value = type.inputs[id] ?? DEFAULT_INPUTS[id];
@@ -2904,17 +3233,19 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ) || byId("placementSide");
     placementRadio.checked = true;
     renderObjects();
+    syncFormUI(type, activeResult());
   }
   function readForm() {
-    const type = activeType();
-    if (type.name !== byId("typeName").value) delete type.nameKey;
-    type.name = byId("typeName").value;
-    type.count = byId("typeCount").value;
-    INPUT_IDS.forEach((id) => {
-      type.inputs[id] = byId(id).value;
+    const name = byId("typeName").value;
+    updateActiveType({
+      ...name !== displayName(activeType()) && { name },
+      count: byId("typeCount").value,
+      inputs: {
+        ...Object.fromEntries(INPUT_IDS.map((id) => [id, byId(id).value])),
+        lensMode: (document.querySelector('input[name="lensMode"]:checked') || {}).value || "auto",
+        placement: (document.querySelector('input[name="placement"]:checked') || {}).value || "side"
+      }
     });
-    type.inputs.lensMode = (document.querySelector('input[name="lensMode"]:checked') || {}).value || "auto";
-    type.inputs.placement = (document.querySelector('input[name="placement"]:checked') || {}).value || "side";
   }
 
   // src/js/draw-side.js
@@ -3053,17 +3384,16 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   var modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
   var cameraLabel = ({ type }) => {
     const camera = cameraById(type.inputs.camera);
-    return camera ? camera.name : resolutionLabel(
+    return camera ? displayName(camera) : resolutionLabel(
       RESOLUTIONS[+type.inputs.resolution] ?? DEFAULT_RESOLUTION
     );
   };
-  var STATUS_TEXT = STR.status;
-  var capitalize = (text) => text ? text[0].toUpperCase() + text.slice(1) : text;
+  var STATUS_TEXT2 = STR.status;
   function renderType(result2) {
     const verdict = byId("verdict");
     byId("resultTitle").textContent = t(
       "resultTitleOf",
-      result2.type.name || t("untitled")
+      displayName(result2.type) || t("untitled")
     );
     if (!result2.ok) {
       verdict.className = "verdict bad";
@@ -3105,19 +3435,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ].map(
       ([label, value, extra]) => `<div class="kpi"><span>${label}</span><strong>${value}</strong><em>${extra}</em></div>`
     ).join("");
-    result2.objects.forEach((item, i) => {
-      const resultEl = byId(`objectResult-${i}`), dotEl = byId(`objectDot-${i}`);
-      if (!resultEl) return;
-      if (!item.valid) {
-        resultEl.className = "ores";
-        resultEl.textContent = t("objectInvalid");
-        if (dotEl) dotEl.className = "dot";
-        return;
-      }
-      resultEl.className = "ores " + item.status;
-      if (dotEl) dotEl.className = "dot " + item.status;
-      resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
-    });
+    renderObjectResults(result2);
     const top = result2.placement === "top", { near, far, minAcross } = result2.density;
     byId("densityTable").innerHTML = `<tr><th>${t("densityHeader")}</th><th>${t("across")}</th><th>${t("depth")}</th></tr>
     <tr><td class="txt">${t(top ? "edgeBack" : "edgeNear")}, ${withUnit(formatNumber(near.D, 1), "m")}</td><td>${formatNumber(near.across, 0)}</td><td>${formatNumber(near.depth, 0)}</td></tr>
@@ -3153,16 +3471,15 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       tab.setAttribute("role", "tab");
       tab.setAttribute(
         "aria-selected",
-        String(result2.type.id === store.activeTypeId)
+        String(result2.type.id === state.activeTypeId)
       );
       tab.setAttribute("aria-controls", "typeResult");
-      tab.innerHTML = `<span class="dot ${result2.ok ? result2.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(result2.type.name || t("untitled"))}</b><small>× ${result2.count}</small>`;
-      tab.title = result2.ok ? t("tabObjects", STATUS_TEXT[result2.status]) : t("tabError");
+      tab.innerHTML = `<span class="dot ${result2.ok ? result2.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(displayName(result2.type) || t("untitled"))}</b><small>× ${result2.count}</small>`;
+      tab.title = result2.ok ? t("tabObjects", STATUS_TEXT2[result2.status]) : t("tabError");
       tab.addEventListener("click", () => {
-        if (store.activeTypeId === result2.type.id) return;
-        store.activeTypeId = result2.type.id;
+        if (state.activeTypeId === result2.type.id) return;
+        selectType(result2.type.id);
         writeForm(activeType());
-        calcAll();
       });
       nav.append(tab);
     });
@@ -3171,13 +3488,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     addButton.className = "tab ghost";
     addButton.textContent = t("addType");
     addButton.addEventListener("click", () => {
-      const type = makeType(t("newType", store.cameraTypes.length + 1), 1, {}, [
-        OBJECT_PRESETS[0]
-      ]);
-      store.cameraTypes.push(type);
-      store.activeTypeId = type.id;
-      writeForm(type);
-      calcAll();
+      addType(t("newType", state.cameraTypes.length + 1), [OBJECT_PRESETS[0]]);
+      writeForm(activeType());
     });
     nav.append(addButton);
   }
@@ -3215,7 +3527,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         cameraCost ? t("systemTypes", results.length) + t("systemCameraCost", "$" + formatNumber(cameraCost, 0)) : t(
           "systemTypes",
           results.length,
-          results.map((result2) => result2.type.name).join(", ")
+          results.map((result2) => displayName(result2.type)).join(", ")
         )
       ],
       [
@@ -3223,7 +3535,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("systemOfTotal", okObjects, allObjects.length)}`,
         smallest ? t(
           "systemSmallest",
-          smallest.object.name,
+          displayName(smallest.object),
           formatNumber(
             Math.min(smallest.widthPx, smallest.heightPx) * smallest.feed.modelScale,
             1
@@ -3245,7 +3557,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ).join("");
     const { archiveDays, archiveTB } = totals;
     byId("networkTable").innerHTML = `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` + results.map(
-      (result2) => !result2.ok ? `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td>${result2.frame.width} × ${result2.frame.height}</td><td>${formatNumber(result2.stream.fps, 0)}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps * result2.count, 0), "mbps")}</td></tr>`
+      (result2) => !result2.ok ? `<tr><td class="txt">${escapeHtml(displayName(result2.type))}</td><td>${result2.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(displayName(result2.type))}</td><td>${result2.count}</td><td>${result2.frame.width} × ${result2.frame.height}</td><td>${formatNumber(result2.stream.fps, 0)}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps * result2.count, 0), "mbps")}</td></tr>`
     ).join("") + `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr><tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${!(archiveDays >= 0) ? t("tabError") : archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
     byId("assumptionsList").innerHTML = t(
       "assumptions",
@@ -3281,10 +3593,10 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       t("donutAriaValue", percent(chosen.inferenceLoad), percent(maxLoad))
     );
     byId("legend").innerHTML = liveResults.length ? shown.map(
-      (run, i) => `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(run.typeName)}: ${escapeHtml(run.objects.map(objectName).join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`
+      (run, i) => `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(displayName(run.type))}: ${escapeHtml(run.objects.map(objectName).join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`
     ).join("") + (rest.length ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${percent(restShare)}</span></li>` : "") + `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSubtitle", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>` : `<li class="note">${t("noLoad")}</li>`;
     const decodeCapacity = chosen.count * system.decodeUnitsTotal / (chosen.decodeGpus || 1);
-    const gauge = (label, load2, limit, center, sub) => `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load2, color: load2 > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
+    const gauge = (label, load, limit, center, sub) => `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load, color: load > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
     byId("gauges").innerHTML = liveResults.length ? gauge(
       t("gaugeDecoder"),
       chosen.decodeLoad,
@@ -3311,11 +3623,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     byId("loadNote").hidden = !byId("loadNote").innerHTML;
   }
   function buildGpuSelect() {
-    const select = byId("gpu"), current = select.value || "auto";
+    const select = byId("gpu");
     select.innerHTML = `<option value="auto">${t("gpuAuto")}</option>` + allGpus().map(
       (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}${gpu.custom ? t("gpuCustomMark") : ""}</option>`
     ).join("");
-    select.value = allGpus().some((gpu) => gpu.id === current) ? current : "auto";
+    select.value = state.system.gpu;
     const refSelect = byId("detectorFormRefGpu");
     if (refSelect) {
       const refCurrent = refSelect.value;
@@ -3327,35 +3639,28 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   }
   function renderGpuView() {
     const row = (gpu) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(store.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(state.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
     const headers = STR.gpuTableHeader, head = `<tr>${headers.slice(0, 6).map((header) => `<th>${header}</th>`).join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
     byId("catalogTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
     byId("catalogTable").innerHTML = head + GPU_CATALOG.map(row).join("");
-    byId("customGpus").innerHTML = store.customGpus.length ? `<strong style="font-weight:600">${t("customGpusTitle", store.customGpus.length)}</strong><div class="tbl"><table>${head}${store.customGpus.map(row).join("")}</table></div>` : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
+    byId("customGpus").innerHTML = state.customGpus.length ? `<strong style="font-weight:600">${t("customGpusTitle", state.customGpus.length)}</strong><div class="tbl"><table>${head}${state.customGpus.map(row).join("")}</table></div>` : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
     allGpus().forEach((gpu) => {
-      byId(`gpuPrice-${gpu.id}`).addEventListener("input", (event) => {
-        store.gpuPrices[gpu.id] = event.target.value;
-        calcAll();
-      });
-      byId(`gpuEnabled-${gpu.id}`).addEventListener("change", (event) => {
-        store.gpuEnabled[gpu.id] = event.target.checked;
-        calcAll();
-      });
+      byId(`gpuPrice-${gpu.id}`).addEventListener(
+        "input",
+        (event) => setGpuPrice(gpu.id, event.target.value)
+      );
+      byId(`gpuEnabled-${gpu.id}`).addEventListener(
+        "change",
+        (event) => setGpuEnabled(gpu.id, event.target.checked)
+      );
     });
     document.querySelectorAll("[data-delg]").forEach(
       (button) => button.addEventListener("click", () => {
-        const id = button.dataset.delg;
-        store.customGpus = store.customGpus.filter((gpu) => gpu.id !== id);
-        delete store.gpuPrices[id];
-        delete store.gpuEnabled[id];
-        store.customDetectors.forEach((detector) => {
-          if (detector.refGpu === id) detector.refGpu = "5090";
-        });
+        deleteGpu(button.dataset.delg);
         buildGpuSelect();
         renderGpuView();
-        calcAll();
         toast(t("gpuDeleted"));
       })
     );
@@ -3408,9 +3713,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       return;
     }
     errorEl.hidden = true;
-    const gpu = parsed.value;
-    store.customGpus.push(gpu);
-    store.gpuEnabled[gpu.id] = byId("gpuFormEnabled").checked;
+    addGpu(parsed.value, byId("gpuFormEnabled").checked);
     [
       "gpuFormName",
       "gpuFormTflops",
@@ -3421,28 +3724,20 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ].forEach((id) => byId(id).value = "");
     buildGpuSelect();
     renderGpuView();
-    calcAll();
     toast(t("gpuAdded", name));
   });
   function renderCamView() {
-    const used = (id) => store.cameraTypes.filter((type) => type.inputs.camera === id).reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
+    const used = (id) => state.cameraTypes.filter((type) => type.inputs.camera === id).reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
     byId("camerasTitle").textContent = t("camerasTitle", allCameras().length);
     byId("cameraTable").innerHTML = `<tr>${STR.cameraTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` + allCameras().map(
-      (camera) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(camera.name)}</b><span class="sub">${t(camera.custom ? "cameraCustom" : "cameraBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm") : t("cameraAnyLens")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("deleteAria", camera.name))}">${t("deleteBtn")}</button>` : ""}</td></tr>`
+      (camera) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(displayName(camera))}</b><span class="sub">${t(camera.custom ? "cameraCustom" : "cameraBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm") : t("cameraAnyLens")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("deleteAria", displayName(camera)))}">${t("deleteBtn")}</button>` : ""}</td></tr>`
     ).join("");
     document.querySelectorAll("[data-delc]").forEach(
       (button) => button.addEventListener("click", () => {
-        const id = button.dataset.delc;
-        store.customCameras = store.customCameras.filter(
-          (camera) => camera.id !== id
-        );
-        store.cameraTypes.forEach((type) => {
-          if (type.inputs.camera === id) type.inputs.camera = "";
-        });
+        deleteCamera(button.dataset.delc);
         buildCameraSelect();
         writeForm(activeType());
         renderCamView();
-        calcAll();
         toast(t("cameraDeleted"));
       })
     );
@@ -3487,7 +3782,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       return;
     }
     errorEl.hidden = true;
-    store.customCameras.push(parsed.value);
+    addCamera(parsed.value);
     [
       "cameraFormName",
       "cameraFormWidth",
@@ -3500,19 +3795,18 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ].forEach((id) => byId(id).value = "");
     buildCameraSelect();
     renderCamView();
-    save();
     toast(t("cameraAdded", name));
   });
   function renderDetView() {
     byId("detectorsTitle").textContent = t(
       "detectorsTitle",
-      MODELS.length + store.customDetectors.length
+      MODELS.length + state.customDetectors.length
     );
-    const used = (id) => store.cameraTypes.reduce(
+    const used = (id) => state.cameraTypes.reduce(
       (sum, type) => sum + type.objects.filter((obj) => obj.model === id).length,
       0
     );
-    byId("detectorTable").innerHTML = `<tr>${STR.detectorTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` + (store.customDetectors.length ? store.customDetectors.map((detector) => {
+    byId("detectorTable").innerHTML = `<tr>${STR.detectorTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` + (state.customDetectors.length ? state.customDetectors.map((detector) => {
       const refGpu = gpuById(detector.refGpu);
       return `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(detector.name)}</b><span class="sub">${t("detectorCustom")}</span></td><td>${detector.inputSize}</td><td>${detector.gflops > 0 ? formatNumber(detector.gflops, 1) : "—"}</td><td>${t("detectorSpeed", formatNumber(detector.fps, 0), escapeHtml(refGpu ? refGpu.name : "?"))}</td><td>${used(detector.id)}</td><td><button type="button" class="sm" data-deld="${detector.id}" aria-label="${escapeHtml(t("deleteAria", detector.name))}">${t("deleteBtn")}</button></td></tr>`;
     }).join("") : `<tr><td class="txt dim" colspan="6">${t("detectorsEmpty")}</td></tr>`) + MODELS.map(
@@ -3520,18 +3814,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ).join("");
     document.querySelectorAll("[data-deld]").forEach(
       (button) => button.addEventListener("click", () => {
-        const id = button.dataset.deld;
-        store.customDetectors = store.customDetectors.filter(
-          (detector) => detector.id !== id
-        );
-        store.cameraTypes.forEach(
-          (type) => type.objects.forEach((obj) => {
-            if (obj.model === id) obj.model = "y26s";
-          })
-        );
+        deleteDetector(button.dataset.deld);
         renderObjects();
         renderDetView();
-        calcAll();
         toast(t("detectorDeleted"));
       })
     );
@@ -3566,51 +3851,32 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       return;
     }
     errorEl.hidden = true;
-    store.customDetectors.push(parsed.value);
+    addDetector(parsed.value);
     ["detectorFormName", "detectorFormFps", "detectorFormGflops"].forEach(
       (id) => byId(id).value = ""
     );
     renderObjects();
     renderDetView();
-    calcAll();
     toast(t("detectorAdded", name));
   });
-  var report = "";
-  function calcAll() {
-    const results = store.cameraTypes.map((type) => {
-      const parsed = parseCameraType(type);
-      if (parsed.ok)
-        return computeType(parsed.value, cameraById(type.inputs.camera));
-      const countOk = !parsed.errors.some((error) => error.field === "count");
-      return { ok: false, type, count: countOk ? parseNum(type.count) : 0 };
-    });
-    const activeIndex = Math.max(
-      0,
-      store.cameraTypes.findIndex((type) => type.id === store.activeTypeId)
-    );
-    syncFormUI(store.cameraTypes[activeIndex], results[activeIndex]);
+  function renderResults() {
+    const { results, system, totals } = computed;
+    const activeIndex = state.cameraTypes.indexOf(activeType());
+    syncFormUI(activeType(), results[activeIndex]);
     renderType(results[activeIndex]);
     renderTabs(results);
-    const settings = parseSystemSettings(readSystemSettings());
-    const gpus = allGpus().map((gpu) => ({ ...gpu, price: priceOf(gpu) }));
-    const system = settings.ok && gpus.every((gpu) => gpu.price > 0) ? computeSystem(results, settings.value, {
-      gpus,
-      candidates: gpus.filter(isOn),
-      detectors: store.customDetectors
-    }) : null;
-    const totals = systemTotals(
-      results,
-      settings.ok ? settings.value : { archiveDays: NaN },
-      allCameras()
-    );
     renderSystem(results, system, totals);
+    applyTheme();
+  }
+  function reportText() {
+    const { results, system, totals } = computed;
     const chosen = system?.chosen;
-    report = [
+    return [
       t("appTitle"),
       ...results.flatMap(
-        (result2) => !result2.ok ? ["\n" + t("reportError", result2.type.name, result2.count)] : [
+        (result2) => !result2.ok ? ["\n" + t("reportError", displayName(result2.type), result2.count)] : [
           `
-${result2.type.name} × ${result2.count}`,
+${displayName(result2.type)} × ${result2.count}`,
           t("reportCamera", {
             cameraLabel: cameraLabel(result2),
             rotated: result2.lens.rotated,
@@ -3626,13 +3892,13 @@ ${result2.type.name} × ${result2.count}`,
           }),
           ...result2.objects.filter((item) => item.valid).map(
             (item) => t("reportObject", {
-              name: item.object.name,
+              name: displayName(item.object),
               model: modelName(item.object),
               feed: feedText(item.feed),
               sensorPx: sensorPxText(item),
               modelPx: modelPxText(item),
               requiredPx: formatNumber(item.requiredPx, 0),
-              status: STATUS_TEXT[item.status]
+              status: STATUS_TEXT2[item.status]
             })
           ),
           t(
@@ -3659,151 +3925,17 @@ ${result2.type.name} × ${result2.count}`,
         optimum: system.optimum && system.optimum !== chosen ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}` : ""
       }) : t("reportNoCompute")
     ].join("\n");
-    save();
   }
   var SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
-  var readSystemSettings = () => Object.fromEntries(SYSTEM_IDS.map((id) => [id, byId(id).value]));
-  var snapshot = () => ({
-    types: store.cameraTypes,
-    activeTypeId: store.activeTypeId,
-    system: readSystemSettings(),
-    gpuPrices: store.gpuPrices,
-    gpuEnabled: store.gpuEnabled,
-    customGpus: store.customGpus,
-    customCameras: store.customCameras,
-    customDetectors: store.customDetectors,
-    light: document.documentElement.classList.contains("light")
-  });
-  var stale = false;
-  var STALE_MSG = t("stale");
-  addEventListener("storage", (event) => {
-    if (event.key === "camcalc4") {
-      stale = true;
-      toast(STALE_MSG);
-    }
-  });
-  function save() {
-    if (stale) {
-      toast(STALE_MSG);
-      return;
-    }
-    try {
-      localStorage.setItem("camcalc4", JSON.stringify(snapshot()));
-    } catch (error) {
-    }
+  function writeSystemForm() {
+    SYSTEM_IDS.forEach((id) => byId(id).value = state.system[id]);
   }
-  var withDot = (value) => typeof value === "string" ? value.replace(",", ".") : value;
-  var allWithDot = (values) => Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [key, withDot(value)])
-  );
-  var shownName = (item) => item.nameKey && builtinName(item.nameKey) || item.name;
-  var isObject = (value) => value && typeof value === "object";
-  var savedObject = (obj) => isObject(obj) ? {
-    ...makeObject([
-      shownName(obj),
-      withDot(obj.width),
-      withDot(obj.length),
-      withDot(obj.height),
-      withDot(obj.requiredPx),
-      obj.model,
-      obj.feed,
-      obj.inputSize,
-      obj.nameKey
-    ]),
-    overlap: withDot(obj.overlap ?? 20)
-  } : obj;
-  var savedType = (type) => isObject(type) ? {
-    id: type.id || uid(),
-    name: shownName(type),
-    nameKey: type.nameKey,
-    count: withDot(type.count),
-    inputs: allWithDot({ ...DEFAULT_INPUTS, ...type.inputs }),
-    objects: Array.isArray(type.objects) ? type.objects.map(savedObject) : type.objects ?? []
-  } : type;
-  var savedSystem = (system) => isObject(system) ? Object.fromEntries(
-    SYSTEM_IDS.map((id) => [id, withDot(system[id] ?? byId(id).value)])
-  ) : system;
-  function parseSaved(saved) {
-    let rejected = 0;
-    const parseAll = (items, parse) => items.flatMap((item) => {
-      const parsed = parse(item);
-      if (parsed.ok) return [parsed.value];
-      rejected++;
-      return [];
-    });
-    const asDraft = (parse) => (item) => {
-      const parsed = parse(item);
-      return parsed.ok || onlyValueErrors(parsed.errors) ? { ok: true, value: item } : parsed;
-    };
-    const list = (items) => Array.isArray(items) ? items : [];
-    const [system] = parseAll(
-      saved.system == null ? [] : [savedSystem(saved.system)],
-      asDraft(parseSystemSettings)
-    );
-    return {
-      customGpus: parseAll(list(saved.customGpus), parseGpu),
-      customCameras: parseAll(list(saved.customCameras), parseCamera),
-      customDetectors: parseAll(list(saved.customDetectors), parseDetector),
-      types: parseAll(list(saved.types).map(savedType), asDraft(parseCameraType)),
-      system,
-      rejected
-      // после всех parseAll выше
-    };
+  function applyTheme() {
+    document.documentElement.classList.toggle("light", state.light);
+    byId("themeBtn").textContent = t(state.light ? "themeDark" : "themeLight");
+    byId("themeBtn").setAttribute("aria-pressed", String(state.light));
   }
-  function load() {
-    try {
-      const saved = JSON.parse(localStorage.getItem("camcalc4") || "null");
-      if (!saved) return;
-      const parsed = parseSaved(saved);
-      if (Array.isArray(saved.customGpus))
-        store.customGpus = parsed.customGpus.map((gpu) => ({
-          ...gpu,
-          custom: true
-        }));
-      if (Array.isArray(saved.customCameras))
-        store.customCameras = parsed.customCameras.map((camera) => ({
-          ...camera,
-          custom: true
-        }));
-      if (Array.isArray(saved.customDetectors))
-        store.customDetectors = parsed.customDetectors;
-      if (saved.gpuPrices && typeof saved.gpuPrices === "object")
-        store.gpuPrices = allWithDot(saved.gpuPrices);
-      if (saved.gpuEnabled && typeof saved.gpuEnabled === "object")
-        store.gpuEnabled = saved.gpuEnabled;
-      if (saved.light) setTheme(true);
-      buildGpuSelect();
-      buildCameraSelect();
-      if (parsed.types.length) {
-        store.cameraTypes = parsed.types;
-        store.cameraTypes.forEach(
-          (type) => type.objects.forEach((obj) => {
-            if (!modelById(obj.model)) obj.model = "y26s";
-          })
-        );
-        store.activeTypeId = store.cameraTypes.some(
-          (type) => type.id === saved.activeTypeId
-        ) ? saved.activeTypeId : store.cameraTypes[0].id;
-      }
-      if (parsed.system)
-        SYSTEM_IDS.forEach((id) => {
-          const field = byId(id);
-          field.value = parsed.system[id];
-          if (field.tagName === "SELECT" && field.selectedIndex < 0)
-            field.value = "auto";
-        });
-    } catch (error) {
-    }
-  }
-  function setTheme(light) {
-    document.documentElement.classList.toggle("light", light);
-    byId("themeBtn").textContent = t(light ? "themeDark" : "themeLight");
-    byId("themeBtn").setAttribute("aria-pressed", String(light));
-  }
-  byId("themeBtn").addEventListener("click", () => {
-    setTheme(!document.documentElement.classList.contains("light"));
-    save();
-  });
+  byId("themeBtn").addEventListener("click", toggleTheme);
   byId("langBtn").lang = LANG === "en" ? "ru" : "en";
   byId("langBtn").addEventListener("click", () => {
     try {
@@ -3814,68 +3946,42 @@ ${result2.type.name} × ${result2.count}`,
     }
     location.reload();
   });
-  OBJECT_PRESETS.forEach((preset) => {
+  OBJECT_PRESETS.forEach((preset2) => {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip";
-    chip.textContent = preset[0];
+    chip.textContent = displayName(preset2);
     chip.addEventListener("click", () => {
-      activeType().objects.push(makeObject(preset));
+      addObject(preset2);
       renderObjects();
-      calcAll();
     });
     byId("presets").append(chip);
   });
   byId("addObject").addEventListener("click", () => {
-    const type = activeType();
-    type.objects.push(
-      makeObject([
-        t("objDefault"),
-        10,
-        10,
-        10,
-        20,
-        "y26s",
-        "roi",
-        640,
-        "objDefault"
-      ])
-    );
+    addObject(NEW_OBJECT);
     renderObjects();
-    calcAll();
-    const lastIndex = type.objects.length - 1;
+    const lastIndex = activeType().objects.length - 1;
     byId(`objectName-${lastIndex}`).focus();
     byId(`objectName-${lastIndex}`).select();
   });
-  byId("typeForm").addEventListener("input", () => {
-    readForm();
-    calcAll();
-  });
-  byId("typeForm").addEventListener("change", () => {
-    readForm();
-    calcAll();
-  });
+  byId("typeForm").addEventListener("input", readForm);
+  byId("typeForm").addEventListener("change", readForm);
   byId("typeForm").addEventListener("submit", (event) => event.preventDefault());
   SYSTEM_IDS.forEach((id) => {
-    byId(id).addEventListener("input", calcAll);
-    byId(id).addEventListener("change", calcAll);
+    const update = () => updateSystem(id, byId(id).value);
+    byId(id).addEventListener("input", update);
+    byId(id).addEventListener("change", update);
   });
   byId("duplicateTypeBtn").addEventListener("click", () => {
     readForm();
-    const source = activeType(), copy = JSON.parse(JSON.stringify(source));
-    copy.id = uid();
-    copy.name = source.name + t("copySuffix");
-    delete copy.nameKey;
-    store.cameraTypes.splice(store.cameraTypes.indexOf(source) + 1, 0, copy);
-    store.activeTypeId = copy.id;
-    writeForm(copy);
-    calcAll();
+    duplicateActiveType(displayName(activeType()) + t("copySuffix"));
+    writeForm(activeType());
     toast(t("typeCopied"));
   });
   var deleteTimer = null;
   byId("deleteTypeBtn").addEventListener("click", () => {
     const button = byId("deleteTypeBtn");
-    if (store.cameraTypes.length < 2) {
+    if (state.cameraTypes.length < 2) {
       toast(t("lastType"));
       return;
     }
@@ -3890,13 +3996,8 @@ ${result2.type.name} × ${result2.count}`,
     clearTimeout(deleteTimer);
     deleteTimer = null;
     button.textContent = t("deleteTypeBtn");
-    const index = store.cameraTypes.findIndex(
-      (type) => type.id === store.activeTypeId
-    );
-    store.cameraTypes.splice(index, 1);
-    store.activeTypeId = store.cameraTypes[Math.max(0, index - 1)].id;
+    deleteActiveType();
     writeForm(activeType());
-    calcAll();
     toast(t("typeDeleted"));
   });
   function toast(message) {
@@ -3907,22 +4008,14 @@ ${result2.type.name} × ${result2.count}`,
     toast.timer = setTimeout(() => toastEl.hidden = true, 1800);
   }
   byId("resetBtn").addEventListener("click", () => {
-    store.cameraTypes = exampleTypes();
-    store.activeTypeId = store.cameraTypes[0].id;
-    byId("efficiency").value = "0.6";
-    byId("reserve").value = "20";
-    byId("archiveDays").value = "0";
-    byId("gpuCount").value = "auto";
-    store.gpuPrices = {};
-    store.gpuEnabled = {};
+    resetToExample();
     buildGpuSelect();
-    byId("gpu").value = "auto";
+    writeSystemForm();
     writeForm(activeType());
-    calcAll();
     toast(t("exampleLoaded"));
   });
   byId("copyBtn").addEventListener("click", () => {
-    navigator.clipboard.writeText(report).then(
+    navigator.clipboard.writeText(reportText()).then(
       () => toast(t("reportCopied")),
       () => toast(t("copyFail"))
     );
@@ -3930,7 +4023,7 @@ ${result2.type.name} × ${result2.count}`,
   byId("exportBtn").addEventListener("click", () => {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(
-      new Blob([JSON.stringify(snapshot(), null, 1)], {
+      new Blob([exportText(state)], {
         type: "application/json"
       })
     );
@@ -3940,26 +4033,6 @@ ${result2.type.name} × ${result2.count}`,
     link.remove();
     setTimeout(() => URL.revokeObjectURL(link.href), 0);
   });
-  function importText(text) {
-    let saved;
-    try {
-      saved = JSON.parse(text);
-    } catch (error) {
-    }
-    if (!isObject(saved) || !Array.isArray(saved.types) || !saved.types.length || !["customGpus", "customCameras", "customDetectors"].every(
-      (key) => Array.isArray(saved[key])
-    ) || !isObject(saved.gpuPrices) || !isObject(saved.gpuEnabled) || parseSaved(saved).rejected) {
-      toast(t("badFile"));
-      return;
-    }
-    try {
-      localStorage.setItem("camcalc4", JSON.stringify(saved));
-    } catch (error) {
-      toast(t("saveFail"));
-      return;
-    }
-    location.reload();
-  }
   var importTimer = null;
   byId("importBtn").addEventListener("click", () => {
     const button = byId("importBtn");
@@ -3979,7 +4052,15 @@ ${result2.type.name} × ${result2.count}`,
   byId("importFile").addEventListener("change", (event) => {
     const file = event.target.files[0];
     event.target.value = "";
-    if (file) file.text().then(importText, () => toast(t("readFail")));
+    if (file)
+      file.text().then(
+        (text) => {
+          const status = importText(text);
+          if (status === "ok") location.reload();
+          else toast(t(status));
+        },
+        () => toast(t("readFail"))
+      );
   });
   var TEMPLATE_VIEWS = {
     "tpl-gpus": renderGpuView,
@@ -4000,7 +4081,7 @@ ${result2.type.name} × ${result2.count}`,
         else link.removeAttribute("aria-current");
       });
       TEMPLATE_VIEWS[hash]();
-    } else if (hash === "") writeForm(activeType()), calcAll();
+    } else if (hash === "") writeForm(activeType());
     try {
       window.scrollTo(0, 0);
     } catch (error) {
@@ -4110,11 +4191,16 @@ ${result2.type.name} × ${result2.count}`,
     );
   }
   applyTranslations();
+  subscribe(renderResults);
+  subscribe(() => {
+    if (!save(state)) toast(t("stale"));
+  });
+  watchOtherTabs(() => toast(t("stale")));
+  restore(loadSaved());
   buildGpuSelect();
   buildCameraSelect();
-  load();
+  writeSystemForm();
   writeForm(activeType());
-  calcAll();
   route();
 })();
 </script>

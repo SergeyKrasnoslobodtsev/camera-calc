@@ -1,5 +1,6 @@
 import type { TypeResult } from "../compute-type/index.ts";
 import type { RunGroup } from "../compute-type/run-groups.ts";
+import type { CameraType } from "../entities/camera-type.ts";
 import type { CustomDetector } from "../entities/detector.ts";
 import type { Gpu } from "../entities/gpu.ts";
 import { decodableStreams } from "../references/gpu-catalog.ts";
@@ -20,8 +21,8 @@ const JETSON_MEMORY_USABLE_SHARE = 0.6; // у Jetson память общая с 
 
 export type LiveResult = Extract<TypeResult, { ok: true }>;
 
-// Запуск модели в системе: группа запусков и название типа камер, из которого она пришла
-export type SystemRunGroup = RunGroup & { typeName: string };
+// Запуск модели в системе: группа запусков и тип камер, из которого она пришла
+export type SystemRunGroup = RunGroup & { type: CameraType };
 
 // Запуск на варианте GPU: capacity — кадров в секунду на входе модели с учётом
 // эффективности, gpusNeeded — сколько GPU занимает запуск

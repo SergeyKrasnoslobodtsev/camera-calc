@@ -1,9 +1,15 @@
 import { LANG, t } from "../i18n/index.ts";
-// system-ui импортируется раньше state: при загрузке он берёт OBJECT_PRESETS из state, а если первым
-// импортировать state, то по кругу state → objects → system-ui модуль system-ui выполнится раньше state
-import { buildGpuSelect, calcAll, load, route } from "./system-ui.js";
+import { loadSaved, save, watchOtherTabs } from "../app/persistence.ts";
+import { activeType, restore, state, subscribe } from "../app/store.ts";
+import {
+  buildGpuSelect,
+  renderResults,
+  route,
+  toast,
+  writeSystemForm,
+} from "./system-ui.js";
 import { buildCameraSelect } from "./objects.js";
-import { activeType, writeForm } from "./state.js";
+import { writeForm } from "./state.js";
 import "./popover.js";
 // тексты статичной разметки: ключи словаря в атрибутах data-t, data-ta, data-tt, data-tp
 function applyTranslations() {
@@ -28,9 +34,15 @@ function applyTranslations() {
   );
 }
 applyTranslations();
+// после каждого действия: результаты на экран, состояние в localStorage
+subscribe(renderResults);
+subscribe(() => {
+  if (!save(state)) toast(t("stale"));
+});
+watchOtherTabs(() => toast(t("stale")));
+restore(loadSaved());
 buildGpuSelect();
 buildCameraSelect();
-load();
+writeSystemForm();
 writeForm(activeType());
-calcAll();
 route();
