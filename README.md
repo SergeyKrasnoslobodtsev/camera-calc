@@ -42,8 +42,8 @@ camera-calc/
 npm install           # один раз, ставит React, Vite, TypeScript, Vitest, Testing Library, Oxlint, jsdom и Prettier
 npm run dev           # сервер разработки: правки видны в браузере без пересборки
 npm run build         # собрать dist/index.html; проверено на Node 26.12
-npm test              # проверка типов tsc, затем тесты Vitest (сборка не нужна)
-npm run lint          # линтер Oxlint
+npm test              # проверка типов tsc, линтер Oxlint, затем тесты Vitest (сборка не нужна)
+npm run lint          # только линтер Oxlint
 ```
 
 После правок в `src/` пересоберите страницу и закоммитьте `dist/` вместе с исходниками.
