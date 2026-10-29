@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 // Язык страницы: выбор и его сохранение, отчёт на EN, встроенные и свои названия.
-import { beforeAll, test } from "vitest";
+import { beforeAll, test, vi } from "vitest";
 import assert from "assert";
-import { fireEvent } from "@testing-library/react";
+import { act, fireEvent } from "@testing-library/react";
 import { RU } from "../../src/i18n/ru.ts";
 import { openPage } from "./open-page.tsx";
 import { enter, reportOf, countReloads, addTemplates } from "./helpers.js";
@@ -99,6 +99,66 @@ test("язык: при первом открытии — язык браузер
   assert.strictEqual(
     document.getElementById("templatesBtn").textContent,
     "Шаблоны",
+  );
+});
+
+test("язык: при первом открытии — первый поддерживаемый из языков браузера", async () => {
+  for (const [browserLangs, lang] of [
+    [["uk", "ru", "en"], "ru"],
+    [["en-US", "ru"], "en"],
+    [["de", "fr"], "en"],
+  ]) {
+    await openPage({ lang: null, browserLang: browserLangs[0], browserLangs });
+    assert.strictEqual(
+      document.documentElement.lang,
+      lang,
+      "языки браузера " + browserLangs.join(", "),
+    );
+  }
+});
+
+test("язык: без доступа к localStorage передаётся в адресе", async () => {
+  await openPage();
+  const r0 = reloads.count;
+  const setItem = vi
+    .spyOn(Storage.prototype, "setItem")
+    .mockImplementation(() => {
+      throw new Error("denied");
+    });
+  fireEvent.click(document.getElementById("langBtn"));
+  setItem.mockRestore();
+  assert.strictEqual(reloads.count, r0 + 1, "страница не перезагружена");
+  assert.strictEqual(location.search, "?lang=en", "язык не попал в адрес");
+  await openPage({ search: "lang=en" });
+  assert.strictEqual(
+    document.documentElement.lang,
+    "en",
+    "язык из адреса не учтён",
+  );
+  // когда сохранить можно, язык из адреса убирается, иначе он перекрыл бы выбор
+  fireEvent.click(document.getElementById("langBtn"));
+  assert.strictEqual(location.search, "", "язык остался в адресе");
+  assert.strictEqual(localStorage.getItem("camcalc-lang"), "ru");
+});
+
+test("язык, изменённый в другой вкладке: уведомление", async () => {
+  await openPage();
+  const changeInOtherTab = (lang) =>
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent("storage", { key: "camcalc-lang", newValue: lang }),
+      );
+    });
+  changeInOtherTab("ru");
+  assert.notStrictEqual(
+    document.getElementById("toast").textContent,
+    RU.langStale,
+    "уведомление, хотя язык тот же",
+  );
+  changeInOtherTab("en");
+  assert.strictEqual(
+    document.getElementById("toast").textContent,
+    RU.langStale,
   );
 });
 

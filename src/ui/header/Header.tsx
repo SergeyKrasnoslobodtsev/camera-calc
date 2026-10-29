@@ -6,14 +6,17 @@ import { toast } from "../components/Toast.tsx";
 import { useComputed } from "../hooks/useComputed.ts";
 import { reportText } from "../lib/report.ts";
 
-// выбранный язык сохраняется, страница перезагружается уже на нём
+// выбранный язык сохраняется, страница перезагружается уже на нём;
+// если сохранить нельзя, язык передаётся в адресе (?lang=)
 function switchLanguage(lang: Lang) {
+  const url = new URL(location.href);
   try {
     localStorage.setItem(LANG_KEY, lang);
+    url.searchParams.delete("lang");
   } catch {
-    toast(t("saveFail"));
-    return;
+    url.searchParams.set("lang", lang);
   }
+  history.replaceState(history.state, "", url);
   location.reload();
 }
 

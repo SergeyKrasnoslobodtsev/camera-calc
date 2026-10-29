@@ -16,18 +16,24 @@ export type TextKey = {
   [K in Key]: Dictionary[K] extends string ? K : never;
 }[Key];
 
-// язык: выбор из localStorage, иначе язык браузера
+// язык: из адреса (?lang=), иначе выбор из localStorage,
+// иначе первый поддерживаемый из языков браузера, иначе английский
 export const LANG_KEY = "camcalc-lang";
 export const LANG: Lang = (() => {
   let saved = null;
   try {
     saved = localStorage.getItem(LANG_KEY);
   } catch {}
-  return saved === "ru" || saved === "en"
-    ? saved
-    : /^ru\b/i.test(navigator.language || "")
-      ? "ru"
-      : "en";
+  // в тестах domain под Node страницы и адреса нет
+  const fromUrl = new URLSearchParams(globalThis.location?.search).get("lang");
+  const browser = [...navigator.languages, navigator.language].map((tag) =>
+    /^(ru|en)\b/i.exec(tag)?.[1].toLowerCase(),
+  );
+  return (
+    [fromUrl, saved, ...browser].find(
+      (lang): lang is Lang => lang === "ru" || lang === "en",
+    ) ?? "en"
+  );
 })();
 export const STR: Dictionary = LANG === "en" ? EN : RU;
 

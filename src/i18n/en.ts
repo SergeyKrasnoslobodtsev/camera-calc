@@ -416,6 +416,7 @@ export const EN: Dictionary = {
   reportComputeError: "Compute node: input data error",
   // уведомления
   stale: "The data was changed in another tab. Reload the page.",
+  langStale: "The language was changed in another tab. Reload the page.",
   typeCopied: "Type copied",
   typeDeleted: "Type deleted",
   lastType: "At least one camera type must remain.",
