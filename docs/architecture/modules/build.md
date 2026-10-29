@@ -21,7 +21,23 @@ flowchart LR
 | Скрипт | Vite собирает модули от `src/main.tsx` в один минифицированный скрипт. `@vitejs/plugin-react` переводит JSX |
 | Страница | `vite-plugin-singlefile` встраивает стили из `src/styles.css` в `<style>`, а скрипт — как `<script type="module">`. Внешних файлов нет, страница открывается из файловой системы |
 
-Собранный `dist/index.html` пока хранится в репозитории, чтобы страницу можно было открыть без сборки. После публикации на GitHub Pages (#66) он уйдёт из репозитория.
+## Публикация
+
+Страница публикуется на GitHub Pages: https://sergeykrasnoslobodtsev.github.io/camera-calc/. `dist/` в репозитории не хранится (`.gitignore`).
+
+```mermaid
+flowchart LR
+    main["push в main<br>или запуск вручную"] --> build["build: npm ci,<br>npm test, npm run build"]
+    build --> artifact["архив dist/<br>upload-pages-artifact"]
+    artifact --> deploy["deploy: deploy-pages,<br>окружение github-pages"]
+```
+
+| Часть | Что делает |
+|---|---|
+| `.github/workflows/static.yml` | Задание `build` ставит Node 26 и зависимости, запускает `npm test` и `npm run build`, загружает `dist/` архивом Pages. Задание `deploy` публикует архив. Тесты не прошли — публикации нет |
+| Настройки репозитория | Pages: источник «GitHub Actions». Окружение `github-pages`: публиковать разрешено из `main` |
+
+Страница лежит в подпапке `/camera-calc/`, но все ресурсы встроены в `index.html`, а адрес экрана хранится после `#`, поэтому путь подпапки сборке не нужен. `localStorage` у страницы на Pages свой, не тот, что у файла, открытого по `file://`: данные переносятся экспортом и импортом.
 
 ## Порядок выполнения модулей
 
