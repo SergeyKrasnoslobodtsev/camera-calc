@@ -131,6 +131,7 @@ console.log(
   "sw",
   d.getElementById("sensorWidth").value,
 );
+await settle(w);
 console.log("VERDICT cam:", T("verdict"));
 const om = d.getElementById("objectModel-1");
 const det = [...om.options].find((o) => o.text === "Детектор деталей");
@@ -649,6 +650,7 @@ for (const [id, value] of [
 ]) {
   const typed = await page(null);
   enter(typed, id, value);
+  await settle(typed);
   // тот же черновик из сохранения: строка сохраняется, расчёт показывает ошибку
   const loaded = await page(typed.localStorage.getItem("camcalc4"));
   [typed, loaded].forEach((win) => {
