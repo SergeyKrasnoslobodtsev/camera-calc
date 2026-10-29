@@ -2,7 +2,31 @@
 
 Всё, что работает с DOM: форма типа камер, карточки объектов, результат, вкладки, панель системы, экраны шаблонов, схема SVG, текстовый отчёт, подсказки, уведомления, тема, язык и маршрутизация. Состояние модуль берёт из `app` и меняет только через его действия. Тексты берёт из `i18n`, справочники и функции разбора — из `domain`. Решения — в [`../decisions/ui.md`](../decisions/ui.md).
 
+## Раскладка
+
+Целевая раскладка `src/ui/` после перехода на React (#65). Папки — по частям экрана, общие компоненты, хуки и функции без React — отдельно. Каждый шаг перехода кладёт новые компоненты на их место и удаляет старый файл; файлы на `innerHTML` до переписывания остаются в корне `src/ui/`.
+
+```
+src/ui/
+├── App.tsx                  корень: шапка, «расчёт» или «шаблоны» по адресу
+├── header/                  Header.tsx — тема, язык, шаблоны, пример, отчёт; file-actions.ts
+├── calculation/
+│   ├── TypeTabs.tsx         вкладки типов камер
+│   ├── type-form/           TypeForm.tsx, ObjectCard.tsx
+│   ├── type-result/         TypeResult.tsx, SideDiagram.tsx
+│   └── system/              SystemPanel.tsx, GpuLoad.tsx
+├── templates/               TemplatesPage.tsx, GpuTemplates.tsx, CameraTemplates.tsx,
+│                            DetectorTemplates.tsx, form-errors.ts
+├── components/              общие компоненты: Toast.tsx, Tip.tsx (подсказка «?»)
+├── hooks/                   useComputed.ts, useHashRoute.ts
+└── lib/                     функции без React: report.ts, labels.ts
+```
+
+`render.ts`, `translations.ts` и `dom.ts` после перехода не нужны: отрисовку по состоянию делает React, тексты компоненты берут из `t()`.
+
 ## Состав
+
+Файлы сейчас.
 
 | Файл | Что внутри |
 |---|---|
@@ -12,8 +36,8 @@
 | `object-cards.ts` | Список камер в форме (`buildCameraSelect`), карточки объектов и их результат, `syncFormUI` — видимость полей и сводка над формой, кнопки добавления объекта |
 | `type-result.ts` | Результат активного типа: вердикт, показатели, плотность, DORI, схема |
 | `side-diagram.ts` | Схема «вид сбоку» в SVG по геометрии из `domain` |
-| `tabs.tsx` | Компонент `Tabs`: вкладки типов камер и кнопка нового типа |
-| `use-computed.ts` | Хук `useComputed`: результаты расчёта из `store`, компонент перерисовывается после каждого действия |
+| `calculation/TypeTabs.tsx` | Компонент `TypeTabs`: вкладки типов камер и кнопка нового типа |
+| `hooks/useComputed.ts` | Хук `useComputed`: результаты расчёта из `store`, компонент перерисовывается после каждого действия |
 | `system-panel.ts` | Параметры системы (`writeSystemForm`, список GPU `buildGpuSelect`), итоги системы, сеть, нагрузка на GPU: кольцо и шкалы |
 | `templates-gpus.ts`, `templates-cameras.ts`, `templates-detectors.ts` | Экраны шаблонов: таблицы и формы своей карты, камеры, детектора |
 | `form-errors.ts` | Текст ошибки формы шаблона по ошибкам разбора из `domain` |
@@ -29,7 +53,7 @@
 ```mermaid
 flowchart LR
     main[main.tsx] --> render[render.ts]
-    main --> tabs[tabs.tsx]
+    main --> tabs[calculation/TypeTabs.tsx]
     main --> router[router.ts]
     main --> actions[file-actions.ts]
     main --> report[report.ts]
@@ -67,7 +91,7 @@ sequenceDiagram
 
 Подписчик `renderResults` перерисовывает результаты, а значения полей не трогает, чтобы не сбить ввод. Исключение одно: ширину матрицы, взятую из камеры или по формату, `syncFormUI` показывает в поле, которое в этом случае только для чтения. Поля целиком перезаписываются при смене данных: другой тип (`writeForm`), пример, загрузка, удаление шаблона.
 
-Интерфейс переходит на компоненты React (#65, решение — в [`../decisions/ui.md`](../decisions/ui.md#интерфейс-на-react)). На время перехода компонент монтируется в свой контейнер из `index.html` (`createRoot` в `main.tsx`) и читает результаты через `useComputed`. Сейчас на React — вкладки (`Tabs` в `#tabs`). Обработчики событий компонента задаются в JSX, а не навешиваются после отрисовки.
+Интерфейс переходит на компоненты React (#65, решение — в [`../decisions/ui.md`](../decisions/ui.md#интерфейс-на-react)). На время перехода компонент монтируется в свой контейнер из `index.html` (`createRoot` в `main.tsx`) и читает результаты через `useComputed`. Сейчас на React — вкладки (`TypeTabs` в `#tabs`). Обработчики событий компонента задаются в JSX, а не навешиваются после отрисовки.
 
 Остальная разметка собирается шаблонными строками в `innerHTML`. Значения пользователя (названия) проходят через `escapeHtml`. Четыре функции пересоздают разметку вместе с обработчиками: `renderObjects`, `renderGpuView`, `renderCamView`, `renderDetView`. Их вызывают при добавлении, удалении и смене типа, но не при вводе в поле.
 
