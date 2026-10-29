@@ -1,11 +1,11 @@
 // Вкладки типов камер и кнопка «добавить тип».
-import { STR, displayName, t } from "../i18n/index.ts";
-import { OBJECT_PRESETS } from "../app/examples.ts";
-import { activeType, addType, selectType, state } from "../app/store.ts";
-import { writeForm } from "./type-form.ts";
-import { useComputed } from "./use-computed.ts";
+import { STR, displayName, t } from "../../i18n/index.ts";
+import { OBJECT_PRESETS } from "../../app/examples.ts";
+import { activeType, addType, selectType, state } from "../../app/store.ts";
+import { writeForm } from "../type-form.ts";
+import { useComputed } from "../hooks/useComputed.ts";
 
-export function Tabs() {
+export function TypeTabs() {
   const { results } = useComputed();
   return (
     <>

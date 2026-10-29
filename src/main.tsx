@@ -6,12 +6,12 @@ import "./styles.css";
 import { t } from "./i18n/index.ts";
 import { loadSaved, save, watchOtherTabs } from "./app/persistence.ts";
 import { activeType, restore, state, subscribe } from "./app/store.ts";
+import { TypeTabs } from "./ui/calculation/TypeTabs.tsx";
 import { byId } from "./ui/dom.ts";
 import { buildCameraSelect } from "./ui/object-cards.ts";
 import { renderResults } from "./ui/render.ts";
 import { route } from "./ui/router.ts";
 import { buildGpuSelect, writeSystemForm } from "./ui/system-panel.ts";
-import { Tabs } from "./ui/tabs.tsx";
 import { toast } from "./ui/toast.ts";
 import { applyTranslations } from "./ui/translations.ts";
 import { writeForm } from "./ui/type-form.ts";
@@ -34,6 +34,6 @@ writeForm(activeType());
 route();
 createRoot(byId("tabs")).render(
   <StrictMode>
-    <Tabs />
+    <TypeTabs />
   </StrictMode>,
 );
