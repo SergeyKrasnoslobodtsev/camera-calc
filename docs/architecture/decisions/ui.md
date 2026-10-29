@@ -34,7 +34,7 @@
 - Плохо: до конца перехода в корне `src/ui/` остаются старые файлы рядом с новыми папками.
 - Нейтрально: правило имён в `ARCHITECTURE.md` дополнено исключением для компонентов и хуков.
 
-**Подтверждение.** После #65 в корне `src/ui/` нет файлов, кроме `App.tsx`. Сейчас по раскладке лежат `calculation/TypeTabs.tsx` и `hooks/useComputed.ts`; `npm test` проходит.
+**Подтверждение.** После #65 в корне `src/ui/` нет файлов, кроме `App.tsx`. Сейчас по раскладке лежат `calculation/TypeTabs.tsx`, `calculation/type-result/`, `calculation/system/`, `templates/GpuParams.tsx`, `components/Tip.tsx` и `hooks/useComputed.ts`; `npm test` проходит. Поля КПД и резерва стоят на экране видеокарт, поэтому их компонент `GpuParams` лежит в `templates/`, а не в `calculation/system/`.
 
 ### Интерфейс без фреймворка
 
