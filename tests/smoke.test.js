@@ -39,6 +39,15 @@ const go = (h) => {
 const set = (id, v) => (d.getElementById(id).value = v);
 const fire = (id, ev = "input") =>
   d.getElementById(id).dispatchEvent(new w.Event(ev, { bubbles: true }));
+// ввод в поле: значение — через сеттер прототипа, иначе React не заметит ввод в своё поле
+const enter = (win, id, value) => {
+  const field = win.document.getElementById(id);
+  Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(field),
+    "value",
+  ).set.call(field, value);
+  field.dispatchEvent(new win.Event("input", { bubbles: true }));
+};
 // отчёт так, как его получает пользователь: кнопка «Копировать отчёт» пишет его в буфер обмена;
 // запись не завершается, чтобы уведомление «Отчёт скопирован» не заменило другие
 const reportOf = (win) => {
@@ -137,6 +146,7 @@ const om = d.getElementById("objectModel-1");
 const det = [...om.options].find((o) => o.text === "Детектор деталей");
 om.value = det.value;
 om.dispatchEvent(new w.Event("change", { bubbles: true }));
+await settle(w);
 console.log(
   "LEGEND det:",
   [...d.querySelectorAll("#legend li")]
@@ -345,10 +355,7 @@ const w5 = await page(exp),
   });
 w5.localStorage.setItem("camcalc4", other);
 w5.dispatchEvent(new w5.StorageEvent("storage", { key: "camcalc4" }));
-d5.getElementById("efficiency").value = "0.5";
-d5.getElementById("efficiency").dispatchEvent(
-  new w5.Event("input", { bubbles: true }),
-);
+enter(w5, "efficiency", "0.5");
 assert.strictEqual(
   w5.localStorage.getItem("camcalc4"),
   other,
@@ -635,11 +642,6 @@ assert.ok(
   "нет полей цены или объекта",
 );
 assert.deepStrictEqual(noMin, [], "числовые поля без min=0");
-const enter = (win, id, value) => {
-  const field = win.document.getElementById(id);
-  field.value = value;
-  field.dispatchEvent(new win.Event("input", { bubbles: true }));
-};
 const open = (win, hash) => {
   win.location.hash = hash;
   win.dispatchEvent(new win.HashChangeEvent("hashchange"));
@@ -678,6 +680,7 @@ for (const [id, value] of [
   open(win, "#tpl-gpus");
   enter(win, id, value);
   open(win, "");
+  await settle(win);
   assert.strictEqual(
     win.document.getElementById("loadNote").textContent,
     RU.systemInputError,

@@ -4,12 +4,31 @@ import { parseDetector } from "../domain/entities/detector.ts";
 import { parseNum } from "../domain/parse-num.ts";
 import { MODELS } from "../domain/references/models.ts";
 import { uid } from "../app/examples.ts";
-import { addDetector, deleteDetector, gpuById, state } from "../app/store.ts";
+import {
+  addDetector,
+  allGpus,
+  deleteDetector,
+  gpuById,
+  state,
+} from "../app/store.ts";
 import { byId, escapeHtml } from "./dom.ts";
 import { formErrorText, type FormErrorKeys } from "./form-errors.ts";
 import { INPUTS, renderObjects } from "./object-cards.ts";
 import { toast } from "./toast.ts";
 
+// список «GPU замера» в форме детектора: после изменения своих карт выбор сохраняется, если карта осталась
+export function buildRefGpuSelect() {
+  const refSelect = byId<HTMLSelectElement>("detectorFormRefGpu");
+  if (refSelect) {
+    const refCurrent = refSelect.value;
+    refSelect.innerHTML = allGpus()
+      .map(
+        (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}</option>`,
+      )
+      .join("");
+    refSelect.value = gpuById(refCurrent) ? refCurrent : "5090";
+  }
+}
 export function renderDetView() {
   byId("detectorsTitle").textContent = t(
     "detectorsTitle",

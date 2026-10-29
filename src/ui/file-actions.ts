@@ -3,14 +3,13 @@ import { t } from "../i18n/index.ts";
 import { exportText, importText } from "../app/persistence.ts";
 import { activeType, resetToExample, state } from "../app/store.ts";
 import { byId } from "./dom.ts";
-import { buildGpuSelect, writeSystemForm } from "./system-panel.ts";
+import { buildRefGpuSelect } from "./templates-detectors.ts";
 import { toast } from "./toast.ts";
 import { writeForm } from "./type-form.ts";
 
 byId("resetBtn").addEventListener("click", () => {
   resetToExample();
-  buildGpuSelect();
-  writeSystemForm();
+  buildRefGpuSelect();
   writeForm(activeType());
   toast(t("exampleLoaded"));
 });

@@ -16,7 +16,7 @@ import {
 } from "../app/store.ts";
 import { byId, escapeHtml } from "./dom.ts";
 import { formErrorText, type FormErrorKeys } from "./form-errors.ts";
-import { buildGpuSelect } from "./system-panel.ts";
+import { buildRefGpuSelect } from "./templates-detectors.ts";
 import { toast } from "./toast.ts";
 
 const decText = (gpu: Gpu) =>
@@ -53,7 +53,7 @@ export function renderGpuView() {
     .forEach((button) =>
       button.addEventListener("click", () => {
         deleteGpu(button.dataset.delg!);
-        buildGpuSelect();
+        buildRefGpuSelect();
         renderGpuView();
         toast(t("gpuDeleted"));
       }),
@@ -124,7 +124,7 @@ byId("gpuForm").addEventListener("submit", (event) => {
   errorEl.hidden = true;
   addGpu(parsed.value, byId<HTMLInputElement>("gpuFormEnabled").checked);
   GPU_FORM_IDS.forEach((id) => (byId<HTMLInputElement>(id).value = ""));
-  buildGpuSelect();
+  buildRefGpuSelect();
   renderGpuView();
   toast(t("gpuAdded", name));
 });

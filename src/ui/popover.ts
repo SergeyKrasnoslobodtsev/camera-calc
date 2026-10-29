@@ -42,6 +42,16 @@ function hideTip() {
   if (popoverOwner) popoverOwner.setAttribute("aria-expanded", "false");
   popoverOwner = null;
 }
+// кнопка «?»: щелчок закрепляет подсказку или закрывает закреплённую, наведение и фокус показывают
+export function clickTip(button: HTMLButtonElement) {
+  popoverOwner === button && pinned ? hideTip() : showTip(button, true);
+}
+export function enterTip(button: HTMLButtonElement) {
+  if (!pinned) showTip(button, false);
+}
+export function leaveTip(button: HTMLButtonElement) {
+  if (!pinned && popoverOwner === button) hideTip();
+}
 Object.keys(STR.tips).forEach((key) => {
   const label =
     document.querySelector(`label[for="${key}"]`) ||
@@ -64,20 +74,12 @@ Object.keys(STR.tips).forEach((key) => {
   row.append(button);
   button.addEventListener("click", (event) => {
     event.stopPropagation();
-    popoverOwner === button && pinned ? hideTip() : showTip(button, true);
+    clickTip(button);
   });
-  button.addEventListener("mouseenter", () => {
-    if (!pinned) showTip(button, false);
-  });
-  button.addEventListener("mouseleave", () => {
-    if (!pinned && popoverOwner === button) hideTip();
-  });
-  button.addEventListener("focus", () => {
-    if (!pinned) showTip(button, false);
-  });
-  button.addEventListener("blur", () => {
-    if (!pinned && popoverOwner === button) hideTip();
-  });
+  button.addEventListener("mouseenter", () => enterTip(button));
+  button.addEventListener("mouseleave", () => leaveTip(button));
+  button.addEventListener("focus", () => enterTip(button));
+  button.addEventListener("blur", () => leaveTip(button));
 });
 document.addEventListener("click", (event) => {
   if (!popover.hidden && !popover.contains(event.target as Node)) hideTip();

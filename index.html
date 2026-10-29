@@ -24,28 +24,9 @@
 <nav class="tabs" role="tablist" data-ta="tabsAria" id="tabs"></nav>
 
 <div class="first">
-<section class="syswrap" aria-labelledby="systemTitle">
-  <h2 id="systemTitle" data-t="systemTitle"></h2>
-  <div class="sys" id="systemKpis"></div>
-</section>
+<section class="syswrap" aria-labelledby="systemTitle" id="systemPanel"></section>
 
-<section class="panel dash" aria-labelledby="loadTitle">
-  <div class="dhead">
-    <h2 id="loadTitle" data-t="loadTitle"></h2>
-    <a class="inlink" href="#tpl-gpus" data-t="addGpuLink"></a>
-  </div>
-  <div class="dsel">
-    <div class="f"><label for="gpu" data-t="gpu"></label><select id="gpu"></select></div>
-    <div class="f"><label for="gpuCount" data-t="gpuCount"></label><select id="gpuCount"><option value="auto" data-t="auto"></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
-  </div>
-  <div class="dsum" id="loadSummary"></div>
-  <div class="donutbox">
-    <svg id="donut" viewBox="0 0 120 120" role="img" data-ta="donutAria"></svg>
-    <ul class="legend" id="legend"></ul>
-  </div>
-  <div class="gauges" id="gauges"></div>
-  <p class="note" id="loadNote"></p>
-</section>
+<section class="panel dash" aria-labelledby="loadTitle" id="gpuLoad"></section>
 
 <section class="panel res" aria-labelledby="resultTitle" role="tabpanel" id="typeResult"></section>
 </div>
@@ -124,11 +105,7 @@
 </div>
 
 <div class="bottom">
-  <section class="panel net" aria-labelledby="networkTitle">
-    <div class="rowhead"><h2 id="networkTitle" data-t="networkTitle"></h2>
-      <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" min="0" step="1" inputmode="numeric" value="0"></div></div>
-    <div class="tbl"><table id="networkTable"></table></div>
-  </section>
+  <section class="panel net" aria-labelledby="networkTitle" id="networkPanel"></section>
   <section class="panel assum" aria-labelledby="assumptionsTitle">
     <h2 id="assumptionsTitle" data-t="assumptionsTitle"></h2>
     <ul id="assumptionsList"></ul>
@@ -152,10 +129,7 @@
       <div class="colhead" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="catalogTitle" data-t="catalogTitleNoCount"></h2><span class="note" data-t="catalogNote"></span></div>
       <div class="tbl" style="padding:4px 8px 8px"><table id="catalogTable"></table></div>
       <div class="mine" id="customGpus"></div>
-      <div class="params">
-        <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" min="0" step="any" inputmode="decimal" value="0.6"></div>
-        <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" min="0" step="any" inputmode="decimal" value="20"></div>
-      </div>
+      <div class="params" id="gpuParams"></div>
     </section>
     <section class="panel newc" aria-labelledby="gpuFormTitle">
       <div class="colhead"><h2 id="gpuFormTitle" data-t="gpuFormTitle"></h2></div>
