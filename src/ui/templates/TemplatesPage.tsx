@@ -1,9 +1,10 @@
-// Экран шаблонов: вкладки видеокарт, камер и моделей, экспорт и импорт всех данных.
+// Экран шаблонов: вкладки видеокарт, камер, объектов детекции и моделей, экспорт и импорт всех данных.
 import { useRef } from "react";
 import { t, type TextKey } from "../../i18n/index.ts";
 import { useConfirm } from "../hooks/useConfirm.ts";
 import { CameraTemplates } from "./CameraTemplates.tsx";
 import { ModelTemplates } from "./ModelTemplates.tsx";
+import { ObjectTemplates } from "./ObjectTemplates.tsx";
 import { downloadState, loadStateFile } from "./file-actions.ts";
 import { GpuTemplates } from "./GpuTemplates.tsx";
 
@@ -11,6 +12,7 @@ import { GpuTemplates } from "./GpuTemplates.tsx";
 const TABS = [
   ["tpl-gpus", "templateTabGpus"],
   ["tpl-cams", "templateTabCameras"],
+  ["tpl-objects", "templateTabObjects"],
   ["tpl-models", "templateTabModels"],
 ] as const satisfies readonly (readonly [string, TextKey])[];
 export type TemplateRoute = (typeof TABS)[number][0];
@@ -83,6 +85,7 @@ export function TemplatesPage({ page }: { page: TemplateRoute | null }) {
       </div>
       <GpuTemplates hidden={page !== "tpl-gpus"} />
       <CameraTemplates hidden={page !== "tpl-cams"} />
+      <ObjectTemplates hidden={page !== "tpl-objects"} />
       <ModelTemplates hidden={page !== "tpl-models"} />
     </div>
   );

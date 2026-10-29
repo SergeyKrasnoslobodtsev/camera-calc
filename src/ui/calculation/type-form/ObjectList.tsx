@@ -59,6 +59,9 @@ export function ObjectList() {
           ))}
         </div>
         <div className="presets">
+          <a className="inlink" href="#tpl-objects">
+            {t("addDetectionObjectLink")}
+          </a>
           <a
             className="inlink"
             href="#tpl-models"
