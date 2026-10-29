@@ -9,12 +9,16 @@ type Options = {
   saved?: string | null; // сохранение в localStorage
   lang?: string | null; // выбранный язык; null — не выбран
   browserLang?: string; // язык браузера
+  browserLangs?: string[]; // языки браузера по порядку; по умолчанию — только browserLang
+  search?: string; // адрес после «?», например "lang=en"
 };
 
 export async function openPage({
   saved = null,
   lang = "ru",
   browserLang = "en-US",
+  browserLangs = [browserLang],
+  search = "",
 }: Options = {}) {
   cleanup();
   localStorage.clear();
@@ -24,9 +28,13 @@ export async function openPage({
     value: browserLang,
     configurable: true,
   });
+  Object.defineProperty(navigator, "languages", {
+    value: browserLangs,
+    configurable: true,
+  });
   // как в Chrome: scrollTo возвращает Promise, а не undefined
   window.scrollTo = () => Promise.resolve() as never;
-  history.replaceState(null, "", "/");
+  history.replaceState(null, "", "/" + (search && "?" + search));
   vi.resetModules();
   const { start } = await import("../../src/start.ts");
   const { App } = await import("../../src/ui/App.tsx");
