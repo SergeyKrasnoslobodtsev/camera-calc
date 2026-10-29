@@ -15,7 +15,7 @@ export type Camera = {
   custom?: true;
 };
 
-// Своя камера: имя, кадр и ширина матрицы обязательны. Фокус 0 — объектив не ограничен,
+// Своя камера: имя, кадр в целых пикселях и ширина матрицы обязательны. Фокус 0 — объектив не ограничен,
 // иначе «от» не больше «до». Цена 0 или нет — неизвестна.
 export function parseCamera(raw: unknown): ParseResult<Camera> {
   const read = readFields(raw);
@@ -28,6 +28,8 @@ export function parseCamera(raw: unknown): ParseResult<Camera> {
     focalMin: read.nonNegative("focalMin"),
     focalMax: read.nonNegative("focalMax"),
   };
+  read.integer("Nw", camera.Nw);
+  read.integer("Nh", camera.Nh);
   read.order("focalMax", camera.focalMin <= camera.focalMax);
   if (read.record.price !== undefined) camera.price = read.nonNegative("price");
   if (read.record.custom === true) camera.custom = true;

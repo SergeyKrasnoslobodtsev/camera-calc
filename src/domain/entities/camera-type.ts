@@ -73,8 +73,8 @@ const withNameKey = <T extends { nameKey?: string }>(
   return item;
 };
 
-// Объект из черновика: числа разбираются, недопустимые — NaN, их отсекает расчёт; подача — из списка.
-// Без входа модели — DEFAULT_INPUT_SIZE, без перекрытия — 0.
+// Объект из черновика: числа разбираются, пустые и не числа — NaN, их отсекает расчёт; отрицательные — ошибка;
+// подача — из списка. Без входа модели — DEFAULT_INPUT_SIZE, перекрытие обязательно.
 export function parseSceneObject(raw: unknown): ParseResult<SceneObject> {
   const read = readFields(raw);
   const object: SceneObject = {
@@ -86,13 +86,13 @@ export function parseSceneObject(raw: unknown): ParseResult<SceneObject> {
     model: read.text("model"),
     feed: read.oneOf("feed", FEED_MODES),
     inputSize: read.number("inputSize") || DEFAULT_INPUT_SIZE,
-    overlap: read.number("overlap") || 0,
+    overlap: read.requiredNumber("overlap"),
   };
   return result(read.errors, withNameKey(object, read.record.nameKey));
 }
 
 // Тип камер из черновика: числа разбираются, как у объекта. Число камер — целое, не меньше 0,
-// запас кадра без значения — 0. Индексы и значения списков (resolution, sensor, codec, scene)
+// число камер и запас кадра обязательны. Индексы и значения списков (resolution, sensor, codec, scene)
 // переводятся в число Number: пустая строка — 0.
 // Ошибки объектов и полей inputs — с путём, например "objects.0.feed", "inputs.placement".
 export function parseCameraType(raw: unknown): ParseResult<CameraType> {
@@ -104,10 +104,12 @@ export function parseCameraType(raw: unknown): ParseResult<CameraType> {
   const objects = (Array.isArray(rawObjects) ? rawObjects : []).map(
     parseSceneObject,
   );
+  const count = read.requiredNumber("count");
+  read.integer("count", count);
   const type: CameraType = {
     id: read.text("id"),
     name: read.string("name"),
-    count: Math.max(0, Math.round(read.number("count")) || 0),
+    count,
     inputs: {
       camera: inputs.string("camera"),
       cameraHeight: inputs.number("cameraHeight"),
@@ -115,7 +117,7 @@ export function parseCameraType(raw: unknown): ParseResult<CameraType> {
       zoneStart: inputs.number("zoneStart"),
       zoneDepth: inputs.number("zoneDepth"),
       zoneWidth: inputs.number("zoneWidth"),
-      margin: inputs.number("margin") || 0,
+      margin: inputs.requiredNumber("margin"),
       resolution: Number(inputs.formValue("resolution")),
       sensor: Number(inputs.formValue("sensor")),
       sensorWidth: inputs.number("sensorWidth"),
