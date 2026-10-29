@@ -246,7 +246,7 @@ export const RU = {
   objectsTitle: "Объекты и модели",
   addObject: "+ Объект",
   presets: "Шаблоны:",
-  addDetectorLink: "+ Свой детектор",
+  addModelLink: "+ Своя модель",
   objectsFooter:
     "Объекты с одной моделью и одной подачей считаются одним запуском.",
   objectName: "Название объекта",
@@ -260,7 +260,7 @@ export const RU = {
   objectInput: "Вход модели, px",
   objectOverlap: "Перекрытие, %",
   ultralytics: "Каталог Ultralytics",
-  customDetectors: "Свои детекторы",
+  customModels: "Свои модели",
   feeds: { roi: "Вырез зоны", tiles: "Тайлы", full: "Весь кадр" },
   feedsShort: { roi: "вырез", tiles: "тайлы", full: "весь кадр" },
   presetNames: [
@@ -303,7 +303,7 @@ export const RU = {
   templatesNav: "Разделы шаблонов",
   templateTabGpus: "GPU",
   templateTabCameras: "Камеры",
-  templateTabDetectors: "Детекторы",
+  templateTabModels: "Модели",
   exportBtn: "Экспорт",
   exportTitle: "Сохранить шаблоны, цены и расчёт в файл",
   importBtn: "Импорт",
@@ -398,32 +398,31 @@ export const RU = {
   errorCameraPrice: "цену",
   cameraAdded: (name: Value) => `«${name}» добавлена`,
   cameraDeleted: "Камера удалена",
-  detectorsTitle: (count: Value) => `Детекторы · ${count}`,
-  detectorsNote: "Выбираются в карточке объекта, поле «Модель»",
-  detectorTableHeader: ["Модель", "Вход", "GFLOPs", "Скорость", "Объекты"],
-  detectorCustom: "Свой",
-  detectorCatalog: "Каталог Ultralytics",
-  detectorSpeed: (fps: Value, gpuName: Value) => `${fps} кадр/с на ${gpuName}`,
-  detectorsEmpty:
-    "Своих детекторов нет. Добавьте детектор в форме «Новый детектор».",
-  detectorFormTitle: "Новый детектор",
-  detectorFormNamePlaceholder: "Например, детектор деталей v2",
-  detectorFormFps: "Замер, кадр/с",
-  detectorFormFpsPlaceholder: "На одном GPU",
-  detectorFormInput: "Вход модели, px",
-  detectorFormRefGpu: "GPU замера",
-  detectorFormGflops: "GFLOPs на кадр",
-  detectorFormGflopsPlaceholder: "Необязательно, для оценки памяти",
+  modelsTitle: (count: Value) => `Модели · ${count}`,
+  modelsNote: "Выбираются в карточке объекта, поле «Модель»",
+  modelTableHeader: ["Модель", "Вход", "GFLOPs", "Скорость", "Объекты"],
+  modelCustom: "Свой",
+  modelCatalog: "Каталог Ultralytics",
+  modelSpeed: (fps: Value, gpuName: Value) => `${fps} кадр/с на ${gpuName}`,
+  modelsEmpty: "Своих моделей нет. Добавьте модель в форме «Новая модель».",
+  modelFormTitle: "Новая модель",
+  modelFormNamePlaceholder: "Например, модель деталей v2",
+  modelFormFps: "Замер, кадр/с",
+  modelFormFpsPlaceholder: "На одном GPU",
+  modelFormInput: "Вход модели, px",
+  modelFormRefGpu: "GPU замера",
+  modelFormGflops: "GFLOPs на кадр",
+  modelFormGflopsPlaceholder: "Необязательно, для оценки памяти",
   hintHow: "Как выполнить замер",
-  detectorFormHint1:
+  modelFormHint1:
     "Измерьте число кадров в секунду на одном GPU в TensorRT с той же точностью и batch, что и в эксплуатации: trtexec, DeepStream perf или собственный бенчмарк.",
-  detectorFormHint2:
+  modelFormHint2:
     "Для других GPU замер пересчитывается по FP16, для другого входа — по квадрату его стороны.",
-  addDetectorBtn: "Добавить детектор",
+  addModelBtn: "Добавить модель",
   errorFps: "замер",
   errorGflops: "GFLOPs на кадр",
-  detectorAdded: (name: Value) => `«${name}» добавлен`,
-  detectorDeleted: "Детектор удалён",
+  modelAdded: (name: Value) => `«${name}» добавлен`,
+  modelDeleted: "Модель удалена",
   // отчёт
   reportError: (name: Value, count: Value) =>
     `${name} × ${count}: ошибка в исходных данных`,
@@ -519,7 +518,7 @@ export const RU = {
       "FP16 Tensor из даташита NVIDIA без sparsity. Если значение отмечено звёздочкой «with sparsity», разделите его на 2. Для GeForce используйте FP16 с FP32-накоплением: оно вдвое меньше FP16-накопления.",
     gpuFormArchitecture:
       "Архитектура задаёт производительность одного аппаратного декодера NVDEC. Для Jetson выберите «Jetson или свой декодер» и укажите число потоков 1080p30 из спецификации.",
-    detectorFormFps:
+    modelFormFps:
       "Число кадров в секунду, которое модель обрабатывает на одном GPU в TensorRT с той же точностью и batch, что и в эксплуатации.",
     cameraFormSensorWidth:
       "Ширина активной области сенсора из даташита. Если её нет, оставьте поле пустым и укажите размер пикселя.",

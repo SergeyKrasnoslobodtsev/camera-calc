@@ -2,7 +2,7 @@
 // загрузка пропускает записи, которые не прошли разбор, импорт отклоняет такой файл целиком.
 import { parseCamera } from "../domain/entities/camera.ts";
 import { parseCameraType } from "../domain/entities/camera-type.ts";
-import { parseDetector } from "../domain/entities/detector.ts";
+import { parseModel } from "../domain/entities/model.ts";
 import { parseGpu } from "../domain/entities/gpu.ts";
 import {
   onlyValueErrors,
@@ -27,7 +27,7 @@ const snapshot = (state: State) => ({
   gpuEnabled: state.gpuEnabled,
   customGpus: state.customGpus,
   customCameras: state.customCameras,
-  customDetectors: state.customDetectors,
+  customModels: state.customModels,
   light: state.light,
 });
 export const exportText = (state: State) =>
@@ -136,7 +136,7 @@ function parseSaved(saved: Record<string, any>) {
   return {
     customGpus: parseAll(list(saved.customGpus), parseGpu),
     customCameras: parseAll(list(saved.customCameras), parseCamera),
-    customDetectors: parseAll(list(saved.customDetectors), parseDetector),
+    customModels: parseAll(list(saved.customModels), parseModel),
     types: parseAll(
       list(saved.types).map(savedType),
       asDraft<TypeDraft>(parseCameraType),
@@ -164,14 +164,14 @@ export function loadSaved(): Partial<State> {
         ...camera,
         custom: true,
       }));
-    if (Array.isArray(saved.customDetectors))
-      loaded.customDetectors = parsed.customDetectors;
+    if (Array.isArray(saved.customModels))
+      loaded.customModels = parsed.customModels;
     if (isObject(saved.gpuPrices))
       loaded.gpuPrices = allWithDot(saved.gpuPrices);
     if (isObject(saved.gpuEnabled)) loaded.gpuEnabled = saved.gpuEnabled;
     if (saved.light) loaded.light = true;
     if (parsed.types.length) {
-      const models = [...MODELS, ...(loaded.customDetectors ?? [])];
+      const models = [...MODELS, ...(loaded.customModels ?? [])];
       parsed.types.forEach((type) =>
         type.objects.forEach((object) => {
           if (!models.some((model) => model.id === object.model))
@@ -209,7 +209,7 @@ export function importText(text: string): "ok" | "badFile" | "saveFail" {
     !isObject(saved) ||
     !Array.isArray(saved.types) ||
     !saved.types.length ||
-    !["customGpus", "customCameras", "customDetectors"].every((key) =>
+    !["customGpus", "customCameras", "customModels"].every((key) =>
       Array.isArray(saved[key]),
     ) ||
     !isObject(saved.gpuPrices) ||

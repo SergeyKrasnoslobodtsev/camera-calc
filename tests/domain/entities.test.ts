@@ -6,7 +6,7 @@ import {
   parseCameraType,
   parseSceneObject,
 } from "../../src/domain/entities/camera-type.ts";
-import { parseDetector } from "../../src/domain/entities/detector.ts";
+import { parseModel } from "../../src/domain/entities/model.ts";
 import { parseGpu } from "../../src/domain/entities/gpu.ts";
 import {
   onlyValueErrors,
@@ -124,9 +124,9 @@ test("parseCamera: лишние поля не попадают в значени
   });
 });
 
-const detector = {
+const customModel = {
   id: "d1",
-  name: "Мой детектор",
+  name: "Моя модель",
   fps: 120,
   inputSize: 640,
   refGpu: "5090",
@@ -134,11 +134,11 @@ const detector = {
   custom: true,
 };
 
-test("parseDetector: допустимый детектор", () => {
-  assert.deepEqual(parseDetector(detector), { ok: true, value: detector });
+test("parseModel: допустимая модель", () => {
+  assert.deepEqual(parseModel(customModel), { ok: true, value: customModel });
 });
 
-test("parseDetector: правило каждого поля", () => {
+test("parseModel: правило каждого поля", () => {
   const cases: [Record<string, unknown>, string][] = [
     [{ id: "" }, "id:required"],
     [{ name: undefined }, "name:required"],
@@ -148,15 +148,15 @@ test("parseDetector: правило каждого поля", () => {
     [{ gflops: -1 }, "gflops:nonNegative"],
   ];
   for (const [change, expected] of cases)
-    assert.deepEqual(errorsOf(parseDetector({ ...detector, ...change })), [
+    assert.deepEqual(errorsOf(parseModel({ ...customModel, ...change })), [
       expected,
     ]);
 });
 
-test("parseDetector: лишние поля не попадают в значение", () => {
-  assert.deepEqual(parseDetector({ ...detector, ref: 1 }), {
+test("parseModel: лишние поля не попадают в значение", () => {
+  assert.deepEqual(parseModel({ ...customModel, ref: 1 }), {
     ok: true,
-    value: detector,
+    value: customModel,
   });
 });
 

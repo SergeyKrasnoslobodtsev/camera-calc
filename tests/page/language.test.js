@@ -48,7 +48,7 @@ test("отчёт на EN: без кириллицы, кроме своих на�
       .flatMap((T) => [T.name, ...T.objects.map((o) => o.name)])
       .filter((n) => !builtinRu.includes(n)),
     ...ex.customCameras.map((c) => c.name),
-    ...ex.customDetectors.map((x) => x.name),
+    ...ex.customModels.map((x) => x.name),
     ...ex.customGpus.map((g) => g.name),
   ].sort((a, b) => b.length - a.length);
   const rEn = reportOf();

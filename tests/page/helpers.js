@@ -64,7 +64,7 @@ export function countReloads() {
   return reloads;
 }
 
-// своя камера и свой детектор через формы шаблонов; камера выбрана в первом типе, детектор — у второго объекта.
+// своя камера и своя модель через формы шаблонов; камера выбрана в первом типе, модель — у второго объекта.
 // Возвращает сохранение страницы (ex) и его же как файл экспорта (exp)
 export async function addTemplates() {
   await openPage();
@@ -77,21 +77,21 @@ export async function addTemplates() {
   enter("cameraFormFocalMax", "6");
   enter("cameraFormPrice", "300");
   submit("cameraForm");
-  go("#tpl-dets");
-  enter("detectorFormName", "Детектор деталей");
-  enter("detectorFormFps", "900");
-  choose("detectorFormInput", "640");
-  choose("detectorFormRefGpu", "l40s");
-  submit("detectorForm");
+  go("#tpl-models");
+  enter("modelFormName", "Детектор деталей");
+  enter("modelFormFps", "900");
+  choose("modelFormInput", "640");
+  choose("modelFormRefGpu", "l40s");
+  submit("modelForm");
   go("");
   const camera = [...document.getElementById("camera").options].find((o) =>
     o.text.startsWith("Тест-камера"),
   );
   choose("camera", camera.value);
-  const detector = [...document.getElementById("objectModel-1").options].find(
-    (o) => o.text === "Детектор деталей",
-  );
-  choose("objectModel-1", detector.value);
+  const customModelOption = [
+    ...document.getElementById("objectModel-1").options,
+  ].find((o) => o.text === "Детектор деталей");
+  choose("objectModel-1", customModelOption.value);
   const ex = JSON.parse(localStorage.getItem("camcalc4"));
   return { ex, exp: JSON.stringify(ex, null, 1) };
 }

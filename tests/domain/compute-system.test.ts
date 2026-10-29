@@ -1,4 +1,4 @@
-// Подбор GPU и итоги системы. Свой детектор d — 100 кадр/с на входе 640 на GPU small,
+// Подбор GPU и итоги системы. Своя модель d — 100 кадр/с на входе 640 на GPU small,
 // поэтому нагрузка в кадрах в секунду сразу переводится в долю GPU.
 import { test } from "vitest";
 import assert from "node:assert/strict";
@@ -8,7 +8,7 @@ import {
   type SystemCatalog,
 } from "../../src/domain/compute-system/index.ts";
 import type { TypeResult } from "../../src/domain/compute-type/index.ts";
-import type { CustomDetector } from "../../src/domain/entities/detector.ts";
+import type { CustomModel } from "../../src/domain/entities/model.ts";
 import type { Gpu } from "../../src/domain/entities/gpu.ts";
 import type { SystemSettings } from "../../src/domain/entities/system-settings.ts";
 
@@ -30,7 +30,7 @@ const gpu = (
 });
 const small = gpu({ id: "small" }),
   big = gpu({ id: "big", tflops: 260, price: 3000 });
-const detector: CustomDetector = {
+const customModel: CustomModel = {
   id: "d",
   name: "D",
   fps: 100,
@@ -42,7 +42,7 @@ const detector: CustomDetector = {
 const catalog = (gpus = [small, big]): SystemCatalog => ({
   gpus,
   candidates: gpus,
-  detectors: [detector],
+  customModels: [customModel],
 });
 const settings = (changes: Partial<SystemSettings> = {}): SystemSettings => ({
   efficiency: 1,
@@ -90,7 +90,7 @@ const inputError = (count: number, camera?: string): TypeResult =>
     type: { name: "E", inputs: { camera } },
   }) as unknown as TypeResult;
 
-test("инференс: свой детектор — замер × (вход замера / вход)² × TFLOPS / TFLOPS замера × эффективность", () => {
+test("инференс: своя модель — замер × (вход замера / вход)² × TFLOPS / TFLOPS замера × эффективность", () => {
   // на big (260 TFLOPS) при входе 320: 100 × 4 × 4 = 1600 кадр/с, × 0,5 = 800
   const { chosen } = computeSystem(
     [computed({ groups: [{ model: "d", inputSize: 320, load: 400 }] })],
@@ -174,7 +174,7 @@ test("узкое место — ресурс с наибольшей загру�
   assert.equal(bottleneck(computed({ frameGB: 0.4 })), "memory");
 });
 
-// 150 кадр/с детектора: small × 1 — 150 %, small × 2 — 75 % за $2000, big × 1 — 37,5 % за $3000
+// 150 кадр/с модели: small × 1 — 150 %, small × 2 — 75 % за $2000, big × 1 — 37,5 % за $3000
 const load150 = [
   computed({ groups: [{ model: "d", inputSize: 640, load: 150 }] }),
 ];

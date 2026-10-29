@@ -75,7 +75,7 @@ test("экспорт: файл JSON с сохранением", async () => {
   assert.deepStrictEqual(
     [
       exported.ex.customCameras.map((c) => c.name),
-      exported.ex.customDetectors.map((x) => x.name),
+      exported.ex.customModels.map((x) => x.name),
     ],
     [["Тест-камера 8 Мп"], ["Детектор деталей"]],
     "экспорт: нет своих шаблонов",

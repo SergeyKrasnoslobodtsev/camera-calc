@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Экраны шаблонов: свои камера и детектор, проверка формы камеры.
+// Экраны шаблонов: свои камера и модель, проверка формы камеры.
 import { test } from "vitest";
 import assert from "assert";
 import { RU } from "../../src/i18n/ru.ts";
@@ -15,7 +15,7 @@ import {
   addTemplates,
 } from "./helpers.js";
 
-test("своя камера и свой детектор", async () => {
+test("своя камера и своя модель", async () => {
   await addTemplates();
   console.log("SYS:", T("systemKpis"));
   console.log("DSUM:", T("loadSummary"));
@@ -50,8 +50,8 @@ test("своя камера и свой детектор", async () => {
     !document.getElementById("templatePage-gpus").hidden,
   );
   console.log(tbl("cameraTable"));
-  go("#tpl-dets");
-  console.log("det first row:", tbl("detectorTable").split("\n")[1]);
+  go("#tpl-models");
+  console.log("det first row:", tbl("modelTable").split("\n")[1]);
 });
 
 test("камера с дробным кадром не добавляется", async () => {

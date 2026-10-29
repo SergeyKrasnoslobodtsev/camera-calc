@@ -72,8 +72,12 @@ export function ObjectList() {
               {displayName(preset)}
             </button>
           ))}
-          <a className="inlink" href="#tpl-dets" style={{ marginLeft: "auto" }}>
-            {t("addDetectorLink")}
+          <a
+            className="inlink"
+            href="#tpl-models"
+            style={{ marginLeft: "auto" }}
+          >
+            {t("addModelLink")}
           </a>
         </div>
       </div>

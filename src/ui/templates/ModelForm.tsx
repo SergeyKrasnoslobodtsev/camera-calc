@@ -1,10 +1,10 @@
-// Форма своего детектора: скорость, замеренная на одном GPU, разбор и проверка — parseDetector из domain.
+// Форма своей модели: скорость, замеренная на одном GPU, разбор и проверка — parseModel из domain.
 import { useState, type ChangeEvent } from "react";
 import { t } from "../../i18n/index.ts";
-import { parseDetector } from "../../domain/entities/detector.ts";
+import { parseModel } from "../../domain/entities/model.ts";
 import { parseNum } from "../../domain/parse-num.ts";
 import { uid } from "../../app/examples.ts";
-import { addDetector, allGpus, gpuById } from "../../app/store.ts";
+import { addModel, allGpus, gpuById } from "../../app/store.ts";
 import { Field } from "../components/Field.tsx";
 import { NumberInput } from "../components/NumberInput.tsx";
 import { toast } from "../components/Toast.tsx";
@@ -16,17 +16,17 @@ import { TemplateForm } from "./TemplateForm.tsx";
 const DEFAULT_INPUT_SIZE = "640";
 const DEFAULT_REF_GPU = "5090";
 
-const DETECTOR_FORM_ERRORS: FormErrorKeys = {
+const MODEL_FORM_ERRORS: FormErrorKeys = {
   name: "errorName",
   fps: "errorFps",
   gflops: "errorGflops",
 };
 
-// текстовые поля; после добавления детектора очищаются, вход и GPU замера остаются
-type DetectorDraft = Record<"name" | "fps" | "gflops", string>;
-const EMPTY_DRAFT: DetectorDraft = { name: "", fps: "", gflops: "" };
+// текстовые поля; после добавления модели очищаются, вход и GPU замера остаются
+type ModelDraft = Record<"name" | "fps" | "gflops", string>;
+const EMPTY_DRAFT: ModelDraft = { name: "", fps: "", gflops: "" };
 
-export function DetectorForm() {
+export function ModelForm() {
   // список GPU замера — из state
   useComputed();
   const [draft, setDraft] = useState(EMPTY_DRAFT);
@@ -36,7 +36,7 @@ export function DetectorForm() {
   // выбранная карта могла быть удалена на экране видеокарт
   const refGpu = gpuById(chosenRefGpu) ? chosenRefGpu : DEFAULT_REF_GPU;
 
-  const bind = (field: keyof DetectorDraft, id: string) => ({
+  const bind = (field: keyof ModelDraft, id: string) => ({
     id,
     value: draft[field],
     onChange: (event: ChangeEvent<HTMLInputElement>) =>
@@ -45,7 +45,7 @@ export function DetectorForm() {
 
   const submit = () => {
     const gflops = parseNum(draft.gflops);
-    const parsed = parseDetector({
+    const parsed = parseModel({
       id: "d" + uid(),
       name: draft.name.trim(),
       fps: parseNum(draft.fps),
@@ -56,48 +56,41 @@ export function DetectorForm() {
     });
     if (!parsed.ok) {
       setError(
-        t(
-          "cameraFormError",
-          formErrorText(parsed.errors, DETECTOR_FORM_ERRORS),
-        ),
+        t("cameraFormError", formErrorText(parsed.errors, MODEL_FORM_ERRORS)),
       );
       return;
     }
     setError("");
-    addDetector(parsed.value);
+    addModel(parsed.value);
     setDraft(EMPTY_DRAFT);
-    toast(t("detectorAdded", parsed.value.name));
+    toast(t("modelAdded", parsed.value.name));
   };
 
   return (
     <TemplateForm
-      id="detectorForm"
-      title={t("detectorFormTitle")}
-      hint={[t("hintHow"), t("detectorFormHint1"), t("detectorFormHint2")]}
+      id="modelForm"
+      title={t("modelFormTitle")}
+      hint={[t("hintHow"), t("modelFormHint1"), t("modelFormHint2")]}
       error={error}
-      submitLabel={t("addDetectorBtn")}
+      submitLabel={t("addModelBtn")}
       onSubmit={submit}
     >
-      <Field id="detectorFormName" label={t("typeName")} span="full">
+      <Field id="modelFormName" label={t("typeName")} span="full">
         <input
-          {...bind("name", "detectorFormName")}
-          placeholder={t("detectorFormNamePlaceholder")}
+          {...bind("name", "modelFormName")}
+          placeholder={t("modelFormNamePlaceholder")}
           style={{ fontFamily: "var(--sans)" }}
         />
       </Field>
-      <Field
-        id="detectorFormFps"
-        label={t("detectorFormFps")}
-        tip="detectorFormFps"
-      >
+      <Field id="modelFormFps" label={t("modelFormFps")} tip="modelFormFps">
         <NumberInput
-          {...bind("fps", "detectorFormFps")}
-          placeholder={t("detectorFormFpsPlaceholder")}
+          {...bind("fps", "modelFormFps")}
+          placeholder={t("modelFormFpsPlaceholder")}
         />
       </Field>
-      <Field id="detectorFormInput" label={t("detectorFormInput")}>
+      <Field id="modelFormInput" label={t("modelFormInput")}>
         <select
-          id="detectorFormInput"
+          id="modelFormInput"
           value={inputSize}
           onChange={(event) => setInputSize(event.target.value)}
           style={{ fontFamily: "var(--mono)" }}
@@ -107,13 +100,9 @@ export function DetectorForm() {
           ))}
         </select>
       </Field>
-      <Field
-        id="detectorFormRefGpu"
-        label={t("detectorFormRefGpu")}
-        span="full"
-      >
+      <Field id="modelFormRefGpu" label={t("modelFormRefGpu")} span="full">
         <select
-          id="detectorFormRefGpu"
+          id="modelFormRefGpu"
           value={refGpu}
           onChange={(event) => setRefGpu(event.target.value)}
         >
@@ -124,14 +113,10 @@ export function DetectorForm() {
           ))}
         </select>
       </Field>
-      <Field
-        id="detectorFormGflops"
-        label={t("detectorFormGflops")}
-        span="full"
-      >
+      <Field id="modelFormGflops" label={t("modelFormGflops")} span="full">
         <NumberInput
-          {...bind("gflops", "detectorFormGflops")}
-          placeholder={t("detectorFormGflopsPlaceholder")}
+          {...bind("gflops", "modelFormGflops")}
+          placeholder={t("modelFormGflopsPlaceholder")}
         />
       </Field>
     </TemplateForm>

@@ -76,11 +76,11 @@ export function ObjectCard({ index, object, result }: CardProps) {
                 </option>
               ))}
             </optgroup>
-            {state.customDetectors.length > 0 && (
-              <optgroup label={t("customDetectors")}>
-                {state.customDetectors.map((detector) => (
-                  <option key={detector.id} value={detector.id}>
-                    {detector.name}
+            {state.customModels.length > 0 && (
+              <optgroup label={t("customModels")}>
+                {state.customModels.map((customModel) => (
+                  <option key={customModel.id} value={customModel.id}>
+                    {customModel.name}
                   </option>
                 ))}
               </optgroup>

@@ -228,7 +228,7 @@ export const EN: Dictionary = {
   objectsTitle: "Objects and models",
   addObject: "+ Object",
   presets: "Templates:",
-  addDetectorLink: "+ Custom detector",
+  addModelLink: "+ Custom model",
   objectsFooter:
     "Objects with the same model and input mode count as one inference run.",
   objectName: "Object name",
@@ -242,7 +242,7 @@ export const EN: Dictionary = {
   objectInput: "Model input, px",
   objectOverlap: "Overlap, %",
   ultralytics: "Ultralytics catalog",
-  customDetectors: "Custom detectors",
+  customModels: "Custom models",
   feeds: { roi: "Zone crop", tiles: "Tiles", full: "Full frame" },
   feedsShort: { roi: "crop", tiles: "tiles", full: "full frame" },
   presetNames: ["Person", "Hand", "Tray cell", "Part", "M8 nut"],
@@ -279,7 +279,7 @@ export const EN: Dictionary = {
   templatesNav: "Template sections",
   templateTabGpus: "GPUs",
   templateTabCameras: "Cameras",
-  templateTabDetectors: "Detectors",
+  templateTabModels: "Models",
   exportBtn: "Export",
   exportTitle: "Save templates, prices, and the calculation to a file",
   importBtn: "Import",
@@ -374,32 +374,31 @@ export const EN: Dictionary = {
   errorCameraPrice: "price",
   cameraAdded: (name) => `"${name}" added`,
   cameraDeleted: "Camera deleted",
-  detectorsTitle: (count) => `Detectors · ${count}`,
-  detectorsNote: 'Selected in the object card, "Model" field',
-  detectorTableHeader: ["Model", "Input", "GFLOPs", "Speed", "Objects"],
-  detectorCustom: "Custom",
-  detectorCatalog: "Ultralytics catalog",
-  detectorSpeed: (fps, gpuName) => `${fps} fps on ${gpuName}`,
-  detectorsEmpty:
-    'No custom detectors. Add a detector in the "New detector" form.',
-  detectorFormTitle: "New detector",
-  detectorFormNamePlaceholder: "For example, parts detector v2",
-  detectorFormFps: "Benchmark, fps",
-  detectorFormFpsPlaceholder: "On one GPU",
-  detectorFormInput: "Model input, px",
-  detectorFormRefGpu: "Benchmark GPU",
-  detectorFormGflops: "GFLOPs per frame",
-  detectorFormGflopsPlaceholder: "Optional, for the memory estimate",
+  modelsTitle: (count) => `Models · ${count}`,
+  modelsNote: 'Selected in the object card, "Model" field',
+  modelTableHeader: ["Model", "Input", "GFLOPs", "Speed", "Objects"],
+  modelCustom: "Custom",
+  modelCatalog: "Ultralytics catalog",
+  modelSpeed: (fps, gpuName) => `${fps} fps on ${gpuName}`,
+  modelsEmpty: 'No custom models. Add a model in the "New model" form.',
+  modelFormTitle: "New model",
+  modelFormNamePlaceholder: "For example, parts model v2",
+  modelFormFps: "Benchmark, fps",
+  modelFormFpsPlaceholder: "On one GPU",
+  modelFormInput: "Model input, px",
+  modelFormRefGpu: "Benchmark GPU",
+  modelFormGflops: "GFLOPs per frame",
+  modelFormGflopsPlaceholder: "Optional, for the memory estimate",
   hintHow: "How to benchmark",
-  detectorFormHint1:
+  modelFormHint1:
     "Measure frames per second on one GPU in TensorRT with the same precision and batch as in production: trtexec, DeepStream perf, or your own benchmark.",
-  detectorFormHint2:
+  modelFormHint2:
     "For other GPUs the benchmark is scaled by FP16, for another input size by the square of its side.",
-  addDetectorBtn: "Add detector",
+  addModelBtn: "Add model",
   errorFps: "benchmark",
   errorGflops: "GFLOPs per frame",
-  detectorAdded: (name) => `"${name}" added`,
-  detectorDeleted: "Detector deleted",
+  modelAdded: (name) => `"${name}" added`,
+  modelDeleted: "Model deleted",
   // отчёт
   reportError: (name, count) => `${name} × ${count}: input data error`,
   reportCamera: (params) =>
@@ -455,7 +454,7 @@ export const EN: Dictionary = {
       'FP16 Tensor from the NVIDIA datasheet without sparsity. If the value is marked with an asterisk "with sparsity", divide it by 2. For GeForce, use FP16 with FP32 accumulate: it\'s half of FP16 accumulate.',
     gpuFormArchitecture:
       'The architecture defines the performance of one NVDEC hardware decoder. For Jetson, choose "Jetson or custom decoder" and enter the number of 1080p30 streams from the specification.',
-    detectorFormFps:
+    modelFormFps:
       "Frames per second the model processes on one GPU in TensorRT with the same precision and batch as in production.",
     cameraFormSensorWidth:
       "Width of the sensor active area from the datasheet. If it isn't listed, leave the field empty and enter the pixel size.",

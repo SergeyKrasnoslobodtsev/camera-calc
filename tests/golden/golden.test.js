@@ -75,7 +75,7 @@ const configs = {
         price: 300,
       },
     ],
-    customDetectors: [
+    customModels: [
       {
         id: "dtest",
         name: "Детектор деталей",
