@@ -1,4 +1,4 @@
-// Собирает dist/camera-calc.html из src/: разметка + формулы + модули src/js, собранные esbuild в один скрипт.
+// Собирает dist/camera-calc.html из src/: разметка + формулы + модули от src/main.ts, собранные esbuild в один скрипт.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { build } from "esbuild";
 
@@ -17,7 +17,7 @@ const layout = read("layout.html");
 if (!layout.includes(slot))
   throw new Error("в layout.html нет места под формулы");
 const { outputFiles } = await build({
-  entryPoints: [new URL("src/js/init.js", import.meta.url).pathname],
+  entryPoints: [new URL("src/main.ts", import.meta.url).pathname],
   bundle: true,
   format: "iife",
   charset: "utf8",

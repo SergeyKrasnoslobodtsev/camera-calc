@@ -11,6 +11,10 @@ type Params<K extends Key> = Dictionary[K] extends (...args: infer P) => unknown
 type Text<K extends Key> = Dictionary[K] extends (...args: never[]) => infer R
   ? R
   : Dictionary[K];
+// ключ текста без параметров: для ключей из разметки (data-t) и таблиц кодов
+export type TextKey = {
+  [K in Key]: Dictionary[K] extends string ? K : never;
+}[Key];
 
 // язык: выбор из localStorage, иначе язык браузера
 export const LANG_KEY = "camcalc-lang";
@@ -52,9 +56,9 @@ export const formatNumber = (value: number, digits = 1) =>
 
 // название для показа: встроенное на текущем языке по ключу словаря nameKey (например "presetNames.0"),
 // иначе своё; nameKey есть, пока пользователь не изменил название
-export function displayName(item: { name: string; nameKey?: string }) {
+export function displayName(item: { name?: string; nameKey?: string }) {
   const builtin = item.nameKey
     ?.split(".")
     .reduce<unknown>((node, part) => (node as any)?.[part], STR);
-  return typeof builtin === "string" ? builtin : item.name;
+  return typeof builtin === "string" ? builtin : (item.name ?? "");
 }

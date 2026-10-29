@@ -377,16 +377,17 @@ assert.deepStrictEqual(extraKeys(EN, RU, ""), [], "ключи EN, которых
 console.log("en keys: ok");
 // language: every key is used in the code or markup, every referenced key exists
 const srcDir = import.meta.dirname + "/../src/";
-const appCode = ["js", "app", "i18n", "domain"]
+const appCode = ["ui", "app", "i18n", "domain"]
   .flatMap((dir) =>
     fs
       .readdirSync(srcDir + dir, { recursive: true, encoding: "utf8" })
-      .filter((file) => /\.[jt]s$/.test(file))
+      .filter((file) => /\.ts$/.test(file))
       .map((file) => fs.readFileSync(srcDir + dir + "/" + file, "utf8")),
   )
+  .concat(fs.readFileSync(srcDir + "main.ts", "utf8"))
   .join("\n")
   .replace(/^export const (RU|EN)\b[^=]*= \{\n[\s\S]*?^\};/gm, "")
-  .replace(/byId\(["'`][^"'`]*["'`]\)/g, "");
+  .replace(/byId(<[^>]*>)?\(["'`][^"'`]*["'`]\)/g, "");
 const layoutSource = fs.readFileSync(srcDir + "layout.html", "utf8");
 const dictKeys = Object.keys(RU).filter((key) => key !== "tips");
 const markupKeys = [...layoutSource.matchAll(/data-t[atp]?="([^"]+)"/g)].map(

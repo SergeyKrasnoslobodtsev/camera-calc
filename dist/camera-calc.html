@@ -1446,7 +1446,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   }).replace("-", "−") : "—";
   function displayName(item) {
     const builtin = item.nameKey?.split(".").reduce((node, part) => node?.[part], STR);
-    return typeof builtin === "string" ? builtin : item.name;
+    return typeof builtin === "string" ? builtin : item.name ?? "";
   }
 
   // src/domain/parse-num.ts
@@ -1463,7 +1463,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const check = (ok, field, code) => {
       if (!ok) errors.push({ field: prefix + field, code });
     };
-    const formValue = (field, value = record[field]) => {
+    const formValue3 = (field, value = record[field]) => {
       check(
         typeof value === "string" || Number.isFinite(value),
         field,
@@ -1473,7 +1473,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     };
     const draftNumber = (field, value, ok, code) => {
       const count = errors.length;
-      const number = parseNum(formValue(field, value));
+      const number = parseNum(formValue3(field, value));
       if (errors.length === count) check(ok(number), field, code);
       return number;
     };
@@ -1484,7 +1484,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         check(typeof value === "string", field, "required");
         return String(value ?? "");
       },
-      formValue,
+      formValue: formValue3,
       // число из поля формы в черновике: пустое или не число — NaN, его отсекает расчёт, если поле нужно;
       // отрицательное — ошибка
       number(field, value = record[field]) {
@@ -3064,18 +3064,15 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   var bottleneckText = (bottleneck) => t(BOTTLENECK_KEYS[bottleneck]);
   var portText = (port) => port === "1G" ? withUnit(1, "gbps") : port === "10G" ? withUnit(10, "gbps") : "> " + withUnit(10, "gbps");
 
-  // src/js/data.js
+  // src/ui/dom.ts
   var byId = (id) => document.getElementById(id);
   var escapeHtml = (text) => String(text ?? "").replace(
     /[&<>"]/g,
     (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char]
   );
-  var decText = (gpu) => gpu.decodeStreams ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0)) : `${gpu.nvdec} NVDEC`;
-  var FEEDS = STR.feeds;
-  var FEED_SHORT = STR.feedsShort;
-  var INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
 
-  // src/js/objects.js
+  // src/ui/object-cards.ts
+  var INPUTS = [320, 416, 512, 640, 768, 960, 1024, 1280];
   function buildCameraSelect() {
     const select = byId("camera"), current = select.value;
     select.innerHTML = `<option value="">${t("cameraManual")}</option>` + allCameras().map(
@@ -3098,7 +3095,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f c2"><label for="objectModel-${i}">${t("objectModel")}</label><select id="objectModel-${i}">${modelOptions}</select></div>
         <div class="f"><label for="objectFeed-${i}">${t("objectFeed")}</label><select id="objectFeed-${i}">${Object.entries(
-        FEEDS
+        STR.feeds
       ).map(([feed, label]) => `<option value="${feed}">${label}</option>`).join("")}</select></div>
         <div class="f"><label for="objectInput-${i}">${t("objectInput")}</label><select id="objectInput-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
         <div class="f" id="objectOverlapBox-${i}"><label for="objectOverlap-${i}">${t("objectOverlap")}</label><input id="objectOverlap-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
@@ -3117,10 +3114,10 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         ["objectOverlap", "overlap"]
       ].forEach(([idPrefix, field]) => {
         const input = byId(`${idPrefix}-${i}`);
-        input.value = field === "name" ? displayName(obj) : obj[field] ?? "";
+        input.value = field === "name" ? displayName(obj) : String(obj[field] ?? "");
         input.addEventListener("input", (event) => {
           event.stopPropagation();
-          updateObject(i, field, event.target.value);
+          updateObject(i, field, input.value);
         });
       });
       [
@@ -3133,7 +3130,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         if (select.selectedIndex < 0) select.selectedIndex = 0;
         select.addEventListener("change", (event) => {
           event.stopPropagation();
-          updateObject(i, field, event.target.value);
+          updateObject(i, field, select.value);
           syncOverlapBox();
         });
       });
@@ -3145,7 +3142,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     });
     renderObjectResults(activeResult());
   }
-  var STATUS_TEXT = STR.status;
   var capitalize = (text) => text ? text[0].toUpperCase() + text.slice(1) : text;
   function renderObjectResults(result2) {
     if (!result2.ok) return;
@@ -3160,7 +3156,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       }
       resultEl.className = "ores " + item.status;
       if (dotEl) dotEl.className = "dot " + item.status;
-      resultEl.innerHTML = `<b>${capitalize(STATUS_TEXT[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
+      resultEl.innerHTML = `<b>${capitalize(STR.status[item.status])}</b><span>${t("objectAtModel", `<span class="mono">${modelPxText(item)}</span>`, formatNumber(item.requiredPx, 0))}</span><span class="m2">${t("objectAtSensor", sensorPxText(item), escapeHtml(feedText(item.feed)))}</span>`;
     });
   }
   function syncFormUI(type, result2) {
@@ -3168,13 +3164,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
     byId("hfovBox").hidden = inputs.lensMode !== "angle";
     byId("zoneStartBox").hidden = inputs.placement === "top";
-    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR, sensorWidth = result2?.frame?.sensorWidth;
+    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR, sensorWidth = result2 && "frame" in result2 ? result2.frame.sensorWidth : NaN;
     byId("resolution").disabled = !!camera;
     byId("sensor").disabled = !!camera;
     byId("pixelPitchBox").hidden = !!camera || sensor.kind !== "pixelPitch";
-    byId("sensorWidth").readOnly = !!camera || sensor.kind !== "custom";
+    const sensorWidthInput = byId("sensorWidth");
+    sensorWidthInput.readOnly = !!camera || sensor.kind !== "custom";
     if (isFinite(sensorWidth) && (camera || sensor.kind !== "custom"))
-      byId("sensorWidth").value = +sensorWidth.toFixed(2);
+      sensorWidthInput.value = String(+sensorWidth.toFixed(2));
     byId("summaryGeometry").textContent = `${t(inputs.placement === "top" ? "summaryTop" : "summarySide")}, ${withUnit(formatNumber(parseNum(inputs.cameraHeight), 1), "m")}, ${formatNumber(parseNum(inputs.zoneWidth), 1)} × ${withUnit(formatNumber(parseNum(inputs.zoneDepth), 1), "m")}`;
     byId("summaryCamera").textContent = (camera ? `${camera.Nw} × ${camera.Nh}` : t(
       "megapixels",
@@ -3182,8 +3179,211 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     )) + (result2?.ok ? `, f ${withUnit(formatNumber(result2.lens.f, 1), "mm")}` : "");
     byId("summaryStream").textContent = `${withUnit(formatNumber(parseNum(inputs.fps), 0), "fps")}, ${inputs.codec === "0.04" ? "H.265" : "H.264"}`;
   }
+  OBJECT_PRESETS.forEach((preset2) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.textContent = displayName(preset2);
+    chip.addEventListener("click", () => {
+      addObject(preset2);
+      renderObjects();
+    });
+    byId("presets").append(chip);
+  });
+  byId("addObject").addEventListener("click", () => {
+    addObject(NEW_OBJECT);
+    renderObjects();
+    const lastIndex = activeType().objects.length - 1;
+    byId(`objectName-${lastIndex}`).focus();
+    byId(`objectName-${lastIndex}`).select();
+  });
 
-  // src/js/state.js
+  // src/ui/labels.ts
+  var modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
+  var cameraLabel = ({
+    type
+  }) => {
+    const camera = cameraById(type.inputs.camera);
+    return camera ? displayName(camera) : resolutionLabel(
+      RESOLUTIONS[+type.inputs.resolution] ?? DEFAULT_RESOLUTION
+    );
+  };
+
+  // src/ui/system-panel.ts
+  function ring(cx, cy, r, width, segments, mark) {
+    const circumference = 2 * Math.PI * r;
+    let offset = 0, svg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${width}"/>`;
+    segments.forEach((segment) => {
+      const arc = Math.max(0, Math.min(1 - offset / circumference, segment.fraction)) * circumference;
+      if (arc <= 0) return;
+      const dash = segments.length > 1 && arc > 2 ? arc - 1 : arc;
+      svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${segment.color}" stroke-width="${width}" stroke-dasharray="${dash.toFixed(2)} ${(circumference - dash).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+      offset += arc;
+    });
+    if (mark != null) {
+      const angle = -Math.PI / 2 + 2 * Math.PI * mark, innerR = r - width / 2 - 2, outerR = r + width / 2 + 2;
+      svg += `<line x1="${(cx + innerR * Math.cos(angle)).toFixed(2)}" y1="${(cy + innerR * Math.sin(angle)).toFixed(2)}" x2="${(cx + outerR * Math.cos(angle)).toFixed(2)}" y2="${(cy + outerR * Math.sin(angle)).toFixed(2)}" stroke="var(--fg2)" stroke-width="1.5"/>`;
+    }
+    return svg;
+  }
+  function renderSystem(results, system, totals) {
+    const { cameraCount, totalMbps, cameraCost } = totals;
+    const percent = (share) => formatNumber(share * 100, 0) + "%";
+    const allObjects = results.flatMap(
+      (result2) => result2.ok ? result2.objects.filter((item) => item.valid) : []
+    ), okObjects = allObjects.filter((obj) => obj.status === "ok").length;
+    const worstStatus = results.some(
+      (result2) => !result2.ok || result2.status === "bad"
+    ) ? "bad" : results.some((result2) => result2.ok && result2.status === "warn") ? "warn" : "ok";
+    const smallest = allObjects.length ? allObjects.reduce((a, b) => a.modelPx < b.modelPx ? a : b) : null;
+    byId("systemKpis").innerHTML = [
+      [
+        t("systemCameras"),
+        `${cameraCount}`,
+        cameraCost ? t("systemTypes", results.length) + t("systemCameraCost", "$" + formatNumber(cameraCost, 0)) : t(
+          "systemTypes",
+          results.length,
+          results.map((result2) => displayName(result2.type)).join(", ")
+        )
+      ],
+      [
+        t("systemObjects"),
+        `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("systemOfTotal", okObjects, allObjects.length)}`,
+        smallest ? t(
+          "systemSmallest",
+          displayName(smallest.object),
+          formatNumber(
+            Math.min(smallest.widthPx, smallest.heightPx) * smallest.feed.modelScale,
+            1
+          )
+        ) : t("systemNoObjects")
+      ],
+      [
+        t("systemCompute"),
+        system && system.liveResults.length ? `${system.chosen.count} × ${escapeHtml(system.chosen.gpu.name)}` : "—",
+        !system ? t("tabError") : system.liveResults.length ? `$${formatNumber(system.chosen.cost, 0)} · ${system.chosen.ok ? t(system.chosen === system.optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - system.chosen.worstLoad))) : t("insufficient")}` : t("systemNoCameras")
+      ],
+      [
+        t("systemNetwork"),
+        `${withUnit(formatNumber(totalMbps, 0), "mbps")}`,
+        t("systemPort", portText(totals.port), formatNumber(totals.poeW, 0))
+      ]
+    ].map(
+      ([label, value, extra]) => `<div class="sk"><span>${label}</span><strong>${value}</strong><em>${escapeHtml(extra)}</em></div>`
+    ).join("");
+    const { archiveDays, archiveTB } = totals;
+    byId("networkTable").innerHTML = `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` + results.map(
+      (result2) => !result2.ok ? `<tr><td class="txt">${escapeHtml(displayName(result2.type))}</td><td>${result2.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(displayName(result2.type))}</td><td>${result2.count}</td><td>${result2.frame.width} × ${result2.frame.height}</td><td>${formatNumber(result2.stream.fps, 0)}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps * result2.count, 0), "mbps")}</td></tr>`
+    ).join("") + `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr><tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${!(archiveDays >= 0) ? t("tabError") : archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
+    byId("assumptionsList").innerHTML = t(
+      "assumptions",
+      system ? formatNumber(system.efficiency, 2) : "—"
+    ).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    if (!system) {
+      ["loadSummary", "donut", "legend", "gauges"].forEach(
+        (id) => byId(id).innerHTML = ""
+      );
+      byId("loadNote").innerHTML = `<span style="color:var(--bad)">${escapeHtml(t("systemInputError"))}</span>`;
+      byId("loadNote").hidden = false;
+      return;
+    }
+    const { chosen, optimum, maxLoad, liveResults } = system;
+    const overloaded = chosen.inferenceLoad > maxLoad;
+    byId("loadSummary").innerHTML = liveResults.length ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", bottleneckText(chosen.bottleneck))}` : "";
+    const runs = chosen.runs.filter((run) => !run.unknownModel).map((run) => ({ ...run, share: run.gpusNeeded / chosen.count })).sort((a, b) => b.share - a.share);
+    const RUN_COLORS = [
+      "var(--c1)",
+      "var(--c2)",
+      "var(--c3)",
+      "var(--c4)",
+      "var(--c5)"
+    ];
+    const shown = runs.slice(0, 5), rest = runs.slice(5), restShare = rest.reduce((sum, run) => sum + run.share, 0);
+    const segments = shown.map((run, i) => ({
+      fraction: run.share,
+      color: RUN_COLORS[i]
+    }));
+    if (restShare > 0) segments.push({ fraction: restShare, color: "var(--c6)" });
+    const donut = byId("donut");
+    donut.innerHTML = liveResults.length ? ring(60, 60, 48, 14, segments, maxLoad) + `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${overloaded ? "var(--bad)" : "var(--fg)"}">${percent(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCaption")}</text>` : "";
+    donut.setAttribute(
+      "aria-label",
+      t("donutAriaValue", percent(chosen.inferenceLoad), percent(maxLoad))
+    );
+    byId("legend").innerHTML = liveResults.length ? shown.map(
+      (run, i) => `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${STR.feedsShort[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(displayName(run.type))}: ${escapeHtml(run.objects.map(objectName).join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`
+    ).join("") + (rest.length ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${percent(restShare)}</span></li>` : "") + `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSubtitle", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>` : `<li class="note">${t("noLoad")}</li>`;
+    const decodeCapacity = chosen.count * system.decodeUnitsTotal / (chosen.decodeGpus || 1);
+    const gauge = (label, load, limit, center, sub) => `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load, color: load > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
+    byId("gauges").innerHTML = liveResults.length ? gauge(
+      t("gaugeDecoder"),
+      chosen.decodeLoad,
+      maxLoad,
+      percent(chosen.decodeLoad),
+      t(
+        "gaugeDecoderSubtitle",
+        formatNumber(system.decodeUnitsTotal, 1),
+        formatNumber(decodeCapacity, 0)
+      )
+    ) + gauge(
+      t("gaugeMemory"),
+      chosen.memoryLoad,
+      1,
+      percent(chosen.memoryLoad),
+      t(
+        "gaugeMemorySubtitle",
+        formatNumber(chosen.memoryUseGB, 1),
+        formatNumber(chosen.memoryCapGB, 0)
+      )
+    ) : "";
+    const warning = system.noCandidates ? t("noCandidates") : !optimum && liveResults.length ? t("noFit") : "";
+    const gpuNote = STR.gpuNotes[chosen.gpu.id];
+    const loadNote = byId("loadNote");
+    loadNote.innerHTML = warning ? `<span style="color:var(--bad)">${escapeHtml(warning)}</span>` : liveResults.length && gpuNote ? escapeHtml(gpuNote) : "";
+    loadNote.hidden = !loadNote.innerHTML;
+  }
+  function buildGpuSelect() {
+    const select = byId("gpu");
+    select.innerHTML = `<option value="auto">${t("gpuAuto")}</option>` + allGpus().map(
+      (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}${gpu.custom ? t("gpuCustomMark") : ""}</option>`
+    ).join("");
+    select.value = state.system.gpu;
+    const refSelect = byId("detectorFormRefGpu");
+    if (refSelect) {
+      const refCurrent = refSelect.value;
+      refSelect.innerHTML = allGpus().map(
+        (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}</option>`
+      ).join("");
+      refSelect.value = gpuById(refCurrent) ? refCurrent : "5090";
+    }
+  }
+  var SYSTEM_IDS = [
+    "efficiency",
+    "reserve",
+    "archiveDays",
+    "gpu",
+    "gpuCount"
+  ];
+  function writeSystemForm() {
+    SYSTEM_IDS.forEach((id) => byId(id).value = state.system[id]);
+  }
+  SYSTEM_IDS.forEach((id) => {
+    const update = () => updateSystem(id, byId(id).value);
+    byId(id).addEventListener("input", update);
+    byId(id).addEventListener("change", update);
+  });
+
+  // src/ui/toast.ts
+  var timer;
+  function toast(message) {
+    const toastEl = byId("toast");
+    toastEl.textContent = message;
+    toastEl.hidden = false;
+    clearTimeout(timer);
+    timer = setTimeout(() => toastEl.hidden = true, 1800);
+  }
+
+  // src/ui/type-form.ts
   var INPUT_IDS = [
     "camera",
     "cameraHeight",
@@ -3207,20 +3407,23 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     "speed",
     "blurPx"
   ];
+  var checkedValue = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value;
   RESOLUTIONS.forEach(
-    (resolution, i) => byId("resolution").add(new Option(resolutionLabel(resolution), i))
+    (resolution, i) => byId("resolution").add(
+      new Option(resolutionLabel(resolution), String(i))
+    )
   );
   SENSORS.forEach(
     (sensor, i) => byId("sensor").add(
       new Option(
         sensor.kind === "format" ? t("sensorFormat", sensor.format, formatNumber(sensor.widthMm, 1)) : sensor.kind === "pixelPitch" ? t("sensorByPixelPitch") : t("sensorCustom"),
-        i
+        String(i)
       )
     )
   );
   function writeForm(type) {
     byId("typeName").value = displayName(type);
-    byId("typeCount").value = type.count;
+    byId("typeCount").value = String(type.count);
     INPUT_IDS.forEach((id) => {
       byId(id).value = type.inputs[id] ?? DEFAULT_INPUTS[id];
     });
@@ -3241,14 +3444,89 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       ...name !== displayName(activeType()) && { name },
       count: byId("typeCount").value,
       inputs: {
-        ...Object.fromEntries(INPUT_IDS.map((id) => [id, byId(id).value])),
-        lensMode: (document.querySelector('input[name="lensMode"]:checked') || {}).value || "auto",
-        placement: (document.querySelector('input[name="placement"]:checked') || {}).value || "side"
+        ...Object.fromEntries(
+          INPUT_IDS.map((id) => [id, byId(id).value])
+        ),
+        lensMode: checkedValue("lensMode") || "auto",
+        placement: checkedValue("placement") || "side"
       }
     });
   }
+  byId("typeForm").addEventListener("input", readForm);
+  byId("typeForm").addEventListener("change", readForm);
+  byId("typeForm").addEventListener("submit", (event) => event.preventDefault());
+  byId("duplicateTypeBtn").addEventListener("click", () => {
+    readForm();
+    duplicateActiveType(displayName(activeType()) + t("copySuffix"));
+    writeForm(activeType());
+    toast(t("typeCopied"));
+  });
+  var deleteTimer = null;
+  byId("deleteTypeBtn").addEventListener("click", () => {
+    const button = byId("deleteTypeBtn");
+    if (state.cameraTypes.length < 2) {
+      toast(t("lastType"));
+      return;
+    }
+    if (!deleteTimer) {
+      button.textContent = t("deleteTypeConfirm");
+      deleteTimer = setTimeout(() => {
+        button.textContent = t("deleteTypeBtn");
+        deleteTimer = null;
+      }, 3e3);
+      return;
+    }
+    clearTimeout(deleteTimer);
+    deleteTimer = null;
+    button.textContent = t("deleteTypeBtn");
+    deleteActiveType();
+    writeForm(activeType());
+    toast(t("typeDeleted"));
+  });
 
-  // src/js/draw-side.js
+  // src/ui/tabs.ts
+  function renderTabs(results) {
+    const nav = byId("tabs");
+    nav.innerHTML = "";
+    results.forEach((result2) => {
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.className = "tab";
+      tab.setAttribute("role", "tab");
+      tab.setAttribute(
+        "aria-selected",
+        String(result2.type.id === state.activeTypeId)
+      );
+      tab.setAttribute("aria-controls", "typeResult");
+      tab.innerHTML = `<span class="dot ${result2.ok ? result2.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(displayName(result2.type) || t("untitled"))}</b><small>× ${result2.count}</small>`;
+      tab.title = result2.ok ? t("tabObjects", STR.status[result2.status]) : t("tabError");
+      tab.addEventListener("click", () => {
+        if (state.activeTypeId === result2.type.id) return;
+        selectType(result2.type.id);
+        writeForm(activeType());
+      });
+      nav.append(tab);
+    });
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "tab ghost";
+    addButton.textContent = t("addType");
+    addButton.addEventListener("click", () => {
+      addType(t("newType", state.cameraTypes.length + 1), [OBJECT_PRESETS[0]]);
+      writeForm(activeType());
+    });
+    nav.append(addButton);
+  }
+
+  // src/ui/theme.ts
+  function applyTheme() {
+    document.documentElement.classList.toggle("light", state.light);
+    byId("themeBtn").textContent = t(state.light ? "themeDark" : "themeLight");
+    byId("themeBtn").setAttribute("aria-pressed", String(state.light));
+  }
+  byId("themeBtn").addEventListener("click", toggleTheme);
+
+  // src/ui/side-diagram.ts
   function drawSide({
     H,
     h,
@@ -3280,7 +3558,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     );
     const offsetX = marginLeft + (viewWidth - marginLeft - marginRight - (xMax - xMin) * scale) / 2;
     const toX = (x) => offsetX + (x - xMin) * scale, toY = (y) => viewHeight - marginBottom - y * scale;
-    const coord = (value) => (+value).toFixed(1);
+    const coord = (value) => value.toFixed(1);
     const cameraX = toX(0), cameraY = toY(H), planeY = toY(h), floorY = toY(0), leftX = toX(xMin), rightX = toX(xMax);
     const rayEnd = (angle) => {
       const hit = planeHitX(angle);
@@ -3380,15 +3658,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     );
   }
 
-  // src/js/system-ui.js
-  var modelName = (obj) => (modelById(obj.model) || { name: "?" }).name;
-  var cameraLabel = ({ type }) => {
-    const camera = cameraById(type.inputs.camera);
-    return camera ? displayName(camera) : resolutionLabel(
-      RESOLUTIONS[+type.inputs.resolution] ?? DEFAULT_RESOLUTION
-    );
-  };
-  var STATUS_TEXT2 = STR.status;
+  // src/ui/type-result.ts
   function renderType(result2) {
     const verdict = byId("verdict");
     byId("resultTitle").textContent = t(
@@ -3461,276 +3731,27 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       frameWidthFar
     });
   }
-  function renderTabs(results) {
-    const nav = byId("tabs");
-    nav.innerHTML = "";
-    results.forEach((result2) => {
-      const tab = document.createElement("button");
-      tab.type = "button";
-      tab.className = "tab";
-      tab.setAttribute("role", "tab");
-      tab.setAttribute(
-        "aria-selected",
-        String(result2.type.id === state.activeTypeId)
-      );
-      tab.setAttribute("aria-controls", "typeResult");
-      tab.innerHTML = `<span class="dot ${result2.ok ? result2.status : "bad"}" aria-hidden="true"></span><b>${escapeHtml(displayName(result2.type) || t("untitled"))}</b><small>× ${result2.count}</small>`;
-      tab.title = result2.ok ? t("tabObjects", STATUS_TEXT2[result2.status]) : t("tabError");
-      tab.addEventListener("click", () => {
-        if (state.activeTypeId === result2.type.id) return;
-        selectType(result2.type.id);
-        writeForm(activeType());
-      });
-      nav.append(tab);
-    });
-    const addButton = document.createElement("button");
-    addButton.type = "button";
-    addButton.className = "tab ghost";
-    addButton.textContent = t("addType");
-    addButton.addEventListener("click", () => {
-      addType(t("newType", state.cameraTypes.length + 1), [OBJECT_PRESETS[0]]);
-      writeForm(activeType());
-    });
-    nav.append(addButton);
+
+  // src/ui/render.ts
+  function renderResults() {
+    const { results, system, totals } = computed;
+    const activeIndex = state.cameraTypes.indexOf(activeType());
+    syncFormUI(activeType(), results[activeIndex]);
+    renderType(results[activeIndex]);
+    renderTabs(results);
+    renderSystem(results, system, totals);
+    applyTheme();
   }
-  function ring(cx, cy, r, width, segments, mark) {
-    const circumference = 2 * Math.PI * r;
-    let offset = 0, svg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${width}"/>`;
-    segments.forEach((segment) => {
-      const arc = Math.max(0, Math.min(1 - offset / circumference, segment.fraction)) * circumference;
-      if (arc <= 0) return;
-      const dash = segments.length > 1 && arc > 2 ? arc - 1 : arc;
-      svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${segment.color}" stroke-width="${width}" stroke-dasharray="${dash.toFixed(2)} ${(circumference - dash).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
-      offset += arc;
-    });
-    if (mark != null) {
-      const angle = -Math.PI / 2 + 2 * Math.PI * mark, innerR = r - width / 2 - 2, outerR = r + width / 2 + 2;
-      svg += `<line x1="${(cx + innerR * Math.cos(angle)).toFixed(2)}" y1="${(cy + innerR * Math.sin(angle)).toFixed(2)}" x2="${(cx + outerR * Math.cos(angle)).toFixed(2)}" y2="${(cy + outerR * Math.sin(angle)).toFixed(2)}" stroke="var(--fg2)" stroke-width="1.5"/>`;
-    }
-    return svg;
-  }
-  function renderSystem(results, system, totals) {
-    const { chosen, optimum, efficiency, maxLoad, liveResults } = system ?? {};
-    const { cameraCount, totalMbps, cameraCost } = totals;
-    const percent = (share) => formatNumber(share * 100, 0) + "%";
-    const allObjects = results.flatMap(
-      (result2) => result2.ok ? result2.objects.filter((item) => item.valid) : []
-    ), okObjects = allObjects.filter((obj) => obj.status === "ok").length;
-    const worstStatus = results.some(
-      (result2) => !result2.ok || result2.status === "bad"
-    ) ? "bad" : results.some((result2) => result2.status === "warn") ? "warn" : "ok";
-    const smallest = allObjects.length ? allObjects.reduce((a, b) => a.modelPx < b.modelPx ? a : b) : null;
-    byId("systemKpis").innerHTML = [
-      [
-        t("systemCameras"),
-        `${cameraCount}`,
-        cameraCost ? t("systemTypes", results.length) + t("systemCameraCost", "$" + formatNumber(cameraCost, 0)) : t(
-          "systemTypes",
-          results.length,
-          results.map((result2) => displayName(result2.type)).join(", ")
-        )
-      ],
-      [
-        t("systemObjects"),
-        `<span class="dot ${worstStatus}" aria-hidden="true"></span>${t("systemOfTotal", okObjects, allObjects.length)}`,
-        smallest ? t(
-          "systemSmallest",
-          displayName(smallest.object),
-          formatNumber(
-            Math.min(smallest.widthPx, smallest.heightPx) * smallest.feed.modelScale,
-            1
-          )
-        ) : t("systemNoObjects")
-      ],
-      [
-        t("systemCompute"),
-        system && liveResults.length ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}` : "—",
-        !system ? t("tabError") : liveResults.length ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}` : t("systemNoCameras")
-      ],
-      [
-        t("systemNetwork"),
-        `${withUnit(formatNumber(totalMbps, 0), "mbps")}`,
-        t("systemPort", portText(totals.port), formatNumber(totals.poeW, 0))
-      ]
-    ].map(
-      ([label, value, extra]) => `<div class="sk"><span>${label}</span><strong>${value}</strong><em>${escapeHtml(extra)}</em></div>`
-    ).join("");
-    const { archiveDays, archiveTB } = totals;
-    byId("networkTable").innerHTML = `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` + results.map(
-      (result2) => !result2.ok ? `<tr><td class="txt">${escapeHtml(displayName(result2.type))}</td><td>${result2.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(displayName(result2.type))}</td><td>${result2.count}</td><td>${result2.frame.width} × ${result2.frame.height}</td><td>${formatNumber(result2.stream.fps, 0)}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps * result2.count, 0), "mbps")}</td></tr>`
-    ).join("") + `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr><tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${!(archiveDays >= 0) ? t("tabError") : archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
-    byId("assumptionsList").innerHTML = t(
-      "assumptions",
-      system ? formatNumber(efficiency, 2) : "—"
-    ).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
-    if (!system) {
-      ["loadSummary", "donut", "legend", "gauges"].forEach(
-        (id) => byId(id).innerHTML = ""
-      );
-      byId("loadNote").innerHTML = `<span style="color:var(--bad)">${escapeHtml(t("systemInputError"))}</span>`;
-      byId("loadNote").hidden = false;
-      return;
-    }
-    const overloaded = chosen.inferenceLoad > maxLoad;
-    byId("loadSummary").innerHTML = liveResults.length ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", bottleneckText(chosen.bottleneck))}` : "";
-    const runs = chosen.runs.filter((run) => !run.unknownModel).map((run) => ({ ...run, share: run.gpusNeeded / chosen.count })).sort((a, b) => b.share - a.share);
-    const RUN_COLORS = [
-      "var(--c1)",
-      "var(--c2)",
-      "var(--c3)",
-      "var(--c4)",
-      "var(--c5)"
-    ];
-    const shown = runs.slice(0, 5), rest = runs.slice(5), restShare = rest.reduce((sum, run) => sum + run.share, 0);
-    const segments = shown.map((run, i) => ({
-      fraction: run.share,
-      color: RUN_COLORS[i]
-    }));
-    if (restShare > 0) segments.push({ fraction: restShare, color: "var(--c6)" });
-    byId("donut").innerHTML = liveResults.length ? ring(60, 60, 48, 14, segments, maxLoad) + `<text x="60" y="61" text-anchor="middle" class="big" style="fill:${overloaded ? "var(--bad)" : "var(--fg)"}">${percent(chosen.inferenceLoad)}</text><text x="60" y="77" text-anchor="middle" class="cap">${t("donutCaption")}</text>` : "";
-    byId("donut").setAttribute(
-      "aria-label",
-      t("donutAriaValue", percent(chosen.inferenceLoad), percent(maxLoad))
-    );
-    byId("legend").innerHTML = liveResults.length ? shown.map(
-      (run, i) => `<li><span class="sw" style="background:${RUN_COLORS[i]}"></span><span>${escapeHtml(modelName(run))} · ${FEED_SHORT[run.feed.mode]} ${run.feed.inputSize}<span class="sub">${escapeHtml(displayName(run.type))}: ${escapeHtml(run.objects.map(objectName).join(", "))} · ${withUnit(formatNumber(run.load, 0), "fps")}</span></span><span class="pc">${percent(run.share)}</span></li>`
-    ).join("") + (rest.length ? `<li><span class="sw" style="background:var(--c6)"></span><span>${t("otherRuns", rest.length)}</span><span class="pc">${percent(restShare)}</span></li>` : "") + `<li><span class="sw" style="background:var(--track)"></span><span>${t("free")}<span class="sub">${t("freeSubtitle", percent(maxLoad))}</span></span><span class="pc">${percent(Math.max(0, 1 - chosen.inferenceLoad))}</span></li>` : `<li class="note">${t("noLoad")}</li>`;
-    const decodeCapacity = chosen.count * system.decodeUnitsTotal / (chosen.decodeGpus || 1);
-    const gauge = (label, load, limit, center, sub) => `<div class="gauge"><svg viewBox="0 0 84 84" role="img" aria-label="${label}: ${center}">${ring(42, 42, 32, 9, [{ fraction: load, color: load > limit ? "var(--bad)" : "var(--meter)" }], limit < 1 ? limit : null)}<text x="42" y="48" text-anchor="middle" class="mid" style="font-size:17px">${center}</text></svg><span><b>${label}</b>${sub}</span></div>`;
-    byId("gauges").innerHTML = liveResults.length ? gauge(
-      t("gaugeDecoder"),
-      chosen.decodeLoad,
-      maxLoad,
-      percent(chosen.decodeLoad),
-      t(
-        "gaugeDecoderSubtitle",
-        formatNumber(system.decodeUnitsTotal, 1),
-        formatNumber(decodeCapacity, 0)
-      )
-    ) + gauge(
-      t("gaugeMemory"),
-      chosen.memoryLoad,
-      1,
-      percent(chosen.memoryLoad),
-      t(
-        "gaugeMemorySubtitle",
-        formatNumber(chosen.memoryUseGB, 1),
-        formatNumber(chosen.memoryCapGB, 0)
-      )
-    ) : "";
-    const warning = system.noCandidates ? t("noCandidates") : !optimum && liveResults.length ? t("noFit") : "";
-    byId("loadNote").innerHTML = warning ? `<span style="color:var(--bad)">${escapeHtml(warning)}</span>` : liveResults.length && STR.gpuNotes[chosen.gpu.id] ? escapeHtml(STR.gpuNotes[chosen.gpu.id]) : "";
-    byId("loadNote").hidden = !byId("loadNote").innerHTML;
-  }
-  function buildGpuSelect() {
-    const select = byId("gpu");
-    select.innerHTML = `<option value="auto">${t("gpuAuto")}</option>` + allGpus().map(
-      (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}${gpu.custom ? t("gpuCustomMark") : ""}</option>`
-    ).join("");
-    select.value = state.system.gpu;
-    const refSelect = byId("detectorFormRefGpu");
-    if (refSelect) {
-      const refCurrent = refSelect.value;
-      refSelect.innerHTML = allGpus().map(
-        (gpu) => `<option value="${gpu.id}">${escapeHtml(gpu.name)}</option>`
-      ).join("");
-      refSelect.value = gpuById(refCurrent) ? refCurrent : "5090";
-    }
-  }
-  function renderGpuView() {
-    const row = (gpu) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(state.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
-    <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
-    ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
-    const headers = STR.gpuTableHeader, head = `<tr>${headers.slice(0, 6).map((header) => `<th>${header}</th>`).join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
-    byId("catalogTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
-    byId("catalogTable").innerHTML = head + GPU_CATALOG.map(row).join("");
-    byId("customGpus").innerHTML = state.customGpus.length ? `<strong style="font-weight:600">${t("customGpusTitle", state.customGpus.length)}</strong><div class="tbl"><table>${head}${state.customGpus.map(row).join("")}</table></div>` : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
-    allGpus().forEach((gpu) => {
-      byId(`gpuPrice-${gpu.id}`).addEventListener(
-        "input",
-        (event) => setGpuPrice(gpu.id, event.target.value)
-      );
-      byId(`gpuEnabled-${gpu.id}`).addEventListener(
-        "change",
-        (event) => setGpuEnabled(gpu.id, event.target.checked)
-      );
-    });
-    document.querySelectorAll("[data-delg]").forEach(
-      (button) => button.addEventListener("click", () => {
-        deleteGpu(button.dataset.delg);
-        buildGpuSelect();
-        renderGpuView();
-        toast(t("gpuDeleted"));
-      })
-    );
-  }
-  byId("gpuFormArchitecture").addEventListener("change", () => {
-    const isJetson = byId("gpuFormArchitecture").value === "jet";
-    byId("gpuFormDecodersLabel").textContent = t(
-      isJetson ? "gpuFormDecoderStreams" : "gpuFormDecoders"
-    );
-    byId("gpuFormDecoders").placeholder = isJetson ? "22" : "2";
-  });
+
+  // src/ui/form-errors.ts
   var formErrorText = (errors, messageKeys) => [...new Set(errors.map((error) => t(messageKeys[error.field])))].join(", ");
-  var GPU_FORM_ERRORS = {
-    name: "errorName",
-    tflops: "errorTflops",
-    nvdec: "errorDecoders",
-    "decodeStreams.h264": "errorDecoderStreams",
-    "decodeStreams.h265": "errorDecoderStreams",
-    memoryGB: "errorMemory",
-    tdpW: "errorTdp",
-    price: "errorPrice"
-  };
-  byId("gpuForm").addEventListener("submit", (event) => {
-    event.preventDefault();
-    const name = byId("gpuFormName").value.trim(), arch = byId("gpuFormArchitecture").value, decode = parseNum(byId("gpuFormDecoders").value), tdpW = parseNum(byId("gpuFormTdp").value);
-    const parsed = parseGpu({
-      id: "c" + uid(),
-      name,
-      arch: arch === "jet" ? "Ampere" : arch,
-      tflops: parseNum(byId("gpuFormTflops").value),
-      ...arch === "jet" ? {
-        jetson: true,
-        decodeStreams: {
-          h264: +(decode * 748 / 1415).toFixed(1),
-          h265: decode
-        }
-      } : { nvdec: decode },
-      memoryGB: parseNum(byId("gpuFormMemory").value),
-      tdpW: isNaN(tdpW) ? 0 : tdpW,
-      price: parseNum(byId("gpuFormPrice").value),
-      custom: true
-    });
-    const errorEl = byId("gpuFormError");
-    if (!parsed.ok) {
-      errorEl.hidden = false;
-      errorEl.textContent = t(
-        "gpuFormError",
-        formErrorText(parsed.errors, GPU_FORM_ERRORS)
-      );
-      return;
-    }
-    errorEl.hidden = true;
-    addGpu(parsed.value, byId("gpuFormEnabled").checked);
-    [
-      "gpuFormName",
-      "gpuFormTflops",
-      "gpuFormDecoders",
-      "gpuFormMemory",
-      "gpuFormTdp",
-      "gpuFormPrice"
-    ].forEach((id) => byId(id).value = "");
-    buildGpuSelect();
-    renderGpuView();
-    toast(t("gpuAdded", name));
-  });
+
+  // src/ui/templates-cameras.ts
   function renderCamView() {
     const used = (id) => state.cameraTypes.filter((type) => type.inputs.camera === id).reduce((sum, type) => sum + (Math.round(parseNum(type.count)) || 0), 0);
     byId("camerasTitle").textContent = t("camerasTitle", allCameras().length);
     byId("cameraTable").innerHTML = `<tr>${STR.cameraTableHeader.map((header) => `<th>${header}</th>`).join("")}<th></th></tr>` + allCameras().map(
-      (camera) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(displayName(camera))}</b><span class="sub">${t(camera.custom ? "cameraCustom" : "cameraBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm") : t("cameraAnyLens")}</td><td>${camera.price > 0 ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("deleteAria", displayName(camera)))}">${t("deleteBtn")}</button>` : ""}</td></tr>`
+      (camera) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(displayName(camera))}</b><span class="sub">${t(camera.custom ? "cameraCustom" : "cameraBuiltin")}</span></td><td>${camera.Nw} × ${camera.Nh}</td><td>${withUnit(formatNumber(camera.sensorWidth, 2), "mm")}</td><td>${camera.focalMin > 0 ? camera.focalMin === camera.focalMax ? withUnit(formatNumber(camera.focalMin, 1), "mm") : withUnit(formatNumber(camera.focalMin, 1) + "–" + formatNumber(camera.focalMax, 1), "mm") : t("cameraAnyLens")}</td><td>${camera.price ? "$" + formatNumber(camera.price, 0) : "—"}</td><td>${used(camera.id)}</td><td>${camera.custom ? `<button type="button" class="sm" data-delc="${camera.id}" aria-label="${escapeHtml(t("deleteAria", displayName(camera)))}">${t("deleteBtn")}</button>` : ""}</td></tr>`
     ).join("");
     document.querySelectorAll("[data-delc]").forEach(
       (button) => button.addEventListener("click", () => {
@@ -3751,12 +3772,23 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     focalMax: "errorFocalRange",
     price: "errorCameraPrice"
   };
+  var CAMERA_FORM_IDS = [
+    "cameraFormName",
+    "cameraFormWidth",
+    "cameraFormHeight",
+    "cameraFormSensorWidth",
+    "cameraFormPixelPitch",
+    "cameraFormFocalMin",
+    "cameraFormFocalMax",
+    "cameraFormPrice"
+  ];
+  var formNumber = (id) => parseNum(byId(id).value);
   byId("cameraForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    const name = byId("cameraFormName").value.trim(), Nw = parseNum(byId("cameraFormWidth").value), Nh = parseNum(byId("cameraFormHeight").value), pixelPitchUm = parseNum(byId("cameraFormPixelPitch").value);
-    let sensorWidth = parseNum(byId("cameraFormSensorWidth").value);
-    let focalMin = parseNum(byId("cameraFormFocalMin").value), focalMax = parseNum(byId("cameraFormFocalMax").value);
-    const price = parseNum(byId("cameraFormPrice").value);
+    const name = byId("cameraFormName").value.trim(), Nw = formNumber("cameraFormWidth"), Nh = formNumber("cameraFormHeight"), pixelPitchUm = formNumber("cameraFormPixelPitch");
+    let sensorWidth = formNumber("cameraFormSensorWidth");
+    let focalMin = formNumber("cameraFormFocalMin"), focalMax = formNumber("cameraFormFocalMax");
+    const price = formNumber("cameraFormPrice");
     if (isNaN(sensorWidth) && pixelPitchUm > 0 && Nw > 0)
       sensorWidth = +(pixelPitchUm * Nw / 1e3).toFixed(3);
     if (focalMin > 0 && isNaN(focalMax)) focalMax = focalMin;
@@ -3783,20 +3815,13 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     }
     errorEl.hidden = true;
     addCamera(parsed.value);
-    [
-      "cameraFormName",
-      "cameraFormWidth",
-      "cameraFormHeight",
-      "cameraFormSensorWidth",
-      "cameraFormPixelPitch",
-      "cameraFormFocalMin",
-      "cameraFormFocalMax",
-      "cameraFormPrice"
-    ].forEach((id) => byId(id).value = "");
+    CAMERA_FORM_IDS.forEach((id) => byId(id).value = "");
     buildCameraSelect();
     renderCamView();
     toast(t("cameraAdded", name));
   });
+
+  // src/ui/templates-detectors.ts
   function renderDetView() {
     byId("detectorsTitle").textContent = t(
       "detectorsTitle",
@@ -3829,15 +3854,21 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     fps: "errorFps",
     gflops: "errorGflops"
   };
+  var DETECTOR_FORM_IDS = [
+    "detectorFormName",
+    "detectorFormFps",
+    "detectorFormGflops"
+  ];
+  var formValue = (id) => byId(id).value;
   byId("detectorForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    const name = byId("detectorFormName").value.trim(), gflops = parseNum(byId("detectorFormGflops").value);
+    const name = formValue("detectorFormName").trim(), gflops = parseNum(formValue("detectorFormGflops"));
     const parsed = parseDetector({
       id: "d" + uid(),
       name,
-      fps: parseNum(byId("detectorFormFps").value),
-      inputSize: +byId("detectorFormInput").value,
-      refGpu: byId("detectorFormRefGpu").value,
+      fps: parseNum(formValue("detectorFormFps")),
+      inputSize: +formValue("detectorFormInput"),
+      refGpu: formValue("detectorFormRefGpu"),
       gflops: isNaN(gflops) ? 0 : gflops,
       custom: true
     });
@@ -3852,173 +3883,169 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     }
     errorEl.hidden = true;
     addDetector(parsed.value);
-    ["detectorFormName", "detectorFormFps", "detectorFormGflops"].forEach(
-      (id) => byId(id).value = ""
-    );
+    DETECTOR_FORM_IDS.forEach((id) => byId(id).value = "");
     renderObjects();
     renderDetView();
     toast(t("detectorAdded", name));
   });
-  function renderResults() {
-    const { results, system, totals } = computed;
-    const activeIndex = state.cameraTypes.indexOf(activeType());
-    syncFormUI(activeType(), results[activeIndex]);
-    renderType(results[activeIndex]);
-    renderTabs(results);
-    renderSystem(results, system, totals);
-    applyTheme();
+
+  // src/ui/templates-gpus.ts
+  var decText = (gpu) => gpu.decodeStreams ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0)) : `${gpu.nvdec} NVDEC`;
+  function renderGpuView() {
+    const row = (gpu) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(state.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
+    ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
+    const headers = STR.gpuTableHeader, head = `<tr>${headers.slice(0, 6).map((header) => `<th>${header}</th>`).join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
+    byId("catalogTitle").textContent = t("catalogTitle", GPU_CATALOG.length);
+    byId("catalogTable").innerHTML = head + GPU_CATALOG.map(row).join("");
+    byId("customGpus").innerHTML = state.customGpus.length ? `<strong style="font-weight:600">${t("customGpusTitle", state.customGpus.length)}</strong><div class="tbl"><table>${head}${state.customGpus.map(row).join("")}</table></div>` : `<strong style="font-weight:600">${t("customGpusTitleNoCount")}</strong><span class="note" style="font-size:13px">${t("customGpusEmpty")}</span>`;
+    allGpus().forEach((gpu) => {
+      const price = byId(`gpuPrice-${gpu.id}`), enabled = byId(`gpuEnabled-${gpu.id}`);
+      price.addEventListener("input", () => setGpuPrice(gpu.id, price.value));
+      enabled.addEventListener(
+        "change",
+        () => setGpuEnabled(gpu.id, enabled.checked)
+      );
+    });
+    document.querySelectorAll("[data-delg]").forEach(
+      (button) => button.addEventListener("click", () => {
+        deleteGpu(button.dataset.delg);
+        buildGpuSelect();
+        renderGpuView();
+        toast(t("gpuDeleted"));
+      })
+    );
   }
-  function reportText() {
-    const { results, system, totals } = computed;
-    const chosen = system?.chosen;
-    return [
-      t("appTitle"),
-      ...results.flatMap(
-        (result2) => !result2.ok ? ["\n" + t("reportError", displayName(result2.type), result2.count)] : [
-          `
-${displayName(result2.type)} × ${result2.count}`,
-          t("reportCamera", {
-            cameraLabel: cameraLabel(result2),
-            rotated: result2.lens.rotated,
-            sensorWidth: formatNumber(result2.frame.sensorWidth, 2),
-            focal: formatNumber(result2.lens.f, 1),
-            hfov: formatNumber(result2.lens.hfov / DEG, 0),
-            tilt: formatNumber(result2.geometry.tilt / DEG, 0),
-            overCenter: result2.placement === "top",
-            zoneStart: formatNumber(result2.geometry.zoneStart, 2),
-            cameraHeight: formatNumber(result2.geometry.H, 2),
-            zoneWidth: formatNumber(result2.geometry.zoneWidth, 2),
-            zoneDepth: formatNumber(result2.geometry.zoneDepth, 2)
-          }),
-          ...result2.objects.filter((item) => item.valid).map(
-            (item) => t("reportObject", {
-              name: displayName(item.object),
-              model: modelName(item.object),
-              feed: feedText(item.feed),
-              sensorPx: sensorPxText(item),
-              modelPx: modelPxText(item),
-              requiredPx: formatNumber(item.requiredPx, 0),
-              status: STATUS_TEXT2[item.status]
-            })
-          ),
-          t(
-            "reportStream",
-            formatNumber(result2.stream.bitrateMbps, 1),
-            Math.ceil(result2.shutterDenominator)
-          )
-        ]
-      ),
-      "\n" + t(
-        "reportSystem",
-        totals.cameraCount,
-        formatNumber(totals.totalMbps, 0),
-        totals.cameraCost ? "$" + formatNumber(totals.cameraCost, 0) : ""
-      ),
-      !system ? t("reportComputeError") : system.liveResults.length ? t("reportCompute", {
-        gpuCount: chosen.count,
-        gpuName: chosen.gpu.name,
-        cost: "$" + formatNumber(chosen.cost, 0),
-        inferenceLoad: formatNumber(chosen.inferenceLoad * 100, 0),
-        decodeLoad: formatNumber(chosen.decodeLoad * 100, 0),
-        memoryUsed: formatNumber(chosen.memoryUseGB, 1),
-        memoryCap: formatNumber(chosen.memoryCapGB, 0),
-        optimum: system.optimum && system.optimum !== chosen ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}` : ""
-      }) : t("reportNoCompute")
-    ].join("\n");
-  }
-  var SYSTEM_IDS = ["efficiency", "reserve", "archiveDays", "gpu", "gpuCount"];
-  function writeSystemForm() {
-    SYSTEM_IDS.forEach((id) => byId(id).value = state.system[id]);
-  }
-  function applyTheme() {
-    document.documentElement.classList.toggle("light", state.light);
-    byId("themeBtn").textContent = t(state.light ? "themeDark" : "themeLight");
-    byId("themeBtn").setAttribute("aria-pressed", String(state.light));
-  }
-  byId("themeBtn").addEventListener("click", toggleTheme);
-  byId("langBtn").lang = LANG === "en" ? "ru" : "en";
-  byId("langBtn").addEventListener("click", () => {
+  var architecture = byId("gpuFormArchitecture");
+  architecture.addEventListener("change", () => {
+    const isJetson = architecture.value === "jet";
+    byId("gpuFormDecodersLabel").textContent = t(
+      isJetson ? "gpuFormDecoderStreams" : "gpuFormDecoders"
+    );
+    byId("gpuFormDecoders").placeholder = isJetson ? "22" : "2";
+  });
+  var GPU_FORM_ERRORS = {
+    name: "errorName",
+    tflops: "errorTflops",
+    nvdec: "errorDecoders",
+    "decodeStreams.h264": "errorDecoderStreams",
+    "decodeStreams.h265": "errorDecoderStreams",
+    memoryGB: "errorMemory",
+    tdpW: "errorTdp",
+    price: "errorPrice"
+  };
+  var GPU_FORM_IDS = [
+    "gpuFormName",
+    "gpuFormTflops",
+    "gpuFormDecoders",
+    "gpuFormMemory",
+    "gpuFormTdp",
+    "gpuFormPrice"
+  ];
+  var formValue2 = (id) => byId(id).value;
+  byId("gpuForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const name = formValue2("gpuFormName").trim(), arch = architecture.value, decode = parseNum(formValue2("gpuFormDecoders")), tdpW = parseNum(formValue2("gpuFormTdp"));
+    const parsed = parseGpu({
+      id: "c" + uid(),
+      name,
+      arch: arch === "jet" ? "Ampere" : arch,
+      tflops: parseNum(formValue2("gpuFormTflops")),
+      ...arch === "jet" ? {
+        jetson: true,
+        decodeStreams: {
+          h264: +(decode * 748 / 1415).toFixed(1),
+          h265: decode
+        }
+      } : { nvdec: decode },
+      memoryGB: parseNum(formValue2("gpuFormMemory")),
+      tdpW: isNaN(tdpW) ? 0 : tdpW,
+      price: parseNum(formValue2("gpuFormPrice")),
+      custom: true
+    });
+    const errorEl = byId("gpuFormError");
+    if (!parsed.ok) {
+      errorEl.hidden = false;
+      errorEl.textContent = t(
+        "gpuFormError",
+        formErrorText(parsed.errors, GPU_FORM_ERRORS)
+      );
+      return;
+    }
+    errorEl.hidden = true;
+    addGpu(parsed.value, byId("gpuFormEnabled").checked);
+    GPU_FORM_IDS.forEach((id) => byId(id).value = "");
+    buildGpuSelect();
+    renderGpuView();
+    toast(t("gpuAdded", name));
+  });
+
+  // src/ui/router.ts
+  var TEMPLATE_VIEWS = {
+    "tpl-gpus": renderGpuView,
+    "tpl-cams": renderCamView,
+    "tpl-dets": renderDetView
+  };
+  function route() {
+    const hash = location.hash.slice(1), isTemplate = hash in TEMPLATE_VIEWS;
+    byId("viewMain").style.display = isTemplate ? "none" : "flex";
+    byId("viewTemplates").hidden = !isTemplate;
+    byId("viewTemplates").style.display = isTemplate ? "flex" : "none";
+    if (isTemplate) {
+      Object.keys(TEMPLATE_VIEWS).forEach((view) => {
+        byId("templatePage-" + view.slice(4)).hidden = view !== hash;
+        byId("templatePage-" + view.slice(4)).style.display = view === hash ? "flex" : "none";
+        const link = byId("templateTab-" + view.slice(4));
+        if (view === hash) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+      TEMPLATE_VIEWS[hash]();
+    } else if (hash === "") writeForm(activeType());
     try {
-      localStorage.setItem(LANG_KEY, byId("langBtn").lang);
+      window.scrollTo(0, 0);
+    } catch (error) {
+    }
+  }
+  window.addEventListener("hashchange", route);
+
+  // src/ui/translations.ts
+  function applyTranslations() {
+    document.documentElement.lang = LANG;
+    document.title = t("docTitle");
+    document.querySelectorAll("#formulas>[lang]").forEach((block) => block.hidden = block.lang !== LANG);
+    document.querySelectorAll("[data-t]").forEach(
+      (element) => element.textContent = t(element.dataset.t)
+    );
+    [
+      ["ta", "aria-label"],
+      ["tt", "title"],
+      ["tp", "placeholder"]
+    ].forEach(
+      ([dataKey, attr]) => document.querySelectorAll(`[data-${dataKey}]`).forEach(
+        (element) => element.setAttribute(attr, t(element.dataset[dataKey]))
+      )
+    );
+  }
+  var langButton = byId("langBtn");
+  langButton.lang = LANG === "en" ? "ru" : "en";
+  langButton.addEventListener("click", () => {
+    try {
+      localStorage.setItem(LANG_KEY, langButton.lang);
     } catch (error) {
       toast(t("saveFail"));
       return;
     }
     location.reload();
   });
-  OBJECT_PRESETS.forEach((preset2) => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "chip";
-    chip.textContent = displayName(preset2);
-    chip.addEventListener("click", () => {
-      addObject(preset2);
-      renderObjects();
-    });
-    byId("presets").append(chip);
-  });
-  byId("addObject").addEventListener("click", () => {
-    addObject(NEW_OBJECT);
-    renderObjects();
-    const lastIndex = activeType().objects.length - 1;
-    byId(`objectName-${lastIndex}`).focus();
-    byId(`objectName-${lastIndex}`).select();
-  });
-  byId("typeForm").addEventListener("input", readForm);
-  byId("typeForm").addEventListener("change", readForm);
-  byId("typeForm").addEventListener("submit", (event) => event.preventDefault());
-  SYSTEM_IDS.forEach((id) => {
-    const update = () => updateSystem(id, byId(id).value);
-    byId(id).addEventListener("input", update);
-    byId(id).addEventListener("change", update);
-  });
-  byId("duplicateTypeBtn").addEventListener("click", () => {
-    readForm();
-    duplicateActiveType(displayName(activeType()) + t("copySuffix"));
-    writeForm(activeType());
-    toast(t("typeCopied"));
-  });
-  var deleteTimer = null;
-  byId("deleteTypeBtn").addEventListener("click", () => {
-    const button = byId("deleteTypeBtn");
-    if (state.cameraTypes.length < 2) {
-      toast(t("lastType"));
-      return;
-    }
-    if (!deleteTimer) {
-      button.textContent = t("deleteTypeConfirm");
-      deleteTimer = setTimeout(() => {
-        button.textContent = t("deleteTypeBtn");
-        deleteTimer = null;
-      }, 3e3);
-      return;
-    }
-    clearTimeout(deleteTimer);
-    deleteTimer = null;
-    button.textContent = t("deleteTypeBtn");
-    deleteActiveType();
-    writeForm(activeType());
-    toast(t("typeDeleted"));
-  });
-  function toast(message) {
-    const toastEl = byId("toast");
-    toastEl.textContent = message;
-    toastEl.hidden = false;
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => toastEl.hidden = true, 1800);
-  }
+
+  // src/ui/file-actions.ts
   byId("resetBtn").addEventListener("click", () => {
     resetToExample();
     buildGpuSelect();
     writeSystemForm();
     writeForm(activeType());
     toast(t("exampleLoaded"));
-  });
-  byId("copyBtn").addEventListener("click", () => {
-    navigator.clipboard.writeText(reportText()).then(
-      () => toast(t("reportCopied")),
-      () => toast(t("copyFail"))
-    );
   });
   byId("exportBtn").addEventListener("click", () => {
     const link = document.createElement("a");
@@ -4049,9 +4076,10 @@ ${displayName(result2.type)} × ${result2.count}`,
     button.textContent = t("importBtn");
     byId("importFile").click();
   });
-  byId("importFile").addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    event.target.value = "";
+  var importFile = byId("importFile");
+  importFile.addEventListener("change", () => {
+    const file = importFile.files?.[0];
+    importFile.value = "";
     if (file)
       file.text().then(
         (text) => {
@@ -4062,34 +4090,72 @@ ${displayName(result2.type)} × ${result2.count}`,
         () => toast(t("readFail"))
       );
   });
-  var TEMPLATE_VIEWS = {
-    "tpl-gpus": renderGpuView,
-    "tpl-cams": renderCamView,
-    "tpl-dets": renderDetView
-  };
-  function route() {
-    const hash = location.hash.slice(1), isTemplate = hash in TEMPLATE_VIEWS;
-    byId("viewMain").style.display = isTemplate ? "none" : "flex";
-    byId("viewTemplates").hidden = !isTemplate;
-    byId("viewTemplates").style.display = isTemplate ? "flex" : "none";
-    if (isTemplate) {
-      Object.keys(TEMPLATE_VIEWS).forEach((view) => {
-        byId("templatePage-" + view.slice(4)).hidden = view !== hash;
-        byId("templatePage-" + view.slice(4)).style.display = view === hash ? "flex" : "none";
-        const link = byId("templateTab-" + view.slice(4));
-        if (view === hash) link.setAttribute("aria-current", "page");
-        else link.removeAttribute("aria-current");
-      });
-      TEMPLATE_VIEWS[hash]();
-    } else if (hash === "") writeForm(activeType());
-    try {
-      window.scrollTo(0, 0);
-    } catch (error) {
-    }
-  }
-  window.addEventListener("hashchange", route);
 
-  // src/js/popover.js
+  // src/ui/report.ts
+  function reportText({ results, system, totals }) {
+    return [
+      t("appTitle"),
+      ...results.flatMap(
+        (result2) => !result2.ok ? ["\n" + t("reportError", displayName(result2.type), result2.count)] : [
+          `
+${displayName(result2.type)} × ${result2.count}`,
+          t("reportCamera", {
+            cameraLabel: cameraLabel(result2),
+            rotated: result2.lens.rotated,
+            sensorWidth: formatNumber(result2.frame.sensorWidth, 2),
+            focal: formatNumber(result2.lens.f, 1),
+            hfov: formatNumber(result2.lens.hfov / DEG, 0),
+            tilt: formatNumber(result2.geometry.tilt / DEG, 0),
+            overCenter: result2.placement === "top",
+            zoneStart: formatNumber(result2.geometry.zoneStart, 2),
+            cameraHeight: formatNumber(result2.geometry.H, 2),
+            zoneWidth: formatNumber(result2.geometry.zoneWidth, 2),
+            zoneDepth: formatNumber(result2.geometry.zoneDepth, 2)
+          }),
+          ...result2.objects.filter((item) => item.valid).map(
+            (item) => t("reportObject", {
+              name: displayName(item.object),
+              model: modelName(item.object),
+              feed: feedText(item.feed),
+              sensorPx: sensorPxText(item),
+              modelPx: modelPxText(item),
+              requiredPx: formatNumber(item.requiredPx, 0),
+              status: STR.status[item.status]
+            })
+          ),
+          t(
+            "reportStream",
+            formatNumber(result2.stream.bitrateMbps, 1),
+            Math.ceil(result2.shutterDenominator)
+          )
+        ]
+      ),
+      "\n" + t(
+        "reportSystem",
+        totals.cameraCount,
+        formatNumber(totals.totalMbps, 0),
+        totals.cameraCost ? "$" + formatNumber(totals.cameraCost, 0) : ""
+      ),
+      !system ? t("reportComputeError") : system.liveResults.length ? t("reportCompute", {
+        gpuCount: system.chosen.count,
+        gpuName: system.chosen.gpu.name,
+        cost: "$" + formatNumber(system.chosen.cost, 0),
+        inferenceLoad: formatNumber(system.chosen.inferenceLoad * 100, 0),
+        decodeLoad: formatNumber(system.chosen.decodeLoad * 100, 0),
+        memoryUsed: formatNumber(system.chosen.memoryUseGB, 1),
+        memoryCap: formatNumber(system.chosen.memoryCapGB, 0),
+        optimum: system.optimum && system.optimum !== system.chosen ? `${system.optimum.count} × ${system.optimum.gpu.name}, $${formatNumber(system.optimum.cost, 0)}` : ""
+      }) : t("reportNoCompute")
+    ].join("\n");
+  }
+  byId("copyBtn").addEventListener("click", () => {
+    navigator.clipboard.writeText(reportText(computed)).then(
+      () => toast(t("reportCopied")),
+      () => toast(t("copyFail"))
+    );
+  });
+
+  // src/ui/popover.ts
   var popover = document.createElement("div");
   popover.className = "pop";
   popover.id = "popover";
@@ -4174,22 +4240,7 @@ ${displayName(result2.type)} × ${result2.count}`,
     if (!popover.hidden) hideTip();
   });
 
-  // src/js/init.js
-  function applyTranslations() {
-    document.documentElement.lang = LANG;
-    document.title = t("docTitle");
-    document.querySelectorAll("#formulas>[lang]").forEach((block) => block.hidden = block.lang !== LANG);
-    document.querySelectorAll("[data-t]").forEach((element) => element.textContent = t(element.dataset.t));
-    [
-      ["ta", "aria-label"],
-      ["tt", "title"],
-      ["tp", "placeholder"]
-    ].forEach(
-      ([dataKey, attr]) => document.querySelectorAll(`[data-${dataKey}]`).forEach(
-        (element) => element.setAttribute(attr, t(element.dataset[dataKey]))
-      )
-    );
-  }
+  // src/main.ts
   applyTranslations();
   subscribe(renderResults);
   subscribe(() => {
