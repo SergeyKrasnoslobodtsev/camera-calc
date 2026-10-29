@@ -4,7 +4,16 @@ import { test } from "vitest";
 import assert from "assert";
 import { RU } from "../../src/i18n/ru.ts";
 import { openPage } from "./open-page.tsx";
-import { T, tbl, legend, go, enter, submit, addTemplates } from "./helpers.js";
+import {
+  T,
+  tbl,
+  legend,
+  go,
+  enter,
+  choose,
+  submit,
+  addTemplates,
+} from "./helpers.js";
 
 test("своя камера и свой детектор", async () => {
   await addTemplates();
@@ -65,4 +74,27 @@ test("камера с дробным кадром не добавляется", 
     RU.cameraFormError(RU.errorFrame),
     "нет ошибки дробного кадра",
   );
+});
+
+test("недопустимое число камер не попадает в столбец «В системе»", async () => {
+  await openPage();
+  choose("camera", "k4");
+  // столбец «В системе» у первой камеры, «Типовая 4 Мп»
+  const camerasInUse = () => {
+    go("#tpl-cams");
+    const count = document.querySelector("#cameraTable tbody tr").children[5]
+      .textContent;
+    go("");
+    return count;
+  };
+  enter("typeCount", "10");
+  assert.strictEqual(camerasInUse(), "10", "10 камер не учтены");
+  for (const count of ["1.5", "-3"]) {
+    enter("typeCount", count);
+    assert.strictEqual(
+      camerasInUse(),
+      "0",
+      "число камер " + count + " попало в столбец",
+    );
+  }
 });
