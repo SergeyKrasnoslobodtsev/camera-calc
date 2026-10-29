@@ -12,8 +12,11 @@ export function App() {
   // tpl-* — экран шаблонов, любой другой адрес — расчёт
   const templatePage = isTemplateRoute(route) ? route : null;
 
-  // новый экран открывается с начала
-  useEffect(() => window.scrollTo(0, 0), [route]);
+  // новый экран открывается с начала; эффект ничего не возвращает: scrollTo в Chrome возвращает Promise,
+  // а React принял бы его за функцию очистки
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [route]);
 
   return (
     <>

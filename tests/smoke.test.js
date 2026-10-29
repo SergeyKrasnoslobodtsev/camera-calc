@@ -11,7 +11,8 @@ const dom = new JSDOM(
     url: "https://x.test/",
     pretendToBeVisual: true,
     beforeParse(w) {
-      w.scrollTo = () => {};
+      // как в Chrome: scrollTo возвращает Promise, а не undefined
+      w.scrollTo = () => Promise.resolve();
       w.localStorage.setItem("camcalc-lang", "ru");
     },
   },
@@ -19,7 +20,6 @@ const dom = new JSDOM(
 await runModuleScripts(dom.window);
 const d = dom.window.document,
   w = dom.window;
-w.scrollTo = () => {};
 w.addEventListener("error", (e) => console.log("ERR", e.message));
 const T = (id) => d.getElementById(id).textContent.replace(/\s+/g, " ").trim();
 const tbl = (id) =>
@@ -180,7 +180,7 @@ const page = (seed, lang = "ru", nav) => {
       pretendToBeVisual: true,
       virtualConsole: vc,
       beforeParse(w) {
-        w.scrollTo = () => {};
+        w.scrollTo = () => Promise.resolve();
         if (seed) w.localStorage.setItem("camcalc4", seed);
         if (lang) w.localStorage.setItem("camcalc-lang", lang);
         if (nav) Object.defineProperty(w.navigator, "language", { value: nav });
