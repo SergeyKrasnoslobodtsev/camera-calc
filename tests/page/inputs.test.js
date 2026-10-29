@@ -3,6 +3,7 @@
 import { beforeAll, test } from "vitest";
 import assert from "assert";
 import { RU } from "../../src/i18n/ru.ts";
+import { EN } from "../../src/i18n/en.ts";
 import { openPage } from "./open-page.tsx";
 import { go, enter, reportOf, addTemplates } from "./helpers.js";
 
@@ -16,10 +17,11 @@ test("числовые поля: «1,999» на EN не 1.999, целые без
   await openPage({ lang: "en" });
   go("#tpl-gpus");
   enter("gpuPrice-l40s", "1,999");
-  // при цене 1.999 L40S стала бы самой дешёвой и попала бы в отчёт за $2
-  assert.notStrictEqual(
-    reportOf().match(/× L40S, (\$[\d,]+);/)?.[1],
-    "$2",
+  // поле type="number" не принимает «1,999», и пустая цена — ошибка подбора;
+  // при цене 1.999 ошибки не было бы, а L40S попала бы в отчёт за $2
+  const report = reportOf();
+  assert.ok(
+    report.includes(EN.reportComputeError) && !report.includes("× L40S"),
     "EN: «1,999» прочитано как 1.999",
   );
   const textNumbers = [...document.querySelectorAll("input[inputmode]")].filter(
