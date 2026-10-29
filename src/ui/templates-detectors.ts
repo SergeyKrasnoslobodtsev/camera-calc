@@ -13,7 +13,7 @@ import {
 } from "../app/store.ts";
 import { byId, escapeHtml } from "./dom.ts";
 import { formErrorText, type FormErrorKeys } from "./form-errors.ts";
-import { INPUTS, renderObjects } from "./object-cards.ts";
+import { MODEL_INPUT_SIZES } from "./lib/model-input-sizes.ts";
 import { toast } from "./toast.ts";
 
 // список «GPU замера» в форме детектора: после изменения своих карт выбор сохраняется, если карта осталась
@@ -59,13 +59,12 @@ export function renderDetView() {
     .forEach((button) =>
       button.addEventListener("click", () => {
         deleteDetector(button.dataset.deld!);
-        renderObjects();
         renderDetView();
         toast(t("detectorDeleted"));
       }),
     );
 }
-byId("detectorFormInput").innerHTML = INPUTS.map(
+byId("detectorFormInput").innerHTML = MODEL_INPUT_SIZES.map(
   (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`,
 ).join("");
 const DETECTOR_FORM_ERRORS: FormErrorKeys = {
@@ -104,7 +103,6 @@ byId("detectorForm").addEventListener("submit", (event) => {
   errorEl.hidden = true;
   addDetector(parsed.value);
   DETECTOR_FORM_IDS.forEach((id) => (byId<HTMLInputElement>(id).value = ""));
-  renderObjects();
   renderDetView();
   toast(t("detectorAdded", name));
 });

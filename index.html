@@ -31,78 +31,7 @@
 <section class="panel res" aria-labelledby="resultTitle" role="tabpanel" id="typeResult"></section>
 </div>
 
-<div class="work">
-  <form class="panel col" id="typeForm" autocomplete="off" aria-labelledby="parametersTitle">
-    <div class="colhead typehead">
-      <h2 id="parametersTitle" data-t="parametersTitle"></h2>
-      <div class="f"><label for="typeName" data-t="typeName"></label><input id="typeName"></div>
-      <div class="f"><label for="typeCount" data-t="typeCount"></label><input id="typeCount" type="number" min="0" step="1" inputmode="numeric"></div>
-    </div>
-    <details class="sec" open>
-      <summary><span data-t="sectionGeometry"></span> <span class="sumv" id="summaryGeometry"></span></summary>
-      <div class="fs">
-        <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f" id="zoneStartBox"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f full"><span data-tip="placement" data-t="placement"></span>
-          <div class="seg" role="radiogroup" data-ta="placement">
-            <label><input type="radio" name="placement" id="placementSide" value="side"><span data-t="placementSide"></span></label>
-            <label><input type="radio" name="placement" id="placementTop" value="top"><span data-t="placementTop"></span></label>
-          </div>
-        </div>
-      </div>
-    </details>
-    <details class="sec" open>
-      <summary><span data-t="sectionCamera"></span> <span class="sumv" id="summaryCamera"></span></summary>
-      <div class="fs">
-        <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cameraSelect"></label><a class="inlink" href="#tpl-cams" data-t="addCameraLink"></a></div><select id="camera"></select></div>
-        <div class="f full"><label for="resolution" data-t="resolution"></label><select id="resolution"></select></div>
-        <div class="f"><label for="sensor" data-t="sensor"></label><select id="sensor"></select></div>
-        <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f full" id="pixelPitchBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f full"><label for="orientation" data-t="orientation"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orientationLandscape"></option><option value="portrait" data-t="orientationPortrait"></option></select></div>
-        <div class="f full"><span data-tip="lensMode" data-t="lensMode"></span>
-          <div class="seg three" role="radiogroup" data-ta="lensModeAria">
-            <label><input type="radio" name="lensMode" id="lensModeAuto" value="auto"><span data-t="lensModeAuto"></span></label>
-            <label><input type="radio" name="lensMode" id="lensModeFocal" value="focal"><span data-t="lensModeFocal"></span></label>
-            <label><input type="radio" name="lensMode" id="lensModeAngle" value="angle"><span data-t="lensModeAngle"></span></label>
-          </div>
-        </div>
-        <div class="f" id="focalLengthBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f" id="hfovBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" min="0" step="any" inputmode="decimal"></div>
-      </div>
-    </details>
-    <details class="sec">
-      <summary><span data-t="sectionStream"></span> <span class="sumv" id="summaryStream"></span></summary>
-      <div class="fs">
-        <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
-        <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="sceneLow"></option><option value="1" data-t="sceneMid"></option><option value="1.5" data-t="sceneHigh"></option></select></div>
-        <div class="f"><label for="lensFactor" data-t="lensFactor"></label><input id="lensFactor" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="speed" data-t="speed"></label><input id="speed" type="number" min="0" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" min="0" step="any" inputmode="decimal"></div>
-      </div>
-    </details>
-    <div class="colfoot"><button type="button" class="sm" id="duplicateTypeBtn" data-t="duplicateTypeBtn"></button><button type="button" class="sm danger" id="deleteTypeBtn" data-t="deleteTypeBtn"></button></div>
-  </form>
-
-  <section class="panel col" aria-labelledby="objectsTitle">
-    <div class="colhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <h2 id="objectsTitle"><span data-tip="objects" data-t="objectsTitle"></span></h2>
-      <button type="button" class="primary sm" id="addObject" data-t="addObject"></button>
-    </div>
-    <div class="olist">
-      <div id="objectList" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="presets"><span data-t="presets"></span><span id="presets" style="display:contents"></span><a class="inlink" href="#tpl-dets" style="margin-left:auto" data-t="addDetectorLink"></a></div>
-    </div>
-    <div class="colfoot" data-t="objectsFooter"></div>
-  </section>
-
-</div>
+<div class="work" id="work"></div>
 
 <div class="bottom">
   <section class="panel net" aria-labelledby="networkTitle" id="networkPanel"></section>

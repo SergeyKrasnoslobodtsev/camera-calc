@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { t } from "./i18n/index.ts";
 import { loadSaved, save, watchOtherTabs } from "./app/persistence.ts";
-import { activeType, restore, state, subscribe } from "./app/store.ts";
+import { restore, state, subscribe } from "./app/store.ts";
 import { TypeTabs } from "./ui/calculation/TypeTabs.tsx";
 import { TypeResult } from "./ui/calculation/type-result/TypeResult.tsx";
 import { Assumptions } from "./ui/calculation/system/Assumptions.tsx";
@@ -14,29 +14,27 @@ import { GpuLoad } from "./ui/calculation/system/GpuLoad.tsx";
 import { NetworkPanel } from "./ui/calculation/system/NetworkPanel.tsx";
 import { SystemPanel } from "./ui/calculation/system/SystemPanel.tsx";
 import { GpuParams } from "./ui/templates/GpuParams.tsx";
+import { ObjectList } from "./ui/calculation/type-form/ObjectList.tsx";
+import { TypeForm } from "./ui/calculation/type-form/TypeForm.tsx";
 import { byId } from "./ui/dom.ts";
-import { buildCameraSelect } from "./ui/object-cards.ts";
-import { renderResults } from "./ui/render.ts";
 import { route } from "./ui/router.ts";
 import { buildRefGpuSelect } from "./ui/templates-detectors.ts";
+import { applyTheme } from "./ui/theme.ts";
 import { toast } from "./ui/toast.ts";
 import { applyTranslations } from "./ui/translations.ts";
-import { writeForm } from "./ui/type-form.ts";
 import "./ui/file-actions.ts";
 import "./ui/report.ts";
 import "./ui/popover.ts";
 
 applyTranslations();
-// после каждого действия: результаты на экран, состояние в localStorage
-subscribe(renderResults);
+// после каждого действия: тема страницы, состояние в localStorage
+subscribe(applyTheme);
 subscribe(() => {
   if (!save(state)) toast(t("stale"));
 });
 watchOtherTabs(() => toast(t("stale")));
 restore(loadSaved());
 buildRefGpuSelect();
-buildCameraSelect();
-writeForm(activeType());
 route();
 // компонент React в контейнере из index.html, пока страницу не собирает App.tsx;
 // первая отрисовка сразу, а не по частям в следующих задачах: страница готова, когда скрипт выполнен
@@ -46,6 +44,13 @@ const mount = (id: string, component: ReactNode) => {
 };
 mount("tabs", <TypeTabs />);
 mount("typeResult", <TypeResult />);
+mount(
+  "work",
+  <>
+    <TypeForm />
+    <ObjectList />
+  </>,
+);
 mount("systemPanel", <SystemPanel />);
 mount("gpuLoad", <GpuLoad />);
 mount("networkPanel", <NetworkPanel />);

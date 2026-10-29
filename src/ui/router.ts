@@ -1,10 +1,8 @@
 // Маршрутизация по адресу после #: пусто — расчёт, tpl-* — экраны шаблонов.
-import { activeType } from "../app/store.ts";
 import { byId } from "./dom.ts";
 import { renderCamView } from "./templates-cameras.ts";
 import { renderDetView } from "./templates-detectors.ts";
 import { renderGpuView } from "./templates-gpus.ts";
-import { writeForm } from "./type-form.ts";
 
 const TEMPLATE_VIEWS: Record<string, () => void> = {
   "tpl-gpus": renderGpuView,
@@ -27,7 +25,7 @@ export function route() {
       else link.removeAttribute("aria-current");
     });
     TEMPLATE_VIEWS[hash]();
-  } else if (hash === "") writeForm(activeType());
+  }
   try {
     window.scrollTo(0, 0);
   } catch (error) {}

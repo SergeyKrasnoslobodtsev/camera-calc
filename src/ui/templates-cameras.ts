@@ -3,18 +3,10 @@ import { STR, displayName, formatNumber, t, withUnit } from "../i18n/index.ts";
 import { parseCamera } from "../domain/entities/camera.ts";
 import { parseNum } from "../domain/parse-num.ts";
 import { uid } from "../app/examples.ts";
-import {
-  activeType,
-  addCamera,
-  allCameras,
-  deleteCamera,
-  state,
-} from "../app/store.ts";
+import { addCamera, allCameras, deleteCamera, state } from "../app/store.ts";
 import { byId, escapeHtml } from "./dom.ts";
 import { formErrorText, type FormErrorKeys } from "./form-errors.ts";
-import { buildCameraSelect } from "./object-cards.ts";
 import { toast } from "./toast.ts";
-import { writeForm } from "./type-form.ts";
 
 export function renderCamView() {
   const used = (id: string) =>
@@ -35,8 +27,6 @@ export function renderCamView() {
     .forEach((button) =>
       button.addEventListener("click", () => {
         deleteCamera(button.dataset.delc!);
-        buildCameraSelect();
-        writeForm(activeType());
         renderCamView();
         toast(t("cameraDeleted"));
       }),
@@ -99,7 +89,6 @@ byId("cameraForm").addEventListener("submit", (event) => {
   errorEl.hidden = true;
   addCamera(parsed.value);
   CAMERA_FORM_IDS.forEach((id) => (byId<HTMLInputElement>(id).value = ""));
-  buildCameraSelect();
   renderCamView();
   toast(t("cameraAdded", name));
 });

@@ -128,19 +128,20 @@ d.getElementById("detectorForm").dispatchEvent(
 console.log("det err:", T("detectorFormError"));
 // back to main, apply camera to type 1 and detector to object 2
 go("");
+await settle(w);
 const camSel = d.getElementById("camera");
 const custom = [...camSel.options].find((o) =>
   o.text.startsWith("Тест-камера"),
 );
 camSel.value = custom.value;
 fire("camera", "change");
+await settle(w);
 console.log(
   "res disabled",
   d.getElementById("resolution").disabled,
   "sw",
   d.getElementById("sensorWidth").value,
 );
-await settle(w);
 console.log("VERDICT cam:", T("verdict"));
 const om = d.getElementById("objectModel-1");
 const det = [...om.options].find((o) => o.text === "Детектор деталей");
@@ -541,10 +542,7 @@ assert.ok(
 console.log("example names follow lang: ok");
 // language: a name typed by the user is kept as is, even if it matches a built-in one
 const w11 = await page(null, "ru");
-w11.document.getElementById("typeName").value = "Тележка";
-w11.document
-  .getElementById("typeName")
-  .dispatchEvent(new w11.Event("input", { bubbles: true }));
+enter(w11, "typeName", "Тележка");
 const d12 = (await page(w11.localStorage.getItem("camcalc4"), "en")).document;
 assert.strictEqual(
   d12.getElementById("typeName").value,

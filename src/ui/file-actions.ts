@@ -1,16 +1,14 @@
 // Кнопки данных: пример вместо текущих типов, экспорт в файл и импорт из файла.
 import { t } from "../i18n/index.ts";
 import { exportText, importText } from "../app/persistence.ts";
-import { activeType, resetToExample, state } from "../app/store.ts";
+import { resetToExample, state } from "../app/store.ts";
 import { byId } from "./dom.ts";
 import { buildRefGpuSelect } from "./templates-detectors.ts";
 import { toast } from "./toast.ts";
-import { writeForm } from "./type-form.ts";
 
 byId("resetBtn").addEventListener("click", () => {
   resetToExample();
   buildRefGpuSelect();
-  writeForm(activeType());
   toast(t("exampleLoaded"));
 });
 byId("exportBtn").addEventListener("click", () => {
