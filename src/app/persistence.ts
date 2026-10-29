@@ -48,7 +48,7 @@ export function save(state: State) {
   if (stale) return false;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot(state)));
-  } catch (error) {}
+  } catch {}
   return true;
 }
 
@@ -194,7 +194,7 @@ export function loadSaved(): Partial<State> {
         gpuCount: GPU_COUNT_CHOICES.includes(gpuCount) ? gpuCount : "auto",
       };
     }
-  } catch (error) {}
+  } catch {}
   return loaded;
 }
 
@@ -204,7 +204,7 @@ export function importText(text: string): "ok" | "badFile" | "saveFail" {
   let saved;
   try {
     saved = JSON.parse(text);
-  } catch (error) {}
+  } catch {}
   if (
     !isObject(saved) ||
     !Array.isArray(saved.types) ||
@@ -219,7 +219,7 @@ export function importText(text: string): "ok" | "badFile" | "saveFail" {
     return "badFile";
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-  } catch (error) {
+  } catch {
     return "saveFail";
   }
   return "ok";

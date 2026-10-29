@@ -31,12 +31,12 @@ flowchart LR
 
 ## Проверки
 
-`npm test` запускает проверку типов `tsc`, затем все тесты Vitest (`vitest run`). Собирать страницу перед тестами не нужно: тесты работают с исходниками. Линтер запускается отдельно, `npm run lint`: в старом коде есть замечания (см. [`../decisions/build.md`](../decisions/build.md#замечания-oxlint-в-старом-коде)). Почему Vitest и Testing Library — в [`../decisions/build.md`](../decisions/build.md#тесты-на-vitest-и-react-testing-library).
+`npm test` запускает проверку типов `tsc`, линтер `oxlint`, затем все тесты Vitest (`vitest run`). Собирать страницу перед тестами не нужно: тесты работают с исходниками. Почему Vitest и Testing Library — в [`../decisions/build.md`](../decisions/build.md#тесты-на-vitest-и-react-testing-library).
 
 | Проверка | Что проверяет |
 |---|---|
 | `tsc` | Типы в `vite.config.ts`, `src/**/*.ts`, `src/**/*.tsx`, `tests/**/*.ts` и `tests/**/*.tsx` по `tsconfig.json`. Ничего не компилирует (`noEmit`): `.ts` выполняют Node и Vite, они типы только убирают |
-| `npm run lint` | Oxlint по `.oxlintrc.json`: ошибки категории `correctness` и правила хуков React |
+| `oxlint` | Oxlint по `.oxlintrc.json`: ошибки категории `correctness` и правила хуков React; неиспользуемая переменная рядом с `...rest` не ошибка (`ignoreRestSiblings`), так из объекта убирают поле. Отдельно — `npm run lint` |
 | `tests/domain/` | Юнит-тесты `domain` в окружении Node, без страницы, см. [`domain.md`](domain.md#проверки) |
 | `tests/i18n/` | Словари `RU` и `EN`: одинаковые ключи; каждый ключ используется в `src/` или `index.html`, каждый используемый есть в словаре |
 | `tests/page/` | Страница в jsdom, по файлу на тему: `templates` — свои камера и детектор, форма камеры; `calculation` — подсказки у полей, копия типа; `export-import` — экспорт, импорт, загрузка сохранения, другая вкладка; `language` — выбор языка, отчёт на EN, названия; `inputs` — числовые поля и ошибки ввода |

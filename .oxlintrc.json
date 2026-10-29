@@ -5,6 +5,7 @@
     "correctness": "error"
   },
   "rules": {
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "warn"
   },

@@ -131,9 +131,12 @@
 
 ### Замечания Oxlint в старом коде
 
-**Статус:** открыто. Для снятия: исправить замечания отдельной задачей и включить `npm run lint` в `npm test`.
+**Статус:** решено 2026-10-29 (#68). Линтер входит в `npm test`.
 
-`npm run lint` находит 12 замечаний в коде до перехода на React: 10 `no-unused-vars` (неиспользуемый параметр `catch` в `src/app/persistence.ts`, `src/i18n/index.ts`, `src/ui/router.ts`, `src/ui/translations.ts`; переменные в `tests/domain/entities.test.ts`), `no-unused-expressions` в `src/ui/popover.ts`, `no-thenable` в `tests/smoke.test.js` (с #67 — `tests/page/helpers.js`). Поэтому линтер не входит в `npm test`.
+`npm run lint` находил 12 замечаний в коде до перехода на React, после перехода — 9:
+- неиспользуемый параметр `catch` в `src/app/persistence.ts` и `src/i18n/index.ts` — заменён на `catch {}`;
+- переменные `nvdec`, `price`, `blurPx` в `tests/domain/entities.test.ts` — это деструктуризация с `...rest`, которой из объекта убирают поле. В `.oxlintrc.json` для `no-unused-vars` включён `ignoreRestSiblings`, тесты не менялись;
+- `unicorn/no-thenable` в `tests/page/helpers.js`: заглушка файла нарочно возвращает синхронный `then`, чтобы проверки после импорта шли без ожидания. Правило отключено для этой строки комментарием.
 
 ## Отброшенные альтернативы
 

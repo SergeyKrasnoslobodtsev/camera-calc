@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "oxlint",
-    "test": "tsc && vitest run",
+    "test": "tsc && oxlint && vitest run",
     "format": "prettier --write vite.config.ts src/main.tsx src/styles.css src/ui src/app src/domain src/i18n tests"
   },
   "devDependencies": {
