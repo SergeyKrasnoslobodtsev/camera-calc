@@ -12,27 +12,28 @@
 | `object-cards.ts` | Список камер в форме (`buildCameraSelect`), карточки объектов и их результат, `syncFormUI` — видимость полей и сводка над формой, кнопки добавления объекта |
 | `type-result.ts` | Результат активного типа: вердикт, показатели, плотность, DORI, схема |
 | `side-diagram.ts` | Схема «вид сбоку» в SVG по геометрии из `domain` |
-| `tabs.ts` | Вкладки типов камер и кнопка нового типа |
+| `tabs.tsx` | Компонент `Tabs`: вкладки типов камер и кнопка нового типа |
+| `use-computed.ts` | Хук `useComputed`: результаты расчёта из `store`, компонент перерисовывается после каждого действия |
 | `system-panel.ts` | Параметры системы (`writeSystemForm`, список GPU `buildGpuSelect`), итоги системы, сеть, нагрузка на GPU: кольцо и шкалы |
 | `templates-gpus.ts`, `templates-cameras.ts`, `templates-detectors.ts` | Экраны шаблонов: таблицы и формы своей карты, камеры, детектора |
 | `form-errors.ts` | Текст ошибки формы шаблона по ошибкам разбора из `domain` |
 | `report.ts` | `reportText(computed)` — текстовый отчёт, кнопка «Копировать отчёт» |
-| `render.ts` | `renderResults` — подписчик `store`: результат, вкладки, панель системы, тема |
+| `render.ts` | `renderResults` — подписчик `store`: результат, панель системы, тема |
 | `router.ts` | `route` — расчёт или экран шаблонов по адресу после `#` |
 | `translations.ts` | `applyTranslations` — тексты статичной разметки, кнопка языка |
 | `theme.ts`, `toast.ts`, `popover.ts` | Тема, уведомление, подсказки «?» у полей |
 | `file-actions.ts` | Пример вместо текущих типов, экспорт и импорт файла |
 
-Точка входа `src/main.ts` подключает `renderResults` и сохранение к `store`, загружает сохранение и заполняет формы.
+Точка входа `src/main.tsx` подключает `renderResults` и сохранение к `store`, загружает сохранение, заполняет формы и монтирует компоненты React.
 
 ```mermaid
 flowchart LR
-    main[main.ts] --> render[render.ts]
+    main[main.tsx] --> render[render.ts]
+    main --> tabs[tabs.tsx]
     main --> router[router.ts]
     main --> actions[file-actions.ts]
     main --> report[report.ts]
     render --> result[type-result.ts]
-    render --> tabs[tabs.ts]
     render --> panel[system-panel.ts]
     result --> cards[object-cards.ts]
     result --> diagram[side-diagram.ts]
@@ -55,21 +56,26 @@ sequenceDiagram
     participant E as обработчик события
     participant S as app/store
     participant R as render.ts
+    participant C as компоненты React
     E->>S: действие, например updateObject(0, "width", "12")
     S->>S: пересчёт computed
     S-->>R: уведомление
-    R->>R: syncFormUI, renderType, renderTabs, renderSystem, applyTheme
+    R->>R: syncFormUI, renderType, renderSystem, applyTheme
+    S-->>C: уведомление через useComputed
+    C->>C: перерисовка компонента
 ```
 
 Подписчик `renderResults` перерисовывает результаты, а значения полей не трогает, чтобы не сбить ввод. Исключение одно: ширину матрицы, взятую из камеры или по формату, `syncFormUI` показывает в поле, которое в этом случае только для чтения. Поля целиком перезаписываются при смене данных: другой тип (`writeForm`), пример, загрузка, удаление шаблона.
 
-Разметка собирается шаблонными строками в `innerHTML`. Значения пользователя (названия) проходят через `escapeHtml`. Пять функций пересоздают разметку вместе с обработчиками: `renderObjects`, `renderTabs`, `renderGpuView`, `renderCamView`, `renderDetView`. Их вызывают при добавлении, удалении и смене типа, но не при вводе в поле.
+Интерфейс переходит на компоненты React (#65, решение — в [`../decisions/ui.md`](../decisions/ui.md#интерфейс-на-react)). На время перехода компонент монтируется в свой контейнер из `index.html` (`createRoot` в `main.tsx`) и читает результаты через `useComputed`. Сейчас на React — вкладки (`Tabs` в `#tabs`). Обработчики событий компонента задаются в JSX, а не навешиваются после отрисовки.
+
+Остальная разметка собирается шаблонными строками в `innerHTML`. Значения пользователя (названия) проходят через `escapeHtml`. Четыре функции пересоздают разметку вместе с обработчиками: `renderObjects`, `renderGpuView`, `renderCamView`, `renderDetView`. Их вызывают при добавлении, удалении и смене типа, но не при вводе в поле.
 
 ## Соглашения
 
 - **Состояние только через действия.** `ui` читает `state` и `computed` и вызывает действия `store`. Поля `state` в `ui` не присваиваются.
-- **Обработчики статичной разметки навешиваются при импорте модуля.** Порядок задают импорты в `main.ts`. `popover.ts` импортируется последним: он перестраивает подписи полей, когда разметка уже готова.
-- **Элемент по id с типом.** `byId<HTMLInputElement>("typeName")` возвращает элемент нужного типа. Есть ли элемент с таким id в `src/layout.html`, `tsc` не проверяет. Если его нет, код падает при выполнении, и тест страницы ловит это на тех путях, которые проходит.
+- **Обработчики статичной разметки навешиваются при импорте модуля.** Порядок задают импорты в `main.tsx`. `popover.ts` импортируется последним: он перестраивает подписи полей, когда разметка уже готова.
+- **Элемент по id с типом.** `byId<HTMLInputElement>("typeName")` возвращает элемент нужного типа. Есть ли элемент с таким id в `index.html`, `tsc` не проверяет. Если его нет, код падает при выполнении, и тест страницы ловит это на тех путях, которые проходит.
 - **Тексты через `i18n`.** Ключ для `t()` проверяет `tsc`. Ключ из разметки или таблицы кодов имеет тип `TextKey` — ключ текста без параметров.
 - **Отчёт по нажатию.** `reportText` строится из `computed` при нажатии «Копировать отчёт». Между нажатиями текст отчёта нигде не хранится.
 
@@ -84,7 +90,7 @@ sequenceDiagram
 Отсутствие присваиваний полям состояния в `ui` проверяется поиском:
 
 ```bash
-grep -rnE "(state|type|obj|object|detector|gpu|camera|inputs)(\.[A-Za-z_]+|\[[^]]+\])+ *(=[^=>]|\+\+|--|\+=|-=)|\.(push|splice|pop|shift|unshift|sort|reverse)\(|delete [a-z]" src/ui src/main.ts
+grep -rnE "(state|type|obj|object|detector|gpu|camera|inputs)(\.[A-Za-z_]+|\[[^]]+\])+ *(=[^=>]|\+\+|--|\+=|-=)|\.(push|splice|pop|shift|unshift|sort|reverse)\(|delete [a-z]" src/ui src/main.tsx
 ```
 
 Он находит только сортировку и `push` локальных массивов при отрисовке кольца в `system-panel.ts`.
