@@ -1,58 +1,29 @@
-// Точка входа: подключает интерфейс к состоянию, загружает сохранение и показывает страницу.
-// Модули ui навешивают обработчики при импорте; подсказки — последними, когда разметка полей готова.
-import { StrictMode, type ReactNode } from "react";
+// Точка входа: подключает сохранение к состоянию, загружает сохранение и отрисовывает страницу.
+import { StrictMode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
-import { t } from "./i18n/index.ts";
+import { LANG, t } from "./i18n/index.ts";
 import { loadSaved, save, watchOtherTabs } from "./app/persistence.ts";
 import { restore, state, subscribe } from "./app/store.ts";
-import { TypeTabs } from "./ui/calculation/TypeTabs.tsx";
-import { TypeResult } from "./ui/calculation/type-result/TypeResult.tsx";
-import { Assumptions } from "./ui/calculation/system/Assumptions.tsx";
-import { GpuLoad } from "./ui/calculation/system/GpuLoad.tsx";
-import { NetworkPanel } from "./ui/calculation/system/NetworkPanel.tsx";
-import { SystemPanel } from "./ui/calculation/system/SystemPanel.tsx";
-import { GpuParams } from "./ui/templates/GpuParams.tsx";
-import { ObjectList } from "./ui/calculation/type-form/ObjectList.tsx";
-import { TypeForm } from "./ui/calculation/type-form/TypeForm.tsx";
-import { byId } from "./ui/dom.ts";
-import { route } from "./ui/router.ts";
-import { buildRefGpuSelect } from "./ui/templates-detectors.ts";
-import { applyTheme } from "./ui/theme.ts";
-import { toast } from "./ui/toast.ts";
-import { applyTranslations } from "./ui/translations.ts";
-import "./ui/file-actions.ts";
-import "./ui/report.ts";
-import "./ui/popover.ts";
+import { App } from "./ui/App.tsx";
+import { toast } from "./ui/components/Toast.tsx";
 
-applyTranslations();
-// после каждого действия: тема страницы, состояние в localStorage
-subscribe(applyTheme);
+document.documentElement.lang = LANG;
+document.title = t("docTitle");
+// после каждого действия состояние сохраняется в localStorage
 subscribe(() => {
   if (!save(state)) toast(t("stale"));
 });
 watchOtherTabs(() => toast(t("stale")));
 restore(loadSaved());
-buildRefGpuSelect();
-route();
-// компонент React в контейнере из index.html, пока страницу не собирает App.tsx;
+
+const root = createRoot(document.getElementById("root")!);
 // первая отрисовка сразу, а не по частям в следующих задачах: страница готова, когда скрипт выполнен
-const mount = (id: string, component: ReactNode) => {
-  const root = createRoot(byId(id));
-  flushSync(() => root.render(<StrictMode>{component}</StrictMode>));
-};
-mount("tabs", <TypeTabs />);
-mount("typeResult", <TypeResult />);
-mount(
-  "work",
-  <>
-    <TypeForm />
-    <ObjectList />
-  </>,
+flushSync(() =>
+  root.render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  ),
 );
-mount("systemPanel", <SystemPanel />);
-mount("gpuLoad", <GpuLoad />);
-mount("networkPanel", <NetworkPanel />);
-mount("assumptionsList", <Assumptions />);
-mount("gpuParams", <GpuParams />);

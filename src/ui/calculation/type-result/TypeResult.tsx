@@ -15,7 +15,7 @@ import { DEG } from "../../../domain/angles.ts";
 import type { TypeResult as Result } from "../../../domain/compute-type/index.ts";
 import { activeType, state } from "../../../app/store.ts";
 import { useComputed } from "../../hooks/useComputed.ts";
-import { cameraLabel } from "../../labels.ts";
+import { cameraLabel } from "../../lib/labels.ts";
 import { SideDiagram } from "./SideDiagram.tsx";
 
 export function TypeResult() {

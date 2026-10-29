@@ -1,6 +1,5 @@
 // Форма активного типа камер: значения полей — из состояния, ввод сразу меняет тип через store.
 import type { ChangeEvent, ReactNode } from "react";
-import type { STR } from "../../../i18n/index.ts";
 import { displayName, formatNumber, t, withUnit } from "../../../i18n/index.ts";
 import { resolutionLabel } from "../../../i18n/domain-text.ts";
 import type { Camera } from "../../../domain/entities/camera.ts";
@@ -23,10 +22,11 @@ import {
 } from "../../../app/store.ts";
 import { Field } from "../../components/Field.tsx";
 import { NumberInput } from "../../components/NumberInput.tsx";
+import type { TipField } from "../../components/Popover.tsx";
 import { Tip } from "../../components/Tip.tsx";
 import { useComputed } from "../../hooks/useComputed.ts";
 import { useConfirm } from "../../hooks/useConfirm.ts";
-import { toast } from "../../toast.ts";
+import { toast } from "../../components/Toast.tsx";
 
 type Inputs = TypeDraft["inputs"];
 type InputName = keyof Inputs;
@@ -358,7 +358,7 @@ function Choice<Value extends string>({
   options,
   onChange,
 }: {
-  name: InputName & keyof typeof STR.tips;
+  name: InputName & TipField;
   label: string;
   ariaLabel: string;
   value: string;

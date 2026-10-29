@@ -48,6 +48,13 @@ const enter = (win, id, value) => {
   ).set.call(field, value);
   field.dispatchEvent(new win.Event("input", { bubbles: true }));
 };
+// отправка формы; событие всплывает, как в браузере, и доходит до обработчика React на корне страницы
+const submit = (win, id) =>
+  win.document
+    .getElementById(id)
+    .dispatchEvent(
+      new win.Event("submit", { bubbles: true, cancelable: true }),
+    );
 // отчёт так, как его получает пользователь: кнопка «Копировать отчёт» пишет его в буфер обмена;
 // запись не завершается, чтобы уведомление «Отчёт скопирован» не заменило другие
 const reportOf = (win) => {
@@ -66,7 +73,7 @@ const importFile = (win, text) => {
     value: [{ text: () => ({ then: (onRead) => onRead(text) }) }],
     configurable: true,
   });
-  input.dispatchEvent(new win.Event("change"));
+  input.dispatchEvent(new win.Event("change", { bubbles: true }));
 };
 console.log("SYS:", T("systemKpis"));
 console.log("DSUM:", T("loadSummary"));
@@ -92,6 +99,7 @@ console.log(
 );
 // templates: cameras
 go("#tpl-cams");
+await settle(w);
 console.log(
   "tpl visible",
   !d.getElementById("viewTemplates").hidden,
@@ -101,30 +109,30 @@ console.log(
   !d.getElementById("templatePage-gpus").hidden,
 );
 console.log(tbl("cameraTable"));
-set("cameraFormName", "Тест-камера 8 Мп");
-set("cameraFormWidth", "3840");
-set("cameraFormHeight", "2160");
-set("cameraFormPixelPitch", "2");
-set("cameraFormFocalMin", "6");
-set("cameraFormFocalMax", "6");
-set("cameraFormPrice", "300");
-d.getElementById("cameraForm").dispatchEvent(
-  new w.Event("submit", { cancelable: true }),
-);
+enter(w, "cameraFormName", "Тест-камера 8 Мп");
+enter(w, "cameraFormWidth", "3840");
+enter(w, "cameraFormHeight", "2160");
+enter(w, "cameraFormPixelPitch", "2");
+enter(w, "cameraFormFocalMin", "6");
+enter(w, "cameraFormFocalMax", "6");
+enter(w, "cameraFormPrice", "300");
+submit(w, "cameraForm");
+await settle(w);
 console.log("after add cam rows", d.querySelectorAll("#cameraTable tr").length);
 // detectors
 go("#tpl-dets");
-set("detectorFormName", "Детектор деталей");
-set("detectorFormFps", "900");
+enter(w, "detectorFormName", "Детектор деталей");
+enter(w, "detectorFormFps", "900");
 set("detectorFormInput", "640");
+fire("detectorFormInput", "change");
 set("detectorFormRefGpu", "l40s");
-d.getElementById("detectorForm").dispatchEvent(
-  new w.Event("submit", { cancelable: true }),
-);
+fire("detectorFormRefGpu", "change");
+await settle(w);
+submit(w, "detectorForm");
+await settle(w);
 console.log("det first row:", tbl("detectorTable").split("\n")[1]);
-d.getElementById("detectorForm").dispatchEvent(
-  new w.Event("submit", { cancelable: true }),
-);
+submit(w, "detectorForm");
+await settle(w);
 console.log("det err:", T("detectorFormError"));
 // back to main, apply camera to type 1 and detector to object 2
 go("");
@@ -239,13 +247,15 @@ const gpuWithoutPrice = {
 };
 const before = w.localStorage.getItem("camcalc4");
 importFile(w, "{битый");
+await settle(w);
 assert.strictEqual(T("toast"), "Файл не является сохранением калькулятора.");
 assert.strictEqual(
   w.localStorage.getItem("camcalc4"),
   before,
   "битый файл изменил данные",
 );
-[
+// файлы, которые не приняла бы загрузка: данные не меняются, показывается ошибка
+const brokenSaves = [
   '{"types":[null]}',
   '{"types":[]}',
   "{}",
@@ -262,9 +272,10 @@ assert.strictEqual(
       },
     ],
   }),
-].forEach((s) => {
-  d.getElementById("toast").textContent = "";
+];
+for (const s of brokenSaves) {
   importFile(w, s);
+  await settle(w);
   assert.strictEqual(
     T("toast"),
     "Файл не является сохранением калькулятора.",
@@ -275,14 +286,16 @@ assert.strictEqual(
     before,
     "файл изменил данные: " + s,
   );
-});
+}
 let picks = 0;
 d.getElementById("importFile").click = () => picks++;
 d.getElementById("importBtn").click();
+await settle(w);
 assert.strictEqual(T("importBtn"), "Заменить все данные");
 assert.strictEqual(picks, 0, "выбор файла без подтверждения");
 d.getElementById("importBtn").click();
 assert.strictEqual(picks, 1, "второе нажатие не открыло выбор файла");
+await settle(w);
 assert.strictEqual(T("importBtn"), "Импорт");
 const w2 = await page();
 importFile(w2, exp);
@@ -306,16 +319,14 @@ console.log("export/import: ok");
 // unreadable file
 const inp = d.getElementById("importFile"),
   kept = w.localStorage.getItem("camcalc4");
-d.getElementById("toast").textContent = "";
 Object.defineProperty(inp, "files", {
   value: [{ text: () => Promise.reject(new Error("NotReadableError")) }],
 });
-inp.dispatchEvent(new w.Event("change"));
-setTimeout(() => {
-  assert.strictEqual(T("toast"), "Не удалось прочитать файл.");
-  assert.strictEqual(w.localStorage.getItem("camcalc4"), kept);
-  console.log("unreadable file: ok");
-}, 0);
+inp.dispatchEvent(new w.Event("change", { bubbles: true }));
+await settle(w);
+assert.strictEqual(T("toast"), "Не удалось прочитать файл.");
+assert.strictEqual(w.localStorage.getItem("camcalc4"), kept);
+console.log("unreadable file: ok");
 // invalid select values on load
 const w4 = await page(
   JSON.stringify({
@@ -357,6 +368,7 @@ const w5 = await page(exp),
 w5.localStorage.setItem("camcalc4", other);
 w5.dispatchEvent(new w5.StorageEvent("storage", { key: "camcalc4" }));
 enter(w5, "efficiency", "0.5");
+await settle(w5);
 assert.strictEqual(
   w5.localStorage.getItem("camcalc4"),
   other,
@@ -461,8 +473,8 @@ const w6 = await page(exp, "en"),
   d6 = w6.document;
 assert.strictEqual(d6.documentElement.lang, "en");
 assert.ok(
-  !d6.querySelector("#formulas>[lang=en]").hidden &&
-    d6.querySelector("#formulas>[lang=ru]").hidden,
+  d6.querySelector("#formulas>[lang=en]") &&
+    !d6.querySelector("#formulas>[lang=ru]"),
   "EN: не тот блок формул",
 );
 const builtinRu = [...RU.typeNames, ...RU.presetNames, RU.objDefault];
@@ -571,10 +583,7 @@ const w9 = await page(null, "en"),
   d9 = w9.document;
 w9.location.hash = "#tpl-gpus";
 w9.dispatchEvent(new w9.HashChangeEvent("hashchange"));
-d9.getElementById("gpuPrice-l40s").value = "1,999";
-d9.getElementById("gpuPrice-l40s").dispatchEvent(
-  new w9.Event("input", { bubbles: true }),
-);
+enter(w9, "gpuPrice-l40s", "1,999");
 // при цене 1.999 L40S стала бы самой дешёвой и попала бы в отчёт за $2
 assert.notStrictEqual(
   reportOf(w9).match(/× L40S, (\$[\d,]+);/)?.[1],
@@ -701,9 +710,8 @@ enter(camForm, "cameraFormName", "Дробный кадр");
 enter(camForm, "cameraFormWidth", "1920.5");
 enter(camForm, "cameraFormHeight", "1080");
 enter(camForm, "cameraFormSensorWidth", "5.6");
-camForm.document
-  .getElementById("cameraForm")
-  .dispatchEvent(new camForm.Event("submit", { cancelable: true }));
+submit(camForm, "cameraForm");
+await settle(camForm);
 assert.strictEqual(
   cameraRows(),
   rowsBefore,

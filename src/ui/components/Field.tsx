@@ -1,12 +1,12 @@
 // Поле формы: подпись, кнопка «?» с подсказкой и элемент ввода с id.
 import type { ReactNode } from "react";
-import type { STR } from "../../i18n/index.ts";
+import type { TipField } from "./Popover.tsx";
 import { Tip } from "./Tip.tsx";
 
 type FieldProps = {
   id: string;
   label: ReactNode;
-  tip?: keyof typeof STR.tips;
+  tip?: TipField;
   span?: "full" | "c2"; // на всю ширину сетки формы или на две колонки
   hidden?: boolean;
   children: ReactNode;

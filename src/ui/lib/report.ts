@@ -1,12 +1,10 @@
-// Текстовый отчёт: собирается из результатов расчёта по нажатию «Копировать отчёт».
-import { STR, displayName, formatNumber, t } from "../i18n/index.ts";
-import { feedText, modelPxText, sensorPxText } from "../i18n/domain-text.ts";
-import type { ValidObject } from "../domain/compute-type/index.ts";
-import { DEG } from "../domain/angles.ts";
-import { computed, type Computed } from "../app/store.ts";
-import { byId } from "./dom.ts";
+// Текстовый отчёт из результатов расчёта: его копирует кнопка «Копировать отчёт».
+import { STR, displayName, formatNumber, t } from "../../i18n/index.ts";
+import { feedText, modelPxText, sensorPxText } from "../../i18n/domain-text.ts";
+import type { ValidObject } from "../../domain/compute-type/index.ts";
+import { DEG } from "../../domain/angles.ts";
+import type { Computed } from "../../app/store.ts";
 import { cameraLabel, modelName } from "./labels.ts";
-import { toast } from "./toast.ts";
 
 export function reportText({ results, system, totals }: Computed) {
   return [
@@ -75,9 +73,3 @@ export function reportText({ results, system, totals }: Computed) {
         : t("reportNoCompute"),
   ].join("\n");
 }
-byId("copyBtn").addEventListener("click", () => {
-  navigator.clipboard.writeText(reportText(computed)).then(
-    () => toast(t("reportCopied")),
-    () => toast(t("copyFail")),
-  );
-});

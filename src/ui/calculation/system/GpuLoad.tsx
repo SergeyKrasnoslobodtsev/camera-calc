@@ -12,7 +12,7 @@ import type { SystemResult } from "../../../domain/compute-system/index.ts";
 import { allGpus, state, updateSystem } from "../../../app/store.ts";
 import { Tip } from "../../components/Tip.tsx";
 import { useComputed } from "../../hooks/useComputed.ts";
-import { modelName } from "../../labels.ts";
+import { modelName } from "../../lib/labels.ts";
 
 // кольцо радиуса r и толщины width из дуг segments (fraction — доля круга); mark — риска на доле круга
 function Ring({

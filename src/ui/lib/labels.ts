@@ -1,11 +1,11 @@
 // Подписи, общие для результата, панели системы и отчёта.
-import { displayName } from "../i18n/index.ts";
-import { resolutionLabel } from "../i18n/domain-text.ts";
+import { displayName } from "../../i18n/index.ts";
+import { resolutionLabel } from "../../i18n/domain-text.ts";
 import {
   DEFAULT_RESOLUTION,
   RESOLUTIONS,
-} from "../domain/references/resolutions.ts";
-import { cameraById, modelById } from "../app/store.ts";
+} from "../../domain/references/resolutions.ts";
+import { cameraById, modelById } from "../../app/store.ts";
 
 export const modelName = (obj: { model: string }) =>
   (modelById(obj.model) || { name: "?" }).name;
