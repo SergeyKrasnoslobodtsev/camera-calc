@@ -187,10 +187,18 @@ function assertClose(actual: unknown, expected: unknown, path: string) {
   assert.equal(actual, expected, path);
 }
 
+// число камер 2.6 и пустое прежний расчёт округлял и заменял нулём, теперь это ошибка разбора (#36)
+const COUNT_ERROR_CASES = ["Дробное и пустое количество", "Пустое количество"];
+
 for (const { name, type, cameraId, expected } of fixture.cases)
   test(name, () => {
     const camera = cameras.find((item) => item.id === cameraId);
     const parsed = parseCameraType(type);
+    if (COUNT_ERROR_CASES.includes(name))
+      return assert.deepEqual(
+        parsed.ok ? [] : parsed.errors.map((error) => error.field),
+        ["count"],
+      );
     assert.ok(parsed.ok);
     const actual = oldShape(computeType(parsed.value, camera));
     assertClose(actual, pick(expected, actual), "result");

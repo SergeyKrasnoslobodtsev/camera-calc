@@ -49,6 +49,8 @@ export const RU = {
     `${used} из ${capacity} ГБ`,
   noCandidates:
     "Ни один GPU не отмечен для подбора. Отметьте GPU в «Шаблонах».",
+  systemInputError:
+    "Не удалось подобрать GPU: в параметрах системы или в цене GPU недопустимое значение. Проверьте коэффициент реальности, запас под рост, глубину архива и цены в «Шаблонах».",
   noFit:
     "Нагрузку не выдерживает ни один GPU даже в количестве 4. Уменьшите частоту для аналитики, используйте вырез зоны вместо тайлов, выберите модель легче или распределите камеры по нескольким серверам.",
   // результат
@@ -62,7 +64,7 @@ export const RU = {
   sideAria: "Схема: камера, поле зрения и зона контроля, вид сбоку",
   pillError: "Ошибка ввода",
   inputError:
-    "Проверьте исходные данные: высота камеры должна быть больше высоты плоскости интереса, а размеры зоны и матрицы — больше нуля.",
+    "Проверьте исходные данные: обязательные поля заполнены, числа не меньше нуля, количество камер целое, высота камеры больше высоты плоскости интереса, размеры зоны и матрицы больше нуля.",
   kpiFocal: "Фокусное расстояние",
   kpiFocalLimit: "предел объектива",
   kpiFocalAuto: "подобрано",
@@ -357,6 +359,7 @@ export const RU = {
   errorDecoderStreams: "потоки декодера",
   errorDecoders: "число NVDEC",
   errorMemory: "память",
+  errorTdp: "TDP",
   errorPrice: "цена (нужна для сравнения в подборе)",
   gpuAdded: (name: Value) => `«${name}» добавлен`,
   gpuDeleted: "GPU удалён",
@@ -392,7 +395,9 @@ export const RU = {
   cameraFormError: (fields: Value) => `Укажите: ${fields}.`,
   errorFrame: "размер кадра в пикселях",
   errorSensorWidth: "ширину матрицы или размер пикселя",
+  errorFocal: "фокусное расстояние",
   errorFocalRange: "фокусное расстояние «от» не больше «до»",
+  errorCameraPrice: "цену",
   cameraAdded: (name: Value) => `«${name}» добавлена`,
   cameraDeleted: "Камера удалена",
   detectorsTitle: (count: Value) => `Детекторы · ${count}`,
@@ -419,6 +424,7 @@ export const RU = {
     "Для других GPU замер пересчитывается по FP16, для другого входа — по квадрату его стороны.",
   addDetectorBtn: "Добавить детектор",
   errorFps: "замер",
+  errorGflops: "GFLOPs на кадр",
   detectorAdded: (name: Value) => `«${name}» добавлен`,
   detectorDeleted: "Детектор удалён",
   // отчёт
@@ -464,6 +470,7 @@ export const RU = {
   }) =>
     `Вычислитель (оценка): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; инференс ${params.inferenceLoad}%, декодер ${params.decodeLoad}%, видеопамять ${params.memoryUsed}/${params.memoryCap} ГБ${params.optimum ? `; оптимум по цене: ${params.optimum}` : ""}`,
   reportNoCompute: "Вычислитель: нет данных",
+  reportComputeError: "Вычислитель: ошибка в исходных данных",
   // уведомления
   stale: "Данные изменены в другой вкладке. Обновите страницу.",
   typeCopied: "Тип скопирован",

@@ -13,10 +13,9 @@ export const uid = () => Math.random().toString(36).slice(2, 9);
 // ---------- GPU: каталог и свои карты, правки цен и участие в подборе
 export const allGpus = () => [...GPU_CATALOG, ...store.customGpus];
 export const gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
-export const priceOf = (gpu) => {
-  const price = parseNum(store.gpuPrices[gpu.id]);
-  return price > 0 ? price : gpu.price;
-};
+// правка цены из поля; недопустимая — NaN, подбор GPU показывает ошибку
+export const priceOf = (gpu) =>
+  gpu.id in store.gpuPrices ? parseNum(store.gpuPrices[gpu.id]) : gpu.price;
 export const isOn = (gpu) => store.gpuEnabled[gpu.id] !== false;
 export const decText = (gpu) =>
   gpu.decodeStreams

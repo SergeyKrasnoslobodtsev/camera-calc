@@ -325,17 +325,17 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     <div class="colhead typehead">
       <h2 id="parametersTitle" data-t="parametersTitle"></h2>
       <div class="f"><label for="typeName" data-t="typeName"></label><input id="typeName"></div>
-      <div class="f"><label for="typeCount" data-t="typeCount"></label><input id="typeCount" type="number" step="1" inputmode="numeric"></div>
+      <div class="f"><label for="typeCount" data-t="typeCount"></label><input id="typeCount" type="number" min="0" step="1" inputmode="numeric"></div>
     </div>
     <details class="sec" open>
       <summary><span data-t="sectionGeometry"></span> <span class="sumv" id="summaryGeometry"></span></summary>
       <div class="fs">
-        <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="zoneStartBox"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="cameraHeight" data-t="cameraHeight"></label><input id="cameraHeight" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="planeHeight" data-t="planeHeight"></label><input id="planeHeight" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f" id="zoneStartBox"><label for="zoneStart" data-t="zoneStart"></label><input id="zoneStart" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="margin" data-t="margin"></label><input id="margin" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneDepth" data-t="zoneDepth"></label><input id="zoneDepth" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="zoneWidth" data-t="zoneWidth"></label><input id="zoneWidth" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f full"><span data-tip="placement" data-t="placement"></span>
           <div class="seg" role="radiogroup" data-ta="placement">
             <label><input type="radio" name="placement" id="placementSide" value="side"><span data-t="placementSide"></span></label>
@@ -350,8 +350,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         <div class="f full"><div class="lrow" style="justify-content:space-between"><label for="camera" data-t="cameraSelect"></label><a class="inlink" href="#tpl-cams" data-t="addCameraLink"></a></div><select id="camera"></select></div>
         <div class="f full"><label for="resolution" data-t="resolution"></label><select id="resolution"></select></div>
         <div class="f"><label for="sensor" data-t="sensor"></label><select id="sensor"></select></div>
-        <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" step="any" inputmode="decimal"></div>
-        <div class="f full" id="pixelPitchBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="sensorWidth" data-t="sensorWidth"></label><input id="sensorWidth" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f full" id="pixelPitchBox" hidden><label for="pixelPitch" data-t="pixelPitch"></label><input id="pixelPitch" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f full"><label for="orientation" data-t="orientation"></label><select id="orientation"><option value="auto" data-t="auto"></option><option value="landscape" data-t="orientationLandscape"></option><option value="portrait" data-t="orientationPortrait"></option></select></div>
         <div class="f full"><span data-tip="lensMode" data-t="lensMode"></span>
           <div class="seg three" role="radiogroup" data-ta="lensModeAria">
@@ -360,20 +360,20 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
             <label><input type="radio" name="lensMode" id="lensModeAngle" value="angle"><span data-t="lensModeAngle"></span></label>
           </div>
         </div>
-        <div class="f" id="focalLengthBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" step="any" inputmode="decimal"></div>
-        <div class="f" id="hfovBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="focalLengthBox" hidden><label for="focalLength" data-t="focalLength"></label><input id="focalLength" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f" id="hfovBox" hidden><label for="hfov" data-t="hfov"></label><input id="hfov" type="number" min="0" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <details class="sec">
       <summary><span data-t="sectionStream"></span> <span class="sumv" id="summaryStream"></span></summary>
       <div class="fs">
-        <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="fps" data-t="fps"></label><input id="fps" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="analyticsFps" data-t="analyticsFps"></label><input id="analyticsFps" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f"><label for="codec" data-t="codec"></label><select id="codec"><option value="0.04">H.265</option><option value="0.07">H.264</option></select></div>
         <div class="f"><label for="scene" data-t="scene"></label><select id="scene"><option value="0.6" data-t="sceneLow"></option><option value="1" data-t="sceneMid"></option><option value="1.5" data-t="sceneHigh"></option></select></div>
-        <div class="f"><label for="lensFactor" data-t="lensFactor"></label><input id="lensFactor" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="speed" data-t="speed"></label><input id="speed" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="lensFactor" data-t="lensFactor"></label><input id="lensFactor" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="speed" data-t="speed"></label><input id="speed" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="blurPx" data-t="blurPx"></label><input id="blurPx" type="number" min="0" step="any" inputmode="decimal"></div>
       </div>
     </details>
     <div class="colfoot"><button type="button" class="sm" id="duplicateTypeBtn" data-t="duplicateTypeBtn"></button><button type="button" class="sm danger" id="deleteTypeBtn" data-t="deleteTypeBtn"></button></div>
@@ -396,7 +396,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 <div class="bottom">
   <section class="panel net" aria-labelledby="networkTitle">
     <div class="rowhead"><h2 id="networkTitle" data-t="networkTitle"></h2>
-      <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" step="1" inputmode="numeric" value="0"></div></div>
+      <div class="f"><label for="archiveDays" data-t="archiveDays"></label><input id="archiveDays" type="number" min="0" step="1" inputmode="numeric" value="0"></div></div>
     <div class="tbl"><table id="networkTable"></table></div>
   </section>
   <section class="panel assum" aria-labelledby="assumptionsTitle">
@@ -465,8 +465,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="tbl" style="padding:4px 8px 8px"><table id="catalogTable"></table></div>
       <div class="mine" id="customGpus"></div>
       <div class="params">
-        <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" step="any" inputmode="decimal" value="0.6"></div>
-        <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" step="any" inputmode="decimal" value="20"></div>
+        <div class="f"><label for="efficiency" data-t="efficiency"></label><input id="efficiency" type="number" min="0" step="any" inputmode="decimal" value="0.6"></div>
+        <div class="f"><label for="reserve" data-t="reserve"></label><input id="reserve" type="number" min="0" step="any" inputmode="decimal" value="20"></div>
       </div>
     </section>
     <section class="panel newc" aria-labelledby="gpuFormTitle">
@@ -474,11 +474,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <form id="gpuForm" autocomplete="off" novalidate>
         <div class="f full"><label for="gpuFormName" data-t="gpuFormName"></label><input id="gpuFormName" data-tp="gpuFormNamePlaceholder" style="font-family:var(--sans)"></div>
         <div class="f"><label for="gpuFormArchitecture" data-t="gpuFormArchitecture"></label><select id="gpuFormArchitecture"><option value="Blackwell">Blackwell</option><option value="Hopper">Hopper</option><option value="Ada">Ada</option><option value="Ampere">Ampere</option><option value="Turing">Turing</option><option value="jet" data-t="gpuFormJetson"></option></select></div>
-        <div class="f"><label for="gpuFormTflops" data-t="gpuFormTflops"></label><input id="gpuFormTflops" type="number" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
-        <div class="f"><label for="gpuFormDecoders" id="gpuFormDecodersLabel" data-t="gpuFormDecoders"></label><input id="gpuFormDecoders" type="number" step="any" inputmode="decimal" placeholder="2"></div>
-        <div class="f"><label for="gpuFormMemory" data-t="gpuFormMemory"></label><input id="gpuFormMemory" type="number" step="any" inputmode="decimal" placeholder="48"></div>
-        <div class="f"><label for="gpuFormTdp" data-t="gpuFormTdp"></label><input id="gpuFormTdp" type="number" step="1" inputmode="numeric" placeholder="300"></div>
-        <div class="f"><label for="gpuFormPrice" data-t="gpuFormPrice"></label><input id="gpuFormPrice" type="number" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
+        <div class="f"><label for="gpuFormTflops" data-t="gpuFormTflops"></label><input id="gpuFormTflops" type="number" min="0" step="any" inputmode="decimal" data-tp="gpuFormTflopsPlaceholder"></div>
+        <div class="f"><label for="gpuFormDecoders" id="gpuFormDecodersLabel" data-t="gpuFormDecoders"></label><input id="gpuFormDecoders" type="number" min="0" step="any" inputmode="decimal" placeholder="2"></div>
+        <div class="f"><label for="gpuFormMemory" data-t="gpuFormMemory"></label><input id="gpuFormMemory" type="number" min="0" step="any" inputmode="decimal" placeholder="48"></div>
+        <div class="f"><label for="gpuFormTdp" data-t="gpuFormTdp"></label><input id="gpuFormTdp" type="number" min="0" step="1" inputmode="numeric" placeholder="300"></div>
+        <div class="f"><label for="gpuFormPrice" data-t="gpuFormPrice"></label><input id="gpuFormPrice" type="number" min="0" step="1" inputmode="numeric" data-tp="gpuFormPricePlaceholder"></div>
         <label class="f full" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--fg);min-height:32px"><input type="checkbox" id="gpuFormEnabled" checked><span data-t="gpuFormEnabled"></span></label>
         <div class="hint"><b data-t="hintWhere"></b><span data-t="gpuFormHint1"></span><span data-t="gpuFormHint2"></span></div>
         <div class="err" id="gpuFormError" hidden></div>
@@ -496,13 +496,13 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="colhead"><h2 id="cameraFormTitle" data-t="cameraFormTitle"></h2></div>
       <form id="cameraForm" autocomplete="off" novalidate>
         <div class="f full"><label for="cameraFormName" data-t="typeName"></label><input id="cameraFormName" data-tp="cameraFormNamePlaceholder" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="cameraFormWidth" data-t="cameraFormWidth"></label><input id="cameraFormWidth" type="number" step="1" inputmode="numeric" placeholder="2560"></div>
-        <div class="f"><label for="cameraFormHeight" data-t="cameraFormHeight"></label><input id="cameraFormHeight" type="number" step="1" inputmode="numeric" placeholder="1440"></div>
-        <div class="f"><label for="cameraFormSensorWidth" data-t="cameraFormSensorWidth"></label><input id="cameraFormSensorWidth" type="number" step="any" inputmode="decimal" placeholder="5.4"></div>
-        <div class="f"><label for="cameraFormPixelPitch" data-t="cameraFormPixelPitch"></label><input id="cameraFormPixelPitch" type="number" step="any" inputmode="decimal" placeholder="2.0"></div>
-        <div class="f"><label for="cameraFormFocalMin" data-t="cameraFormFocalMin"></label><input id="cameraFormFocalMin" type="number" step="any" inputmode="decimal" placeholder="2.8"></div>
-        <div class="f"><label for="cameraFormFocalMax" data-t="cameraFormFocalMax"></label><input id="cameraFormFocalMax" type="number" step="any" inputmode="decimal" placeholder="12"></div>
-        <div class="f"><label for="cameraFormPrice" data-t="cameraFormPrice"></label><input id="cameraFormPrice" type="number" step="1" inputmode="numeric" data-tp="optional"></div>
+        <div class="f"><label for="cameraFormWidth" data-t="cameraFormWidth"></label><input id="cameraFormWidth" type="number" min="0" step="1" inputmode="numeric" placeholder="2560"></div>
+        <div class="f"><label for="cameraFormHeight" data-t="cameraFormHeight"></label><input id="cameraFormHeight" type="number" min="0" step="1" inputmode="numeric" placeholder="1440"></div>
+        <div class="f"><label for="cameraFormSensorWidth" data-t="cameraFormSensorWidth"></label><input id="cameraFormSensorWidth" type="number" min="0" step="any" inputmode="decimal" placeholder="5.4"></div>
+        <div class="f"><label for="cameraFormPixelPitch" data-t="cameraFormPixelPitch"></label><input id="cameraFormPixelPitch" type="number" min="0" step="any" inputmode="decimal" placeholder="2.0"></div>
+        <div class="f"><label for="cameraFormFocalMin" data-t="cameraFormFocalMin"></label><input id="cameraFormFocalMin" type="number" min="0" step="any" inputmode="decimal" placeholder="2.8"></div>
+        <div class="f"><label for="cameraFormFocalMax" data-t="cameraFormFocalMax"></label><input id="cameraFormFocalMax" type="number" min="0" step="any" inputmode="decimal" placeholder="12"></div>
+        <div class="f"><label for="cameraFormPrice" data-t="cameraFormPrice"></label><input id="cameraFormPrice" type="number" min="0" step="1" inputmode="numeric" data-tp="optional"></div>
         <div class="hint"><b data-t="hintWhere"></b><span data-t="cameraFormHint1"></span><span data-t="cameraFormHint2"></span></div>
         <div class="err" id="cameraFormError" hidden></div>
         <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addCameraBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
@@ -518,10 +518,10 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       <div class="colhead"><h2 id="detectorFormTitle" data-t="detectorFormTitle"></h2></div>
       <form id="detectorForm" autocomplete="off" novalidate>
         <div class="f full"><label for="detectorFormName" data-t="typeName"></label><input id="detectorFormName" data-tp="detectorFormNamePlaceholder" style="font-family:var(--sans)"></div>
-        <div class="f"><label for="detectorFormFps" data-t="detectorFormFps"></label><input id="detectorFormFps" type="number" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
+        <div class="f"><label for="detectorFormFps" data-t="detectorFormFps"></label><input id="detectorFormFps" type="number" min="0" step="any" inputmode="decimal" data-tp="detectorFormFpsPlaceholder"></div>
         <div class="f"><label for="detectorFormInput" data-t="detectorFormInput"></label><select id="detectorFormInput" style="font-family:var(--mono)"></select></div>
         <div class="f full"><label for="detectorFormRefGpu" data-t="detectorFormRefGpu"></label><select id="detectorFormRefGpu"></select></div>
-        <div class="f full"><label for="detectorFormGflops" data-t="detectorFormGflops"></label><input id="detectorFormGflops" type="number" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
+        <div class="f full"><label for="detectorFormGflops" data-t="detectorFormGflops"></label><input id="detectorFormGflops" type="number" min="0" step="any" inputmode="decimal" data-tp="detectorFormGflopsPlaceholder"></div>
         <div class="hint"><b data-t="hintHow"></b><span data-t="detectorFormHint1"></span><span data-t="detectorFormHint2"></span></div>
         <div class="err" id="detectorFormError" hidden></div>
         <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px"><button type="submit" class="primary" data-t="addDetectorBtn"></button><a class="btn" href="#" data-t="toCalculation"></a></div>
@@ -575,6 +575,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     gaugeDecoderSubtitle: (used, capacity) => `${used} из ${capacity} потоков`,
     gaugeMemorySubtitle: (used, capacity) => `${used} из ${capacity} ГБ`,
     noCandidates: "Ни один GPU не отмечен для подбора. Отметьте GPU в «Шаблонах».",
+    systemInputError: "Не удалось подобрать GPU: в параметрах системы или в цене GPU недопустимое значение. Проверьте коэффициент реальности, запас под рост, глубину архива и цены в «Шаблонах».",
     noFit: "Нагрузку не выдерживает ни один GPU даже в количестве 4. Уменьшите частоту для аналитики, используйте вырез зоны вместо тайлов, выберите модель легче или распределите камеры по нескольким серверам.",
     // результат
     resultTitle: "Результат",
@@ -586,7 +587,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     legendZone: "Зона",
     sideAria: "Схема: камера, поле зрения и зона контроля, вид сбоку",
     pillError: "Ошибка ввода",
-    inputError: "Проверьте исходные данные: высота камеры должна быть больше высоты плоскости интереса, а размеры зоны и матрицы — больше нуля.",
+    inputError: "Проверьте исходные данные: обязательные поля заполнены, числа не меньше нуля, количество камер целое, высота камеры больше высоты плоскости интереса, размеры зоны и матрицы больше нуля.",
     kpiFocal: "Фокусное расстояние",
     kpiFocalLimit: "предел объектива",
     kpiFocalAuto: "подобрано",
@@ -845,6 +846,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     errorDecoderStreams: "потоки декодера",
     errorDecoders: "число NVDEC",
     errorMemory: "память",
+    errorTdp: "TDP",
     errorPrice: "цена (нужна для сравнения в подборе)",
     gpuAdded: (name) => `«${name}» добавлен`,
     gpuDeleted: "GPU удалён",
@@ -878,7 +880,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     cameraFormError: (fields) => `Укажите: ${fields}.`,
     errorFrame: "размер кадра в пикселях",
     errorSensorWidth: "ширину матрицы или размер пикселя",
+    errorFocal: "фокусное расстояние",
     errorFocalRange: "фокусное расстояние «от» не больше «до»",
+    errorCameraPrice: "цену",
     cameraAdded: (name) => `«${name}» добавлена`,
     cameraDeleted: "Камера удалена",
     detectorsTitle: (count) => `Детекторы · ${count}`,
@@ -902,6 +906,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     detectorFormHint2: "Для других GPU замер пересчитывается по FP16, для другого входа — по квадрату его стороны.",
     addDetectorBtn: "Добавить детектор",
     errorFps: "замер",
+    errorGflops: "GFLOPs на кадр",
     detectorAdded: (name) => `«${name}» добавлен`,
     detectorDeleted: "Детектор удалён",
     // отчёт
@@ -912,6 +917,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     reportSystem: (cameraCount, mbps, cost) => `Система: камер ${cameraCount}, ${mbps} Мбит/с${cost ? `, стоимость камер ${cost}` : ""}`,
     reportCompute: (params) => `Вычислитель (оценка): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; инференс ${params.inferenceLoad}%, декодер ${params.decodeLoad}%, видеопамять ${params.memoryUsed}/${params.memoryCap} ГБ${params.optimum ? `; оптимум по цене: ${params.optimum}` : ""}`,
     reportNoCompute: "Вычислитель: нет данных",
+    reportComputeError: "Вычислитель: ошибка в исходных данных",
     // уведомления
     stale: "Данные изменены в другой вкладке. Обновите страницу.",
     typeCopied: "Тип скопирован",
@@ -1017,6 +1023,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     gaugeDecoderSubtitle: (used, capacity) => `${used} of ${capacity} streams`,
     gaugeMemorySubtitle: (used, capacity) => `${used} of ${capacity} GB`,
     noCandidates: 'No GPU is selected for auto-selection. Select GPUs in "Templates".',
+    systemInputError: 'Unable to select a GPU: a system setting or a GPU price has an invalid value. Check the derating factor, growth headroom, archive retention, and prices in "Templates".',
     noFit: "No GPU can handle the load, even 4 of them. Lower the analytics frame rate, use zone crop instead of tiles, choose a lighter model, or split the cameras across several servers.",
     // результат
     resultTitle: "Result",
@@ -1028,7 +1035,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     legendZone: "Zone",
     sideAria: "Diagram: camera, field of view, and monitored zone, side view",
     pillError: "Input error",
-    inputError: "Check the input data: the camera height must be greater than the target plane height, and the zone and sensor sizes must be greater than zero.",
+    inputError: "Check the input data: required fields must be filled in, numbers must not be negative, the camera count must be a whole number, the camera height must be greater than the target plane height, and the zone and sensor sizes must be greater than zero.",
     kpiFocal: "Focal length",
     kpiFocalLimit: "lens limit",
     kpiFocalAuto: "selected",
@@ -1281,6 +1288,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     errorDecoderStreams: "decoder streams",
     errorDecoders: "NVDEC count",
     errorMemory: "memory",
+    errorTdp: "TDP",
     errorPrice: "price (needed for comparison in auto-selection)",
     gpuAdded: (name) => `"${name}" added`,
     gpuDeleted: "GPU deleted",
@@ -1314,7 +1322,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     cameraFormError: (fields) => `Enter: ${fields}.`,
     errorFrame: "frame size in pixels",
     errorSensorWidth: "sensor width or pixel size",
+    errorFocal: "focal length",
     errorFocalRange: 'focal length "from" not greater than "to"',
+    errorCameraPrice: "price",
     cameraAdded: (name) => `"${name}" added`,
     cameraDeleted: "Camera deleted",
     detectorsTitle: (count) => `Detectors · ${count}`,
@@ -1338,6 +1348,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     detectorFormHint2: "For other GPUs the benchmark is scaled by FP16, for another input size by the square of its side.",
     addDetectorBtn: "Add detector",
     errorFps: "benchmark",
+    errorGflops: "GFLOPs per frame",
     detectorAdded: (name) => `"${name}" added`,
     detectorDeleted: "Detector deleted",
     // отчёт
@@ -1348,6 +1359,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     reportSystem: (cameraCount, mbps, cost) => `System: ${cameraCount} cameras, ${mbps} Mbps${cost ? `, camera cost ${cost}` : ""}`,
     reportCompute: (params) => `Compute node (estimate): ${params.gpuCount} × ${params.gpuName}, ${params.cost}; inference ${params.inferenceLoad}%, decoder ${params.decodeLoad}%, GPU memory ${params.memoryUsed}/${params.memoryCap} GB${params.optimum ? `; best price: ${params.optimum}` : ""}`,
     reportNoCompute: "Compute node: no data",
+    reportComputeError: "Compute node: input data error",
     // уведомления
     stale: "The data was changed in another tab. Reload the page.",
     typeCopied: "Type copied",
@@ -1571,9 +1583,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   // src/domain/angles.ts
   var DEG = Math.PI / 180;
 
-  // src/domain/parse-num.ts
-  var parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
-
   // src/domain/references/resolutions.ts
   var RESOLUTIONS = [
     { megapixels: 2, width: 1920, height: 1080 },
@@ -1608,9 +1617,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         height: camera.Nh,
         sensorWidth: camera.sensorWidth
       };
-    const { width, height } = RESOLUTIONS[+inputs.resolution] ?? DEFAULT_RESOLUTION;
-    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR;
-    const sensorWidth = sensor.kind === "format" ? sensor.widthMm : sensor.kind === "pixelPitch" ? parseNum(inputs.pixelPitch) * width / 1e3 : parseNum(inputs.sensorWidth);
+    const { width, height } = RESOLUTIONS[inputs.resolution] ?? DEFAULT_RESOLUTION;
+    const sensor = SENSORS[inputs.sensor] ?? DEFAULT_SENSOR;
+    const sensorWidth = sensor.kind === "format" ? sensor.widthMm : sensor.kind === "pixelPitch" ? inputs.pixelPitch * width / 1e3 : inputs.sensorWidth;
     return { width, height, sensorWidth };
   }
 
@@ -1784,10 +1793,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         tilesX: 1,
         tilesY: 1
       };
-    const overlap = Math.min(
-      MAX_OVERLAP,
-      Math.max(0, (overlapPercent || 0) / 100)
-    ), step = inputSize * (1 - overlap);
+    const overlap = Math.min(MAX_OVERLAP, Math.max(0, overlapPercent / 100)), step = inputSize * (1 - overlap);
     const tilesAlong = (length) => length > inputSize ? Math.ceil((length - inputSize) / step) + 1 : 1;
     const tilesX = tilesAlong(roi.width), tilesY = tilesAlong(roi.height);
     return {
@@ -1802,15 +1808,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   }
 
   // src/domain/compute-type/scene-object.ts
-  var DEFAULT_INPUT_SIZE = 640;
   var WARN_SHARE = 0.75;
   function evaluateObject(object, context) {
     const { view, k, zone } = context;
-    const width = parseNum(object.width) / 100, length = parseNum(object.length) / 100, height = parseNum(object.height) / 100, requiredPx = parseNum(object.requiredPx);
+    const width = object.width / 100, length = object.length / 100, height = object.height / 100, { requiredPx } = object;
     const feed = describeFeed(
       object.feed,
-      parseNum(object.inputSize) || DEFAULT_INPUT_SIZE,
-      parseNum(object.overlap),
+      object.inputSize,
+      object.overlap,
       context.frame,
       context.roi
     );
@@ -1990,10 +1995,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
 
   // src/domain/compute-type/index.ts
   function computeType(type, camera) {
-    const { inputs } = type;
-    const count = Math.max(0, Math.round(parseNum(type.count)) || 0);
+    const { inputs, count } = type;
     const frame = resolveFrame(inputs, camera);
-    const H = parseNum(inputs.cameraHeight), h = parseNum(inputs.planeHeight), zoneStart = parseNum(inputs.zoneStart), zoneDepth = parseNum(inputs.zoneDepth), zoneWidth = parseNum(inputs.zoneWidth), k = parseNum(inputs.lensFactor);
+    const H = inputs.cameraHeight, h = inputs.planeHeight, { zoneStart, zoneDepth, zoneWidth } = inputs, k = inputs.lensFactor;
     const Hc = H - h;
     const error = { ok: false, type, count, frame };
     if (![H, h, zoneDepth, zoneWidth, frame.sensorWidth, k].every(isFinite) || inputs.placement === "side" && !isFinite(zoneStart) || Hc <= 0 || zoneDepth <= 0 || zoneWidth <= 0 || !(frame.sensorWidth > 0))
@@ -2005,9 +2009,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       zone,
       {
         mode: inputs.lensMode,
-        focalLength: parseNum(inputs.focalLength),
-        hfov: parseNum(inputs.hfov) * DEG,
-        margin: (parseNum(inputs.margin) || 0) / 100,
+        focalLength: inputs.focalLength,
+        hfov: inputs.hfov * DEG,
+        margin: inputs.margin / 100,
         zoneWidth,
         focalRange
       },
@@ -2031,10 +2035,10 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       count,
       frameWidthPx: lens.frameWidthPx,
       frameHeightPx: lens.frameHeightPx,
-      fps: parseNum(inputs.fps),
-      analyticsFpsSet: parseNum(inputs.analyticsFps),
-      bitsPerPixel: +inputs.codec,
-      sceneFactor: +inputs.scene
+      fps: inputs.fps,
+      analyticsFpsSet: inputs.analyticsFps,
+      bitsPerPixel: inputs.codec,
+      sceneFactor: inputs.scene
     });
     const clamped = isClamped(lens);
     const assessment = assessObjects(
@@ -2073,9 +2077,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       density,
       stream,
       shutterDenominator: shutterDenominator(
-        parseNum(inputs.speed),
+        inputs.speed,
         density.max,
-        parseNum(inputs.blurPx)
+        inputs.blurPx
       ),
       objects,
       ...assessment,
@@ -2271,7 +2275,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       return sum + (price > 0 ? price * result2.count : 0);
     }, 0);
     const portMbps = totalMbps * NETWORK_HEADROOM;
-    const archiveDays = parseNum(settings.archiveDays) || 0;
+    const { archiveDays } = settings;
     return {
       cameraCount,
       totalMbps,
@@ -2289,7 +2293,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const liveResults = results.filter(
       (result2) => result2.ok && result2.count > 0
     );
-    const efficiency = parseNum(settings.efficiency), reserve = Math.max(0, parseNum(settings.reserve) || 0) / 100, maxLoad = 1 / (1 + reserve);
+    const { efficiency } = settings, maxLoad = 1 / (1 + settings.reserve / 100);
     const groups = liveResults.flatMap(
       (result2) => result2.runGroups.map((group) => ({ ...group, typeName: result2.type.name }))
     );
@@ -2320,11 +2324,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       if (settings.gpu === "auto") {
         if (settings.gpuCount === "auto")
           return optimum || leastLoaded(evaluations);
-        const count = +settings.gpuCount;
+        const count = settings.gpuCount;
         return fitting.find((option) => option.count === count) || leastLoaded(evaluations.filter((option) => option.count === count));
       }
       const gpu = catalog.gpus.find((item) => item.id === settings.gpu) || catalog.gpus[0];
-      if (settings.gpuCount !== "auto") return evaluate(gpu, +settings.gpuCount);
+      if (settings.gpuCount !== "auto") return evaluate(gpu, settings.gpuCount);
       const options = GPU_COUNTS.map((count) => evaluate(gpu, count));
       return options.find((option) => option.ok) || options[options.length - 1];
     };
@@ -2342,13 +2346,33 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     };
   }
 
+  // src/domain/parse-num.ts
+  var parseNum = (value) => parseFloat(String(value ?? "").replace(",", "."));
+
   // src/domain/entities/parse-result.ts
+  var onlyValueErrors = (errors) => errors.every(
+    (error) => ["positive", "nonNegative", "integer"].includes(error.code)
+  );
   var isRecord = (value) => typeof value === "object" && value !== null;
   function readFields(raw, prefix = "") {
     const record = isRecord(raw) ? raw : {};
     const errors = [];
     const check = (ok, field, code) => {
       if (!ok) errors.push({ field: prefix + field, code });
+    };
+    const formValue = (field, value = record[field]) => {
+      check(
+        typeof value === "string" || Number.isFinite(value),
+        field,
+        "required"
+      );
+      return value;
+    };
+    const draftNumber = (field, value, ok, code) => {
+      const count = errors.length;
+      const number = parseNum(formValue(field, value));
+      if (errors.length === count) check(ok(number), field, code);
+      return number;
     };
     return {
       record,
@@ -2357,14 +2381,20 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         check(typeof value === "string", field, "required");
         return String(value ?? "");
       },
-      // значение поля формы в черновике: строка как введена или число из шаблона
-      formValue(field, value = record[field]) {
-        check(
-          typeof value === "string" || Number.isFinite(value),
+      formValue,
+      // число из поля формы в черновике: пустое или не число — NaN, его отсекает расчёт, если поле нужно;
+      // отрицательное — ошибка
+      number(field, value = record[field]) {
+        return draftNumber(
           field,
-          "required"
+          value,
+          (number) => !(number < 0),
+          "nonNegative"
         );
-        return value;
+      },
+      // число из поля формы в черновике, которое нужно всегда: пустое, не число или отрицательное — ошибка
+      requiredNumber(field, value = record[field]) {
+        return draftNumber(field, value, (number) => number >= 0, "nonNegative");
       },
       text(field, value = record[field]) {
         check(
@@ -2390,6 +2420,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
         check(list.includes(value), field, "oneOf");
         return value;
       },
+      // целое, если это число: остальное проверяют positive и nonNegative
+      integer(field, value) {
+        check(
+          !Number.isFinite(value) || Number.isInteger(value),
+          field,
+          "integer"
+        );
+      },
       order(field, ok) {
         check(ok, field, "order");
       }
@@ -2409,6 +2447,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       focalMin: read.nonNegative("focalMin"),
       focalMax: read.nonNegative("focalMax")
     };
+    read.integer("Nw", camera.Nw);
+    read.integer("Nh", camera.Nh);
     read.order("focalMax", camera.focalMin <= camera.focalMax);
     if (read.record.price !== void 0) camera.price = read.nonNegative("price");
     if (read.record.custom === true) camera.custom = true;
@@ -2416,6 +2456,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   }
 
   // src/domain/entities/camera-type.ts
+  var DEFAULT_INPUT_SIZE = 640;
   var PLACEMENTS = ["side", "top"];
   var LENS_MODES = ["auto", "focal", "angle"];
   var ORIENTATIONS = ["auto", "landscape", "portrait"];
@@ -2428,14 +2469,14 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const read = readFields(raw);
     const object = {
       name: read.string("name"),
-      width: read.formValue("width"),
-      length: read.formValue("length"),
-      height: read.formValue("height"),
-      requiredPx: read.formValue("requiredPx"),
+      width: read.number("width"),
+      length: read.number("length"),
+      height: read.number("height"),
+      requiredPx: read.number("requiredPx"),
       model: read.text("model"),
       feed: read.oneOf("feed", FEED_MODES),
-      inputSize: read.formValue("inputSize"),
-      overlap: read.formValue("overlap")
+      inputSize: read.number("inputSize") || DEFAULT_INPUT_SIZE,
+      overlap: read.requiredNumber("overlap")
     };
     return result(read.errors, withNameKey(object, read.record.nameKey));
   }
@@ -2448,32 +2489,34 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const objects = (Array.isArray(rawObjects) ? rawObjects : []).map(
       parseSceneObject
     );
+    const count = read.requiredNumber("count");
+    read.integer("count", count);
     const type = {
       id: read.text("id"),
       name: read.string("name"),
-      count: read.formValue("count"),
+      count,
       inputs: {
         camera: inputs.string("camera"),
-        cameraHeight: inputs.formValue("cameraHeight"),
-        planeHeight: inputs.formValue("planeHeight"),
-        zoneStart: inputs.formValue("zoneStart"),
-        zoneDepth: inputs.formValue("zoneDepth"),
-        zoneWidth: inputs.formValue("zoneWidth"),
-        margin: inputs.formValue("margin"),
-        resolution: inputs.formValue("resolution"),
-        sensor: inputs.formValue("sensor"),
-        sensorWidth: inputs.formValue("sensorWidth"),
-        pixelPitch: inputs.formValue("pixelPitch"),
+        cameraHeight: inputs.number("cameraHeight"),
+        planeHeight: inputs.number("planeHeight"),
+        zoneStart: inputs.number("zoneStart"),
+        zoneDepth: inputs.number("zoneDepth"),
+        zoneWidth: inputs.number("zoneWidth"),
+        margin: inputs.requiredNumber("margin"),
+        resolution: Number(inputs.formValue("resolution")),
+        sensor: Number(inputs.formValue("sensor")),
+        sensorWidth: inputs.number("sensorWidth"),
+        pixelPitch: inputs.number("pixelPitch"),
         orientation: inputs.oneOf("orientation", ORIENTATIONS),
-        focalLength: inputs.formValue("focalLength"),
-        hfov: inputs.formValue("hfov"),
-        fps: inputs.formValue("fps"),
-        analyticsFps: inputs.formValue("analyticsFps"),
-        codec: inputs.formValue("codec"),
-        scene: inputs.formValue("scene"),
-        lensFactor: inputs.formValue("lensFactor"),
-        speed: inputs.formValue("speed"),
-        blurPx: inputs.formValue("blurPx"),
+        focalLength: inputs.number("focalLength"),
+        hfov: inputs.number("hfov"),
+        fps: inputs.number("fps"),
+        analyticsFps: inputs.number("analyticsFps"),
+        codec: Number(inputs.formValue("codec")),
+        scene: Number(inputs.formValue("scene")),
+        lensFactor: inputs.number("lensFactor"),
+        speed: inputs.number("speed"),
+        blurPx: inputs.number("blurPx"),
         lensMode: inputs.oneOf("lensMode", LENS_MODES),
         placement: inputs.oneOf("placement", PLACEMENTS)
       },
@@ -2534,6 +2577,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       tdpW: read.nonNegative("tdpW"),
       price: read.positive("price")
     };
+    if (!jetson) read.integer("nvdec", gpu.nvdec);
     if (jetson) gpu.jetson = true;
     if (read.record.custom === true) gpu.custom = true;
     return result(read.errors, gpu);
@@ -2542,12 +2586,21 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   // src/domain/entities/system-settings.ts
   function parseSystemSettings(raw) {
     const read = readFields(raw);
+    const gpuCount = read.string("gpuCount");
+    const archiveDays = read.nonNegative(
+      "archiveDays",
+      parseNum(read.string("archiveDays"))
+    );
+    read.integer("archiveDays", archiveDays);
     const settings = {
-      efficiency: read.string("efficiency"),
-      reserve: read.string("reserve"),
-      archiveDays: read.string("archiveDays"),
+      efficiency: read.positive(
+        "efficiency",
+        parseNum(read.string("efficiency"))
+      ),
+      reserve: read.nonNegative("reserve", parseNum(read.string("reserve"))),
+      archiveDays,
       gpu: read.string("gpu"),
-      gpuCount: read.string("gpuCount")
+      gpuCount: gpuCount === "auto" ? "auto" : Number(gpuCount)
     };
     return result(read.errors, settings);
   }
@@ -2576,10 +2629,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   var uid = () => Math.random().toString(36).slice(2, 9);
   var allGpus = () => [...GPU_CATALOG, ...store.customGpus];
   var gpuById = (id) => allGpus().find((gpu) => gpu.id === id);
-  var priceOf = (gpu) => {
-    const price = parseNum(store.gpuPrices[gpu.id]);
-    return price > 0 ? price : gpu.price;
-  };
+  var priceOf = (gpu) => gpu.id in store.gpuPrices ? parseNum(store.gpuPrices[gpu.id]) : gpu.price;
   var isOn = (gpu) => store.gpuEnabled[gpu.id] !== false;
   var decText = (gpu) => gpu.decodeStreams ? t("decoderStreams", formatNumber(gpu.decodeStreams.h265, 0)) : `${gpu.nvdec} NVDEC`;
   var FEEDS = STR.feeds;
@@ -2635,16 +2685,16 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       const modelOptions = `<optgroup label="${t("ultralytics")}">${MODELS.map((model) => `<option value="${model.id}">${model.name}</option>`).join("")}</optgroup>` + (store.customDetectors.length ? `<optgroup label="${t("customDetectors")}">${store.customDetectors.map((detector) => `<option value="${detector.id}">${escapeHtml(detector.name)}</option>`).join("")}</optgroup>` : "");
       card.innerHTML = `<div class="ohdr"><span class="dot" id="objectDot-${i}" aria-hidden="true"></span><input id="objectName-${i}" aria-label="${t("objectName")}"><button type="button" class="odel" aria-label="${t("objectDelete")}">×</button></div>
       <div class="ogrid">
-        <div class="f"><label for="objectWidth-${i}">${t("objectWidth")}</label><input id="objectWidth-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="objectLength-${i}">${t("objectLength")}</label><input id="objectLength-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="objectHeight-${i}">${t("objectHeight")}</label><input id="objectHeight-${i}" type="number" step="any" inputmode="decimal"></div>
-        <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectWidth-${i}">${t("objectWidth")}</label><input id="objectWidth-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectLength-${i}">${t("objectLength")}</label><input id="objectLength-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectHeight-${i}">${t("objectHeight")}</label><input id="objectHeight-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="f"><label for="objectRequired-${i}">${t("objectRequiredPx")}</label><input id="objectRequired-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
         <div class="f c2"><label for="objectModel-${i}">${t("objectModel")}</label><select id="objectModel-${i}">${modelOptions}</select></div>
         <div class="f"><label for="objectFeed-${i}">${t("objectFeed")}</label><select id="objectFeed-${i}">${Object.entries(
         FEEDS
       ).map(([feed, label]) => `<option value="${feed}">${label}</option>`).join("")}</select></div>
         <div class="f"><label for="objectInput-${i}">${t("objectInput")}</label><select id="objectInput-${i}" style="font-family:var(--mono)">${INPUTS.map((size) => `<option>${size}</option>`).join("")}</select></div>
-        <div class="f" id="objectOverlapBox-${i}"><label for="objectOverlap-${i}">${t("objectOverlap")}</label><input id="objectOverlap-${i}" type="number" step="any" inputmode="decimal"></div>
+        <div class="f" id="objectOverlapBox-${i}"><label for="objectOverlap-${i}">${t("objectOverlap")}</label><input id="objectOverlap-${i}" type="number" min="0" step="any" inputmode="decimal"></div>
       </div>
       <div class="ores" id="objectResult-${i}" aria-live="polite"></div>`;
       list.append(card);
@@ -2696,7 +2746,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     byId("focalLengthBox").hidden = inputs.lensMode !== "focal";
     byId("hfovBox").hidden = inputs.lensMode !== "angle";
     byId("zoneStartBox").hidden = inputs.placement === "top";
-    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR, sensorWidth = result2?.frame.sensorWidth;
+    const sensor = SENSORS[+inputs.sensor] ?? DEFAULT_SENSOR, sensorWidth = result2?.frame?.sensorWidth;
     byId("resolution").disabled = !!camera;
     byId("sensor").disabled = !!camera;
     byId("pixelPitchBox").hidden = !!camera || sensor.kind !== "pixelPitch";
@@ -3148,7 +3198,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     return svg;
   }
   function renderSystem(results, system, totals) {
-    const { chosen, optimum, efficiency, maxLoad, liveResults } = system;
+    const { chosen, optimum, efficiency, maxLoad, liveResults } = system ?? {};
     const { cameraCount, totalMbps, cameraCost } = totals;
     const percent = (share) => formatNumber(share * 100, 0) + "%";
     const allObjects = results.flatMap(
@@ -3182,8 +3232,8 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       ],
       [
         t("systemCompute"),
-        liveResults.length ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}` : "—",
-        liveResults.length ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}` : t("systemNoCameras")
+        system && liveResults.length ? `${chosen.count} × ${escapeHtml(chosen.gpu.name)}` : "—",
+        !system ? t("tabError") : liveResults.length ? `$${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") + " · " + t("headroom", percent(Math.max(0, 1 - chosen.worstLoad))) : t("insufficient")}` : t("systemNoCameras")
       ],
       [
         t("systemNetwork"),
@@ -3193,6 +3243,22 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     ].map(
       ([label, value, extra]) => `<div class="sk"><span>${label}</span><strong>${value}</strong><em>${escapeHtml(extra)}</em></div>`
     ).join("");
+    const { archiveDays, archiveTB } = totals;
+    byId("networkTable").innerHTML = `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` + results.map(
+      (result2) => !result2.ok ? `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td>${result2.frame.width} × ${result2.frame.height}</td><td>${formatNumber(result2.stream.fps, 0)}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps * result2.count, 0), "mbps")}</td></tr>`
+    ).join("") + `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr><tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${!(archiveDays >= 0) ? t("tabError") : archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
+    byId("assumptionsList").innerHTML = t(
+      "assumptions",
+      system ? formatNumber(efficiency, 2) : "—"
+    ).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    if (!system) {
+      ["loadSummary", "donut", "legend", "gauges"].forEach(
+        (id) => byId(id).innerHTML = ""
+      );
+      byId("loadNote").innerHTML = `<span style="color:var(--bad)">${escapeHtml(t("systemInputError"))}</span>`;
+      byId("loadNote").hidden = false;
+      return;
+    }
     const overloaded = chosen.inferenceLoad > maxLoad;
     byId("loadSummary").innerHTML = liveResults.length ? `<b>${chosen.count} × ${escapeHtml(chosen.gpu.name)}</b> · $${formatNumber(chosen.cost, 0)} · ${chosen.ok ? t(chosen === optimum ? "optimum" : "manual") : `<span style="color:var(--bad)">${t("insufficient")}</span>`}<br>${t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} · ${t("bottleneck", bottleneckText(chosen.bottleneck))}` : "";
     const runs = chosen.runs.filter((run) => !run.unknownModel).map((run) => ({ ...run, share: run.gpusNeeded / chosen.count })).sort((a, b) => b.share - a.share);
@@ -3243,14 +3309,6 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     const warning = system.noCandidates ? t("noCandidates") : !optimum && liveResults.length ? t("noFit") : "";
     byId("loadNote").innerHTML = warning ? `<span style="color:var(--bad)">${escapeHtml(warning)}</span>` : liveResults.length && STR.gpuNotes[chosen.gpu.id] ? escapeHtml(STR.gpuNotes[chosen.gpu.id]) : "";
     byId("loadNote").hidden = !byId("loadNote").innerHTML;
-    const { archiveDays, archiveTB } = totals;
-    byId("networkTable").innerHTML = `<tr>${["networkType", "networkCameras", "networkResolution", "networkFps", "networkPerCamera", "networkAll"].map((key) => `<th>${t(key)}</th>`).join("")}</tr>` + results.map(
-      (result2) => !result2.ok ? `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td colspan="4" class="dim" style="text-align:left">${t("tabError")}</td></tr>` : `<tr><td class="txt">${escapeHtml(result2.type.name)}</td><td>${result2.count}</td><td>${result2.frame.width} × ${result2.frame.height}</td><td>${formatNumber(result2.stream.fps, 0)}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps, 1), "mbps")}</td><td>${withUnit(formatNumber(result2.stream.bitrateMbps * result2.count, 0), "mbps")}</td></tr>`
-    ).join("") + `<tr class="total"><td class="txt">${t("networkTotal")}</td><td>${cameraCount}</td><td></td><td></td><td></td><td>${withUnit(formatNumber(totalMbps, 0), "mbps")}</td></tr><tr><td class="txt dim">${t("networkArchive")}</td><td colspan="5" class="dim">${archiveDays > 0 ? t("networkArchiveValue", formatNumber(archiveTB, 1), formatNumber(archiveDays, 0)) : t("networkArchiveOff")}</td></tr>`;
-    byId("assumptionsList").innerHTML = t(
-      "assumptions",
-      formatNumber(efficiency, 2)
-    ).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   }
   function buildGpuSelect() {
     const select = byId("gpu"), current = select.value || "auto";
@@ -3269,7 +3327,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   }
   function renderGpuView() {
     const row = (gpu) => `<tr><td class="txt"><b style="font-weight:600">${escapeHtml(gpu.name)}</b><span class="sub">${gpu.jetson ? t("gpuJetson") : escapeHtml(gpu.arch)}${gpu.custom ? " · " + t("gpuCustom") : ""}</span></td><td>${formatNumber(gpu.tflops, 1)}</td><td>${decText(gpu)}</td><td>${withUnit(formatNumber(gpu.memoryGB, 0), "gb")}</td><td>${gpu.tdpW ? withUnit(formatNumber(gpu.tdpW, 0), "w") : "—"}</td>
-    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(store.gpuPrices[gpu.id] ?? gpu.price)}" type="number" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
+    <td><input id="gpuPrice-${gpu.id}" value="${escapeHtml(store.gpuPrices[gpu.id] ?? gpu.price)}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(t("gpuPriceAria", gpu.name))}"></td>
     <td style="text-align:center"><input type="checkbox" id="gpuEnabled-${gpu.id}" ${isOn(gpu) ? "checked" : ""} aria-label="${escapeHtml(t("gpuEnabledAria", gpu.name))}"></td>
     ${gpu.custom ? `<td><button type="button" class="sm" data-delg="${gpu.id}" aria-label="${escapeHtml(t("deleteAria", gpu.name))}">${t("deleteBtn")}</button></td>` : "<td></td>"}</tr>`;
     const headers = STR.gpuTableHeader, head = `<tr>${headers.slice(0, 6).map((header) => `<th>${header}</th>`).join("")}<th style="text-align:center">${headers[6]}</th><th></th></tr>`;
@@ -3317,6 +3375,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     "decodeStreams.h264": "errorDecoderStreams",
     "decodeStreams.h265": "errorDecoderStreams",
     memoryGB: "errorMemory",
+    tdpW: "errorTdp",
     price: "errorPrice"
   };
   byId("gpuForm").addEventListener("submit", (event) => {
@@ -3333,9 +3392,9 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
           h264: +(decode * 748 / 1415).toFixed(1),
           h265: decode
         }
-      } : { nvdec: Math.round(decode) },
+      } : { nvdec: decode },
       memoryGB: parseNum(byId("gpuFormMemory").value),
-      tdpW: tdpW > 0 ? tdpW : 0,
+      tdpW: isNaN(tdpW) ? 0 : tdpW,
       price: parseNum(byId("gpuFormPrice").value),
       custom: true
     });
@@ -3393,27 +3452,29 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     Nw: "errorFrame",
     Nh: "errorFrame",
     sensorWidth: "errorSensorWidth",
-    focalMax: "errorFocalRange"
+    focalMin: "errorFocal",
+    focalMax: "errorFocalRange",
+    price: "errorCameraPrice"
   };
   byId("cameraForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    const name = byId("cameraFormName").value.trim(), Nw = Math.round(parseNum(byId("cameraFormWidth").value)), Nh = Math.round(parseNum(byId("cameraFormHeight").value)), pixelPitchUm = parseNum(byId("cameraFormPixelPitch").value);
+    const name = byId("cameraFormName").value.trim(), Nw = parseNum(byId("cameraFormWidth").value), Nh = parseNum(byId("cameraFormHeight").value), pixelPitchUm = parseNum(byId("cameraFormPixelPitch").value);
     let sensorWidth = parseNum(byId("cameraFormSensorWidth").value);
     let focalMin = parseNum(byId("cameraFormFocalMin").value), focalMax = parseNum(byId("cameraFormFocalMax").value);
     const price = parseNum(byId("cameraFormPrice").value);
-    if (!(sensorWidth > 0) && pixelPitchUm > 0 && Nw > 0)
+    if (isNaN(sensorWidth) && pixelPitchUm > 0 && Nw > 0)
       sensorWidth = +(pixelPitchUm * Nw / 1e3).toFixed(3);
-    if (focalMin > 0 && !(focalMax > 0)) focalMax = focalMin;
-    if (focalMax > 0 && !(focalMin > 0)) focalMin = focalMax;
+    if (focalMin > 0 && isNaN(focalMax)) focalMax = focalMin;
+    if (focalMax > 0 && isNaN(focalMin)) focalMin = focalMax;
     const parsed = parseCamera({
       id: "m" + uid(),
       name,
       Nw,
       Nh,
       sensorWidth,
-      focalMin: focalMin > 0 ? focalMin : 0,
-      focalMax: focalMax > 0 ? focalMax : 0,
-      price: price > 0 ? price : 0,
+      focalMin: isNaN(focalMin) ? 0 : focalMin,
+      focalMax: isNaN(focalMax) ? 0 : focalMax,
+      price: isNaN(price) ? 0 : price,
       custom: true
     });
     const errorEl = byId("cameraFormError");
@@ -3478,7 +3539,11 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   byId("detectorFormInput").innerHTML = INPUTS.map(
     (size) => `<option${size === 640 ? " selected" : ""}>${size}</option>`
   ).join("");
-  var DETECTOR_FORM_ERRORS = { name: "errorName", fps: "errorFps" };
+  var DETECTOR_FORM_ERRORS = {
+    name: "errorName",
+    fps: "errorFps",
+    gflops: "errorGflops"
+  };
   byId("detectorForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const name = byId("detectorFormName").value.trim(), gflops = parseNum(byId("detectorFormGflops").value);
@@ -3488,7 +3553,7 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
       fps: parseNum(byId("detectorFormFps").value),
       inputSize: +byId("detectorFormInput").value,
       refGpu: byId("detectorFormRefGpu").value,
-      gflops: gflops > 0 ? gflops : 0,
+      gflops: isNaN(gflops) ? 0 : gflops,
       custom: true
     });
     const errorEl = byId("detectorFormError");
@@ -3512,9 +3577,13 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
   });
   var report = "";
   function calcAll() {
-    const results = store.cameraTypes.map(
-      (type) => computeType(type, cameraById(type.inputs.camera))
-    );
+    const results = store.cameraTypes.map((type) => {
+      const parsed = parseCameraType(type);
+      if (parsed.ok)
+        return computeType(parsed.value, cameraById(type.inputs.camera));
+      const countOk = !parsed.errors.some((error) => error.field === "count");
+      return { ok: false, type, count: countOk ? parseNum(type.count) : 0 };
+    });
     const activeIndex = Math.max(
       0,
       store.cameraTypes.findIndex((type) => type.id === store.activeTypeId)
@@ -3522,16 +3591,20 @@ details.how summary{cursor:pointer;color:var(--accent);font-size:13px}
     syncFormUI(store.cameraTypes[activeIndex], results[activeIndex]);
     renderType(results[activeIndex]);
     renderTabs(results);
-    const settings = readSystemSettings();
+    const settings = parseSystemSettings(readSystemSettings());
     const gpus = allGpus().map((gpu) => ({ ...gpu, price: priceOf(gpu) }));
-    const system = computeSystem(results, settings, {
+    const system = settings.ok && gpus.every((gpu) => gpu.price > 0) ? computeSystem(results, settings.value, {
       gpus,
       candidates: gpus.filter(isOn),
       detectors: store.customDetectors
-    });
-    const totals = systemTotals(results, settings, allCameras());
+    }) : null;
+    const totals = systemTotals(
+      results,
+      settings.ok ? settings.value : { archiveDays: NaN },
+      allCameras()
+    );
     renderSystem(results, system, totals);
-    const chosen = system.chosen;
+    const chosen = system?.chosen;
     report = [
       t("appTitle"),
       ...results.flatMap(
@@ -3575,7 +3648,7 @@ ${result2.type.name} × ${result2.count}`,
         formatNumber(totals.totalMbps, 0),
         totals.cameraCost ? "$" + formatNumber(totals.cameraCost, 0) : ""
       ),
-      system.liveResults.length ? t("reportCompute", {
+      !system ? t("reportComputeError") : system.liveResults.length ? t("reportCompute", {
         gpuCount: chosen.count,
         gpuName: chosen.gpu.name,
         cost: "$" + formatNumber(chosen.cost, 0),
@@ -3658,16 +3731,20 @@ ${result2.type.name} × ${result2.count}`,
       rejected++;
       return [];
     });
+    const asDraft = (parse) => (item) => {
+      const parsed = parse(item);
+      return parsed.ok || onlyValueErrors(parsed.errors) ? { ok: true, value: item } : parsed;
+    };
     const list = (items) => Array.isArray(items) ? items : [];
     const [system] = parseAll(
       saved.system == null ? [] : [savedSystem(saved.system)],
-      parseSystemSettings
+      asDraft(parseSystemSettings)
     );
     return {
       customGpus: parseAll(list(saved.customGpus), parseGpu),
       customCameras: parseAll(list(saved.customCameras), parseCamera),
       customDetectors: parseAll(list(saved.customDetectors), parseDetector),
-      types: parseAll(list(saved.types).map(savedType), parseCameraType),
+      types: parseAll(list(saved.types).map(savedType), asDraft(parseCameraType)),
       system,
       rejected
       // после всех parseAll выше

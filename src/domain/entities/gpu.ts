@@ -29,7 +29,7 @@ const ARCHS: readonly GpuArch[] = [
 ];
 
 // Своя карта: имя, архитектура, TFLOPS, память и цена обязательны, TDP — 0, если неизвестен.
-// Jetson задаёт декодер потоками 1080p@30, остальные — числом NVDEC.
+// Jetson задаёт декодер потоками 1080p@30, остальные — целым числом NVDEC.
 export function parseGpu(raw: unknown): ParseResult<Gpu> {
   const read = readFields(raw);
   const jetson = read.record.jetson === true;
@@ -53,6 +53,7 @@ export function parseGpu(raw: unknown): ParseResult<Gpu> {
     tdpW: read.nonNegative("tdpW"),
     price: read.positive("price"),
   };
+  if (!jetson) read.integer("nvdec", gpu.nvdec);
   if (jetson) gpu.jetson = true;
   if (read.record.custom === true) gpu.custom = true;
   return result(read.errors, gpu);

@@ -8,7 +8,10 @@ import {
 } from "../../src/domain/entities/camera-type.ts";
 import { parseDetector } from "../../src/domain/entities/detector.ts";
 import { parseGpu } from "../../src/domain/entities/gpu.ts";
-import type { ParseResult } from "../../src/domain/entities/parse-result.ts";
+import {
+  onlyValueErrors,
+  type ParseResult,
+} from "../../src/domain/entities/parse-result.ts";
 import { parseSystemSettings } from "../../src/domain/entities/system-settings.ts";
 
 // поля с ошибкой и коды правил
@@ -49,6 +52,7 @@ test("parseGpu: правило каждого поля", () => {
     [{ tflops: 0 }, "tflops:positive"],
     [{ tflops: "50" }, "tflops:positive"],
     [{ nvdec: -1 }, "nvdec:positive"],
+    [{ nvdec: 1.5 }, "nvdec:integer"],
     [{ memoryGB: NaN }, "memoryGB:positive"],
     [{ tdpW: -1 }, "tdpW:nonNegative"],
     [{ price: undefined }, "price:positive"],
@@ -101,6 +105,7 @@ test("parseCamera: правило каждого поля", () => {
     [{ name: "" }, "name:required"],
     [{ Nw: 0 }, "Nw:positive"],
     [{ Nh: "1080" }, "Nh:positive"],
+    [{ Nw: 1920.5 }, "Nw:integer"],
     [{ sensorWidth: -5 }, "sensorWidth:positive"],
     [{ focalMin: -1 }, "focalMin:nonNegative"],
     [{ focalMax: 2 }, "focalMax:order"],
@@ -195,13 +200,22 @@ test("parseSceneObject: числа — допустимое, пустое, де�
   assert.equal(parsed({ width: "12,5" })?.width, 12.5);
   assert.equal(parsed({ width: "" })?.width, NaN);
   assert.equal(parsed({ requiredPx: 24 })?.requiredPx, 24);
-  // без входа модели — 640, без перекрытия — 0
+  // без входа модели — 640
   assert.equal(parsed({ inputSize: "1280" })?.inputSize, 1280);
   assert.equal(parsed({ inputSize: "" })?.inputSize, 640);
   assert.equal(parsed({ inputSize: "0" })?.inputSize, 640);
   assert.equal(parsed({ overlap: "12,5" })?.overlap, 12.5);
-  assert.equal(parsed({ overlap: "" })?.overlap, 0);
-  assert.equal(parsed({ overlap: "abc" })?.overlap, 0);
+  assert.equal(parsed({ overlap: "0" })?.overlap, 0);
+});
+
+test("parseSceneObject: отрицательное число и пустое перекрытие — ошибка значения", () => {
+  const errors = (change: Record<string, unknown>) =>
+    errorsOf(parseSceneObject({ ...sceneObject, ...change }));
+  assert.deepEqual(errors({ width: "-1" }), ["width:nonNegative"]);
+  assert.deepEqual(errors({ inputSize: "-640" }), ["inputSize:nonNegative"]);
+  assert.deepEqual(errors({ overlap: "" }), ["overlap:nonNegative"]);
+  assert.deepEqual(errors({ overlap: "abc" }), ["overlap:nonNegative"]);
+  assert.deepEqual(errors({ overlap: "-5" }), ["overlap:nonNegative"]);
 });
 
 test("parseSceneObject: правило каждого поля", () => {
@@ -302,15 +316,46 @@ test("parseCameraType: числа — допустимое, пустое, дес
   assert.equal(parsedInputs({ cameraHeight: "4,5" })?.cameraHeight, 4.5);
   assert.equal(parsedInputs({ cameraHeight: "" })?.cameraHeight, NaN);
   assert.equal(parsedInputs({ hfov: 60 })?.hfov, 60);
-  // число камер — целое, не меньше 0
-  assert.equal(parsed({ count: "2,6" })?.count, 3);
-  assert.equal(parsed({ count: "" })?.count, 0);
-  assert.equal(parsed({ count: "-3" })?.count, 0);
-  // запас кадра без значения — 0
-  assert.equal(parsedInputs({ margin: "" })?.margin, 0);
+  assert.equal(parsed({ count: "0" })?.count, 0);
+  assert.equal(parsedInputs({ margin: "0" })?.margin, 0);
   // индексы и значения списков — Number: пустая строка — 0
   assert.equal(parsedInputs({ resolution: "" })?.resolution, 0);
   assert.equal(parsedInputs({ codec: "0.07" })?.codec, 0.07);
+});
+
+test("parseCameraType: число камер, запас кадра и отрицательные числа — ошибка значения", () => {
+  const errors = (change: Record<string, unknown>) =>
+    errorsOf(parseCameraType({ ...cameraType, ...change }));
+  const inputErrors = (change: Record<string, unknown>) =>
+    errors({ inputs: { ...inputs, ...change } });
+  assert.deepEqual(errors({ count: "2,6" }), ["count:integer"]);
+  assert.deepEqual(errors({ count: "1.5" }), ["count:integer"]);
+  assert.deepEqual(errors({ count: "" }), ["count:nonNegative"]);
+  assert.deepEqual(errors({ count: "-3" }), ["count:nonNegative"]);
+  assert.deepEqual(inputErrors({ margin: "" }), ["inputs.margin:nonNegative"]);
+  assert.deepEqual(inputErrors({ cameraHeight: "-1" }), [
+    "inputs.cameraHeight:nonNegative",
+  ]);
+  assert.deepEqual(inputErrors({ zoneStart: "-0.5" }), [
+    "inputs.zoneStart:nonNegative",
+  ]);
+  assert.deepEqual(errors({ objects: [{ ...sceneObject, height: "-1" }] }), [
+    "objects.0.height:nonNegative",
+  ]);
+});
+
+test("onlyValueErrors: черновик с недопустимым числом сохраняется, с другой ошибкой — нет", () => {
+  const errors = (change: Record<string, unknown>) => {
+    const parsed = parseCameraType({ ...cameraType, ...change });
+    return parsed.ok ? [] : parsed.errors;
+  };
+  assert.equal(onlyValueErrors(errors({ count: "-3" })), true);
+  assert.equal(onlyValueErrors(errors({ count: "1.5" })), true);
+  assert.equal(onlyValueErrors(errors({ count: null })), false);
+  assert.equal(
+    onlyValueErrors(errors({ inputs: { ...inputs, placement: "wall" } })),
+    false,
+  );
 });
 
 test("parseCameraType: правило каждого поля, ошибки inputs и объектов с путём", () => {
@@ -355,7 +400,7 @@ test("parseCameraType: лишние поля типа, inputs и объекто�
 
 const settings = {
   efficiency: "0.6",
-  reserve: "",
+  reserve: "20",
   archiveDays: "0",
   gpu: "auto",
   gpuCount: "auto",
@@ -366,7 +411,7 @@ test("parseSystemSettings: черновик, правило каждого по�
     ok: true,
     value: {
       efficiency: 0.6,
-      reserve: 0,
+      reserve: 20,
       archiveDays: 0,
       gpu: "auto",
       gpuCount: "auto",
@@ -374,7 +419,7 @@ test("parseSystemSettings: черновик, правило каждого по�
   });
   for (const field of Object.keys(settings))
     assert.deepEqual(
-      errorsOf(parseSystemSettings({ ...settings, [field]: 0.6 })),
+      errorsOf(parseSystemSettings({ ...settings, [field]: 1 })),
       [`${field}:required`],
     );
 });
@@ -383,13 +428,20 @@ test("parseSystemSettings: числа — допустимое, пустое, д
   const parsed = (change: Record<string, unknown>) =>
     valueOf(parseSystemSettings({ ...settings, ...change }));
   assert.equal(parsed({ efficiency: "0,5" })?.efficiency, 0.5);
-  assert.equal(parsed({ efficiency: "" })?.efficiency, NaN);
-  // запас без значения и отрицательный — 0
   assert.equal(parsed({ reserve: "12,5" })?.reserve, 12.5);
-  assert.equal(parsed({ reserve: "-5" })?.reserve, 0);
-  // архив без значения — 0
+  assert.equal(parsed({ reserve: "0" })?.reserve, 0);
   assert.equal(parsed({ archiveDays: "30" })?.archiveDays, 30);
-  assert.equal(parsed({ archiveDays: "" })?.archiveDays, 0);
   assert.equal(parsed({ gpuCount: "2" })?.gpuCount, 2);
   assert.equal(parsed({ gpu: "rtx4090" })?.gpu, "rtx4090");
+});
+
+test("parseSystemSettings: пустое, не число, отрицательное и дробный архив — ошибка", () => {
+  const errors = (change: Record<string, unknown>) =>
+    errorsOf(parseSystemSettings({ ...settings, ...change }));
+  assert.deepEqual(errors({ efficiency: "" }), ["efficiency:positive"]);
+  assert.deepEqual(errors({ efficiency: "0" }), ["efficiency:positive"]);
+  assert.deepEqual(errors({ reserve: "" }), ["reserve:nonNegative"]);
+  assert.deepEqual(errors({ reserve: "-5" }), ["reserve:nonNegative"]);
+  assert.deepEqual(errors({ archiveDays: "" }), ["archiveDays:nonNegative"]);
+  assert.deepEqual(errors({ archiveDays: "1.5" }), ["archiveDays:integer"]);
 });
