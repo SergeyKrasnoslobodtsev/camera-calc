@@ -17,7 +17,8 @@ src/ui/
 │   ├── type-result/         TypeResult.tsx, SideDiagram.tsx
 │   └── system/              SystemPanel.tsx, GpuLoad.tsx, NetworkPanel.tsx, Assumptions.tsx
 ├── templates/               TemplatesPage.tsx; GpuTemplates.tsx, GpuForm.tsx, GpuParams.tsx;
-│                            CameraTemplates.tsx, CameraForm.tsx; DetectorTemplates.tsx, DetectorForm.tsx;
+│                            CameraTemplates.tsx, CameraForm.tsx; ObjectTemplates.tsx, ObjectForm.tsx;
+│                            ModelTemplates.tsx, ModelForm.tsx;
 │                            CatalogSection.tsx, TemplateForm.tsx; file-actions.ts, form-errors.ts
 ├── components/              общие: Field.tsx, NumberInput.tsx, Tip.tsx, Popover.tsx, Toast.tsx
 ├── hooks/                   useComputed.ts, useHashRoute.ts, useConfirm.ts
@@ -33,18 +34,19 @@ src/ui/
 | `calculation/CalculationPage.tsx` | Компонент `CalculationPage`: разделы экрана расчёта и блок «Все формулы» на языке страницы |
 | `calculation/TypeTabs.tsx` | Компонент `TypeTabs`: вкладки типов камер и кнопка нового типа |
 | `calculation/type-form/TypeForm.tsx` | Компонент `TypeForm`: форма активного типа — поля, видимость полей по режиму объектива и камере, сводки в заголовках секций, кнопки «копия» и «удалить тип» |
-| `calculation/type-form/ObjectList.tsx` | Компонент `ObjectList`: карточки объектов активного типа, кнопка нового объекта, объекты-пресеты |
-| `calculation/type-form/ObjectCard.tsx` | Компонент `ObjectCard`: поля объекта и его результат |
+| `calculation/type-form/ObjectList.tsx` | Компонент `ObjectList`: карточки объектов активного типа, кнопка нового объекта, ссылки на вкладки шаблонов «Объекты детекции» и «Модели» |
+| `calculation/type-form/ObjectCard.tsx` | Компонент `ObjectCard`: выбор объекта детекции в заголовке карточки, модель, подача, вход модели, перекрытие и результат объекта. Габариты и порог в карточке не показываются и не меняются: они берутся из шаблона |
 | `calculation/type-result/TypeResult.tsx` | Компонент `TypeResult`: результат активного типа — вердикт, показатели, плотность, DORI, схема |
 | `calculation/type-result/SideDiagram.tsx` | Компонент `SideDiagram`: схема «вид сбоку» в SVG по геометрии из `domain` |
 | `calculation/system/SystemPanel.tsx` | Компонент `SystemPanel`: итоги системы — камеры, объекты, вычислитель, сеть |
 | `calculation/system/GpuLoad.tsx` | Компонент `GpuLoad`: поля «GPU» и «Количество», кольцо нагрузки по группам запусков, шкалы декодера и памяти, примечание |
 | `calculation/system/NetworkPanel.tsx` | Компонент `NetworkPanel`: поле «Архив», поток по типам камер, итог и объём архива |
 | `calculation/system/Assumptions.tsx` | Компонент `Assumptions`: пункты списка допущений |
-| `templates/TemplatesPage.tsx` | Компонент `TemplatesPage`: вкладки шаблонов, экспорт и импорт; `isTemplateRoute` — адрес экрана шаблонов |
+| `templates/TemplatesPage.tsx` | Компонент `TemplatesPage`: вкладки шаблонов `#tpl-gpus`, `#tpl-cams`, `#tpl-objects`, `#tpl-models`, экспорт и импорт; `isTemplateRoute` — адрес экрана шаблонов |
 | `templates/GpuTemplates.tsx`, `GpuForm.tsx`, `GpuParams.tsx` | Экран видеокарт: каталог и свои карты с ценой и участием в подборе, форма своей карты, поля КПД и резерва |
 | `templates/CameraTemplates.tsx`, `CameraForm.tsx` | Экран камер: встроенные и свои камеры, форма своей камеры |
-| `templates/DetectorTemplates.tsx`, `DetectorForm.tsx` | Экран детекторов: свои детекторы и модели каталога, форма своего детектора |
+| `templates/ObjectTemplates.tsx`, `ObjectForm.tsx` | Экран объектов детекции: свои и встроенные объекты, сколько объектов расчёта их ищут, форма своего объекта |
+| `templates/ModelTemplates.tsx`, `ModelForm.tsx` | Экран моделей: свои модели и модели каталога, форма своей модели |
 | `templates/CatalogSection.tsx`, `TemplateForm.tsx` | Общий каркас экранов шаблонов: раздел с таблицей; форма с подсказкой, ошибкой и кнопками |
 | `templates/file-actions.ts` | `downloadState` — все данные в файл, `loadStateFile` — импорт с перезагрузкой страницы |
 | `templates/form-errors.ts` | Текст ошибки формы шаблона по ошибкам разбора из `domain` |
@@ -57,7 +59,7 @@ src/ui/
 | `hooks/useConfirm.ts` | Хук `useConfirm`: действие по второму нажатию в течение 3 с — удаление типа, импорт |
 | `lib/report.ts` | `reportText(computed)` — текстовый отчёт |
 | `lib/labels.ts` | Подписи, общие для результата, панели системы и отчёта: название модели объекта, камера типа |
-| `lib/model-input-sizes.ts` | Размеры входа модели для списков в карточке объекта и форме детектора |
+| `lib/model-input-sizes.ts` | Размеры входа модели для списков в карточке объекта и форме модели |
 
 Точка входа `src/main.tsx` ставит язык и заголовок страницы, подключает сохранение к `store`, загружает сохранение и отрисовывает `App` в `#root` из `index.html`.
 
@@ -73,8 +75,8 @@ flowchart LR
     calc --> form[type-form/*]
     calc --> result[type-result/*]
     calc --> system[system/*]
-    tpl --> screens[GpuTemplates, CameraTemplates, DetectorTemplates]
-    screens --> forms[GpuForm, CameraForm, DetectorForm]
+    tpl --> screens[GpuTemplates, CameraTemplates, ObjectTemplates, ModelTemplates]
+    screens --> forms[GpuForm, CameraForm, ObjectForm, ModelForm]
     forms --> templateForm[TemplateForm.tsx]
     tpl --> files[file-actions.ts]
 ```
@@ -88,7 +90,7 @@ sequenceDiagram
     participant E as обработчик события
     participant S as app/store
     participant C as компоненты React
-    E->>S: действие, например updateObject(0, "width", "12")
+    E->>S: действие, например updateObject(0, "feed", "tiles")
     S->>S: пересчёт computed
     S-->>C: уведомление через useComputed
     C->>C: перерисовка по state и computed
@@ -106,7 +108,7 @@ sequenceDiagram
 
 - **Состояние только через действия.** `ui` читает `state` и `computed` и вызывает действия `store`. Поля `state` в `ui` не присваиваются.
 - **Обработчики — в JSX.** `addEventListener` вызывается только для `document` и `window` (закрытие подсказки, смена адреса) в эффектах или подписке хука, со снятием при размонтировании.
-- **Работа с DOM вне React — только для элементов вне дерева:** класс темы на `<html>`, язык и заголовок документа, ссылка для скачивания файла. Фокус на названии нового объекта — через `ref` после `flushSync`.
+- **Работа с DOM вне React — только для элементов вне дерева:** класс темы на `<html>`, язык и заголовок документа, ссылка для скачивания файла. Фокус на выборе объекта детекции в новой карточке — через `ref` после `flushSync`.
 - **Подсказки «?».** Кнопку `Tip` у подписи ставит `Field` по параметру `tip` (ключ `STR.tips`). Подсказка `objects` стоит в заголовке раздела объектов, а не у поля.
 - **Тексты через `i18n`.** Ключ для `t()` проверяет `tsc`. Текст, в который встраивается элемент (моноширинный размер в результате объекта), собирается из частей строки словаря по метке.
 - **HTML в разметку — только статичные формулы** `src/formulas*.html` (`dangerouslySetInnerHTML`): в них нет данных пользователя.
