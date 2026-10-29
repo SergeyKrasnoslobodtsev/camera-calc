@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-// Экраны шаблонов: свои камера и детектор, проверка формы камеры.
+// Экраны шаблонов: свои камера, модель и объект детекции, проверка форм камеры и объекта детекции.
 import { test } from "vitest";
 import assert from "assert";
+import { fireEvent } from "@testing-library/react";
 import { RU } from "../../src/i18n/ru.ts";
 import { openPage } from "./open-page.tsx";
 import {
@@ -12,10 +13,11 @@ import {
   enter,
   choose,
   submit,
+  reportOf,
   addTemplates,
 } from "./helpers.js";
 
-test("своя камера и свой детектор", async () => {
+test("своя камера и своя модель", async () => {
   await addTemplates();
   console.log("SYS:", T("systemKpis"));
   console.log("DSUM:", T("loadSummary"));
@@ -50,8 +52,8 @@ test("своя камера и свой детектор", async () => {
     !document.getElementById("templatePage-gpus").hidden,
   );
   console.log(tbl("cameraTable"));
-  go("#tpl-dets");
-  console.log("det first row:", tbl("detectorTable").split("\n")[1]);
+  go("#tpl-models");
+  console.log("det first row:", tbl("modelTable").split("\n")[1]);
 });
 
 test("камера с дробным кадром не добавляется", async () => {
@@ -97,4 +99,58 @@ test("недопустимое число камер не попадает в с
       "число камер " + count + " попало в столбец",
     );
   }
+});
+
+test("свой объект детекции: выбор в карточке, удаление — карточка переходит на «Человек»", async () => {
+  await openPage();
+  go("#tpl-objects");
+  enter("objectFormName", "Коробка");
+  enter("objectFormWidth", "40");
+  enter("objectFormLength", "30");
+  enter("objectFormHeight", "20");
+  enter("objectFormRequired", "32");
+  submit("objectForm");
+  const boxRow = () =>
+    tbl("objectTable")
+      .split("\n")
+      .find((row) => row.includes("Коробка"));
+  assert.ok(boxRow()?.includes("40 × 30 × 20"), "нет строки своего объекта");
+  go("");
+  const box = [...document.getElementById("objectTarget-0").options].find(
+    (option) => option.text === "Коробка",
+  );
+  choose("objectTarget-0", box.value);
+  assert.match(reportOf(), /\n {2}Коробка: /, "в отчёте нет своего объекта");
+  go("#tpl-objects");
+  assert.ok(
+    boxRow().endsWith("| 1 | Удалить"),
+    "не посчитана карточка: " + boxRow(),
+  );
+  fireEvent.click(
+    document.querySelector(
+      `#objectTable [aria-label="${RU.deleteAria("Коробка")}"]`,
+    ),
+  );
+  assert.strictEqual(boxRow(), undefined, "объект не удалён");
+  go("");
+  // select без подходящего варианта тоже показал бы первый — «Человек», поэтому проверяется и расчёт
+  assert.strictEqual(document.getElementById("objectTarget-0").value, "person");
+  assert.doesNotMatch(reportOf(), /ошибка в исходных данных/);
+});
+
+test("объект детекции с нулевым габаритом и без порога не добавляется", async () => {
+  await openPage();
+  go("#tpl-objects");
+  const objectRows = () => document.querySelectorAll("#objectTable tr").length;
+  const rowsBefore = objectRows();
+  enter("objectFormName", "Плоский");
+  enter("objectFormWidth", "40");
+  enter("objectFormLength", "30");
+  enter("objectFormHeight", "0");
+  submit("objectForm");
+  assert.strictEqual(objectRows(), rowsBefore, "объект добавлен");
+  assert.strictEqual(
+    document.getElementById("objectFormError").textContent,
+    RU.cameraFormError(`${RU.errorObjectSize}, ${RU.errorRequiredPx}`),
+  );
 });

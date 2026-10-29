@@ -42,7 +42,7 @@ export type SceneObject = {
   length: number; // см, вдоль
   height: number; // см
   requiredPx: number; // порог на меньшую сторону объекта на входе модели, px
-  model: string; // id модели из каталога или своего детектора
+  model: string; // id модели из каталога или своей модели
   feed: FeedMode;
   inputSize: number; // сторона входа модели, px
   overlap: number; // перекрытие тайлов, %

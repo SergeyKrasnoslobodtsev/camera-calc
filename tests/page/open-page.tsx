@@ -22,7 +22,7 @@ export async function openPage({
 }: Options = {}) {
   cleanup();
   localStorage.clear();
-  if (saved) localStorage.setItem("camcalc4", saved);
+  if (saved) localStorage.setItem("camcalc5", saved);
   if (lang) localStorage.setItem("camcalc-lang", lang);
   Object.defineProperty(navigator, "language", {
     value: browserLang,

@@ -1,6 +1,6 @@
 // Вкладки типов камер и кнопка «добавить тип».
 import { STR, displayName, t } from "../../i18n/index.ts";
-import { OBJECT_PRESETS } from "../../app/examples.ts";
+import { NEW_OBJECT } from "../../app/examples.ts";
 import { addType, selectType, state } from "../../app/store.ts";
 import { useComputed } from "../hooks/useComputed.ts";
 
@@ -37,9 +37,7 @@ export function TypeTabs() {
         type="button"
         className="tab ghost"
         onClick={() => {
-          addType(t("newType", state.cameraTypes.length + 1), [
-            OBJECT_PRESETS[0],
-          ]);
+          addType(t("newType", state.cameraTypes.length + 1), [NEW_OBJECT]);
         }}
       >
         {t("addType")}

@@ -1,7 +1,7 @@
 import type { TypeResult } from "../compute-type/index.ts";
 import type { RunGroup } from "../compute-type/run-groups.ts";
 import type { CameraType } from "../entities/camera-type.ts";
-import type { CustomDetector } from "../entities/detector.ts";
+import type { CustomModel } from "../entities/model.ts";
 import type { Gpu } from "../entities/gpu.ts";
 import { decodableStreams } from "../references/gpu-catalog.ts";
 import { MODELS, T4_TFLOPS } from "../references/models.ts";
@@ -54,7 +54,7 @@ export type GpuOption = {
 };
 
 // Нагрузка системы, общая для всех вариантов GPU. engines — модели с конкретным входом:
-// в памяти GPU каждый движок один раз. gpus — для GPU замера своего детектора, первый — запасной.
+// в памяти GPU каждый движок один раз. gpus — для GPU замера своей модели, первый — запасной.
 export type SystemDemand = {
   liveResults: LiveResult[];
   groups: SystemRunGroup[];
@@ -62,11 +62,11 @@ export type SystemDemand = {
   efficiency: number;
   maxLoad: number;
   gpus: readonly Gpu[];
-  detectors: readonly CustomDetector[];
+  customModels: readonly CustomModel[];
 };
 
 // кадров в секунду на входе inputSize: модель каталога — по замеру на T4,
-// свой детектор — по замеру пользователя на его GPU
+// своя модель — по замеру пользователя на его GPU
 function modelFps(
   demand: SystemDemand,
   modelId: string,
@@ -80,18 +80,19 @@ function modelFps(
       ((1000 / catalogModel.latencyMs) * inputScale * gpu.tflops) / T4_TFLOPS
     );
   }
-  const detector = demand.detectors.find((item) => item.id === modelId);
-  if (!detector) return undefined;
+  const customModel = demand.customModels.find((item) => item.id === modelId);
+  if (!customModel) return undefined;
   const refGpu =
-      demand.gpus.find((item) => item.id === detector.refGpu) || demand.gpus[0],
-    inputScale = (detector.inputSize / inputSize) ** 2;
-  return (detector.fps * inputScale * gpu.tflops) / refGpu.tflops;
+      demand.gpus.find((item) => item.id === customModel.refGpu) ||
+      demand.gpus[0],
+    inputScale = (customModel.inputSize / inputSize) ** 2;
+  return (customModel.fps * inputScale * gpu.tflops) / refGpu.tflops;
 }
 
 function engineMemoryGB(demand: SystemDemand, engine: SystemRunGroup) {
   const model =
     MODELS.find((item) => item.id === engine.model) ||
-    demand.detectors.find((item) => item.id === engine.model);
+    demand.customModels.find((item) => item.id === engine.model);
   const gflops = model && model.gflops > 0 ? model.gflops : 0;
   return gflops
     ? ENGINE_BASE_GB +

@@ -50,24 +50,24 @@ test("числовые поля: «1,999» на EN не 1.999, целые без
     .map((el) => el.id);
   assert.ok(
     document.getElementById("gpuPrice-l40s") &&
-      document.getElementById("objectWidth-0"),
+      document.getElementById("objectOverlap-1"),
     "нет полей цены или объекта",
   );
   assert.deepStrictEqual(noMin, [], "числовые поля без min=0");
 });
 
 test("сохранение с десятичной запятой загружается как 1.5", async () => {
-  const withNumbers = (H, w, kr) => {
+  const withNumbers = (H, overlap, kr) => {
     const st = JSON.parse(exp);
     st.types[0].inputs.cameraHeight = H;
-    st.types[0].objects[0].width = w;
+    st.types[0].objects[1].overlap = overlap;
     st.system.efficiency = kr;
     return JSON.stringify(st);
   };
   for (const lang of ["ru", "en"]) {
-    await openPage({ saved: withNumbers("4.5", "50.5", "0.5"), lang });
+    await openPage({ saved: withNumbers("4.5", "20.5", "0.5"), lang });
     const dotReport = reportOf();
-    await openPage({ saved: withNumbers("4,5", "50,5", "0,5"), lang });
+    await openPage({ saved: withNumbers("4,5", "20,5", "0,5"), lang });
     assert.strictEqual(
       document.getElementById("cameraHeight").value,
       "4.5",
@@ -108,7 +108,7 @@ test("ошибка ввода в типе: строка сохраняется, 
     };
     checkPage();
     // тот же черновик из сохранения
-    await openPage({ saved: localStorage.getItem("camcalc4") });
+    await openPage({ saved: localStorage.getItem("camcalc5") });
     checkPage();
   }
 });

@@ -1,4 +1,4 @@
-import type { CatalogModel } from "../entities/detector.ts";
+import type { CatalogModel } from "../entities/model.ts";
 
 // GFLOPs и задержка на T4 TensorRT FP16, batch 1, вход 640 (docs.ultralytics.com)
 export const MODELS: readonly CatalogModel[] = [
