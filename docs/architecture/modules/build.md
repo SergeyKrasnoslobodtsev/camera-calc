@@ -8,16 +8,16 @@
 
 ```mermaid
 flowchart LR
-    page["index.html<br>каркас и разметка"] --> vite
+    page["index.html<br>каркас страницы"] --> vite
     css["src/styles.css"] --> vite
     init["src/main.tsx<br>и его import"] --> vite
-    formulas["src/formulas.html<br>src/formulas.en.html"] -->|плагин formulas, в блок #formulas| vite
+    formulas["src/formulas.html<br>src/formulas.en.html"] -->|импорт ?raw в CalculationPage.tsx| vite
     vite["Vite: plugin-react,<br>vite-plugin-singlefile"] --> html["dist/index.html"]
 ```
 
 | Шаг | Что делает |
 |---|---|
-| Формулы | Плагин `formulas` из `vite.config.ts` оборачивает тексты RU и EN в `<div lang="ru">` и `<div lang="en">` и вставляет их в пустой блок `<div class="formulas" id="formulas">` страницы. Нет блока — сборка падает. Работает и в сервере разработки |
+| Формулы | `src/ui/calculation/CalculationPage.tsx` импортирует тексты RU и EN как строки (`?raw`); на странице показывается текст на языке интерфейса |
 | Скрипт | Vite собирает модули от `src/main.tsx` в один минифицированный скрипт. `@vitejs/plugin-react` переводит JSX |
 | Страница | `vite-plugin-singlefile` встраивает стили из `src/styles.css` в `<style>`, а скрипт — как `<script type="module">`. Внешних файлов нет, страница открывается из файловой системы |
 

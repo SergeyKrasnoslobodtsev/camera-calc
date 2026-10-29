@@ -1,85 +1,85 @@
 # Модуль ui
 
-Всё, что работает с DOM: форма типа камер, карточки объектов, результат, вкладки, панель системы, экраны шаблонов, схема SVG, текстовый отчёт, подсказки, уведомления, тема, язык и маршрутизация. Состояние модуль берёт из `app` и меняет только через его действия. Тексты берёт из `i18n`, справочники и функции разбора — из `domain`. Решения — в [`../decisions/ui.md`](../decisions/ui.md).
+Интерфейс на React: шапка, экран расчёта (вкладки типов, форма типа, карточки объектов, результат, панель системы, схема SVG), экраны шаблонов, подсказки, уведомления, тема, язык и маршрутизация по адресу. Состояние модуль берёт из `app` и меняет только через его действия. Тексты берёт из `i18n`, справочники и функции разбора — из `domain`. Решения — в [`../decisions/ui.md`](../decisions/ui.md).
 
 ## Раскладка
 
-Целевая раскладка `src/ui/` после перехода на React (#65). Папки — по частям экрана, общие компоненты, хуки и функции без React — отдельно. Каждый шаг перехода кладёт новые компоненты на их место и удаляет старый файл; файлы на `innerHTML` до переписывания остаются в корне `src/ui/`.
+Папки — по частям экрана, общие компоненты, хуки и функции без React — отдельно. Файл компонента называется как компонент, файл хука — как хук, остальные файлы — в kebab-case.
 
 ```
 src/ui/
-├── App.tsx                  корень: шапка, «расчёт» или «шаблоны» по адресу
-├── header/                  Header.tsx — тема, язык, шаблоны, пример, отчёт; file-actions.ts
+├── App.tsx                  корень: шапка, экран расчёта или шаблонов по адресу, уведомление, подсказка
+├── header/                  Header.tsx — тема, язык, шаблоны, пример, копирование отчёта
 ├── calculation/
+│   ├── CalculationPage.tsx  экран расчёта, блок формул
 │   ├── TypeTabs.tsx         вкладки типов камер
-│   ├── type-form/           TypeForm.tsx, ObjectCard.tsx
+│   ├── type-form/           TypeForm.tsx, ObjectList.tsx, ObjectCard.tsx
 │   ├── type-result/         TypeResult.tsx, SideDiagram.tsx
 │   └── system/              SystemPanel.tsx, GpuLoad.tsx, NetworkPanel.tsx, Assumptions.tsx
-├── templates/               TemplatesPage.tsx, GpuTemplates.tsx, GpuParams.tsx,
-│                            CameraTemplates.tsx, DetectorTemplates.tsx, form-errors.ts
-├── components/              общие компоненты: Toast.tsx, Tip.tsx (подсказка «?»)
-├── hooks/                   useComputed.ts, useHashRoute.ts
-└── lib/                     функции без React: report.ts, labels.ts
+├── templates/               TemplatesPage.tsx; GpuTemplates.tsx, GpuForm.tsx, GpuParams.tsx;
+│                            CameraTemplates.tsx, CameraForm.tsx; DetectorTemplates.tsx, DetectorForm.tsx;
+│                            CatalogSection.tsx, TemplateForm.tsx; file-actions.ts, form-errors.ts
+├── components/              общие: Field.tsx, NumberInput.tsx, Tip.tsx, Popover.tsx, Toast.tsx
+├── hooks/                   useComputed.ts, useHashRoute.ts, useConfirm.ts
+└── lib/                     функции без React: report.ts, labels.ts, model-input-sizes.ts
 ```
-
-`render.ts`, `translations.ts` и `dom.ts` после перехода не нужны: отрисовку по состоянию делает React, тексты компоненты берут из `t()`.
 
 ## Состав
 
-Файлы сейчас.
-
 | Файл | Что внутри |
 |---|---|
-| `dom.ts` | `byId` — элемент по id с типом элемента, `escapeHtml`, тип поля формы `Field` |
-| `labels.ts` | Подписи, общие для результата, панели системы и отчёта: название модели объекта, камера типа |
-| `type-form.ts` | Форма типа камер: `writeForm` (тип → поля), `readForm` (поля → действие `updateActiveType`), кнопки «копия» и «удалить тип» |
-| `object-cards.ts` | Список камер в форме (`buildCameraSelect`), карточки объектов и их результат, `syncFormUI` — видимость полей и сводка над формой, кнопки добавления объекта |
+| `App.tsx` | Компонент `App`: `Header`, `CalculationPage` или `TemplatesPage` по адресу после `#`, `Toast` и `Popover`. При смене адреса страница прокручивается в начало |
+| `header/Header.tsx` | Компонент `Header`: кнопки темы, языка, экрана шаблонов, примера и «Копировать отчёт». Тему ставит классом `light` на `<html>` |
+| `calculation/CalculationPage.tsx` | Компонент `CalculationPage`: разделы экрана расчёта и блок «Все формулы» на языке страницы |
 | `calculation/TypeTabs.tsx` | Компонент `TypeTabs`: вкладки типов камер и кнопка нового типа |
+| `calculation/type-form/TypeForm.tsx` | Компонент `TypeForm`: форма активного типа — поля, видимость полей по режиму объектива и камере, сводки в заголовках секций, кнопки «копия» и «удалить тип» |
+| `calculation/type-form/ObjectList.tsx` | Компонент `ObjectList`: карточки объектов активного типа, кнопка нового объекта, объекты-пресеты |
+| `calculation/type-form/ObjectCard.tsx` | Компонент `ObjectCard`: поля объекта и его результат |
 | `calculation/type-result/TypeResult.tsx` | Компонент `TypeResult`: результат активного типа — вердикт, показатели, плотность, DORI, схема |
 | `calculation/type-result/SideDiagram.tsx` | Компонент `SideDiagram`: схема «вид сбоку» в SVG по геометрии из `domain` |
 | `calculation/system/SystemPanel.tsx` | Компонент `SystemPanel`: итоги системы — камеры, объекты, вычислитель, сеть |
 | `calculation/system/GpuLoad.tsx` | Компонент `GpuLoad`: поля «GPU» и «Количество», кольцо нагрузки по группам запусков, шкалы декодера и памяти, примечание |
 | `calculation/system/NetworkPanel.tsx` | Компонент `NetworkPanel`: поле «Архив», поток по типам камер, итог и объём архива |
 | `calculation/system/Assumptions.tsx` | Компонент `Assumptions`: пункты списка допущений |
-| `templates/GpuParams.tsx` | Компонент `GpuParams`: поля КПД и резерва под каталогом видеокарт |
-| `components/Tip.tsx` | Компонент `Tip`: кнопка «?» у подписи поля, подсказку показывает `popover.ts` |
+| `templates/TemplatesPage.tsx` | Компонент `TemplatesPage`: вкладки шаблонов, экспорт и импорт; `isTemplateRoute` — адрес экрана шаблонов |
+| `templates/GpuTemplates.tsx`, `GpuForm.tsx`, `GpuParams.tsx` | Экран видеокарт: каталог и свои карты с ценой и участием в подборе, форма своей карты, поля КПД и резерва |
+| `templates/CameraTemplates.tsx`, `CameraForm.tsx` | Экран камер: встроенные и свои камеры, форма своей камеры |
+| `templates/DetectorTemplates.tsx`, `DetectorForm.tsx` | Экран детекторов: свои детекторы и модели каталога, форма своего детектора |
+| `templates/CatalogSection.tsx`, `TemplateForm.tsx` | Общий каркас экранов шаблонов: раздел с таблицей; форма с подсказкой, ошибкой и кнопками |
+| `templates/file-actions.ts` | `downloadState` — все данные в файл, `loadStateFile` — импорт с перезагрузкой страницы |
+| `templates/form-errors.ts` | Текст ошибки формы шаблона по ошибкам разбора из `domain` |
+| `components/Field.tsx` | Компонент `Field`: подпись поля, кнопка «?» и элемент ввода |
+| `components/NumberInput.tsx` | Компонент `NumberInput`: `type="number"`, `min="0"`; `integer` — только целые |
+| `components/Tip.tsx`, `Popover.tsx` | Кнопка «?» и подсказка к ней: открывается наведением или фокусом, закрепляется щелчком |
+| `components/Toast.tsx` | Компонент `Toast` и функция `toast(text)`: уведомление внизу страницы |
 | `hooks/useComputed.ts` | Хук `useComputed`: результаты расчёта из `store`, компонент перерисовывается после каждого действия |
-| `templates-gpus.ts`, `templates-cameras.ts`, `templates-detectors.ts` | Экраны шаблонов: таблицы и формы своей карты, камеры, детектора; список «GPU замера» в форме детектора (`buildRefGpuSelect`) |
-| `form-errors.ts` | Текст ошибки формы шаблона по ошибкам разбора из `domain` |
-| `report.ts` | `reportText(computed)` — текстовый отчёт, кнопка «Копировать отчёт» |
-| `render.ts` | `renderResults` — подписчик `store`: видимость полей и сводка над формой, результат в карточках объектов, тема |
-| `router.ts` | `route` — расчёт или экран шаблонов по адресу после `#` |
-| `translations.ts` | `applyTranslations` — тексты статичной разметки, кнопка языка |
-| `theme.ts`, `toast.ts`, `popover.ts` | Тема, уведомление, подсказки «?»: `popover.ts` показывает подсказку и добавляет кнопки «?» к полям статичной разметки |
-| `file-actions.ts` | Пример вместо текущих типов, экспорт и импорт файла |
+| `hooks/useHashRoute.ts` | Хук `useHashRoute`: адрес после `#`, компонент перерисовывается при его смене |
+| `hooks/useConfirm.ts` | Хук `useConfirm`: действие по второму нажатию в течение 3 с — удаление типа, импорт |
+| `lib/report.ts` | `reportText(computed)` — текстовый отчёт |
+| `lib/labels.ts` | Подписи, общие для результата, панели системы и отчёта: название модели объекта, камера типа |
+| `lib/model-input-sizes.ts` | Размеры входа модели для списков в карточке объекта и форме детектора |
 
-Точка входа `src/main.tsx` подключает `renderResults` и сохранение к `store`, загружает сохранение, заполняет формы и монтирует компоненты React.
+Точка входа `src/main.tsx` ставит язык и заголовок страницы, подключает сохранение к `store`, загружает сохранение и отрисовывает `App` в `#root` из `index.html`.
 
 ```mermaid
 flowchart LR
-    main[main.tsx] --> render[render.ts]
-    main --> tabs[calculation/TypeTabs.tsx]
-    main --> result[calculation/type-result/TypeResult.tsx]
-    main --> system[calculation/system/*.tsx]
-    main --> params[templates/GpuParams.tsx]
-    main --> router[router.ts]
-    main --> actions[file-actions.ts]
-    main --> report[report.ts]
-    render --> cards[object-cards.ts]
-    result --> diagram[calculation/type-result/SideDiagram.tsx]
-    system --> tip[components/Tip.tsx]
-    params --> tip
-    tip --> popover[popover.ts]
-    tabs --> form[type-form.ts]
-    form --> cards
-    router --> templates[templates-*.ts]
-    router --> form
-    templates --> cards
-    actions --> templates
-    actions --> form
+    main[main.tsx] --> app[App.tsx]
+    app --> header[header/Header.tsx]
+    app --> calc[calculation/CalculationPage.tsx]
+    app --> tpl[templates/TemplatesPage.tsx]
+    app --> overlays[components/Toast, Popover]
+    header --> report[lib/report.ts]
+    calc --> tabs[TypeTabs.tsx]
+    calc --> form[type-form/*]
+    calc --> result[type-result/*]
+    calc --> system[system/*]
+    tpl --> screens[GpuTemplates, CameraTemplates, DetectorTemplates]
+    screens --> forms[GpuForm, CameraForm, DetectorForm]
+    forms --> templateForm[TemplateForm.tsx]
+    tpl --> files[file-actions.ts]
 ```
 
-На схеме нет общих файлов (`dom.ts`, `labels.ts`, `toast.ts`, `form-errors.ts`, `hooks/useComputed.ts`): их импортируют многие. Круговых импортов внутри `ui` нет.
+На схеме нет общих файлов (`components/Field.tsx`, `NumberInput.tsx`, `Tip.tsx`, `Toast.tsx`, хуки, `lib/labels.ts`): их импортируют многие. Круговых импортов внутри `ui` нет.
 
 ## Отрисовка
 
@@ -87,39 +87,37 @@ flowchart LR
 sequenceDiagram
     participant E as обработчик события
     participant S as app/store
-    participant R as render.ts
     participant C as компоненты React
     E->>S: действие, например updateObject(0, "width", "12")
     S->>S: пересчёт computed
-    S-->>R: уведомление
-    R->>R: syncFormUI, renderObjectResults, applyTheme
     S-->>C: уведомление через useComputed
-    C->>C: перерисовка компонента
+    C->>C: перерисовка по state и computed
 ```
 
-Подписчик `renderResults` перерисовывает результаты, а значения полей не трогает, чтобы не сбить ввод. Исключение одно: ширину матрицы, взятую из камеры или по формату, `syncFormUI` показывает в поле, которое в этом случае только для чтения. Поля целиком перезаписываются при смене данных: другой тип (`writeForm`), пример, загрузка, удаление шаблона.
+Компоненты читают `state` и `computed` при отрисовке. Подписка — хук `useComputed` (`useSyncExternalStore`): после каждого действия компонент перерисовывается. Отдельного кода, который переносит значения из состояния в поля и обратно, нет.
 
-Интерфейс переходит на компоненты React (#65, решение — в [`../decisions/ui.md`](../decisions/ui.md#интерфейс-на-react)). На время перехода компонент монтируется в свой контейнер из `index.html` (`mount` в `main.tsx`) и читает результаты через `useComputed`. Первая отрисовка идёт сразу (`flushSync`), а не частями в следующих задачах браузера: когда скрипт выполнен, страница отрисована целиком. После действия React обновляет компоненты в микрозадаче, то есть позже, чем `renderResults`.
-
-Сейчас на React — вкладки (`TypeTabs` в `#tabs`), результат типа (`TypeResult` в `#typeResult`), панель системы (`SystemPanel`, `GpuLoad`, `NetworkPanel`, `Assumptions`) и поля КПД и резерва на экране видеокарт (`GpuParams` в `#gpuParams`). Обработчики событий компонента задаются в JSX, а не навешиваются после отрисовки. Поля системы связаны с состоянием: значение берётся из `state.system`, ввод вызывает `updateSystem`, после действия поле перерисовывается вместе с остальным.
-
-Остальная разметка собирается шаблонными строками в `innerHTML`. Значения пользователя (названия) проходят через `escapeHtml`. Четыре функции пересоздают разметку вместе с обработчиками: `renderObjects`, `renderGpuView`, `renderCamView`, `renderDetView`. Их вызывают при добавлении, удалении и смене типа, но не при вводе в поле.
+- **Поля связаны с состоянием.** Значение поля — из `state`, ввод сразу вызывает действие `store` (`updateActiveType`, `updateObject`, `updateSystem`, `setGpuPrice`). Ширина матрицы, рассчитанная по камере или формату, показывается в поле только для чтения и в состояние не записывается.
+- **Формы шаблонов — своё состояние компонента** (`useState`). Строки полей разбирает `domain` при отправке. После добавления шаблона очищаются текстовые поля; списки и флажок остаются.
+- **Экраны не размонтируются.** `CalculationPage` и вкладки `TemplatesPage` остаются в разметке и скрываются атрибутом `hidden`: ввод в формах шаблонов не теряется при переходах. Правило `[hidden] { display: none !important }` в `src/styles.css` скрывает и элементы, чей класс задаёт `display`.
+- **Первая отрисовка сразу** (`flushSync` в `main.tsx`): когда скрипт выполнен, страница отрисована целиком. Дальше React обновляет страницу после действия в микрозадаче.
+- **Уведомление и подсказка** отрисовываются порталом в `<body>`. Их состояние — в модуле компонента: `toast(text)` вызывается и вне компонентов, например из подписчика сохранения в `main.tsx`.
 
 ## Соглашения
 
 - **Состояние только через действия.** `ui` читает `state` и `computed` и вызывает действия `store`. Поля `state` в `ui` не присваиваются.
-- **Обработчики статичной разметки навешиваются при импорте модуля.** Порядок задают импорты в `main.tsx`. Модуль выполняется после разбора страницы, поэтому статичная разметка к этому моменту готова.
-- **Подсказки «?».** У полей статичной разметки `popover.ts` при импорте переносит подпись в строку `.lrow` и добавляет кнопку. У полей, которые отрисовывает React, строку `.lrow` и кнопку `Tip` задаёт сам компонент: `popover.ts` их не находит и не трогает, иначе React потерял бы узлы, которые он отрисовал.
-- **Элемент по id с типом.** `byId<HTMLInputElement>("typeName")` возвращает элемент нужного типа. Есть ли элемент с таким id в `index.html`, `tsc` не проверяет. Если его нет, код падает при выполнении, и тест страницы ловит это на тех путях, которые проходит.
-- **Тексты через `i18n`.** Ключ для `t()` проверяет `tsc`. Ключ из разметки или таблицы кодов имеет тип `TextKey` — ключ текста без параметров.
+- **Обработчики — в JSX.** `addEventListener` вызывается только для `document` и `window` (закрытие подсказки, смена адреса) в эффектах или подписке хука, со снятием при размонтировании.
+- **Работа с DOM вне React — только для элементов вне дерева:** класс темы на `<html>`, язык и заголовок документа, ссылка для скачивания файла. Фокус на названии нового объекта — через `ref` после `flushSync`.
+- **Подсказки «?».** Кнопку `Tip` у подписи ставит `Field` по параметру `tip` (ключ `STR.tips`). Подсказка `objects` стоит в заголовке раздела объектов, а не у поля.
+- **Тексты через `i18n`.** Ключ для `t()` проверяет `tsc`. Текст, в который встраивается элемент (моноширинный размер в результате объекта), собирается из частей строки словаря по метке.
+- **HTML в разметку — только статичные формулы** `src/formulas*.html` (`dangerouslySetInnerHTML`): в них нет данных пользователя.
 - **Отчёт по нажатию.** `reportText` строится из `computed` при нажатии «Копировать отчёт». Между нажатиями текст отчёта нигде не хранится.
 
 ## Проверки
 
 | Проверка | Что проверяет |
 |---|---|
-| `tsc` | Типы `ui`: поля результатов `domain`, параметры действий `store`, ключи и параметры `t()` |
-| `tests/smoke.test.js` | Страница в jsdom: отчёт, шаблоны, формы, импорт и экспорт, язык; каждый ключ словаря используется в `src/` или разметке. Вывод компонентов React тест читает после `await settle(window)`; значение поля React задаёт `enter` — через сеттер прототипа, иначе React не заметит ввод |
+| `tsc` | Типы `ui`: поля результатов `domain`, параметры действий `store`, ключи и параметры `t()`, свойства компонентов |
+| `tests/smoke.test.js` | Страница в jsdom: отчёт, шаблоны, формы, импорт и экспорт, язык; каждый ключ словаря используется в `src/`. Вывод React тест читает после `await settle(window)`. Значение поля задаёт `enter` — через сеттер прототипа, иначе React не заметит ввод. События `submit` и `change` тест отправляет всплывающими, как браузер: React слушает их на корне страницы |
 | `tests/golden.test.js` | Результаты расчёта на странице совпадают с `tests/golden.txt` |
 
 Отсутствие присваиваний полям состояния в `ui` проверяется поиском:
@@ -128,4 +126,10 @@ sequenceDiagram
 grep -rnE "(state|type|obj|object|detector|gpu|camera|inputs)(\.[A-Za-z_]+|\[[^]]+\])+ *(=[^=>]|\+\+|--|\+=|-=)|\.(push|splice|pop|shift|unshift|sort|reverse)\(|delete [a-z]" src/ui src/main.tsx
 ```
 
-Он находит только сортировку и `push` локальных массивов: кольцо в `GpuLoad.tsx`, сетка схемы в `SideDiagram.tsx`.
+Отсутствие ручной работы с элементами React — поиском:
+
+```bash
+grep -rnE "innerHTML|addEventListener|getElementById|querySelector" src/ui
+```
+
+Он находит только подписки на `document` и `window` в `Popover.tsx` и `useHashRoute.ts` и поиск поля в новой карточке объекта в `ObjectList.tsx`.

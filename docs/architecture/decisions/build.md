@@ -26,7 +26,7 @@
 
 **Контекст.** Интерфейс переходит на React (решение «Интерфейс на React» в [`ui.md`](ui.md#интерфейс-на-react)). Своя сборка `build.ts` склеивает разметку, формулы и скрипт строками. Владелец хочет, чтобы проект выглядел привычно для разработчиков на React и публиковался на GitHub Pages (#66). Страница должна оставаться одним файлом, который открывается без сервера.
 
-**Решение.** Решаем: страницу собирает Vite с плагинами `@vitejs/plugin-react` и `vite-plugin-singlefile` по `vite.config.ts`. Исходная страница — `index.html` в корне проекта: doctype, `<head>` с `charset` и `viewport`, разметка и `<script type="module" src="/src/main.tsx">`. Стили — в `src/styles.css`, их подключает `main.tsx`, Vite встраивает их в страницу. Формулы вставляет в блок `#formulas` плагин `formulas` из `vite.config.ts`. Результат — `dist/index.html`. `build.ts` и зависимость `esbuild` удалены.
+**Решение.** Решаем: страницу собирает Vite с плагинами `@vitejs/plugin-react` и `vite-plugin-singlefile` по `vite.config.ts`. Исходная страница — `index.html` в корне проекта: doctype, `<head>` с `charset` и `viewport`, разметка и `<script type="module" src="/src/main.tsx">`. Стили — в `src/styles.css`, их подключает `main.tsx`, Vite встраивает их в страницу. Формулы вставлял в блок `#formulas` плагин `formulas` из `vite.config.ts`; в #65 блок формул стал частью компонента, и владелец выбрал импорт текстов как строк (`?raw`) в `CalculationPage.tsx` — плагин удалён. Результат — `dist/index.html`. `build.ts` и зависимость `esbuild` удалены.
 
 **Последствия.**
 
