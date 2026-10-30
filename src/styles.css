@@ -1,4 +1,4 @@
-/* Layout: вкладки типов → первый экран (результат | система, нагрузка; на узком экране система | нагрузка, под ними результат) → параметры | объекты → сеть и допущения. Тёмная тема по умолчанию, своя светлая по кнопке */
+/* Layout: шапка → сводка системы → список типов | экран типа или экран «Система». Окно 900–1199 px: список свёрнут в переключатель. Меньше 900 px: обзор, экраны типа и системы, шторка результата. Тёмная тема по умолчанию, своя светлая по кнопке */
 /* hidden скрывает элемент, даже если его класс задаёт display */
 [hidden] {
   display: none !important;
@@ -38,6 +38,8 @@
   --wedge: rgba(232, 169, 58, 0.16);
   --wedge-line: #e8a93a;
   --dash: #3a4248;
+  /* рамки полей и кнопок: контраст не ниже 3:1 к фону, панели и полю (WCAG 1.4.11) */
+  --ctl: #687179;
   --fig: #13171a;
   --grid: #1f2428;
   --dim: #5b646b;
@@ -66,11 +68,11 @@
   --warn-soft: #fcefd9;
   --bad: #b42318;
   --bad-soft: #fce8e6;
-  --tile: #15181b;
-  --tile-fg: #f2f3f1;
-  --tile-mute: #aeb5bb;
-  --tile-sub: #c9ced2;
-  --tile-gap: #2a3036;
+  --tile: #ffffff;
+  --tile-fg: #15181b;
+  --tile-mute: #59626a;
+  --tile-sub: #3f474e;
+  --tile-gap: #dcdfda;
   --c1: #a86a00;
   --c2: #2f6fb3;
   --c3: #1f7f70;
@@ -83,6 +85,7 @@
   --wedge: rgba(138, 87, 0, 0.12);
   --wedge-line: #8a5700;
   --dash: #b9beb7;
+  --ctl: #828984;
   --fig: #fafaf8;
   --grid: #eceeea;
   --dim: #9aa19c;
@@ -130,12 +133,42 @@ h2,
   margin: 0;
   color: var(--fg);
 }
+/* шапка отделена линией от вкладок типов: переходы и действия не похожи на вкладки */
 header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   gap: 10px 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.appnav {
+  display: flex;
+  gap: 4px;
+  margin-right: auto;
+}
+.appnav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--fg2);
+  text-decoration: none;
+}
+.appnav a:hover {
+  color: var(--fg);
+  background: var(--sunk);
+}
+.appnav a[aria-current="page"] {
+  color: var(--fg);
+  font-weight: 600;
+  background: var(--sunk);
+}
+.icon {
+  width: 40px;
+  padding: 0;
+  font-weight: 600;
 }
 .acts {
   display: flex;
@@ -150,7 +183,7 @@ button,
   box-sizing: border-box;
   padding: 8px 14px;
   border-radius: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
   background: var(--surface);
   color: var(--fg);
   cursor: pointer;
@@ -173,7 +206,7 @@ button:hover,
 .ghost {
   background: transparent;
   border-style: dashed;
-  border-color: var(--dash);
+  border-color: var(--ctl);
   color: var(--fg);
 }
 .sm {
@@ -208,16 +241,24 @@ select {
   box-sizing: border-box;
   min-height: 34px;
   padding: 5px 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
   border-radius: 6px;
   background: var(--sunk);
   color: var(--fg);
 }
-select {
+select,
+input[type="text"],
+input:not([type]) {
   font-family: var(--sans);
 }
 input[readonly] {
   color: var(--muted);
+}
+/* подсказка в пустом поле — обычным шрифтом, введённое число — моноширинным */
+::placeholder {
+  font-family: var(--sans);
+  color: var(--muted);
+  opacity: 1;
 }
 input:invalid {
   border-color: var(--bad);
@@ -230,9 +271,11 @@ input[type="radio"] {
   margin: 0;
   accent-color: var(--accent);
 }
+/* подпись в две строки не сдвигает поле: поле прижато к низу строки сетки */
 .f {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 2px;
   min-width: 0;
   font-size: 12px;
@@ -262,43 +305,6 @@ input[type="radio"] {
   font-variant-numeric: tabular-nums;
 }
 
-/* отчёт */
-.sys {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1px;
-  background: var(--tile-gap);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.sk {
-  background: var(--tile);
-  color: var(--tile-fg);
-  padding: 8px 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.sk > span:first-child {
-  font-size: 12px;
-  color: var(--tile-mute);
-}
-.sk strong {
-  font-family: var(--mono);
-  font-size: 21px;
-  font-weight: 500;
-  line-height: 1.2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow-wrap: anywhere;
-}
-.sk em {
-  font-style: normal;
-  font-size: 12px;
-  color: var(--tile-sub);
-}
 .dot {
   width: 9px;
   height: 9px;
@@ -315,19 +321,6 @@ input[type="radio"] {
 }
 .dot.bad {
   background: var(--bad);
-}
-.sk .dot {
-  width: 10px;
-  height: 10px;
-}
-.sk .dot.ok {
-  background: #4cc38a;
-}
-.sk .dot.warn {
-  background: #f0b429;
-}
-.sk .dot.bad {
-  background: #ff7a6e;
 }
 
 /* нагрузка */
@@ -356,55 +349,47 @@ input[type="radio"] {
 .meters {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-@media (max-width: 480px) {
-  .meters {
-    grid-template-columns: 1fr;
-  }
+  gap: 14px;
 }
 .meter {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background: var(--sunk);
+  gap: 4px;
   min-width: 0;
 }
-.meter span {
+.mhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 12px;
   color: var(--muted);
 }
-.meter strong {
+.mhead b {
   font-family: var(--mono);
-  font-size: 22px;
   font-weight: 500;
+  color: var(--fg);
 }
 .track {
   position: relative;
+  display: flex;
   height: 8px;
   border-radius: 4px;
   background: var(--track);
   overflow: hidden;
 }
 .track i {
-  position: absolute;
-  inset: 0 auto 0 0;
+  flex: none;
   background: var(--meter);
-  border-radius: 4px;
 }
 .track i.hot {
   background: var(--bad);
 }
 .track .lim {
   position: absolute;
-  top: -2px;
-  bottom: -2px;
+  top: 0;
+  bottom: 0;
   width: 2px;
-  background: var(--fg2);
-  opacity: 0.6;
+  background: var(--fg);
 }
 .tbl {
   overflow-x: auto;
@@ -469,54 +454,516 @@ tr.total td {
   font-size: 13px;
 }
 
-/* первый экран: широкий — результат слева, система и нагрузка справа; компактный — система | нагрузка сверху, результат ниже */
-.first {
+/* ввод слева, результат справа; результат закреплён, пока виден ввод */
+.split {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
   gap: 14px;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
-  grid-template-rows: auto 1fr;
-  grid-template-areas: "res sys" "res load";
-  align-items: stretch;
-}
-.syswrap {
-  grid-area: sys;
-}
-.dash {
-  grid-area: load;
-}
-.res {
-  grid-area: res;
-}
-@media (max-width: 1199px) {
-  .first {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    grid-template-rows: auto auto;
-    grid-template-areas: "sys load" "res res";
-  }
-}
-@media (max-width: 759px) {
-  .first {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "sys" "load" "res";
-  }
-}
-.syswrap {
-  background: var(--tile);
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  align-items: start;
   min-width: 0;
 }
-.syswrap h2 {
-  padding: 10px 14px 4px;
-  color: var(--tile-mute);
+.inputs,
+.outputs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
-.syswrap .sys {
-  flex: 1;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* закрепление — только если результат помещается в окно по высоте; 82 px — высота сводки с отступами */
+@media (min-width: 900px) and (min-height: 700px) {
+  .sum {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .side,
+  .split > .res {
+    position: sticky;
+    top: 82px;
+  }
+  .split > .res #side {
+    max-height: min(440px, calc(100vh - 590px));
+  }
+}
+
+/* сводка системы */
+#viewMain {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sum {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 2fr) minmax(
+      0,
+      1fr
+    );
+  gap: 10px 24px;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--fg);
+  text-decoration: none;
+}
+.sum:hover {
+  border-color: var(--accent);
+}
+.small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.val {
+  font-family: var(--mono);
+  font-size: 18px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  font-size: 13px;
+  color: var(--fg2);
+}
+.counts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.counts b {
+  font-family: var(--mono);
+  font-weight: 500;
+  color: var(--fg);
+}
+.counts em {
+  font-style: normal;
+}
+
+/* список типов: своя прокрутка строк, фильтры и «+ Тип камеры» остаются в окне */
+.tri {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+}
+.item[aria-current] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.item b,
+.row b {
+  display: block;
+  font-weight: 600;
+}
+.item small,
+.row small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  font-size: 13px;
+  min-height: 34px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: transparent;
+}
+.chip[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.rows {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.rows.scroll {
+  max-height: calc(100vh - 430px);
+  min-height: 180px;
+  overflow-y: auto;
+}
+.row {
+  flex: none;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 44px;
+  gap: 10px;
+  align-items: center;
+  min-height: 54px;
+  padding: 6px 12px;
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+}
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+.row[aria-current] {
+  background: var(--accent-soft);
+}
+.row b {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row .pc {
+  font-family: var(--mono);
+  font-size: 13px;
+  text-align: right;
+}
+.typebar {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.switcher {
+  flex: 1 1 280px;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px;
+}
+.switcher b {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.switcher .mono {
+  font-size: 13px;
+  color: var(--muted);
+}
+.switcher::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin: -3px 2px 0 auto;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg);
+  flex: none;
+}
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  width: 100%;
+  border: 0;
   border-radius: 0;
-  border-top: 1px solid var(--tile-gap);
+  background: rgba(0, 0, 0, 0.55);
+}
+.typesheet {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 31;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 12px 16px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--ctl);
+  border-radius: 14px 14px 0 0;
+}
+.typesheethead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+/* шторка результата и верхняя строка экранов — только на телефоне; меню шапки — тоже */
+.sheetbar,
+.phtop,
+.menubtn,
+.openobject {
+  display: none;
+}
+.hmenu {
+  display: contents;
+}
+
+/* окно 900–1199 px: список свёрнут в переключатель */
+@media (min-width: 900px) and (max-width: 1199px) {
+  .tri {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .side {
+    display: none;
+  }
+  .typebar {
+    display: flex;
+  }
+  .sum {
+    grid-template-columns:
+      minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 2fr)
+      minmax(0, 0.8fr);
+    gap: 10px 16px;
+  }
+  .val {
+    font-size: 15px;
+  }
+  .counts em {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* телефон: обзор, экран типа, экран системы; поля 44 px и шрифт 16 px, чтобы iOS не увеличивал страницу */
+@media (max-width: 899px) {
+  html {
+    scroll-padding-bottom: 150px;
+  }
+  body {
+    margin: 0;
+  }
+  input,
+  select,
+  .ogrid .f input,
+  .ogrid .f select,
+  .cat td input[type="number"] {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 0;
+  }
+  button,
+  .btn,
+  .seg label,
+  .chip,
+  .sm {
+    min-height: 44px;
+  }
+  .icon {
+    width: 44px;
+  }
+  .tipbtn {
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    font-size: 13px;
+    line-height: 22px;
+  }
+  .odel {
+    width: 44px;
+    height: 44px;
+  }
+  details.sec > summary {
+    min-height: 48px;
+  }
+  .exp {
+    align-items: center;
+  }
+  h1 {
+    font-size: 17px;
+  }
+  header {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    position: relative;
+  }
+  header.inner,
+  [data-screen="type"] .sum,
+  [data-screen="system"] .sum,
+  [data-screen="system"] .side,
+  [data-screen="type"] .side,
+  [data-screen="home"] .split,
+  .typebar {
+    display: none;
+  }
+  .menubtn {
+    display: inline-flex;
+    flex: none;
+  }
+  .hmenu {
+    display: none;
+  }
+  .hmenu[data-open="true"] {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .phtop {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -20px -16px 0;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .phtop .switcher {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-family: var(--cond);
+    font-size: 17px;
+  }
+  .phtitle {
+    font-family: var(--cond);
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .tri,
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sum {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .sum .compute {
+    order: -1;
+  }
+  .meters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+  .meters .meter:first-child {
+    grid-column: 1/-1;
+  }
+  .rows.scroll {
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+  }
+  .row {
+    min-height: 60px;
+  }
+  .ocard {
+    scroll-margin-top: 72px;
+  }
+  /* шторка над формой, поэтому у экрана типа запас снизу под её высоту */
+  [data-screen="type"] {
+    padding-bottom: 130px;
+  }
+  .split > .res {
+    position: fixed;
+    inset: auto 0 var(--keyboard, 0px);
+    z-index: 15;
+    gap: 0;
+    padding: 0;
+    border-width: 1px 0 0;
+    border-color: var(--ctl);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+  }
+  .sheetbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    padding: 4px 16px 12px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+  }
+  .grip {
+    align-self: center;
+    width: 40px;
+    height: 4px;
+    margin: 4px 0;
+    border-radius: 2px;
+    background: var(--ctl);
+  }
+  .sheethead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .sheethead > :last-child {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .sheethead.ok .pill {
+    background: var(--ok);
+  }
+  .sheethead.warn .pill {
+    background: var(--warn);
+  }
+  .sheethead.bad .pill {
+    background: var(--bad);
+  }
+  .sheetnums {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .sheetnums small {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .sheetnums b {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .resfull {
+    display: none;
+  }
+  .res[data-open="true"] {
+    top: 61px;
+  }
+  .res[data-open="true"] .resfull {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+  }
+  .openobject {
+    display: inline-flex;
+  }
 }
 
 /* дашборд нагрузки */
@@ -525,21 +972,6 @@ tr.total td {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-.dhead {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-.dsel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 96px;
-  gap: 8px;
-  align-items: end;
-}
-.dsel .f select {
-  min-height: 36px;
 }
 .dsum {
   font-size: 12.5px;
@@ -552,17 +984,6 @@ tr.total td {
   font-family: var(--mono);
   font-weight: 500;
   color: var(--fg);
-}
-.donutbox {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  min-width: 0;
-}
-#donut {
-  width: 116px;
-  height: 116px;
-  flex: none;
 }
 .legend {
   list-style: none;
@@ -596,65 +1017,32 @@ tr.total td {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
-@media (max-width: 420px) {
-  .donutbox {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  #donut {
-    align-self: center;
-  }
+.exp {
+  justify-content: space-between;
+  width: 100%;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-size: inherit;
+}
+.legend li.model {
+  color: var(--fg2);
 }
 .gauges {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 14px;
   border-top: 1px solid var(--line2);
   padding-top: 10px;
 }
 .gauges:empty {
   display: none;
 }
-.gauge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--muted);
-  min-width: 0;
-}
-.gauge svg {
-  width: 56px;
-  height: 56px;
-  flex: none;
-}
-.gauge b {
-  display: block;
-  color: var(--fg);
-  font-weight: 500;
-  font-size: 13px;
-}
 #loadNote[hidden] {
   display: none;
 }
-svg text.big {
-  font-family: var(--mono);
-  font-size: 20px;
-  font-weight: 500;
-  fill: var(--fg);
-}
-svg text.cap {
-  font-family: var(--sans);
-  font-size: 9px;
-  fill: var(--muted);
-}
-svg text.mid {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 500;
-  fill: var(--fg);
-}
-
 /* результат со схемой */
 .res {
   padding: 14px 16px;
@@ -754,12 +1142,6 @@ svg text.mid {
   font-size: 15px;
   fill: var(--accent);
 }
-#side text.t-z {
-  font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 600;
-  fill: var(--fg);
-}
 .rcol {
   flex: 1 1 240px;
   min-width: 0;
@@ -767,8 +1149,9 @@ svg text.mid {
   flex-direction: column;
   gap: 10px;
 }
+/* 4 показателя — в 2 колонки, без пустой ячейки */
 .rcol .kpis {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border: 1px solid var(--line2);
   border-radius: 8px;
   overflow: hidden;
@@ -796,42 +1179,6 @@ svg text.mid {
   margin-top: auto;
 }
 
-/* вкладки */
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.tab {
-  min-height: 44px;
-  border-radius: 8px;
-  gap: 8px;
-  padding: 8px 14px;
-}
-.tab[aria-selected="true"] {
-  border-color: var(--accent);
-  box-shadow: inset 0 -3px 0 var(--accent);
-}
-.tab b {
-  font-weight: 600;
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.tab small {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--muted);
-}
-
-/* три колонки */
-.work {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
 .col {
   display: flex;
   flex-direction: column;
@@ -885,7 +1232,7 @@ details.sec[open] > summary::after {
 }
 .sumv {
   margin-left: auto;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 400;
   color: var(--muted);
@@ -901,7 +1248,7 @@ details.sec[open] > summary::after {
   grid-column: 1/-1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -917,7 +1264,7 @@ details.sec[open] > summary::after {
   font-size: 13px;
   color: var(--fg);
   cursor: pointer;
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--ctl);
   text-align: center;
   padding: 0 4px;
 }
@@ -958,9 +1305,6 @@ details.sec[open] > summary::after {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 640px;
-  overflow-y: auto;
-  box-sizing: border-box;
 }
 .ocard {
   border: 1px solid var(--line);
@@ -976,7 +1320,7 @@ details.sec[open] > summary::after {
   padding: 6px 8px 6px 10px;
   border-bottom: 1px solid var(--track);
 }
-.ohdr input {
+.ohdr select {
   flex: 1;
   min-width: 0;
   border-color: transparent;
@@ -984,7 +1328,7 @@ details.sec[open] > summary::after {
   font-family: var(--sans);
   font-weight: 600;
 }
-.ohdr input:hover {
+.ohdr select:hover {
   border-color: var(--line);
 }
 .odel {
@@ -998,12 +1342,17 @@ details.sec[open] > summary::after {
 }
 .ogrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 8px 10px;
 }
-.ogrid .c2 {
-  grid-column: span 2;
+@media (max-width: 480px) {
+  .ogrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ogrid > .f:first-child {
+    grid-column: 1/-1;
+  }
 }
 .ogrid .f input,
 .ogrid .f select {
@@ -1051,7 +1400,9 @@ details.sec[open] > summary::after {
   color: var(--bad);
 }
 .ores .m2 {
-  color: var(--fg2);
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--muted);
 }
 .presets {
   display: flex;
@@ -1060,12 +1411,6 @@ details.sec[open] > summary::after {
   align-items: center;
   font-size: 12.5px;
   color: var(--muted);
-}
-.chip {
-  min-height: 32px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12.5px;
 }
 
 /* результат */
@@ -1109,8 +1454,9 @@ details.sec[open] > summary::after {
   background: var(--bad);
 }
 .verdict ul {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   padding-left: 18px;
+  font-size: 12px;
   color: var(--fg2);
 }
 .kpis {
@@ -1139,7 +1485,6 @@ details.sec[open] > summary::after {
 }
 .kpi em {
   font-style: normal;
-  font-family: var(--mono);
   font-size: 11.5px;
   color: var(--muted);
 }
@@ -1177,23 +1522,25 @@ svg text {
   color: var(--fg);
 }
 
-/* низ */
-.bottom {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-.bottom > .panel {
-  padding: 14px 16px;
-}
+/* система */
 .net {
-  flex: 2 1 560px;
-}
-.assum {
-  flex: 1 1 280px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.assum {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pagefoot {
+  display: flex;
+  justify-content: flex-end;
+}
+.formulas-page {
+  padding: 16px 20px;
 }
 .assum ul {
   margin: 0;
@@ -1217,58 +1564,35 @@ svg text {
   color: var(--muted);
   font-size: 12.5px;
 }
-details.how summary {
-  cursor: pointer;
-  color: var(--accent);
-  font-size: 13px;
-}
-.rowhead {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.rowhead .f {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-.rowhead .f input {
-  width: 72px;
-  min-height: 32px;
-}
 
 /* шаблоны */
 .tplhead {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 10px 20px;
 }
 .tpltabs {
   display: flex;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: hidden;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  border-bottom: 1px solid var(--line);
 }
 .tpltabs a {
   display: flex;
   align-items: center;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 6px 6px 0 0;
   color: var(--fg);
   text-decoration: none;
-  border-left: 1px solid var(--line);
   font-size: 14px;
 }
-.tpltabs a:first-child {
-  border-left: 0;
+.tpltabs a:hover {
+  background: var(--sunk);
 }
 .tpltabs a[aria-current="page"] {
-  background: var(--accent-soft);
   font-weight: 600;
   box-shadow: inset 0 -3px 0 var(--accent);
 }
@@ -1349,7 +1673,7 @@ details.how summary {
   line-height: 16px;
   color: var(--muted);
   background: var(--sunk);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
 }
 .tipbtn:hover,
 .tipbtn[aria-expanded="true"] {

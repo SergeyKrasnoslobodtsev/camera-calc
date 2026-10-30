@@ -1,78 +1,101 @@
-// Экран расчёта: вкладки типов, итоги системы и нагрузка GPU, результат типа, форма типа и объекты, сеть и допущения.
-import { LANG, t } from "../../i18n/index.ts";
-import formulasEn from "../../formulas.en.html?raw";
-import formulasRu from "../../formulas.html?raw";
+// Экран расчёта: сводка системы, список типов, экран типа (ввод и результат) или экран «Система» (параметры и нагрузка).
+import { resetToExample } from "../../app/store.ts";
+import { t } from "../../i18n/index.ts";
+import { toast } from "../components/Toast.tsx";
+import { useConfirm } from "../hooks/useConfirm.ts";
 import { Assumptions } from "./system/Assumptions.tsx";
 import { GpuLoad } from "./system/GpuLoad.tsx";
 import { NetworkPanel } from "./system/NetworkPanel.tsx";
-import { SystemPanel } from "./system/SystemPanel.tsx";
+import { SystemForm } from "./system/SystemForm.tsx";
+import { SystemSummary } from "./system/SystemSummary.tsx";
 import { ObjectList } from "./type-form/ObjectList.tsx";
 import { TypeForm } from "./type-form/TypeForm.tsx";
-import { TypeResult } from "./type-result/TypeResult.tsx";
-import { TypeTabs } from "./TypeTabs.tsx";
+import { ResultPanel } from "./type-result/ResultPanel.tsx";
+import { ScreenBar } from "./type-nav/ScreenBar.tsx";
+import { AddTypeButton, TypeSide } from "./type-nav/TypeList.tsx";
+import { TypeSwitcher } from "./type-nav/TypeSwitcher.tsx";
 
-// формулы — статичный текст из src/formulas*.html, без данных пользователя
-const FORMULAS = LANG === "en" ? formulasEn : formulasRu;
-
-export function CalculationPage({ hidden }: { hidden: boolean }) {
+export function CalculationPage({
+  hidden,
+  route,
+}: {
+  hidden: boolean;
+  route: string;
+}) {
+  // пример заменяет текущий расчёт, поэтому — по второму нажатию
+  const loadExample = useConfirm(() => {
+    resetToExample();
+    toast(t("exampleLoaded"));
+  });
+  // на широком экране обзор совпадает с экраном типа, на телефоне это отдельные экраны
+  const screen =
+    route === "system" ? "system" : route === "type" ? "type" : "home";
+  const system = screen === "system";
   return (
-    <div
-      id="viewMain"
-      hidden={hidden}
-      style={{ display: "flex", flexDirection: "column", gap: 14 }}
-    >
-      <nav className="tabs" role="tablist" aria-label={t("tabsAria")} id="tabs">
-        <TypeTabs />
-      </nav>
-      <div className="first">
-        <section
-          className="syswrap"
-          aria-labelledby="systemTitle"
-          id="systemPanel"
+    <div id="viewMain" hidden={hidden} data-screen={screen}>
+      {screen !== "home" && <ScreenBar screen={screen} />}
+      <SystemSummary current={system} />
+      <div className="typebar">
+        <TypeSwitcher />
+        <a
+          className="btn"
+          href="#system"
+          aria-current={system ? "page" : undefined}
         >
-          <SystemPanel />
-        </section>
-        <section
-          className="panel dash"
-          aria-labelledby="loadTitle"
-          id="gpuLoad"
-        >
-          <GpuLoad />
-        </section>
-        <section
-          className="panel res"
-          aria-labelledby="resultTitle"
-          role="tabpanel"
-          id="typeResult"
-        >
-          <TypeResult />
-        </section>
+          {t("systemTitle")}
+        </a>
+        <AddTypeButton />
       </div>
-      <div className="work">
-        <TypeForm />
-        <ObjectList />
+      <div className="tri">
+        <TypeSide systemCurrent={system} />
+        <div className="split" hidden={system}>
+          <div className="inputs">
+            <TypeForm />
+            <ObjectList />
+          </div>
+          <ResultPanel route={route} />
+        </div>
+        <div className="split" hidden={!system}>
+          <div className="inputs">
+            <SystemForm />
+            <section className="panel assum" aria-labelledby="assumptionsTitle">
+              <h2 id="assumptionsTitle">{t("assumptionsTitle")}</h2>
+              <ul id="assumptionsList">
+                <Assumptions />
+              </ul>
+              <a className="inlink" href="#formulas">
+                {t("formulas")}
+              </a>
+            </section>
+          </div>
+          <div className="outputs">
+            <section
+              className="panel dash"
+              aria-labelledby="loadTitle"
+              id="gpuLoad"
+            >
+              <GpuLoad />
+            </section>
+            <section
+              className="panel net"
+              aria-labelledby="networkTitle"
+              id="networkPanel"
+            >
+              <NetworkPanel />
+            </section>
+          </div>
+        </div>
       </div>
-      <div className="bottom">
-        <section
-          className="panel net"
-          aria-labelledby="networkTitle"
-          id="networkPanel"
+      <footer className="pagefoot">
+        <button
+          type="button"
+          className="sm"
+          id="resetBtn"
+          onClick={loadExample.click}
         >
-          <NetworkPanel />
-        </section>
-        <section className="panel assum" aria-labelledby="assumptionsTitle">
-          <h2 id="assumptionsTitle">{t("assumptionsTitle")}</h2>
-          <ul id="assumptionsList">
-            <Assumptions />
-          </ul>
-          <details className="how" style={{ marginTop: "auto" }}>
-            <summary>{t("formulas")}</summary>
-            <div className="formulas" id="formulas">
-              <div lang={LANG} dangerouslySetInnerHTML={{ __html: FORMULAS }} />
-            </div>
-          </details>
-        </section>
-      </div>
+          {t(loadExample.confirming ? "resetConfirm" : "resetBtn")}
+        </button>
+      </footer>
     </div>
   );
 }

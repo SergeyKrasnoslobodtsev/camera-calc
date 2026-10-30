@@ -7,7 +7,7 @@ type FieldProps = {
   id: string;
   label: ReactNode;
   tip?: TipField;
-  span?: "full" | "c2"; // на всю ширину сетки формы или на две колонки
+  span?: "full"; // на всю ширину сетки формы
   hidden?: boolean;
   children: ReactNode;
 };

@@ -8,8 +8,8 @@ export type CatalogModel = {
   latencyMs: number; // T4 TensorRT FP16, batch 1
 };
 
-// Свой детектор: замер пользователя на одном GPU
-export type CustomDetector = {
+// Своя модель: замер пользователя на одном GPU
+export type CustomModel = {
   id: string;
   name: string;
   fps: number; // кадр/с на refGpu
@@ -19,10 +19,10 @@ export type CustomDetector = {
   custom: true;
 };
 
-// Свой детектор: имя, замер кадров в секунду, вход и GPU замера обязательны, GFLOPs 0 — неизвестно
-export function parseDetector(raw: unknown): ParseResult<CustomDetector> {
+// Своя модель: имя, замер кадров в секунду, вход и GPU замера обязательны, GFLOPs 0 — неизвестно
+export function parseModel(raw: unknown): ParseResult<CustomModel> {
   const read = readFields(raw);
-  const detector: CustomDetector = {
+  const customModel: CustomModel = {
     id: read.text("id"),
     name: read.text("name"),
     fps: read.positive("fps"),
@@ -31,5 +31,5 @@ export function parseDetector(raw: unknown): ParseResult<CustomDetector> {
     gflops: read.nonNegative("gflops"),
     custom: true,
   };
-  return result(read.errors, detector);
+  return result(read.errors, customModel);
 }

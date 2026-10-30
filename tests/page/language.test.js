@@ -8,7 +8,11 @@ import { openPage } from "./open-page.tsx";
 import { enter, reportOf, countReloads, addTemplates } from "./helpers.js";
 
 const reloads = countReloads();
-const builtinRu = [...RU.typeNames, ...RU.presetNames, RU.objDefault];
+const builtinRu = [
+  ...RU.typeNames,
+  ...Object.values(RU.builtinObjectNames),
+  RU.objDefault,
+];
 // сохранение со своими шаблонами и отчёт по нему на RU
 let ex, exp, reportRu;
 beforeAll(async () => {
@@ -18,8 +22,20 @@ beforeAll(async () => {
 
 test("слишком мелкий объект: полная подсказка о разрешении", async () => {
   await openPage();
-  const tooSmall = JSON.parse(localStorage.getItem("camcalc4"));
-  tooSmall.types[0].objects[0].width = 8;
+  const tooSmall = JSON.parse(localStorage.getItem("camcalc5"));
+  // человек шириной 8 см вместо 50
+  tooSmall.customObjects = [
+    {
+      id: "narrow",
+      name: "Узкий",
+      width: 8,
+      length: 30,
+      height: 170,
+      requiredPx: 32,
+      custom: true,
+    },
+  ];
+  tooSmall.types[0].objects[0].target = "narrow";
   for (const [lang, hint] of [
     ["ru", /^Для «.+» требуется не меньше [\d\s]+\spx по горизонтали \(.+\)/],
     ["en", /^".+" requires at least [\d,]+ px horizontally \(.+\)/],
@@ -44,11 +60,9 @@ test("отчёт на EN: без кириллицы, кроме своих на�
     "EN: не тот блок формул",
   );
   const userNames = [
-    ...ex.types
-      .flatMap((T) => [T.name, ...T.objects.map((o) => o.name)])
-      .filter((n) => !builtinRu.includes(n)),
+    ...ex.types.map((T) => T.name).filter((n) => !builtinRu.includes(n)),
     ...ex.customCameras.map((c) => c.name),
-    ...ex.customDetectors.map((x) => x.name),
+    ...ex.customModels.map((x) => x.name),
     ...ex.customGpus.map((g) => g.name),
   ].sort((a, b) => b.length - a.length);
   const rEn = reportOf();
@@ -164,13 +178,13 @@ test("язык, изменённый в другой вкладке: уведо�
 
 test("встроенные названия, сохранённые на RU, показываются на EN", async () => {
   await openPage();
-  await openPage({ saved: localStorage.getItem("camcalc4"), lang: "en" });
+  await openPage({ saved: localStorage.getItem("camcalc5"), lang: "en" });
   const shown = [
     reportOf(),
-    document.getElementById("tabs").textContent,
+    document.getElementById("typeList").textContent,
     document.getElementById("typeName").value,
-    ...[...document.querySelectorAll("[id^=objectName-]")].map(
-      (el) => el.value,
+    ...[...document.querySelectorAll("[id^=objectTarget-]")].map(
+      (el) => el.selectedOptions[0].textContent,
     ),
   ].join("\n");
   assert.deepStrictEqual(
@@ -187,7 +201,7 @@ test("встроенные названия, сохранённые на RU, п�
 test("название пользователя не переводится, даже если совпадает со встроенным", async () => {
   await openPage();
   enter("typeName", "Тележка");
-  await openPage({ saved: localStorage.getItem("camcalc4"), lang: "en" });
+  await openPage({ saved: localStorage.getItem("camcalc5"), lang: "en" });
   assert.strictEqual(
     document.getElementById("typeName").value,
     "Тележка",

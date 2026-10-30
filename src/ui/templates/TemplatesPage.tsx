@@ -1,9 +1,10 @@
-// Экран шаблонов: вкладки видеокарт, камер и детекторов, экспорт и импорт всех данных.
+// Экран шаблонов: вкладки видеокарт, камер, объектов детекции и моделей, экспорт и импорт всех данных.
 import { useRef } from "react";
 import { t, type TextKey } from "../../i18n/index.ts";
 import { useConfirm } from "../hooks/useConfirm.ts";
 import { CameraTemplates } from "./CameraTemplates.tsx";
-import { DetectorTemplates } from "./DetectorTemplates.tsx";
+import { ModelTemplates } from "./ModelTemplates.tsx";
+import { ObjectTemplates } from "./ObjectTemplates.tsx";
 import { downloadState, loadStateFile } from "./file-actions.ts";
 import { GpuTemplates } from "./GpuTemplates.tsx";
 
@@ -11,7 +12,8 @@ import { GpuTemplates } from "./GpuTemplates.tsx";
 const TABS = [
   ["tpl-gpus", "templateTabGpus"],
   ["tpl-cams", "templateTabCameras"],
-  ["tpl-dets", "templateTabDetectors"],
+  ["tpl-objects", "templateTabObjects"],
+  ["tpl-models", "templateTabModels"],
 ] as const satisfies readonly (readonly [string, TextKey])[];
 export type TemplateRoute = (typeof TABS)[number][0];
 export const isTemplateRoute = (route: string): route is TemplateRoute =>
@@ -29,29 +31,15 @@ export function TemplatesPage({ page }: { page: TemplateRoute | null }) {
       hidden={page === null}
       style={{ display: "flex", flexDirection: "column", gap: 14 }}
     >
+      {/* к расчёту возвращает шапка; экспорт и импорт — действия над всеми данными, отдельно от вкладок */}
       <div className="tplhead">
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <a href="#" style={{ fontSize: 13, textDecoration: "none" }}>
-            {t("back")}
-          </a>
-          <h2 className="h2big" style={{ fontSize: 22 }}>
-            {t("templatesTitle")}
-          </h2>
-        </div>
+        <h2 className="h2big" style={{ fontSize: 22 }}>
+          {t("templatesTitle")}
+        </h2>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <nav className="tpltabs" aria-label={t("templatesNav")}>
-            {TABS.map(([route, label]) => (
-              <a
-                key={route}
-                href={"#" + route}
-                aria-current={route === page ? "page" : undefined}
-              >
-                {t(label)}
-              </a>
-            ))}
-          </nav>
           <button
             type="button"
+            className="sm"
             id="exportBtn"
             title={t("exportTitle")}
             onClick={downloadState}
@@ -60,6 +48,7 @@ export function TemplatesPage({ page }: { page: TemplateRoute | null }) {
           </button>
           <button
             type="button"
+            className="sm"
             id="importBtn"
             title={t("importTitle")}
             onClick={importData.click}
@@ -81,9 +70,21 @@ export function TemplatesPage({ page }: { page: TemplateRoute | null }) {
           />
         </div>
       </div>
+      <nav className="tpltabs" aria-label={t("templatesNav")}>
+        {TABS.map(([route, label]) => (
+          <a
+            key={route}
+            href={"#" + route}
+            aria-current={route === page ? "page" : undefined}
+          >
+            {t(label)}
+          </a>
+        ))}
+      </nav>
       <GpuTemplates hidden={page !== "tpl-gpus"} />
       <CameraTemplates hidden={page !== "tpl-cams"} />
-      <DetectorTemplates hidden={page !== "tpl-dets"} />
+      <ObjectTemplates hidden={page !== "tpl-objects"} />
+      <ModelTemplates hidden={page !== "tpl-models"} />
     </div>
   );
 }

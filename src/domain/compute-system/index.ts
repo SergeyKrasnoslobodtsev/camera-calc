@@ -1,6 +1,6 @@
 // Подбор GPU для всех типов камер. Варианты — от 1 до 4 карт каждого GPU, включённого в подбор.
 import type { TypeResult } from "../compute-type/index.ts";
-import type { CustomDetector } from "../entities/detector.ts";
+import type { CustomModel } from "../entities/model.ts";
 import type { Gpu } from "../entities/gpu.ts";
 import type { SystemSettings } from "../entities/system-settings.ts";
 import {
@@ -17,6 +17,8 @@ export type {
   RunLoad,
   SystemRunGroup,
 } from "./gpu-load.ts";
+export { typeLoads } from "./type-loads.ts";
+export type { TypeLoad, TypeRunLoad } from "./type-loads.ts";
 export { systemTotals } from "./totals.ts";
 export type { NetworkPort, SystemTotals } from "./totals.ts";
 
@@ -24,11 +26,11 @@ export type { NetworkPort, SystemTotals } from "./totals.ts";
 const GPU_COUNTS = [1, 2, 3, 4];
 
 // gpus — каталог и свои карты с действующей ценой, первый — запасной;
-// candidates — те из них, что участвуют в подборе; detectors — свои детекторы
+// candidates — те из них, что участвуют в подборе; customModels — свои модели
 export type SystemCatalog = {
   gpus: readonly Gpu[];
   candidates: readonly Gpu[];
-  detectors: readonly CustomDetector[];
+  customModels: readonly CustomModel[];
 };
 
 // liveResults — типы без ошибки и с камерами; maxLoad — наибольшая допустимая загрузка
@@ -70,7 +72,7 @@ export function computeSystem(
     efficiency,
     maxLoad,
     gpus: catalog.gpus,
-    detectors: catalog.detectors,
+    customModels: catalog.customModels,
   };
   const evaluate = (gpu: Gpu, count: number) => evaluateGpu(demand, gpu, count);
   const evaluations = catalog.candidates.flatMap((gpu) =>

@@ -6,7 +6,9 @@ import {
   parseCameraType,
   parseSceneObject,
 } from "../../src/domain/entities/camera-type.ts";
-import { parseDetector } from "../../src/domain/entities/detector.ts";
+import { parseModel } from "../../src/domain/entities/model.ts";
+import { parseDetectionObject } from "../../src/domain/entities/detection-object.ts";
+import { BUILTIN_DETECTION_OBJECTS } from "../../src/domain/references/detection-objects.ts";
 import { parseGpu } from "../../src/domain/entities/gpu.ts";
 import {
   onlyValueErrors,
@@ -124,9 +126,9 @@ test("parseCamera: лишние поля не попадают в значени
   });
 });
 
-const detector = {
+const customModel = {
   id: "d1",
-  name: "Мой детектор",
+  name: "Моя модель",
   fps: 120,
   inputSize: 640,
   refGpu: "5090",
@@ -134,11 +136,11 @@ const detector = {
   custom: true,
 };
 
-test("parseDetector: допустимый детектор", () => {
-  assert.deepEqual(parseDetector(detector), { ok: true, value: detector });
+test("parseModel: допустимая модель", () => {
+  assert.deepEqual(parseModel(customModel), { ok: true, value: customModel });
 });
 
-test("parseDetector: правило каждого поля", () => {
+test("parseModel: правило каждого поля", () => {
   const cases: [Record<string, unknown>, string][] = [
     [{ id: "" }, "id:required"],
     [{ name: undefined }, "name:required"],
@@ -148,16 +150,61 @@ test("parseDetector: правило каждого поля", () => {
     [{ gflops: -1 }, "gflops:nonNegative"],
   ];
   for (const [change, expected] of cases)
-    assert.deepEqual(errorsOf(parseDetector({ ...detector, ...change })), [
+    assert.deepEqual(errorsOf(parseModel({ ...customModel, ...change })), [
       expected,
     ]);
 });
 
-test("parseDetector: лишние поля не попадают в значение", () => {
-  assert.deepEqual(parseDetector({ ...detector, ref: 1 }), {
+test("parseModel: лишние поля не попадают в значение", () => {
+  assert.deepEqual(parseModel({ ...customModel, ref: 1 }), {
     ok: true,
-    value: detector,
+    value: customModel,
   });
+});
+
+const detectionObject = {
+  id: "o1",
+  name: "Мой объект",
+  width: 1.3,
+  length: 1.3,
+  height: 0.7,
+  requiredPx: 10,
+  custom: true,
+};
+
+test("parseDetectionObject: допустимый объект", () => {
+  assert.deepEqual(parseDetectionObject(detectionObject), {
+    ok: true,
+    value: detectionObject,
+  });
+});
+
+test("parseDetectionObject: правило каждого поля", () => {
+  const cases: [Record<string, unknown>, string][] = [
+    [{ id: "" }, "id:required"],
+    [{ name: " " }, "name:required"],
+    [{ width: 0 }, "width:positive"],
+    [{ length: "30" }, "length:positive"],
+    [{ height: -1 }, "height:positive"],
+    [{ requiredPx: undefined }, "requiredPx:positive"],
+  ];
+  for (const [change, expected] of cases)
+    assert.deepEqual(
+      errorsOf(parseDetectionObject({ ...detectionObject, ...change })),
+      [expected],
+    );
+});
+
+test("parseDetectionObject: лишние поля не попадают в значение", () => {
+  assert.deepEqual(parseDetectionObject({ ...detectionObject, ref: 1 }), {
+    ok: true,
+    value: detectionObject,
+  });
+});
+
+test("встроенные объекты детекции проходят правила своего объекта", () => {
+  for (const builtin of BUILTIN_DETECTION_OBJECTS)
+    assert.ok(parseDetectionObject({ ...builtin, name: builtin.id }).ok);
 });
 
 // значение разбора; разбор не прошёл — undefined

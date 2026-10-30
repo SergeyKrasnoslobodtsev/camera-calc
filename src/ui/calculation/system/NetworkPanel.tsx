@@ -1,7 +1,6 @@
-// Сеть: поток по типам камер, итог и архив.
+// Сеть: поток по типам камер, итог и архив. Глубина архива задаётся в параметрах системы.
 import { displayName, formatNumber, t, withUnit } from "../../../i18n/index.ts";
-import { state, updateSystem } from "../../../app/store.ts";
-import { Tip } from "../../components/Tip.tsx";
+import { portText } from "../../../i18n/domain-text.ts";
 import { useComputed } from "../../hooks/useComputed.ts";
 
 const HEADERS = [
@@ -18,26 +17,10 @@ export function NetworkPanel() {
   const { cameraCount, totalMbps, archiveDays, archiveTB } = totals;
   return (
     <>
-      <div className="rowhead">
-        <h2 id="networkTitle">{t("networkTitle")}</h2>
-        <div className="f">
-          <div className="lrow">
-            <label htmlFor="archiveDays">{t("archiveDays")}</label>
-            <Tip field="archiveDays" />
-          </div>
-          <input
-            id="archiveDays"
-            type="number"
-            min="0"
-            step="1"
-            inputMode="numeric"
-            value={state.system.archiveDays}
-            onChange={(event) =>
-              updateSystem("archiveDays", event.target.value)
-            }
-          />
-        </div>
-      </div>
+      <h2 id="networkTitle">{t("networkTitle")}</h2>
+      <p className="note">
+        {t("systemPort", portText(totals.port), formatNumber(totals.poeW, 0))}
+      </p>
       <div className="tbl">
         <table id="networkTable">
           <tbody>

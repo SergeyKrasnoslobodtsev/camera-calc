@@ -1,4 +1,4 @@
-// Карточка объекта: размеры, порог, модель и подача кадра; под полями — результат объекта.
+// Карточка объекта: объект детекции, модель и подача кадра; под полями — результат объекта.
 import type { ChangeEvent } from "react";
 import { STR, displayName, formatNumber, t } from "../../../i18n/index.ts";
 import {
@@ -7,6 +7,7 @@ import {
   sensorPxText,
 } from "../../../i18n/domain-text.ts";
 import type { ObjectResult } from "../../../domain/compute-type/index.ts";
+import { BUILTIN_DETECTION_OBJECTS } from "../../../domain/references/detection-objects.ts";
 import { MODELS } from "../../../domain/references/models.ts";
 import {
   deleteObject,
@@ -18,7 +19,6 @@ import { Field } from "../../components/Field.tsx";
 import { NumberInput } from "../../components/NumberInput.tsx";
 import { MODEL_INPUT_SIZES } from "../../lib/model-input-sizes.ts";
 
-type ObjectField = Exclude<keyof ObjectDraft, "nameKey">;
 type CardProps = {
   index: number;
   object: ObjectDraft;
@@ -27,7 +27,7 @@ type CardProps = {
 
 export function ObjectCard({ index, object, result }: CardProps) {
   const id = (name: string) => `${name}-${index}`;
-  const bind = (field: ObjectField, idPrefix: string) => ({
+  const bind = (field: keyof ObjectDraft, idPrefix: string) => ({
     id: id(idPrefix),
     value: String(object[field]),
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -39,12 +39,25 @@ export function ObjectCard({ index, object, result }: CardProps) {
     <article className="ocard">
       <div className="ohdr">
         <span className={`dot ${status}`.trim()} aria-hidden="true" />
-        <input
-          id={id("objectName")}
-          aria-label={t("objectName")}
-          value={displayName(object)}
-          onChange={(event) => updateObject(index, "name", event.target.value)}
-        />
+        <select
+          {...bind("target", "objectTarget")}
+          aria-label={t("objectTarget")}
+        >
+          {BUILTIN_DETECTION_OBJECTS.map((detectionObject) => (
+            <option key={detectionObject.id} value={detectionObject.id}>
+              {displayName(detectionObject)}
+            </option>
+          ))}
+          {state.customObjects.length > 0 && (
+            <optgroup label={t("customObjects")}>
+              {state.customObjects.map((detectionObject) => (
+                <option key={detectionObject.id} value={detectionObject.id}>
+                  {detectionObject.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
+        </select>
         <button
           type="button"
           className="odel"
@@ -55,19 +68,7 @@ export function ObjectCard({ index, object, result }: CardProps) {
         </button>
       </div>
       <div className="ogrid">
-        <Field id={id("objectWidth")} label={t("objectWidth")}>
-          <NumberInput {...bind("width", "objectWidth")} />
-        </Field>
-        <Field id={id("objectLength")} label={t("objectLength")}>
-          <NumberInput {...bind("length", "objectLength")} />
-        </Field>
-        <Field id={id("objectHeight")} label={t("objectHeight")}>
-          <NumberInput {...bind("height", "objectHeight")} />
-        </Field>
-        <Field id={id("objectRequired")} label={t("objectRequiredPx")}>
-          <NumberInput {...bind("requiredPx", "objectRequired")} />
-        </Field>
-        <Field id={id("objectModel")} label={t("objectModel")} span="c2">
+        <Field id={id("objectModel")} label={t("objectModel")}>
           <select {...bind("model", "objectModel")}>
             <optgroup label={t("ultralytics")}>
               {MODELS.map((model) => (
@@ -76,11 +77,11 @@ export function ObjectCard({ index, object, result }: CardProps) {
                 </option>
               ))}
             </optgroup>
-            {state.customDetectors.length > 0 && (
-              <optgroup label={t("customDetectors")}>
-                {state.customDetectors.map((detector) => (
-                  <option key={detector.id} value={detector.id}>
-                    {detector.name}
+            {state.customModels.length > 0 && (
+              <optgroup label={t("customModels")}>
+                {state.customModels.map((customModel) => (
+                  <option key={customModel.id} value={customModel.id}>
+                    {customModel.name}
                   </option>
                 ))}
               </optgroup>
