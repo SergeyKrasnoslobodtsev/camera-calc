@@ -1,5 +1,5 @@
-// Шапка: переход между расчётом и шаблонами, копирование отчёта, язык и тема.
-import { useEffect } from "react";
+// Шапка: переход между расчётом и шаблонами, копирование отчёта, язык и тема. На телефоне всё это в меню.
+import { useEffect, useState } from "react";
 import { LANG, LANG_KEY, t, type Lang } from "../../i18n/index.ts";
 import { state, toggleTheme } from "../../app/store.ts";
 import { toast } from "../components/Toast.tsx";
@@ -57,6 +57,7 @@ export function Header() {
   const route = useHashRoute();
   const templates = route.startsWith("tpl-");
   const { light } = state;
+  const [menuOpen, setMenuOpen] = useState(false);
   const otherLang = LANG === "en" ? "ru" : "en";
 
   // тема — класс на <html>, а <html> вне дерева React
@@ -71,51 +72,74 @@ export function Header() {
     );
 
   return (
-    <header>
+    // на телефоне экраны типа и системы вместо шапки показывают свою верхнюю строку
+    <header className={route === "type" || route === "system" ? "inner" : ""}>
       <h1>{t("appTitle")}</h1>
-      <nav className="appnav" aria-label={t("appNav")}>
-        <a href="#" aria-current={templates ? undefined : "page"}>
-          {t("calculationNav")}
-        </a>
-        <a
-          href="#tpl-gpus"
-          id="templatesBtn"
-          aria-current={templates ? "page" : undefined}
-        >
-          {t("templatesBtn")}
-        </a>
-      </nav>
-      <div className="acts">
-        <button
-          type="button"
-          id="copyBtn"
-          className="primary"
-          onClick={copyReport}
-        >
-          {t("copyBtn")}
-        </button>
-        <button
-          type="button"
-          id="langBtn"
-          className="icon"
-          lang={otherLang}
-          aria-label={t("langAria")}
-          title={t("langAria")}
-          onClick={() => switchLanguage(otherLang)}
-        >
-          {t("langBtn")}
-        </button>
-        <button
-          type="button"
-          id="themeBtn"
-          className="icon"
-          aria-label={t("themeLight")}
-          title={t("themeLight")}
-          aria-pressed={light}
-          onClick={toggleTheme}
-        >
-          {light ? MOON : SUN}
-        </button>
+      <button
+        type="button"
+        className="icon menubtn"
+        aria-label={t("menuAria")}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+          <path
+            d="M3 5h14M3 10h14M3 15h14"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+      <div
+        className="hmenu"
+        data-open={menuOpen}
+        onClick={() => setMenuOpen(false)}
+      >
+        <nav className="appnav" aria-label={t("appNav")}>
+          <a href="#" aria-current={templates ? undefined : "page"}>
+            {t("calculationNav")}
+          </a>
+          <a
+            href="#tpl-gpus"
+            id="templatesBtn"
+            aria-current={templates ? "page" : undefined}
+          >
+            {t("templatesBtn")}
+          </a>
+        </nav>
+        <div className="acts">
+          <button
+            type="button"
+            id="copyBtn"
+            className="primary"
+            onClick={copyReport}
+          >
+            {t("copyBtn")}
+          </button>
+          <button
+            type="button"
+            id="langBtn"
+            className="icon"
+            lang={otherLang}
+            aria-label={t("langAria")}
+            title={t("langAria")}
+            onClick={() => switchLanguage(otherLang)}
+          >
+            {t("langBtn")}
+          </button>
+          <button
+            type="button"
+            id="themeBtn"
+            className="icon"
+            aria-label={t("themeLight")}
+            title={t("themeLight")}
+            aria-pressed={light}
+            onClick={toggleTheme}
+          >
+            {light ? MOON : SUN}
+          </button>
+        </div>
       </div>
     </header>
   );

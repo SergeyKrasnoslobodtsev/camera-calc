@@ -1,4 +1,5 @@
 // Результат активного типа камер: вердикт, показатели объектива и кадра, плотность, схема.
+import type { ReactNode } from "react";
 import {
   STR,
   displayName,
@@ -18,7 +19,8 @@ import { useComputed } from "../../hooks/useComputed.ts";
 import { cameraLabel } from "../../lib/labels.ts";
 import { SideDiagram } from "./SideDiagram.tsx";
 
-export function TypeResult() {
+// action — кнопка под вердиктом
+export function TypeResult({ action }: { action: ReactNode }) {
   const { results } = useComputed();
   const result = results[state.cameraTypes.indexOf(activeType())];
   return (
@@ -49,6 +51,7 @@ export function TypeResult() {
             <div>{t("inputError")}</div>
           </div>
         )}
+        {action}
       </div>
       <div className="resbody">
         <figure className="sidefig">

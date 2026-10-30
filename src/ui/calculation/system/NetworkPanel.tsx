@@ -1,5 +1,6 @@
 // Сеть: поток по типам камер, итог и архив. Глубина архива задаётся в параметрах системы.
 import { displayName, formatNumber, t, withUnit } from "../../../i18n/index.ts";
+import { portText } from "../../../i18n/domain-text.ts";
 import { useComputed } from "../../hooks/useComputed.ts";
 
 const HEADERS = [
@@ -17,6 +18,9 @@ export function NetworkPanel() {
   return (
     <>
       <h2 id="networkTitle">{t("networkTitle")}</h2>
+      <p className="note">
+        {t("systemPort", portText(totals.port), formatNumber(totals.poeW, 0))}
+      </p>
       <div className="tbl">
         <table id="networkTable">
           <tbody>

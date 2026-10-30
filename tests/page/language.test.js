@@ -181,7 +181,7 @@ test("встроенные названия, сохранённые на RU, п�
   await openPage({ saved: localStorage.getItem("camcalc5"), lang: "en" });
   const shown = [
     reportOf(),
-    document.getElementById("tabs").textContent,
+    document.getElementById("typeList").textContent,
     document.getElementById("typeName").value,
     ...[...document.querySelectorAll("[id^=objectTarget-]")].map(
       (el) => el.selectedOptions[0].textContent,
