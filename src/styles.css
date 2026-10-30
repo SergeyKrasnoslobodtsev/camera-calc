@@ -1,4 +1,4 @@
-/* Layout: вкладки типов → первый экран (результат | система, нагрузка; на узком экране система | нагрузка, под ними результат) → параметры | объекты → сеть и допущения. Тёмная тема по умолчанию, своя светлая по кнопке */
+/* Layout: шапка → итоги системы → вкладки типов → ввод типа | результат типа (закреплён) → параметры системы | нагрузка и сеть. На узком экране всё в одну колонку, вкладки закреплены. Тёмная тема по умолчанию, своя светлая по кнопке */
 /* hidden скрывает элемент, даже если его класс задаёт display */
 [hidden] {
   display: none !important;
@@ -38,6 +38,8 @@
   --wedge: rgba(232, 169, 58, 0.16);
   --wedge-line: #e8a93a;
   --dash: #3a4248;
+  /* рамки полей и кнопок: контраст не ниже 3:1 к фону, панели и полю (WCAG 1.4.11) */
+  --ctl: #687179;
   --fig: #13171a;
   --grid: #1f2428;
   --dim: #5b646b;
@@ -66,11 +68,11 @@
   --warn-soft: #fcefd9;
   --bad: #b42318;
   --bad-soft: #fce8e6;
-  --tile: #15181b;
-  --tile-fg: #f2f3f1;
-  --tile-mute: #aeb5bb;
-  --tile-sub: #c9ced2;
-  --tile-gap: #2a3036;
+  --tile: #ffffff;
+  --tile-fg: #15181b;
+  --tile-mute: #59626a;
+  --tile-sub: #3f474e;
+  --tile-gap: #dcdfda;
   --c1: #a86a00;
   --c2: #2f6fb3;
   --c3: #1f7f70;
@@ -83,6 +85,7 @@
   --wedge: rgba(138, 87, 0, 0.12);
   --wedge-line: #8a5700;
   --dash: #b9beb7;
+  --ctl: #828984;
   --fig: #fafaf8;
   --grid: #eceeea;
   --dim: #9aa19c;
@@ -130,12 +133,42 @@ h2,
   margin: 0;
   color: var(--fg);
 }
+/* шапка отделена линией от вкладок типов: переходы и действия не похожи на вкладки */
 header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   gap: 10px 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.appnav {
+  display: flex;
+  gap: 4px;
+  margin-right: auto;
+}
+.appnav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--fg2);
+  text-decoration: none;
+}
+.appnav a:hover {
+  color: var(--fg);
+  background: var(--sunk);
+}
+.appnav a[aria-current="page"] {
+  color: var(--fg);
+  font-weight: 600;
+  background: var(--sunk);
+}
+.icon {
+  width: 40px;
+  padding: 0;
+  font-weight: 600;
 }
 .acts {
   display: flex;
@@ -150,7 +183,7 @@ button,
   box-sizing: border-box;
   padding: 8px 14px;
   border-radius: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
   background: var(--surface);
   color: var(--fg);
   cursor: pointer;
@@ -173,7 +206,7 @@ button:hover,
 .ghost {
   background: transparent;
   border-style: dashed;
-  border-color: var(--dash);
+  border-color: var(--ctl);
   color: var(--fg);
 }
 .sm {
@@ -208,16 +241,24 @@ select {
   box-sizing: border-box;
   min-height: 34px;
   padding: 5px 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
   border-radius: 6px;
   background: var(--sunk);
   color: var(--fg);
 }
-select {
+select,
+input[type="text"],
+input:not([type]) {
   font-family: var(--sans);
 }
 input[readonly] {
   color: var(--muted);
+}
+/* подсказка в пустом поле — обычным шрифтом, введённое число — моноширинным */
+::placeholder {
+  font-family: var(--sans);
+  color: var(--muted);
+  opacity: 1;
 }
 input:invalid {
   border-color: var(--bad);
@@ -230,9 +271,11 @@ input[type="radio"] {
   margin: 0;
   accent-color: var(--accent);
 }
+/* подпись в две строки не сдвигает поле: поле прижато к низу строки сетки */
 .f {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 2px;
   min-width: 0;
   font-size: 12px;
@@ -319,15 +362,6 @@ input[type="radio"] {
 .sk .dot {
   width: 10px;
   height: 10px;
-}
-.sk .dot.ok {
-  background: #4cc38a;
-}
-.sk .dot.warn {
-  background: #f0b429;
-}
-.sk .dot.bad {
-  background: #ff7a6e;
 }
 
 /* нагрузка */
@@ -469,39 +503,41 @@ tr.total td {
   font-size: 13px;
 }
 
-/* первый экран: широкий — результат слева, система и нагрузка справа; компактный — система | нагрузка сверху, результат ниже */
-.first {
+/* ввод слева, результат справа; результат закреплён, пока виден ввод. На узком экране — одна колонка */
+.split {
   display: grid;
+  grid-template-columns: minmax(400px, 5fr) minmax(0, 7fr);
   gap: 14px;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
-  grid-template-rows: auto 1fr;
-  grid-template-areas: "res sys" "res load";
-  align-items: stretch;
+  align-items: start;
 }
-.syswrap {
-  grid-area: sys;
+.inputs,
+.outputs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
-.dash {
-  grid-area: load;
-}
-.res {
-  grid-area: res;
-}
-@media (max-width: 1199px) {
-  .first {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    grid-template-rows: auto auto;
-    grid-template-areas: "sys load" "res res";
+/* закрепление — только если результат помещается в окно по высоте */
+@media (min-height: 700px) {
+  .split > .res {
+    position: sticky;
+    top: 12px;
+  }
+  .split > .res #side {
+    max-height: min(440px, calc(100vh - 520px));
   }
 }
-@media (max-width: 759px) {
-  .first {
+@media (max-width: 899px) {
+  .split {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "sys" "load" "res";
+  }
+  .split > .res {
+    position: static;
   }
 }
 .syswrap {
   background: var(--tile);
+  border: 1px solid var(--tile-gap);
   border-radius: 10px;
   overflow: hidden;
   display: flex;
@@ -514,7 +550,7 @@ tr.total td {
 }
 .syswrap .sys {
   flex: 1;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   border-radius: 0;
   border-top: 1px solid var(--tile-gap);
 }
@@ -525,21 +561,6 @@ tr.total td {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-.dhead {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-.dsel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 96px;
-  gap: 8px;
-  align-items: end;
-}
-.dsel .f select {
-  min-height: 36px;
 }
 .dsum {
   font-size: 12.5px;
@@ -754,12 +775,6 @@ svg text.mid {
   font-size: 15px;
   fill: var(--accent);
 }
-#side text.t-z {
-  font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 600;
-  fill: var(--fg);
-}
 .rcol {
   flex: 1 1 240px;
   min-width: 0;
@@ -767,8 +782,9 @@ svg text.mid {
   flex-direction: column;
   gap: 10px;
 }
+/* 4 показателя — в 1 или 2 колонки, без пустой ячейки */
 .rcol .kpis {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   border: 1px solid var(--line2);
   border-radius: 8px;
   overflow: hidden;
@@ -797,20 +813,49 @@ svg text.mid {
 }
 
 /* вкладки */
+/* вкладки — подчёркиванием, без рамки: не похожи на кнопки шапки */
 .tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 4px 6px;
+  border-bottom: 1px solid var(--line);
 }
 .tab {
   min-height: 44px;
-  border-radius: 8px;
+  border: 0;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
   gap: 8px;
   padding: 8px 14px;
 }
+.tab:hover {
+  background: var(--sunk);
+}
 .tab[aria-selected="true"] {
-  border-color: var(--accent);
   box-shadow: inset 0 -3px 0 var(--accent);
+}
+.tab.ghost {
+  border: 1px dashed var(--ctl);
+  border-radius: 6px;
+  min-height: 36px;
+  margin-left: 6px;
+}
+/* на узком экране ввод идёт до результата: вкладки с точкой статуса закреплены сверху и прокручиваются вбок */
+@media (max-width: 899px) {
+  .tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    background: var(--bg);
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+  .tab {
+    flex: none;
+  }
 }
 .tab b {
   font-weight: 600;
@@ -825,13 +870,6 @@ svg text.mid {
   color: var(--muted);
 }
 
-/* три колонки */
-.work {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 14px;
-  align-items: stretch;
-}
 .col {
   display: flex;
   flex-direction: column;
@@ -885,7 +923,7 @@ details.sec[open] > summary::after {
 }
 .sumv {
   margin-left: auto;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 400;
   color: var(--muted);
@@ -901,7 +939,7 @@ details.sec[open] > summary::after {
   grid-column: 1/-1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -917,7 +955,7 @@ details.sec[open] > summary::after {
   font-size: 13px;
   color: var(--fg);
   cursor: pointer;
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--ctl);
   text-align: center;
   padding: 0 4px;
 }
@@ -958,9 +996,6 @@ details.sec[open] > summary::after {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 640px;
-  overflow-y: auto;
-  box-sizing: border-box;
 }
 .ocard {
   border: 1px solid var(--line);
@@ -998,12 +1033,17 @@ details.sec[open] > summary::after {
 }
 .ogrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 8px 10px;
 }
-.ogrid .c2 {
-  grid-column: span 2;
+@media (max-width: 480px) {
+  .ogrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ogrid > .f:first-child {
+    grid-column: 1/-1;
+  }
 }
 .ogrid .f input,
 .ogrid .f select {
@@ -1051,7 +1091,9 @@ details.sec[open] > summary::after {
   color: var(--bad);
 }
 .ores .m2 {
-  color: var(--fg2);
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--muted);
 }
 .presets {
   display: flex;
@@ -1103,8 +1145,9 @@ details.sec[open] > summary::after {
   background: var(--bad);
 }
 .verdict ul {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   padding-left: 18px;
+  font-size: 12px;
   color: var(--fg2);
 }
 .kpis {
@@ -1133,7 +1176,6 @@ details.sec[open] > summary::after {
 }
 .kpi em {
   font-style: normal;
-  font-family: var(--mono);
   font-size: 11.5px;
   color: var(--muted);
 }
@@ -1171,23 +1213,25 @@ svg text {
   color: var(--fg);
 }
 
-/* низ */
-.bottom {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-.bottom > .panel {
-  padding: 14px 16px;
-}
+/* система */
 .net {
-  flex: 2 1 560px;
-}
-.assum {
-  flex: 1 1 280px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.assum {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pagefoot {
+  display: flex;
+  justify-content: flex-end;
+}
+.formulas-page {
+  padding: 16px 20px;
 }
 .assum ul {
   margin: 0;
@@ -1211,58 +1255,35 @@ svg text {
   color: var(--muted);
   font-size: 12.5px;
 }
-details.how summary {
-  cursor: pointer;
-  color: var(--accent);
-  font-size: 13px;
-}
-.rowhead {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.rowhead .f {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-.rowhead .f input {
-  width: 72px;
-  min-height: 32px;
-}
 
 /* шаблоны */
 .tplhead {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 10px 20px;
 }
 .tpltabs {
   display: flex;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: hidden;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  border-bottom: 1px solid var(--line);
 }
 .tpltabs a {
   display: flex;
   align-items: center;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 6px 6px 0 0;
   color: var(--fg);
   text-decoration: none;
-  border-left: 1px solid var(--line);
   font-size: 14px;
 }
-.tpltabs a:first-child {
-  border-left: 0;
+.tpltabs a:hover {
+  background: var(--sunk);
 }
 .tpltabs a[aria-current="page"] {
-  background: var(--accent-soft);
   font-weight: 600;
   box-shadow: inset 0 -3px 0 var(--accent);
 }
@@ -1343,7 +1364,7 @@ details.how summary {
   line-height: 16px;
   color: var(--muted);
   background: var(--sunk);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ctl);
 }
 .tipbtn:hover,
 .tipbtn[aria-expanded="true"] {

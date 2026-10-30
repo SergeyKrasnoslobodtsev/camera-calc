@@ -31,29 +31,15 @@ export function TemplatesPage({ page }: { page: TemplateRoute | null }) {
       hidden={page === null}
       style={{ display: "flex", flexDirection: "column", gap: 14 }}
     >
+      {/* к расчёту возвращает шапка; экспорт и импорт — действия над всеми данными, отдельно от вкладок */}
       <div className="tplhead">
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <a href="#" style={{ fontSize: 13, textDecoration: "none" }}>
-            {t("back")}
-          </a>
-          <h2 className="h2big" style={{ fontSize: 22 }}>
-            {t("templatesTitle")}
-          </h2>
-        </div>
+        <h2 className="h2big" style={{ fontSize: 22 }}>
+          {t("templatesTitle")}
+        </h2>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <nav className="tpltabs" aria-label={t("templatesNav")}>
-            {TABS.map(([route, label]) => (
-              <a
-                key={route}
-                href={"#" + route}
-                aria-current={route === page ? "page" : undefined}
-              >
-                {t(label)}
-              </a>
-            ))}
-          </nav>
           <button
             type="button"
+            className="sm"
             id="exportBtn"
             title={t("exportTitle")}
             onClick={downloadState}
@@ -62,6 +48,7 @@ export function TemplatesPage({ page }: { page: TemplateRoute | null }) {
           </button>
           <button
             type="button"
+            className="sm"
             id="importBtn"
             title={t("importTitle")}
             onClick={importData.click}
@@ -83,6 +70,17 @@ export function TemplatesPage({ page }: { page: TemplateRoute | null }) {
           />
         </div>
       </div>
+      <nav className="tpltabs" aria-label={t("templatesNav")}>
+        {TABS.map(([route, label]) => (
+          <a
+            key={route}
+            href={"#" + route}
+            aria-current={route === page ? "page" : undefined}
+          >
+            {t(label)}
+          </a>
+        ))}
+      </nav>
       <GpuTemplates hidden={page !== "tpl-gpus"} />
       <CameraTemplates hidden={page !== "tpl-cams"} />
       <ObjectTemplates hidden={page !== "tpl-objects"} />

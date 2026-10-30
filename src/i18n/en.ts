@@ -5,11 +5,13 @@ export const EN: Dictionary = {
   docTitle: "Camera calculator",
   appTitle: "Camera and compute calculator",
   themeLight: "Light theme",
-  themeDark: "Dark theme",
   langBtn: "RU",
   langAria: "Русский",
+  appNav: "Sections",
+  calculationNav: "Calculator",
   templatesBtn: "Templates",
   resetBtn: "Load example",
+  resetConfirm: "Replace current calculation",
   copyBtn: "Copy report",
   tabsAria: "Camera types",
   // нагрузка
@@ -142,16 +144,13 @@ export const EN: Dictionary = {
   systemCameras: "Cameras",
   systemTypes: (count, names) => `Types: ${count}${names ? ` (${names})` : ""}`,
   systemCameraCost: (cost) => ` · camera cost ${cost}`,
-  systemObjects: "Objects detectable",
-  systemOfTotal: (okCount, total) => `${okCount} of ${total}`,
-  systemSmallest: (name, modelPx) => `Smallest: ${name}, ${modelPx} px`,
-  systemNoObjects: "No objects",
   systemCompute: "Compute node",
   systemNoCameras: "No cameras",
   systemNetwork: "Network traffic",
   systemPort: (port, poeWatts) => `Port ${port} · PoE ≈ ${poeWatts} W`,
   // сеть и допущения
   networkTitle: "Network and storage",
+  systemFormTitle: "System parameters",
   archiveDays: "Archive retention, days",
   networkType: "Camera type",
   networkCameras: "Cameras",
@@ -275,8 +274,6 @@ export const EN: Dictionary = {
   },
   decoderStreams: (count) => `streams: ${count}`,
   // шаблоны
-  back: "← Back to calculator",
-  toCalculation: "Back to calculator",
   templatesTitle: "Templates",
   templatesNav: "Template sections",
   templateTabGpus: "GPUs",
@@ -323,7 +320,6 @@ export const EN: Dictionary = {
   gpuFormMemory: "Memory, GB",
   gpuFormTdp: "TDP, W",
   gpuFormPrice: "Price, $",
-  gpuFormPricePlaceholder: "Supplier price",
   gpuFormEnabled: "Included in auto-selection",
   hintWhere: "Where to find the values",
   gpuFormHint1:
@@ -364,6 +360,7 @@ export const EN: Dictionary = {
   cameraFormFocalMax: "Focal length to, mm",
   cameraFormPrice: "Price, $",
   optional: "Optional",
+  example: (value) => `For example, ${value}`,
   cameraFormHint1:
     "Sensor width: the width of the sensor active area from the datasheet. If it isn't listed, enter the pixel size, and the width is calculated as pixel size × frame width.",
   cameraFormHint2:
@@ -452,7 +449,6 @@ export const EN: Dictionary = {
   readFail: "Couldn't read the file.",
   tipAria: "Hint",
   // схема
-  diagramZone: (depth) => `Monitored zone ${depth} m`,
   diagramFrame: (width) => `Frame ${width} m`,
   diagramTilt: (degrees) => `Tilt ${degrees}°`,
   diagramLength: (length) => `${length} m`,

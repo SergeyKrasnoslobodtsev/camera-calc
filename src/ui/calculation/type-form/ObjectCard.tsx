@@ -68,7 +68,7 @@ export function ObjectCard({ index, object, result }: CardProps) {
         </button>
       </div>
       <div className="ogrid">
-        <Field id={id("objectModel")} label={t("objectModel")} span="c2">
+        <Field id={id("objectModel")} label={t("objectModel")}>
           <select {...bind("model", "objectModel")}>
             <optgroup label={t("ultralytics")}>
               {MODELS.map((model) => (

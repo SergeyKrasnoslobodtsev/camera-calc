@@ -98,8 +98,7 @@ export function SideDiagram({
     zoneEndX = toX(x2),
     zoneWidthPx = zoneEndX - zoneStartX;
   const hasRoomBelow = floorY - planeY >= 40;
-  const zoneLabelY = hasRoomBelow ? planeY - 16 : planeY - 40,
-    frameLabelY = hasRoomBelow ? planeY + 28 : planeY - 18;
+  const frameLabelY = hasRoomBelow ? planeY + 28 : planeY - 18;
   const isNarrow = zoneWidthPx < 240;
   // углы
   const axisLength = (planeY - cameraY) / Math.max(Math.sin(tilt), 0.05);
@@ -250,14 +249,6 @@ export function SideDiagram({
         rx="2"
         fill="var(--accent)"
       />
-      <text
-        x={coord((zoneStartX + zoneEndX) / 2)}
-        y={coord(zoneLabelY)}
-        textAnchor="middle"
-        className="t-z"
-      >
-        {t("diagramZone", formatNumber(x2 - x1, 1))}
-      </text>
       {isFinite(frameWidthNear) && isFinite(frameWidthFar) && (
         <>
           <line

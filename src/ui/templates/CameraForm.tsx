@@ -1,6 +1,6 @@
 // Форма своей камеры: поля как введены, разбор и проверка — parseCamera из domain.
 import { useState, type ChangeEvent } from "react";
-import { displayName, t } from "../../i18n/index.ts";
+import { displayName, formatNumber, t } from "../../i18n/index.ts";
 import { parseCamera } from "../../domain/entities/camera.ts";
 import { parseNum } from "../../domain/parse-num.ts";
 import { uid } from "../../app/examples.ts";
@@ -113,14 +113,14 @@ export function CameraForm() {
         <NumberInput
           integer
           {...bind("width", "cameraFormWidth")}
-          placeholder="2560"
+          placeholder={t("example", "2560")}
         />
       </Field>
       <Field id="cameraFormHeight" label={t("cameraFormHeight")}>
         <NumberInput
           integer
           {...bind("height", "cameraFormHeight")}
-          placeholder="1440"
+          placeholder={t("example", "1440")}
         />
       </Field>
       <Field
@@ -130,25 +130,25 @@ export function CameraForm() {
       >
         <NumberInput
           {...bind("sensorWidth", "cameraFormSensorWidth")}
-          placeholder="5.4"
+          placeholder={t("example", formatNumber(5.4, 1))}
         />
       </Field>
       <Field id="cameraFormPixelPitch" label={t("cameraFormPixelPitch")}>
         <NumberInput
           {...bind("pixelPitch", "cameraFormPixelPitch")}
-          placeholder="2.0"
+          placeholder={t("example", formatNumber(2, 1))}
         />
       </Field>
       <Field id="cameraFormFocalMin" label={t("cameraFormFocalMin")}>
         <NumberInput
           {...bind("focalMin", "cameraFormFocalMin")}
-          placeholder="2.8"
+          placeholder={t("example", formatNumber(2.8, 1))}
         />
       </Field>
       <Field id="cameraFormFocalMax" label={t("cameraFormFocalMax")}>
         <NumberInput
           {...bind("focalMax", "cameraFormFocalMax")}
-          placeholder="12"
+          placeholder={t("example", "12")}
         />
       </Field>
       <Field id="cameraFormPrice" label={t("cameraFormPrice")}>
