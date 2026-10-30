@@ -5,6 +5,8 @@ import assert from "node:assert/strict";
 import {
   computeSystem,
   systemTotals,
+  typeLoads,
+  type GpuOption,
   type SystemCatalog,
 } from "../../src/domain/compute-system/index.ts";
 import type { TypeResult } from "../../src/domain/compute-type/index.ts";
@@ -284,4 +286,28 @@ test("порт: поток × 1,3 меньше 900 Мбит/с — 1 Гбит/с
   assert.equal(port(690), "1G");
   assert.equal(port(700), "10G");
   assert.equal(port(7000), "over10G");
+});
+
+test("сумма долей типов равна инференсу системы", () => {
+  const option = {
+    count: 2,
+    inferenceLoad: 0.6,
+    runs: [
+      { type: { id: "a" }, gpusNeeded: 0.3 },
+      { type: { id: "b" }, gpusNeeded: 0.7 },
+      { type: { id: "a" }, gpusNeeded: 0.2 },
+      { type: { id: "b" }, unknownModel: true },
+    ],
+  } as unknown as GpuOption;
+  const loads = typeLoads(option);
+  assert.deepStrictEqual(
+    loads.map((load) => load.type.id),
+    ["b", "a"],
+  );
+  assert.ok(
+    Math.abs(
+      loads.reduce((sum, load) => sum + load.share, 0) - option.inferenceLoad,
+    ) < 1e-12,
+  );
+  assert.strictEqual(loads[1].runs.length, 2);
 });

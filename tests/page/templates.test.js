@@ -21,12 +21,6 @@ test("своя камера и своя модель", async () => {
   await addTemplates();
   console.log("SYS:", T("systemKpis"));
   console.log("DSUM:", T("loadSummary"));
-  console.log(
-    "DONUT:",
-    T("donut"),
-    "| circles",
-    document.querySelectorAll("#donut circle").length,
-  );
   console.log("LEGEND:", legend());
   console.log("GAUGES:", T("gauges"));
   console.log("VERDICT:", T("verdict"));

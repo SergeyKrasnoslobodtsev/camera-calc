@@ -3,8 +3,10 @@ import { t } from "../../../i18n/index.ts";
 import { allGpus, state, updateSystem } from "../../../app/store.ts";
 import { Field } from "../../components/Field.tsx";
 import { NumberInput } from "../../components/NumberInput.tsx";
+import { useComputed } from "../../hooks/useComputed.ts";
 
 export function SystemForm() {
+  useComputed(); // значения полей — из state: форма перерисовывается после каждого действия
   return (
     <form
       className="panel col"

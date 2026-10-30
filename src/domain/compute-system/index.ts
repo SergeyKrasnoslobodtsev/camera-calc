@@ -17,6 +17,8 @@ export type {
   RunLoad,
   SystemRunGroup,
 } from "./gpu-load.ts";
+export { typeLoads } from "./type-loads.ts";
+export type { TypeLoad, TypeRunLoad } from "./type-loads.ts";
 export { systemTotals } from "./totals.ts";
 export type { NetworkPort, SystemTotals } from "./totals.ts";
 

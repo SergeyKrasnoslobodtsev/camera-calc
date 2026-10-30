@@ -10,7 +10,7 @@ import { TemplatesPage, isTemplateRoute } from "./templates/TemplatesPage.tsx";
 
 export function App() {
   const route = useHashRoute();
-  // tpl-* — экран шаблонов, formulas — формулы, любой другой адрес — расчёт
+  // tpl-* — экран шаблонов, formulas — формулы, любой другой адрес — расчёт (system — экран «Система»)
   const templatePage = isTemplateRoute(route) ? route : null;
   const formulas = route === "formulas";
 
@@ -23,7 +23,10 @@ export function App() {
   return (
     <>
       <Header />
-      <CalculationPage hidden={templatePage !== null || formulas} />
+      <CalculationPage
+        hidden={templatePage !== null || formulas}
+        route={route}
+      />
       <FormulasPage hidden={!formulas} />
       <TemplatesPage page={templatePage} />
       <Toast />
