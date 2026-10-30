@@ -35,7 +35,7 @@ export function ObjectList() {
         </h2>
         <button
           type="button"
-          className="primary sm"
+          className="ghost sm"
           id="addObject"
           onClick={addNew}
         >

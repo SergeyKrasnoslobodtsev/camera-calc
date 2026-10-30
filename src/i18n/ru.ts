@@ -9,11 +9,13 @@ export const RU = {
   docTitle: "Калькулятор камер",
   appTitle: "Калькулятор камер и вычислителя",
   themeLight: "Светлая тема",
-  themeDark: "Тёмная тема",
   langBtn: "EN",
   langAria: "English",
+  appNav: "Разделы",
+  calculationNav: "Расчёт",
   templatesBtn: "Шаблоны",
   resetBtn: "Загрузить пример",
+  resetConfirm: "Заменить текущий расчёт",
   copyBtn: "Копировать отчёт",
   tabsAria: "Типы камер",
   // нагрузка
@@ -158,11 +160,6 @@ export const RU = {
   systemTypes: (count: Value, names?: Value) =>
     `Типов: ${count}${names ? ` (${names})` : ""}`,
   systemCameraCost: (cost: Value) => ` · стоимость камер ${cost}`,
-  systemObjects: "Объекты различимы",
-  systemOfTotal: (okCount: Value, total: Value) => `${okCount} из ${total}`,
-  systemSmallest: (name: Value, modelPx: Value) =>
-    `Самый мелкий: ${name}, ${modelPx} px`,
-  systemNoObjects: "Нет объектов",
   systemCompute: "Вычислитель",
   systemNoCameras: "Нет камер",
   systemNetwork: "Сетевой поток",
@@ -170,6 +167,7 @@ export const RU = {
     `Порт ${port} · PoE ≈ ${poeWatts} Вт`,
   // сеть и допущения
   networkTitle: "Сеть и хранение",
+  systemFormTitle: "Параметры системы",
   archiveDays: "Глубина архива, дн.",
   networkType: "Тип камеры",
   networkCameras: "Камеры",
@@ -293,8 +291,6 @@ export const RU = {
   },
   decoderStreams: (count: Value) => `потоков: ${count}`,
   // шаблоны
-  back: "← К расчёту",
-  toCalculation: "К расчёту",
   templatesTitle: "Шаблоны",
   templatesNav: "Разделы шаблонов",
   templateTabGpus: "GPU",
@@ -341,7 +337,6 @@ export const RU = {
   gpuFormMemory: "Память, ГБ",
   gpuFormTdp: "TDP, Вт",
   gpuFormPrice: "Цена, $",
-  gpuFormPricePlaceholder: "Цена поставщика",
   gpuFormEnabled: "Участвует в автоподборе",
   hintWhere: "Где взять значения",
   gpuFormHint1:
@@ -382,6 +377,7 @@ export const RU = {
   cameraFormFocalMax: "Фокусное расстояние до, мм",
   cameraFormPrice: "Цена, $",
   optional: "Необязательно",
+  example: (value: Value) => `Например, ${value}`,
   cameraFormHint1:
     "Ширина матрицы: ширина активной области сенсора из даташита. Если её нет, укажите размер пикселя — ширина будет рассчитана как размер пикселя × ширина кадра.",
   cameraFormHint2:
@@ -501,7 +497,6 @@ export const RU = {
   readFail: "Не удалось прочитать файл.",
   tipAria: "Подсказка",
   // схема
-  diagramZone: (depth: Value) => `Зона контроля ${depth} м`,
   diagramFrame: (width: Value) => `Кадр ${width} м`,
   diagramTilt: (degrees: Value) => `Наклон ${degrees}°`,
   diagramLength: (length: Value) => `${length} м`,

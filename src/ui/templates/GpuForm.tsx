@@ -138,21 +138,24 @@ export function GpuForm() {
       >
         <NumberInput
           {...bind("decoders", "gpuFormDecoders")}
-          placeholder={isJetson ? "22" : "2"}
+          placeholder={t("example", isJetson ? "22" : "2")}
         />
       </Field>
       <Field id="gpuFormMemory" label={t("gpuFormMemory")}>
-        <NumberInput {...bind("memory", "gpuFormMemory")} placeholder="48" />
+        <NumberInput
+          {...bind("memory", "gpuFormMemory")}
+          placeholder={t("example", "48")}
+        />
       </Field>
       <Field id="gpuFormTdp" label={t("gpuFormTdp")}>
-        <NumberInput integer {...bind("tdp", "gpuFormTdp")} placeholder="300" />
-      </Field>
-      <Field id="gpuFormPrice" label={t("gpuFormPrice")}>
         <NumberInput
           integer
-          {...bind("price", "gpuFormPrice")}
-          placeholder={t("gpuFormPricePlaceholder")}
+          {...bind("tdp", "gpuFormTdp")}
+          placeholder={t("example", "300")}
         />
+      </Field>
+      <Field id="gpuFormPrice" label={t("gpuFormPrice")}>
+        <NumberInput integer {...bind("price", "gpuFormPrice")} />
       </Field>
       <label
         className="f full"

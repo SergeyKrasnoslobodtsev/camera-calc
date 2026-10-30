@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
-// Страница расчёта: подсказки у полей, копия типа.
+// Страница расчёта: подсказки у полей, копия типа, загрузка примера.
 import { test } from "vitest";
 import assert from "assert";
 import { fireEvent } from "@testing-library/react";
 import { RU } from "../../src/i18n/ru.ts";
 import { openPage } from "./open-page.tsx";
-import { addTemplates } from "./helpers.js";
+import { T, addTemplates } from "./helpers.js";
 
 // у каждой подсказки есть кнопка «?» у её поля (objects: подсказка в заголовке, а не у поля)
 test("у каждой подсказки есть кнопка «?»", async () => {
@@ -34,4 +34,16 @@ test("копия типа: сразу после исходного, с суфф
     2,
     "объекты копии",
   );
+});
+
+test("пример заменяет расчёт только по второму нажатию", async () => {
+  await openPage();
+  fireEvent.click(document.getElementById("duplicateTypeBtn"));
+  const tabs = () => document.querySelectorAll("#tabs .tab b").length;
+  fireEvent.click(document.getElementById("resetBtn"));
+  assert.strictEqual(T("resetBtn"), "Заменить текущий расчёт");
+  assert.strictEqual(tabs(), 3, "пример загружен без подтверждения");
+  fireEvent.click(document.getElementById("resetBtn"));
+  assert.strictEqual(tabs(), 2, "второе нажатие не загрузило пример");
+  assert.strictEqual(T("resetBtn"), "Загрузить пример");
 });

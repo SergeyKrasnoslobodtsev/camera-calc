@@ -1,4 +1,4 @@
-// Нагрузка на GPU: выбор карты и их числа, кольцо инференса по группам запусков, шкалы декодера и памяти.
+// Нагрузка на GPU: итог подбора, кольцо инференса по группам запусков, шкалы декодера и памяти.
 import type { ReactNode } from "react";
 import {
   STR,
@@ -9,8 +9,6 @@ import {
 } from "../../../i18n/index.ts";
 import { bottleneckText, objectName } from "../../../i18n/domain-text.ts";
 import type { SystemResult } from "../../../domain/compute-system/index.ts";
-import { allGpus, state, updateSystem } from "../../../app/store.ts";
-import { Tip } from "../../components/Tip.tsx";
 import { useComputed } from "../../hooks/useComputed.ts";
 import { modelName } from "../../lib/labels.ts";
 
@@ -143,50 +141,7 @@ export function GpuLoad() {
   const { system } = useComputed();
   return (
     <>
-      <div className="dhead">
-        <h2 id="loadTitle">{t("loadTitle")}</h2>
-        <a className="inlink" href="#tpl-gpus">
-          {t("addGpuLink")}
-        </a>
-      </div>
-      <div className="dsel">
-        <div className="f">
-          <div className="lrow">
-            <label htmlFor="gpu">{t("gpu")}</label>
-            <Tip field="gpu" />
-          </div>
-          <select
-            id="gpu"
-            value={state.system.gpu}
-            onChange={(event) => updateSystem("gpu", event.target.value)}
-          >
-            <option value="auto">{t("gpuAuto")}</option>
-            {allGpus().map((gpu) => (
-              <option key={gpu.id} value={gpu.id}>
-                {gpu.name}
-                {gpu.custom ? t("gpuCustomMark") : ""}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="f">
-          <div className="lrow">
-            <label htmlFor="gpuCount">{t("gpuCount")}</label>
-            <Tip field="gpuCount" />
-          </div>
-          <select
-            id="gpuCount"
-            value={state.system.gpuCount}
-            onChange={(event) => updateSystem("gpuCount", event.target.value)}
-          >
-            <option value="auto">{t("auto")}</option>
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-          </select>
-        </div>
-      </div>
+      <h2 id="loadTitle">{t("loadTitle")}</h2>
       {system ? (
         <Load system={system} />
       ) : (
@@ -244,19 +199,15 @@ function Load({ system }: { system: SystemResult }) {
   return (
     <>
       <div className="dsum" id="loadSummary">
+        {/* карта, их число и цена — в итогах системы */}
         {liveResults.length > 0 && (
           <>
-            <b>
-              {chosen.count} × {chosen.gpu.name}
-            </b>{" "}
-            · ${formatNumber(chosen.cost, 0)} ·{" "}
             {chosen.ok ? (
               t(chosen === optimum ? "optimum" : "manual")
             ) : (
               <span style={{ color: "var(--bad)" }}>{t("insufficient")}</span>
-            )}
-            <br />
-            {t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} ·{" "}
+            )}{" "}
+            · {t("headroom", percent(Math.max(0, 1 - chosen.worstLoad)))} ·{" "}
             {t("bottleneck", bottleneckText(chosen.bottleneck))}
           </>
         )}
