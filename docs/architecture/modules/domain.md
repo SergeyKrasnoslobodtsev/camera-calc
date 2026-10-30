@@ -9,7 +9,7 @@
 | `entities/` | Типы сущностей: `CameraType`, `SceneObject`, `Camera`, `Gpu`, `CatalogModel`, `CustomModel`, `DetectionObject`, `SystemSettings` и функции их разбора; общие правила полей — `parse-result.ts` |
 | `references/` | Справочники: разрешения, форматы матрицы, каталог GPU и ёмкость декодера `decodableStreams`, модели Ultralytics, встроенные камеры, встроенные объекты детекции `BUILTIN_DETECTION_OBJECTS` |
 | `compute-type/` | Расчёт типа камер `computeType(type, camera)`, по шагу на файл |
-| `compute-system/` | Подбор GPU `computeSystem` (`index.ts`, нагрузка варианта — `gpu-load.ts`) и итоги системы `systemTotals` (`totals.ts`) |
+| `compute-system/` | Подбор GPU `computeSystem` (`index.ts`, нагрузка варианта — `gpu-load.ts`) нагрузка по типам `typeLoads` (`type-loads.ts`) и итоги системы `systemTotals` (`totals.ts`) |
 | `angles.ts`, `parse-num.ts` | `DEG` и разбор числа из поля формы |
 
 Встроенные записи хранят не название, а ключ словаря (`nameKey: "builtinCameraNames.k4"`). Название на текущем языке подставляет интерфейс.
@@ -162,6 +162,6 @@ flowchart TD
 |---|---|
 | `tests/domain/compute-type.test.ts` | Результат совпадает с прежней реализацией на 28 из 30 конфигураций с допуском $10^{-9}$, включая тексты на русском. Ещё два случая — число камер «2.6» и «» — прежний расчёт округлял и заменял нулём, теперь тест проверяет их как ошибку разбора. Фикстура `tests/domain/fixtures/compute-type.json` снята один раз со старого `computeType` (коммит 7cca661) и не перегенерируется |
 | `geometry.test.ts`, `objects.test.ts`, `stream.test.ts` | Шаги расчёта на случаях, которые считаются вручную |
-| `compute-system.test.ts` | Нагрузка инференса, декодера и памяти, выбор варианта по параметрам, итоги и порт на случаях, которые считаются вручную |
+| `compute-system.test.ts` | Нагрузка инференса, декодера и памяти, выбор варианта по параметрам, итоги и порт на случаях, которые считаются вручную; сумма долей типов равна инференсу |
 | `entities.test.ts` | Каждая функция разбора: допустимые данные, каждое правило поля, лишние поля |
 | `boundaries.test.ts` | В `src/domain/` нет `document`, `window`, `localStorage`, `navigator` и импортов за пределы папки |
