@@ -8,7 +8,7 @@ import { MODELS, T4_TFLOPS } from "../references/models.ts";
 
 // вход, при котором сняты задержки моделей каталога, px (docs.ultralytics.com)
 const CATALOG_INPUT_PX = 640;
-// Видеопамять, ГБ. Значения без источника, см. decisions/domain.md.
+// Видеопамять, ГБ. Значения без источника.
 const BASE_MEMORY_GB = 0.8; // среда выполнения
 const ENGINE_BASE_GB = 0.15; // движок TensorRT без активаций
 const UNKNOWN_ENGINE_GB = 0.5; // движок модели с неизвестными GFLOPs

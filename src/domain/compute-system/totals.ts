@@ -3,7 +3,7 @@ import type { Camera } from "../entities/camera.ts";
 import type { SystemSettings } from "../entities/system-settings.ts";
 
 // Канал с запасом: поток × NETWORK_HEADROOM должен быть меньше предела порта, Мбит/с.
-// Значения без источника, см. decisions/domain.md.
+// Значения без источника.
 const NETWORK_HEADROOM = 1.3;
 const PORT_1G_LIMIT_MBPS = 900;
 const PORT_10G_LIMIT_MBPS = 9000;
